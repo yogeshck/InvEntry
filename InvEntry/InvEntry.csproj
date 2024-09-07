@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="DevExpress.Images" Version="24.1.5" />
+	<PackageReference Include="DevExpress.Wpf" Version="24.1.5" />
     <PackageReference Include="DevExpress.Wpf.Core" Version="24.1.5" />
     <PackageReference Include="DevExpress.Wpf.ThemesLW" Version="24.1.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -20,6 +21,11 @@
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
+    <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
   </ItemGroup>
 
 </Project>

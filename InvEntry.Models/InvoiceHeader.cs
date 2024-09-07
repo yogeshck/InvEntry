@@ -1,6 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
 
 namespace Tern.MI.InvEntry.Models;
 
@@ -8,27 +6,21 @@ public partial class InvoiceHeader : BaseEntity
 {
 
     [ObservableProperty]
-
     private string? invNbr;
 
     [ObservableProperty]
-
     private DateTime? invDate;
 
     [ObservableProperty]
-
     private string? invCustMobile;
 
     [ObservableProperty]
-
     private string? placeOfSeller;          // Default to seller location GST code if TN - 33
 
     [ObservableProperty]
-
     private string? placeOfSupply;           // Based on goods / service receiver
 
     [ObservableProperty]
-
     private DateTime? pymtDueDate;
 
     [ObservableProperty]

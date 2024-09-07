@@ -6,13 +6,16 @@
     xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
     xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
     xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking"
-    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
+    xmlns:dxwuin="http://schemas.devexpress.com/winfx/2008/xaml/windowsui/navigation"
+    xmlns:views="clr-namespace:InvEntry.Views"
     Title="InvEntry" Height="800" Width="1000">
     <DockPanel>
         <dxdo:DockLayoutManager>
-            <dxdo:LayoutGroup Caption="LayoutRoot" Orientation="Vertical" >
-                <dxdo:LayoutPanel Caption="Panel1"/>
-                <dxdo:LayoutPanel Caption="Panel2"/>
+            <dxdo:LayoutGroup Name="Root">
+                <dxdo:DocumentPanel>
+                    <views:InvoiceView/>
+                </dxdo:DocumentPanel>
             </dxdo:LayoutGroup>
         </dxdo:DockLayoutManager>
     </DockPanel>
