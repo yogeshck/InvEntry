@@ -16,8 +16,7 @@
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         WindowState="Maximized"
-        ResizeMode="CanResizeWithGrip"
-        dx:ThemeManager.ThemeName="Win11System">
+        ResizeMode="CanResizeWithGrip">
     <DockPanel>
         <dxr:RibbonControl DockPanel.Dock="Top" RibbonStyle="Office2019">
             <dxr:RibbonControl.ToolbarItems>
