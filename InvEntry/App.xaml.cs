@@ -17,19 +17,23 @@ namespace InvEntry
     /// </summary>
     public partial class App : Application
     {
+        public const string LoggerDistince = "InvEntry-DEV";
+
         static App()
         {
-            CompatibilitySettings.UseLightweightThemes = true;
-            ApplicationThemeHelper.Preload(PreloadCategories.Core);
-
-            MetadataLocator.Default = MetadataLocator.Create()
-                .AddMetadata<InvoiceHeader, InvoiceHeaderMetadata>();
+            ApplicationThemeHelper.Preload(PreloadCategories.Docking);
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            //DISource.Resolver = Resolve;
+            Bootstrapper.Run(e);
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            ApplicationThemeHelper.SaveApplicationThemeName();
+            base.OnExit(e);
         }
     }
 }

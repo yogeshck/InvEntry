@@ -1,5 +1,4 @@
 ﻿using DevExpress.Xpf.Docking;
-using InvEntry.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +17,11 @@ using System.Windows.Shapes;
 namespace InvEntry.Views
 {
     /// <summary>
-    /// Interaction logic for InvoiceView.xaml
+    /// Interaction logic for InvoiceListView.xaml
     /// </summary>
-    public partial class InvoiceView : DocumentPanel
+    public partial class InvoiceListView : DocumentPanel
     {
-        public InvoiceView()
+        public InvoiceListView()
         {
             InitializeComponent();
         }

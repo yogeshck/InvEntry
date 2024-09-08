@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace Tern.MI.InvEntry.Models;
 
@@ -90,6 +91,6 @@ public partial class InvoiceHeader : BaseEntity
     private string? paymentMode;
 
     [ObservableProperty]
-    private List<InvoiceLine>? lines;
+    private ObservableCollection<InvoiceLine>? lines;
 
 }

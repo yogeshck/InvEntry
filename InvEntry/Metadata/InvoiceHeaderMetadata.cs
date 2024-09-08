@@ -20,5 +20,6 @@ public class InvoiceHeaderMetadata : IMetadataProvider<InvoiceHeader>
             .EndGroup();
 
         builder.Property(x => x.InvDate).DateTimeDataType();
+        builder.Property(x => x.InvCustMobile).PhoneNumberDataType();
     }
 }
