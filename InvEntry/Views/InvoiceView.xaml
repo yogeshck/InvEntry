@@ -6,6 +6,7 @@
              xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking"
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+                    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
                     xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
@@ -22,7 +23,11 @@
                 <dxlc:LayoutGroup Orientation="Horizontal">
                     <dxlc:LayoutGroup View="Group" Header="Customer Details">
                         <dxlc:LayoutItem Label="Customer Mobile">
-                            <dxe:TextEdit EditValue="{Binding Header.InvCustMobile}" MaskType="Numeric"/>
+                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}">
+                                <dxmvvm:Interaction.Behaviors>
+                                    <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"/>
+                                </dxmvvm:Interaction.Behaviors>
+                            </dxe:TextEdit>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutGroup  GroupBoxDisplayMode="Light" Orientation="Vertical">
                             <dxlc:LayoutItem Label="Customer Mobile">
@@ -42,27 +47,35 @@
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
-                <dxlc:LayoutGroup>
+                <dxlc:LayoutGroup Orientation="Vertical">
+                    <dxlc:LayoutGroup Orientation="Horizontal">
+                        <dxlc:LayoutItem Label="Product ID">
+                            <StackPanel Orientation="Horizontal">
+                                <dxe:TextEdit Name="ProductId" Width="100" MaskType="Numeric"/>
+                                <dx:SimpleButton Width="100" Content="Add Product" Command="{Binding FetchProductCommand}" CommandParameter="{Binding Path=EditValue, ElementName=ProductId}"/>
+                            </StackPanel>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
                     <dxg:GridControl ItemsSource="{Binding Header.Lines}">
                         <dxg:GridControl.Columns>
-                            <dxg:GridColumn FieldName="ProductGkey" Header="Product Id">
-                                <dxg:GridColumn.EditSettings>
-                                    <dxg:LookUpEditSettings />
-                                </dxg:GridColumn.EditSettings>
-                            </dxg:GridColumn>
-                            <dxg:GridColumn FieldName="ProductName"/>
-                            <dxg:GridColumn FieldName="ProductDesc"/>
-                            <dxg:GridColumn FieldName="ProductPurity"/>
-                            <dxg:GridColumn FieldName="ProdCategory"/>
-                            <dxg:GridColumn FieldName="ProdCategory"/>
-                            <dxg:GridColumn FieldName="InvlBilledPrice" Header="Billed Price"/>
+                                <dxg:GridColumn FieldName="ProductGkey" Header="Product Id"/>
+                                <dxg:GridColumn FieldName="ProductName"/>
+                                <dxg:GridColumn FieldName="ProductDesc"/>
+                                <dxg:GridColumn FieldName="ProductPurity"/>
+                                <dxg:GridColumn FieldName="ProdCategory"/>
                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
+                            <dxg:GridColumn FieldName="InvlGrossAmt" Header="Gross Amount"/>
+                            <dxg:GridColumn FieldName="InvlBilledPrice" Header="Billed Price"/>
                         </dxg:GridControl.Columns>
-                        <dxg:GridControl.View>
-                            <dxg:TableView NewItemRowPosition="Top" AllowGrouping="False"
-                               AllowBestFit="True" ShowGroupPanel="False"/>
-                        </dxg:GridControl.View>
-                    </dxg:GridControl>
+                        <dxg:GridControl.TotalSummary>
+                            <dxg:GridSummaryItem SummaryType="Sum" Alignment="Right"
+                                                 FieldName="InvlBilledPrice"/>
+                        </dxg:GridControl.TotalSummary>
+                            <dxg:GridControl.View>
+                                <dxg:TableView AllowGrouping="False"
+                               AllowBestFit="True" ShowGroupPanel="False" TotalSummaryPosition="Bottom"/>
+                            </dxg:GridControl.View>
+                        </dxg:GridControl>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>

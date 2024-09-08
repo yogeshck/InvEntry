@@ -1,4 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using DevExpress.Xpf.Editors;
+using InvEntry.Extension;
+using InvEntry.Services;
+using InvEntry.UIModels;
 using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
@@ -8,42 +13,66 @@ using System.Text;
 using System.Threading.Tasks;
 using Tern.MI.InvEntry.Models;
 
-namespace InvEntry.ViewModels
+namespace InvEntry.ViewModels;
+
+public partial class InvoiceViewModel : ObservableObject
 {
-    public class Customer
+    [ObservableProperty]
+    private string _customerPhoneNumber;
+
+    [ObservableProperty]
+    private Customer _customer;
+
+    [ObservableProperty]
+    private InvoiceHeader _header;
+
+    private readonly ICustomerService _customerService;
+    private readonly IProductService _productService;
+     
+    public InvoiceViewModel(ICustomerService customerService, IProductService productService)
     {
-        public string Mobile {  get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; } 
-        public string Address { get; set; } 
+        Header = new()
+        {
+            InvDate = DateTime.Now,
+            InvNbr = InvoiceNumberGenerator.Generate(),
+            Lines = new()
+        };
+        _customerService = customerService;
+        _productService = productService;
     }
 
-    public partial class InvoiceViewModel : ObservableObject
+    [RelayCommand]
+    private void FetchCustomer()
     {
-        [ObservableProperty]
-        private ObservableCollection<Customer> _customers;
+        Customer = _customerService.GetCustomer(_customerPhoneNumber);
+    }
 
-        [ObservableProperty]
-        private string _custMobile;
+    [RelayCommand]
+    private void FetchProduct(decimal productKey)
+    {
+        var key = Decimal.ToInt64(productKey);
 
-        [ObservableProperty]
-        private InvoiceHeader _header;
+        var product = _productService.GetProduct(key);
 
-        public InvoiceViewModel()
+        if (Header.Lines.Any(x => x.ProductGkey == key))
         {
-            Customers = new ObservableCollection<Customer>();
-
-            Customers.Add(new Customer() { Mobile = "9841051171", Name="Kumaravel", Address= "mylapore" });
-            Customers.Add(new Customer() { Mobile = "0410060197", Name="Yogesh", Address= "sydney" });
-
-            Header = new()
-            {
-                InvDate = DateTime.Now,
-                InvNbr = InvoiceNumberGenerator.Generate(),
-                Lines = new()
-            };
+            var line = Header.Lines.First(x => x.ProductGkey == key);
+            line.ProdQty += 1;
+            line.InvlBilledPrice = line.ProdQty * product.GrossAmount;
+            return;
         }
 
+        var invoiceLine = new InvoiceLine()
+        {
+            ProductGkey = product.ProductGkey,
+            ProductName = product.ProductName,
+            InvlGrossAmt = product.GrossAmount,
+            InvlBilledPrice = product.GrossAmount,
+            ProdQty = 1,
+        };
 
+        Header.Lines.Add(invoiceLine);
     }
+
+
 }

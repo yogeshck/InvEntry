@@ -4,21 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tern.MI.InvEntry.Models;
 
-namespace InvEntry.UIModels
+namespace InvEntry.Models
 {
-    public partial class Customer : ObservableObject
+    public partial class Product : BaseEntity
     {
         [ObservableProperty]
-        private string mobile;
+        private string productName;
 
         [ObservableProperty]
-        private string name;
+        private double grossAmount;
 
         [ObservableProperty]
-        private string email;
-
-        [ObservableProperty]
-        private string address;
+        private long productGkey;
     }
 }

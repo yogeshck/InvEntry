@@ -27,7 +27,8 @@
                     <dxr:RibbonPageGroup Caption="File">
                         <dxb:BarButtonItem x:Name="newItem" Content="New Invoice" 
                                            Glyph="{dx:DXImage 'SvgImages/Actions/New.svg'}"
-                                           GlyphSize="Large" BarItemDisplayMode="ContentAndGlyph"/>
+                                           GlyphSize="Large" BarItemDisplayMode="ContentAndGlyph"
+                                           ItemClick="newItem_ItemClick"/>
                         <dxb:BarItemSeparator/>
                     </dxr:RibbonPageGroup>
                 </dxr:RibbonPage>
@@ -38,10 +39,9 @@
                 <dxb:BarButtonItem x:Name="printItem" Content="Print" Glyph="{dx:DXImage 'SvgImages/Print/Print.svg'}"/>
             </dxr:RibbonStatusBarControl.RightItems>
         </dxr:RibbonStatusBarControl>
-        <dxdo:DockLayoutManager>
+        <dxdo:DockLayoutManager Name="dockLayout">
             <dxdo:LayoutGroup Name="InvoiceEntry">
                 <views:InvoiceListView/>
-                <!--<views:InvoiceListView/>-->
             </dxdo:LayoutGroup>
         </dxdo:DockLayoutManager>
     </DockPanel>

@@ -1,4 +1,5 @@
 ﻿using DevExpress.Xpf.Core;
+using InvEntry.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,13 @@ namespace InvEntry
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void newItem_ItemClick(object sender, DevExpress.Xpf.Bars.ItemClickEventArgs e)
+        {
+            var InvoiceView = new InvoiceView();
+
+            dockLayout.DockController.Float(InvoiceView);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace InvEntry
         static App()
         {
             ApplicationThemeHelper.Preload(PreloadCategories.Docking);
+            ApplicationThemeHelper.ApplicationThemeName = Theme.Win11System.Name;
         }
 
         protected override void OnStartup(StartupEventArgs e)

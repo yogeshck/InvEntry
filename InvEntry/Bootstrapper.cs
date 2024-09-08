@@ -3,6 +3,7 @@ using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using InvEntry.Extension;
 using InvEntry.Metadata;
+using InvEntry.Services;
 using InvEntry.ViewModels;
 using InvEntry.Views;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,6 +83,8 @@ public sealed class Bootstrapper
                 })
                 .AddTransient<InvoiceListViewModel>()
                 .AddTransient<InvoiceViewModel>()
+                .AddSingleton<ICustomerService,  CustomerService>()
+                .AddSingleton<IProductService, ProductService>()
                 ).Build();
     }
 }
