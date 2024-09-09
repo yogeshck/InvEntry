@@ -68,7 +68,7 @@
                             <dxg:GridColumn FieldName="InvlBilledPrice" Header="Billed Price"/>
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
-                            <dxg:GridSummaryItem SummaryType="Sum" Alignment="Right"
+                            <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
                                                  FieldName="InvlBilledPrice"/>
                         </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>

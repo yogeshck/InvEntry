@@ -8,6 +8,7 @@ using InvEntry.ViewModels;
 using InvEntry.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -56,6 +57,12 @@ public sealed class Bootstrapper
             arguments = ["--environment", "Development"];
         }
 
+        Log.Logger = new LoggerConfiguration()
+            .Enrich.FromLogContext()
+            .WriteTo.File(@"C:\\Madrone\\Logs", rollingInterval: RollingInterval.Day, 
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+
         Dispatcher dispatcher = Application.Current.Dispatcher;
         Messenger.Default = new Messenger(true);
 
@@ -81,10 +88,16 @@ public sealed class Bootstrapper
 
                     return new DialogService();
                 })
+                .AddHttpClient()
                 .AddTransient<InvoiceListViewModel>()
                 .AddTransient<InvoiceViewModel>()
                 .AddSingleton<ICustomerService,  CustomerService>()
                 .AddSingleton<IProductService, ProductService>()
-                ).Build();
+                )
+            .ConfigureLogging(logging => 
+            {
+                logging.AddSerilog(dispose:true);
+            })
+            .Build();
     }
 }

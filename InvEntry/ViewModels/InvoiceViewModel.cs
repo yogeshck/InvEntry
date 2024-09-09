@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Tern.MI.InvEntry.Models;
 
 namespace InvEntry.ViewModels;
@@ -26,10 +27,12 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private InvoiceHeader _header;
 
+    private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
      
-    public InvoiceViewModel(ICustomerService customerService, IProductService productService)
+    public InvoiceViewModel(ICustomerService customerService, 
+        IProductService productService)
     {
         Header = new()
         {
@@ -45,6 +48,12 @@ public partial class InvoiceViewModel : ObservableObject
     private void FetchCustomer()
     {
         Customer = _customerService.GetCustomer(_customerPhoneNumber);
+
+        if(Customer is null)
+        {
+            Customer = new();
+            createCustomer = true;
+        }
     }
 
     [RelayCommand]
@@ -74,5 +83,13 @@ public partial class InvoiceViewModel : ObservableObject
         Header.Lines.Add(invoiceLine);
     }
 
+    [RelayCommand]
+    private void CreateInvoice()
+    {
+        if (createCustomer)
+        {
+
+        }
+    }
 
 }
