@@ -5,7 +5,7 @@ namespace InvEntry.Models;
 public partial class BaseEntity : ObservableObject
 {
     [ObservableProperty]
-    private long id;
+    private long gKey;
 
     [ObservableProperty]
     private DateTime createdOn;

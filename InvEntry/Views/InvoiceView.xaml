@@ -60,6 +60,29 @@
                     <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local">
                         <dxlc:LayoutItem Label="Invoice Number" HorizontalContentAlignment="Stretch">
+                            <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" Width="300"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Invoice Date">
+                            <dxe:DateEdit EditValue="{Binding Header.OldSilverAmount}" Width="300"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Old Gold Amount">
+                            <StackPanel Orientation="Horizontal" Width="300" Margin="10" Height="30">
+                                <dx:SimpleButton Glyph="{dx:DXImage 'Images/Maps/WeightedPies_32x32.png'}"
+                                                 Command="{Binding AddOldJewelCommand}" CommandParameter="Gold"/>
+                                <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" Width="270"/>
+                            </StackPanel>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Old Silver Amount">
+                            <StackPanel Orientation="Horizontal" Width="300" Margin="10" Height="30">
+                                <dx:SimpleButton Glyph="{dx:DXImage 'Images/Maps/WeightedPies_32x32.png'}" 
+                                                 Command="{Binding AddOldJewelCommand}" CommandParameter="Silver"/>
+                                <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" Width="270"/>
+                            </StackPanel>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
+                                      ItemLabelsAlignment="Local">
+                        <dxlc:LayoutItem Label="Invoice Number" HorizontalContentAlignment="Stretch">
                             <dxe:TextEdit EditValue="{Binding Header.InvNbr}" Width="300"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Invoice Date">

@@ -12,7 +12,7 @@ namespace InvEntry.Metadata
     {
         public void BuildMetadata(MetadataBuilder<InvoiceLine> builder)
         {
-            builder.Property(x => x.Id).Hidden();
+            builder.Property(x => x.GKey).Hidden();
             builder.Property(x => x.InvoiceId).Hidden();
         }
     }

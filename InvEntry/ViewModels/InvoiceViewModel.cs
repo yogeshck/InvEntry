@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DevExpress.Mvvm;
 
 namespace InvEntry.ViewModels;
 
@@ -29,9 +30,10 @@ public partial class InvoiceViewModel : ObservableObject
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
-     
+    private readonly IDialogService _dialogService;
+    
     public InvoiceViewModel(ICustomerService customerService, 
-        IProductService productService)
+        IProductService productService, IDialogService dialogService)
     {
         Header = new()
         {
@@ -41,6 +43,7 @@ public partial class InvoiceViewModel : ObservableObject
         };
         _customerService = customerService;
         _productService = productService;
+        _dialogService = dialogService;
     }
 
     [RelayCommand]
@@ -68,6 +71,26 @@ public partial class InvoiceViewModel : ObservableObject
         };
 
         Header.Lines.Add(invoiceLine);
+    }
+
+    [RelayCommand]
+    private void AddOldJewel(string type)
+    {
+        var enumVal = Enum.Parse<MetalType>(type);
+
+        var vm = new DialogOldJewelVM();
+
+        if(_dialogService.ShowDialog(MessageButton.OKCancel, "Old Jewellwery", "DialogOldJewel", vm) == MessageResult.OK)
+        {
+            if(enumVal == MetalType.Gold)
+            {
+                Header.OldGoldAmount = Convert.ToDouble(vm.Rate * vm.Weight);
+            }
+            else
+            {
+                Header.OldSilverAmount = Convert.ToDouble(vm.Rate * vm.Weight);
+            }
+        }
     }
 
     [RelayCommand]
