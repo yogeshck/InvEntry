@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Tern.MI.InvEntry.Models;
+namespace InvEntry.Models;
 
 public partial class BaseEntity : ObservableObject
 {

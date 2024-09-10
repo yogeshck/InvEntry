@@ -1,10 +1,10 @@
 ﻿using DevExpress.Mvvm.DataAnnotations;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tern.MI.InvEntry.Models;
 
 namespace InvEntry.Metadata
 {
@@ -12,8 +12,8 @@ namespace InvEntry.Metadata
     {
         public void BuildMetadata(MetadataBuilder<InvoiceLine> builder)
         {
-            builder.Property(x => x.InvHeader).Hidden();
-            builder.Property(x => x.InvHeaderId).Hidden();
+            builder.Property(x => x.Id).Hidden();
+            builder.Property(x => x.InvoiceId).Hidden();
         }
     }
 }

@@ -15,7 +15,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Threading;
-using Tern.MI.InvEntry.Models;
 
 namespace InvEntry;
 public sealed class Bootstrapper

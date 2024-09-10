@@ -1,4 +1,4 @@
-﻿using InvEntry.UIModels;
+﻿using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

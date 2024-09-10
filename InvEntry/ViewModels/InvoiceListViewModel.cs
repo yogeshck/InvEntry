@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using InvEntry.Models;
 using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tern.MI.InvEntry.Models;
 
 namespace InvEntry.ViewModels;
 

@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Xpf.Editors;
 using InvEntry.Extension;
 using InvEntry.Services;
-using InvEntry.UIModels;
+using InvEntry.Models;
 using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Tern.MI.InvEntry.Models;
 
 namespace InvEntry.ViewModels;
 
@@ -57,26 +56,14 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void FetchProduct(decimal productKey)
+    private void FetchProduct(string productId)
     {
-        var key = Decimal.ToInt64(productKey);
-
-        var product = _productService.GetProduct(key);
-
-        if (Header.Lines.Any(x => x.ProductGkey == key))
-        {
-            var line = Header.Lines.First(x => x.ProductGkey == key);
-            line.ProdQty += 1;
-            line.InvlBilledPrice = line.ProdQty * product.GrossAmount;
-            return;
-        }
+        var product = _productService.GetProduct(productId);
 
         var invoiceLine = new InvoiceLine()
         {
-            ProductGkey = product.ProductGkey,
-            ProductName = product.ProductName,
-            InvlGrossAmt = product.GrossAmount,
-            InvlBilledPrice = product.GrossAmount,
+            ProdNetWeight= Convert.ToDouble(product.NetWeight),
+            VaPercent = product.VaPercent,
             ProdQty = 1,
         };
 
@@ -86,10 +73,14 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
+        if(Customer is null)
+        {
+            
+        }
+
         if (createCustomer)
         {
 
         }
     }
-
 }

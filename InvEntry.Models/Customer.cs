@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InvEntry.UIModels
+namespace InvEntry.Models
 {
     public partial class Customer : ObservableObject
     {

@@ -1,100 +1,105 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Tern.MI.InvEntry.Models;
+namespace InvEntry.Models;
 
 public partial class InvoiceLine : BaseEntity
 {
     [ObservableProperty]
-    private InvoiceHeader invHeader; // invoice Header Gkey;
+    private decimal? _gkey;
 
     [ObservableProperty]
-    private long invHeaderId;
+    private string? _hsnCode;
 
     [ObservableProperty]
-
-    private int invLineNbr;
-
-    [ObservableProperty]
-    private string? hsnCode;
+    private long? _invLineNbr;
 
     [ObservableProperty]
-    private long? productGkey;
+    private string? _invNote;
 
     [ObservableProperty]
-    private string? productName;
+    private double? _invlBilledPrice;
 
     [ObservableProperty]
-    private string? productDesc;
+    private double? _invlGrossAmt;
 
     [ObservableProperty]
-    private string? productPurity;
+    private double? _invlMakingCharges;
 
     [ObservableProperty]
-    private string? prodCategory;
+    private double? _invlOtherCharges;
 
     [ObservableProperty]
-    private int prodQty;
+    private double? _invlPayableAmt;
 
     [ObservableProperty]
-    private double? prodGrossWeight;
+    private double? _invlStoneAmount;
 
     [ObservableProperty]
-    private double? prodStoneWeight;
+    private double? _invlTaxableAmount;
 
     [ObservableProperty]
-    private double? prodNetWeight;
+    private double? _invlWastageAmt;
 
     [ObservableProperty]
-    private double? vaPercent;
+    private short? _isTaxable;
 
     [ObservableProperty]
-    private double? vaAmount;
+    private string? _itemNotes;
 
     [ObservableProperty]
-    private double? invlBilledPrice;
+    private short? _itemPacked;
 
     [ObservableProperty]
-    private double? invlGrossAmt;
+    private string? _prodCategory;
 
     [ObservableProperty]
-    private double? invlWastageAmt;
+    private double? _prodGrossWeight;
 
     [ObservableProperty]
-    private double? invlMakingCharges;
+    private double? _prodNetWeight;
 
     [ObservableProperty]
-    private double? invlStoneAmt;
+    private long? _prodQty;
 
     [ObservableProperty]
-    private double? invlTaxableAmount;
+    private double? _prodStoneWeight;
 
     [ObservableProperty]
-    private double? invlOtherCharges;
+    private string? _productDesc;
 
     [ObservableProperty]
-    private bool? isTaxable;
+    private decimal? _productGkey;
 
     [ObservableProperty]
-    private string? taxType;
+    private string? _productName;
 
     [ObservableProperty]
-    private double? taxPercent;
+    private string? _prodPackCode;
 
     [ObservableProperty]
-    private double? taxAmount;
+    private string? _productPurity;
 
     [ObservableProperty]
-    private double? invlPayableAmt;
+    private double? _taxAmount;
 
     [ObservableProperty]
-    private string? itemNotes;
+    private double? _taxPercent;
 
     [ObservableProperty]
-    private string? invNote;
+    private string? _taxType;
 
     [ObservableProperty]
-    private bool itemPacked = false;
+    private double? _vaAmount;
 
     [ObservableProperty]
-    private string? productPackCode;
+    private double? _vaPercent;
+
+    [ObservableProperty]
+    private decimal? _invoiceHdrGkey;
+
+    [ObservableProperty]
+    private decimal? _invoiceId;
+
+    [ObservableProperty]
+    private byte[]? _tenantGkey;
 }

@@ -9,18 +9,18 @@ namespace InvEntry.Services
 {
     public interface IProductService
     {
-        public Product GetProduct(long productGkey);
+        public Product GetProduct(string productGkey);
     }
 
     public class ProductService : IProductService
     {
-        public Product GetProduct(long productGkey)
+        public Product GetProduct(string productGkey)
         {
             return new Product()
             {
-                ProductGkey = productGkey,
-                GrossAmount = Random.Shared.NextInt64(100000, 10000000),
-                ProductName = $"Product{Random.Shared.NextInt64(100, 999)}"
+                ProductId = productGkey,
+                GrossWeight = Random.Shared.NextInt64(100000, 10000000),
+                NetWeight = Random.Shared.NextInt64(100, 999)
             };
         }
     }

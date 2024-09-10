@@ -49,9 +49,12 @@ public partial class MijmsContext : DbContext
     {
         modelBuilder.Entity<InvoiceHeader>(entity =>
         {
+            entity.HasKey(e => e.Gkey);
+
             entity
-                .HasNoKey()
                 .ToTable("INVOICE_HEADER");
+
+
 
             entity.Property(e => e.AdvanceAdj)
                 .HasDefaultValueSql("('0.00')")
@@ -97,6 +100,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("DISCOUNT_PERCENT");
             entity.Property(e => e.Gkey)
+                .ValueGeneratedOnAdd()
                 .HasColumnType("decimal(19, 0)")
                 .HasColumnName("GKEY");
             entity.Property(e => e.GstLocSeller)

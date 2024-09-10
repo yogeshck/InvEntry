@@ -8,7 +8,6 @@ using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Windows;
-using Tern.MI.InvEntry.Models;
 
 namespace InvEntry
 {
@@ -21,7 +20,7 @@ namespace InvEntry
 
         static App()
         {
-            ApplicationThemeHelper.Preload(PreloadCategories.Docking);
+            ApplicationThemeHelper.Preload(PreloadCategories.Controls);
             ApplicationThemeHelper.ApplicationThemeName = Theme.Win11System.Name;
         }
 

@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using InvEntry.Models;
 using System.Collections.ObjectModel;
 
-namespace Tern.MI.InvEntry.Models;
+namespace InvEntry.Models;
 
 public partial class InvoiceHeader : BaseEntity
 {

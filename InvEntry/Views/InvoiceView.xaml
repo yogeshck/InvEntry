@@ -20,30 +20,53 @@
     <Grid>
         <dxlc:LayoutControl>
             <dxlc:LayoutGroup Orientation="Vertical">
-                <dxlc:LayoutGroup Orientation="Horizontal">
-                    <dxlc:LayoutGroup View="Group" Header="Customer Details">
-                        <dxlc:LayoutItem Label="Customer Mobile">
-                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}">
+                <dxlc:LayoutGroup Orientation="Horizontal" Margin="10">
+                    <dxlc:LayoutGroup View="GroupBox" Header="Customer Details"
+                                      HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
+                                      ItemLabelsAlignment="Local" Margin="5" Orientation="Vertical">
+                        <dxlc:LayoutItem Label="Mobile">
+                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200">
                                 <dxmvvm:Interaction.Behaviors>
                                     <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"/>
                                 </dxmvvm:Interaction.Behaviors>
                             </dxe:TextEdit>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutGroup  GroupBoxDisplayMode="Light" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Customer Mobile">
-                                <dxe:TextEdit EditValue="{Binding Customer.Name}" />
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Customer Address">
-                                <dxe:TextEdit EditValue="{Binding Customer.Address}" />
-                            </dxlc:LayoutItem>
-                        </dxlc:LayoutGroup>
+                        <dxlc:LayoutItem Label="Name" >
+                            <dxe:TextEdit EditValue="{Binding Customer.Name}" Width="200"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Address">
+                            <dxe:TextEdit EditValue="{Binding Customer.Address}" Width="200"/>
+                        </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup Orientation="Vertical">
-                        <dxlc:LayoutItem Label="Invoice Number">
-                            <dxe:TextEdit EditValue="{Binding Header.InvNbr}" />
+                    <dxlc:LayoutGroup  GroupBoxDisplayMode="Light" View="Group" Orientation="Vertical"
+                            HorizontalAlignment="Left" Margin="5" 
+                            Header="Invoice Header" Width="500">
+                        <dxlc:LayoutItem Label="Payment Mode">
+                            <dxe:TextEdit EditValue="{Binding Header.PaymentMode}" Width="200"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Discount Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Width="200"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Discount Percent (%)">
+                            <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Width="200"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Paid Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" Width="200"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Balance Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200"/>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
+                                      ItemLabelsAlignment="Local">
+                        <dxlc:LayoutItem Label="Invoice Number" HorizontalContentAlignment="Stretch">
+                            <dxe:TextEdit EditValue="{Binding Header.InvNbr}" Width="300"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Invoice Date">
-                            <dxe:DateEdit EditValue="{Binding Header.InvDate}" />
+                            <dxe:DateEdit EditValue="{Binding Header.InvDate}" Width="300"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Notes" LabelPosition="Left" LabelVerticalAlignment="Top">
+                            <dxe:TextEdit TextWrapping="Wrap" Width="300" Height="140"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
@@ -51,7 +74,7 @@
                     <dxlc:LayoutGroup Orientation="Horizontal">
                         <dxlc:LayoutItem Label="Product ID">
                             <StackPanel Orientation="Horizontal">
-                                <dxe:TextEdit Name="ProductId" Width="100" MaskType="Numeric"/>
+                                <dxe:TextEdit Name="ProductId" Width="100"/>
                                 <dx:SimpleButton Width="100" Content="Add Product" Command="{Binding FetchProductCommand}" CommandParameter="{Binding Path=EditValue, ElementName=ProductId}"/>
                             </StackPanel>
                         </dxlc:LayoutItem>
@@ -61,10 +84,12 @@
                                 <dxg:GridColumn FieldName="ProductGkey" Header="Product Id"/>
                                 <dxg:GridColumn FieldName="ProductName"/>
                                 <dxg:GridColumn FieldName="ProductDesc"/>
-                                <dxg:GridColumn FieldName="ProductPurity"/>
-                                <dxg:GridColumn FieldName="ProdCategory"/>
+                            <dxg:GridColumn FieldName="ProductPurity" Header="Purity"/>
                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
-                            <dxg:GridColumn FieldName="InvlGrossAmt" Header="Gross Amount"/>
+                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
+                            <dxg:GridColumn FieldName="VaPercent"/>
+                            <dxg:GridColumn FieldName="VaAmount"/>
+                            <dxg:GridColumn FieldName="TaxAmount"/>
                             <dxg:GridColumn FieldName="InvlBilledPrice" Header="Billed Price"/>
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
@@ -76,6 +101,9 @@
                                AllowBestFit="True" ShowGroupPanel="False" TotalSummaryPosition="Bottom"/>
                             </dxg:GridControl.View>
                         </dxg:GridControl>
+                </dxlc:LayoutGroup>
+                <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
+                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Background="Green"/>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>
