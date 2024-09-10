@@ -1,4 +1,5 @@
 ﻿using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Docking;
 using InvEntry.Views;
 using System;
 using System.Collections.Generic;
@@ -28,9 +29,10 @@ namespace InvEntry
 
         private void newItem_ItemClick(object sender, DevExpress.Xpf.Bars.ItemClickEventArgs e)
         {
-            var InvoiceView = new InvoiceView();
+            DocumentPanel panel = new DocumentPanel();
+            panel.Content = new ProductStockView();
 
-            dockLayout.DockController.Float(InvoiceView);
+            dockLayout.DockController.Float(panel);
         }
     }
 }

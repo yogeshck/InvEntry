@@ -41,9 +41,7 @@
         </dxr:RibbonStatusBarControl>
         <dxdo:DockLayoutManager Name="dockLayout">
             <dxdo:LayoutGroup Name="InvoiceEntry">
-                <dxdo:LayoutPanel>
-                    <views:ProductStockView/>
-                </dxdo:LayoutPanel>
+                <views:InvoiceView/>
             </dxdo:LayoutGroup>
         </dxdo:DockLayoutManager>
     </DockPanel>

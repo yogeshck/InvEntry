@@ -93,6 +93,7 @@ public sealed class Bootstrapper
                  .AddTransient<ProductStockViewModel>()
                  .AddSingleton<ICustomerService, CustomerService>()
                  .AddSingleton<IProductService, ProductService>()
+                 .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .AddHttpClient("mijms", httpClient => 
                  {
