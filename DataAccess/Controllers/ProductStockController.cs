@@ -25,22 +25,24 @@ namespace DataAccess.Controllers
         }
 
         // GET api/<ProductStockController>/5
-        [HttpGet("{productGkey}")]
-        public async Task<IActionResult> Get(decimal productGkey)
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> Get(string productId)
         {
-            return Ok(_product.Get(x => x.ProductGkey == productGkey));
+            return Ok(_product.Get(x => x.ProductId == productId));
         }
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public void Post([FromBody] ProductStock value)
         {
+             _product.Add(value);
         }
 
         // PUT api/<ProductStockController>/5
         [HttpPut("{productGkey}")]
-        public void Put(decimal productGkey, [FromBody] string value)
+        public void Put(decimal productGkey, [FromBody] ProductStock value)
         {
+            _product.Update(value);
         }
 
         // DELETE api/<ProductStockController>/5

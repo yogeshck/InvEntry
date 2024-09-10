@@ -27,13 +27,19 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private InvoiceHeader _header;
 
+    [ObservableProperty]
+    private string _productId;
+
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
+    private readonly IInvoiceService _invoiceService;
     
     public InvoiceViewModel(ICustomerService customerService, 
-        IProductService productService, IDialogService dialogService)
+        IProductService productService, 
+        IDialogService dialogService,
+        IInvoiceService invoiceService)
     {
         Header = new()
         {
@@ -44,6 +50,7 @@ public partial class InvoiceViewModel : ObservableObject
         _customerService = customerService;
         _productService = productService;
         _dialogService = dialogService;
+        _invoiceService = invoiceService;
     }
 
     [RelayCommand]
@@ -59,9 +66,11 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void FetchProduct(string productId)
+    private async Task FetchProduct()
     {
-        var product = _productService.GetProduct(productId);
+        if (string.IsNullOrEmpty(ProductId)) return;
+
+        var product = await _productService.GetProduct(ProductId);
 
         var invoiceLine = new InvoiceLine()
         {
@@ -71,6 +80,8 @@ public partial class InvoiceViewModel : ObservableObject
         };
 
         Header.Lines.Add(invoiceLine);
+
+        ProductId = string.Empty;
     }
 
     [RelayCommand]
@@ -96,14 +107,7 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
-        if(Customer is null)
-        {
-            
-        }
-
-        if (createCustomer)
-        {
-
-        }
+        _invoiceService.CreatHeader(Header);
+        _invoiceService.CreatInvoiceLine(Header.Lines);
     }
 }

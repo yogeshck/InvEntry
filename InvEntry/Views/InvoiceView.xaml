@@ -59,12 +59,6 @@
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local">
-                        <dxlc:LayoutItem Label="Invoice Number" HorizontalContentAlignment="Stretch">
-                            <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" Width="300"/>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Invoice Date">
-                            <dxe:DateEdit EditValue="{Binding Header.OldSilverAmount}" Width="300"/>
-                        </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Old Gold Amount">
                             <StackPanel Orientation="Horizontal" Width="300" Margin="10" Height="30">
                                 <dx:SimpleButton Glyph="{dx:DXImage 'Images/Maps/WeightedPies_32x32.png'}"
@@ -97,8 +91,8 @@
                     <dxlc:LayoutGroup Orientation="Horizontal">
                         <dxlc:LayoutItem Label="Product ID">
                             <StackPanel Orientation="Horizontal">
-                                <dxe:TextEdit Name="ProductId" Width="100"/>
-                                <dx:SimpleButton Width="100" Content="Add Product" Command="{Binding FetchProductCommand}" CommandParameter="{Binding Path=EditValue, ElementName=ProductId}"/>
+                                <dxe:TextEdit EditValue="{Binding ProductId}" Width="100"/>
+                                <dx:SimpleButton Width="100" Content="Add Product" Command="{Binding FetchProductCommand}"/>
                             </StackPanel>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
@@ -126,7 +120,8 @@
                         </dxg:GridControl>
                 </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
-                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Background="Green"/>
+                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Background="Green"
+                                     Command="{Binding CreateInvoiceCommand}"/>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>

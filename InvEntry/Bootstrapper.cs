@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Markup;
@@ -65,38 +66,43 @@ public sealed class Bootstrapper
         Dispatcher dispatcher = Application.Current.Dispatcher;
         Messenger.Default = new Messenger(true);
 
-        _host = Host.CreateDefaultBuilder(arguments)
-            .ConfigureServices((ctx, services) => services
-                .AddSingleton(dispatcher)
-                .AddSingleton<IMessageBoxService>(_ =>
-                {
-                    DXMessageBoxService messageBoxService = null;
+        var builder = Host.CreateDefaultBuilder(arguments)
+             .ConfigureServices((ctx, services) => services
+                 .AddSingleton(dispatcher)
+                 .AddSingleton<IMessageBoxService>(_ =>
+                 {
+                     DXMessageBoxService messageBoxService = null;
 
-                    dispatcher.Invoke(() =>
-                    {
-                        messageBoxService = new DXMessageBoxService();
-                    });
-                    return messageBoxService;
-                })
-                .AddTransient<IDialogService, DialogService>(sp =>
-                {
-                    if (Application.Current.TryFindResource("ds") is DialogService dialogService)
-                    {
-                        return dialogService;
-                    }
+                     dispatcher.Invoke(() =>
+                     {
+                         messageBoxService = new DXMessageBoxService();
+                     });
+                     return messageBoxService;
+                 })
+                 .AddTransient<IDialogService, DialogService>(sp =>
+                 {
+                     if (Application.Current.TryFindResource("ds") is DialogService dialogService)
+                     {
+                         return dialogService;
+                     }
 
-                    return new DialogService();
-                })
-                .AddHttpClient()
-                .AddTransient<InvoiceListViewModel>()
-                .AddTransient<InvoiceViewModel>()
-                .AddSingleton<ICustomerService,  CustomerService>()
-                .AddSingleton<IProductService, ProductService>()
-                )
-            .ConfigureLogging(logging => 
-            {
-                logging.AddSerilog(dispose:true);
-            })
-            .Build();
+                     return new DialogService();
+                 })
+                 .AddTransient<InvoiceListViewModel>()
+                 .AddTransient<InvoiceViewModel>()
+                 .AddTransient<ProductStockViewModel>()
+                 .AddSingleton<ICustomerService, CustomerService>()
+                 .AddSingleton<IProductService, ProductService>()
+                 .AddSingleton<IMijmsApiService, MijmsApiService>()
+                 .AddHttpClient("mijms", httpClient => 
+                 {
+                     httpClient.BaseAddress = new Uri("https://localhost:7001/");
+                 }))
+             .ConfigureLogging(logging =>
+             {
+                 logging.AddSerilog(dispose: true);
+             });
+
+        _host = builder.Build();
     }
 }

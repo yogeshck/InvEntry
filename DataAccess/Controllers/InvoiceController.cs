@@ -24,34 +24,38 @@ namespace DataAccess.Controllers
 
         // GET: api/<InvoiceController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<InvoiceHeader> GetHeader()
         {
-            return new string[] { "value1", "value2" };
+            return _invoiceHeaderRepository.GetAll();
         }
 
         // GET api/<InvoiceController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{invNbr}")]
+        public InvoiceHeader? Get(string invNbr)
         {
-            return "value";
+            return _invoiceHeaderRepository.Get(x => x.InvNbr == invNbr);
         }
 
         // POST api/<InvoiceController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public void Post([FromBody] InvoiceHeader value)
         {
+            _invoiceHeaderRepository.Add(value);
         }
 
         // PUT api/<InvoiceController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{invNbr}")]
+        public void Put(string invNbr, [FromBody] InvoiceHeader value)
         {
+            value.InvNbr = invNbr;
+            _invoiceHeaderRepository.Update(value);
         }
 
         // DELETE api/<InvoiceController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("{invNbr}")]
+        public void Delete(string invNbr)
         {
+            _invoiceHeaderRepository.Remove(Get(invNbr));
         }
     }
 }

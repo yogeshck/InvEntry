@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using InvEntry.Models;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace InvEntry.Models;
 
@@ -92,6 +93,7 @@ public partial class InvoiceHeader : BaseEntity
     private string? paymentMode;
 
     [ObservableProperty]
+    [property: JsonIgnore]
     private ObservableCollection<InvoiceLine>? lines;
 
 }
