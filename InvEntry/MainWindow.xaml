@@ -24,12 +24,15 @@
     <dxwui:HamburgerMenu
         NavigationTarget="{Binding ElementName=frame}"  
         OpenPaneWidth="200" 
-        AllowBuiltInNavigation="True">
+        AllowBuiltInNavigation="True"
+         Header="Menu">
         <dxwui:HamburgerMenu.Items>
             <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
-                                                 Content="Invoice Entry"/>
+                                                 Content="Invoice Entry"
+                                                 Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}"/>
             <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
-                                                 Content="Product Stock Entry" SelectOnClick="True"/>
+                                                 Content="Product Stock Entry" 
+                                                 Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}"/>
         </dxwui:HamburgerMenu.Items>
         <dxwui:HamburgerMenu.Content>
             <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade" NavigationCacheMode="Required" BackNavigationMode="PreviousScreen">
