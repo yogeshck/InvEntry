@@ -10,15 +10,15 @@ namespace InvEntry.Models
     public partial class Customer : ObservableObject
     {
         [ObservableProperty]
-        private string mobile;
+        private string mobileNbr;
 
         [ObservableProperty]
-        private string name;
+        private string customerName;
 
         [ObservableProperty]
         private string email;
 
         [ObservableProperty]
-        private string address;
+        private string notes;
     }
 }

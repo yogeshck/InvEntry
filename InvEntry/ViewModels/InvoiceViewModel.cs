@@ -54,9 +54,9 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void FetchCustomer()
+    private async Task FetchCustomer()
     {
-        Customer = _customerService.GetCustomer(_customerPhoneNumber);
+        Customer = await _customerService.GetCustomer(_customerPhoneNumber);
 
         if(Customer is null)
         {
@@ -72,12 +72,21 @@ public partial class InvoiceViewModel : ObservableObject
 
         var product = await _productService.GetProduct(ProductId);
 
-        var invoiceLine = new InvoiceLine()
+        InvoiceLine invoiceLine;
+
+        if (product is null)
         {
-            ProdNetWeight= Convert.ToDouble(product.NetWeight),
-            VaPercent = product.VaPercent,
-            ProdQty = 1,
-        };
+            invoiceLine = new();
+        }
+        else
+        {
+            invoiceLine = new InvoiceLine()
+            {
+                ProdNetWeight = Convert.ToDouble(product.NetWeight),
+                VaPercent = product.VaPercent,
+                ProdQty = 1,
+            };
+        }
 
         Header.Lines.Add(invoiceLine);
 
@@ -91,7 +100,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         var vm = new DialogOldJewelVM();
 
-        if(_dialogService.ShowDialog(MessageButton.OKCancel, "Old Jewellwery", "DialogOldJewel", vm) == MessageResult.OK)
+        if(_dialogService.ShowDialog(MessageButton.OKCancel, "Exchange", "DialogOldJewel", vm) == MessageResult.OK)
         {
             if(enumVal == MetalType.Gold)
             {
@@ -107,6 +116,9 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
+        if (createCustomer)
+            _customerService.CreatCustomer(Customer);
+
         _invoiceService.CreatHeader(Header);
         _invoiceService.CreatInvoiceLine(Header.Lines);
     }

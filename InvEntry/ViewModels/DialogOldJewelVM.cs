@@ -14,5 +14,8 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         private decimal rate;
+
+        [ObservableProperty]
+        private string purity;
     }
 }

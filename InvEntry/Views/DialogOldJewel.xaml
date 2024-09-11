@@ -23,7 +23,10 @@
                 </dxlc:LayoutItem>
                 <dxlc:LayoutItem Label="Rate">
                     <dxe:TextEdit EditValue="{Binding Rate}"/>
-                </dxlc:LayoutItem>  
+                </dxlc:LayoutItem>
+                <dxlc:LayoutItem Label="Purity">
+                    <dxe:TextEdit EditValue="{Binding Purity}"/>
+                </dxlc:LayoutItem>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>
     </Grid>

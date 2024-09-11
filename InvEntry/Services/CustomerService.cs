@@ -1,4 +1,5 @@
-﻿using InvEntry.Models;
+﻿using DevExpress.Xpf.Data.Native;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,20 +10,34 @@ namespace InvEntry.Services;
 
 public interface ICustomerService
 {
-    public Customer GetCustomer(string phoneNumber);
+    Task<Customer> GetCustomer(string productId);
+
+    Task CreatCustomer(Customer product);
+
+    Task UpdateCustomer(Customer product);
 }
 
 public class CustomerService : ICustomerService
 {
+    private readonly IMijmsApiService _mijmsApiService;
 
-    public Customer GetCustomer(string phoneNumber)
+    public CustomerService(IMijmsApiService mijmsApiService)
     {
-        return new Customer() 
-        {
-            Mobile = phoneNumber,
-            Name = $"Customer{Random.Shared.NextInt64(100,999)}",
-            Address = $"Address{Random.Shared.NextInt64(100, 999)}",
-            Email = $"Email{Random.Shared.NextInt64(100, 999)}@gmail.com"
-        };
+        _mijmsApiService = mijmsApiService;
+    }
+
+    public async Task CreatCustomer(Customer customer)
+    {
+        await _mijmsApiService.Post($"api/customer/", customer);
+    }
+
+    public async Task<Customer> GetCustomer(string mobileNbr)
+    {
+        return await _mijmsApiService.Get<Customer>($"api/customer/{mobileNbr}");
+    }
+
+    public async Task UpdateCustomer(Customer customer)
+    {
+        await _mijmsApiService.Put($"api/customer/{customer.MobileNbr}", customer);
     }
 }

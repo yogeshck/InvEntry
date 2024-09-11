@@ -38,7 +38,7 @@
                             <dxe:TextEdit EditValue="{Binding Customer.Address}" Width="200"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup  GroupBoxDisplayMode="Light" View="Group" Orientation="Vertical"
+                    <!--<dxlc:LayoutGroup  GroupBoxDisplayMode="Light" View="Group" Orientation="Vertical"
                             HorizontalAlignment="Left" Margin="5" 
                             Header="Invoice Header" Width="500">
                         <dxlc:LayoutItem Label="Payment Mode">
@@ -56,7 +56,7 @@
                         <dxlc:LayoutItem Label="Balance Amount">
                             <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200"/>
                         </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>
+                    </dxlc:LayoutGroup>-->
                     <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local">
                         <dxlc:LayoutItem Label="Old Gold Amount">
@@ -72,18 +72,6 @@
                                                  Command="{Binding AddOldJewelCommand}" CommandParameter="Silver"/>
                                 <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" Width="270"/>
                             </StackPanel>
-                        </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
-                                      ItemLabelsAlignment="Local">
-                        <dxlc:LayoutItem Label="Invoice Number" HorizontalContentAlignment="Stretch">
-                            <dxe:TextEdit EditValue="{Binding Header.InvNbr}" Width="300"/>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Invoice Date">
-                            <dxe:DateEdit EditValue="{Binding Header.InvDate}" Width="300"/>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Notes" LabelPosition="Left" LabelVerticalAlignment="Top">
-                            <dxe:TextEdit TextWrapping="Wrap" Width="300" Height="140"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
@@ -103,15 +91,15 @@
                                 <dxg:GridColumn FieldName="ProductDesc"/>
                             <dxg:GridColumn FieldName="ProductPurity" Header="Purity"/>
                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
-                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
                             <dxg:GridColumn FieldName="ProdGrossWeight" Header="Net Weight"/>
+                            <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
+                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
                             <dxg:GridColumn FieldName="VaPercent" Header="VA (%)"/>
-                            <dxg:GridColumn FieldName="TaxAmount"/>
-                            <dxg:GridColumn FieldName="InvlBilledPrice" Header="Billed Price"/>
+                            <dxg:GridColumn FieldName="TaxAmount" Header="Taxable"/>
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
                             <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
-                                                 FieldName="InvlBilledPrice"/>
+                                                 FieldName="TaxAmount"/>
                         </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>
                                 <dxg:TableView AllowGrouping="False"
@@ -120,8 +108,7 @@
                         </dxg:GridControl>
                 </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
-                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Background="Green"
-                                     Command="{Binding CreateInvoiceCommand}"/>
+                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding CreateInvoiceCommand}"/>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>
