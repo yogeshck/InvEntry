@@ -1,6 +1,7 @@
 ﻿using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
+using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
 using InvEntry.Metadata;
 using InvEntry.Services;
@@ -91,13 +92,15 @@ public sealed class Bootstrapper
                  .AddTransient<InvoiceListViewModel>()
                  .AddTransient<InvoiceViewModel>()
                  .AddTransient<ProductStockViewModel>()
+                 .AddTransient<MainWindowViewModel>()
+                 .AddTransient<INavigationService, FrameNavigationService>()
                  .AddSingleton<ICustomerService, CustomerService>()
                  .AddSingleton<IProductService, ProductService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .AddHttpClient("mijms", httpClient => 
                  {
-                     httpClient.BaseAddress = new Uri("https://localhost:7001/");
+                     httpClient.BaseAddress = new Uri("https://localhost:5000/");
                  }))
              .ConfigureLogging(logging =>
              {

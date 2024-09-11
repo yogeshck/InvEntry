@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DependencyPropertyGenerator" Version="1.4.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="DevExpress.Images" Version="24.1.5" />
 	<PackageReference Include="DevExpress.Wpf" Version="24.1.5" />
     <PackageReference Include="DevExpress.Wpf.Core" Version="24.1.5" />

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevExpress.Mvvm.UI.Native;
+using DevExpress.Xpf.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

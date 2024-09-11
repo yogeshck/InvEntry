@@ -1,10 +1,9 @@
-﻿using DevExpress.Xpf.Core;
-using DevExpress.Xpf.Docking;
-using InvEntry.Views;
+﻿using DevExpress.Xpf.WindowsUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -15,14 +14,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace InvEntry
+namespace InvEntry.Views.Page
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for InvoiceEntryPage.xaml
     /// </summary>
-    public partial class MainWindow : ThemedWindow
+    public partial class InvoiceEntryPage : NavigationPage
     {
-        public MainWindow()
+        public InvoiceEntryPage()
         {
             InitializeComponent();
         }

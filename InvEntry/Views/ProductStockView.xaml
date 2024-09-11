@@ -12,8 +12,8 @@
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
-             d:DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
-             DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
+             d:DataContext="{ext:DISource Type=viewmodels:ProductStockViewModel}"
+             DataContext="{ext:DISource Type=viewmodels:ProductStockViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>

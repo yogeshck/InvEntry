@@ -1,4 +1,4 @@
-﻿    <dx:ThemedWindow
+﻿<dx:ThemedWindow
     x:Class="InvEntry.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,39 +10,34 @@
     xmlns:dxwuin="http://schemas.devexpress.com/winfx/2008/xaml/windowsui/navigation"
     xmlns:dxa="http://schemas.devexpress.com/winfx/2008/xaml/accordion" 
     xmlns:views="clr-namespace:InvEntry.Views"
+    xmlns:page="clr-namespace:InvEntry.Views.Page"
+    xmlns:ext="clr-namespace:InvEntry.Extension"
+    xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
         xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars" 
         xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon"
     Title="InvEntry" Height="800" Width="1000"
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         WindowState="Maximized"
-        ResizeMode="CanResizeWithGrip">
-    <DockPanel>
-        <dxr:RibbonControl DockPanel.Dock="Top" RibbonStyle="Office2019">
-            <dxr:RibbonControl.ToolbarItems>
-                <dxb:BarButtonItemLink BarItemName="newItem"/>
-            </dxr:RibbonControl.ToolbarItems>
-            <dxr:RibbonDefaultPageCategory>
-                <dxr:RibbonPage Caption="Home">
-                    <dxr:RibbonPageGroup Caption="File">
-                        <dxb:BarButtonItem x:Name="newItem" Content="New Invoice" 
-                                           Glyph="{dx:DXImage 'SvgImages/Actions/New.svg'}"
-                                           GlyphSize="Large" BarItemDisplayMode="ContentAndGlyph"
-                                           ItemClick="newItem_ItemClick"/>
-                        <dxb:BarItemSeparator/>
-                    </dxr:RibbonPageGroup>
-                </dxr:RibbonPage>
-            </dxr:RibbonDefaultPageCategory>
-        </dxr:RibbonControl>
-        <dxr:RibbonStatusBarControl DockPanel.Dock="Bottom">
-            <dxr:RibbonStatusBarControl.RightItems>
-                <dxb:BarButtonItem x:Name="printItem" Content="Print" Glyph="{dx:DXImage 'SvgImages/Print/Print.svg'}"/>
-            </dxr:RibbonStatusBarControl.RightItems>
-        </dxr:RibbonStatusBarControl>
-        <dxdo:DockLayoutManager Name="dockLayout">
-            <dxdo:LayoutGroup Name="InvoiceEntry">
-                <views:InvoiceView/>
-            </dxdo:LayoutGroup>
-        </dxdo:DockLayoutManager>
-    </DockPanel>
+        ResizeMode="CanResizeWithGrip"
+    DataContext="{ext:DISource Type=viewmodels:MainWindowViewModel}">
+    <dxwui:HamburgerMenu
+        NavigationTarget="{Binding ElementName=frame}"  
+        OpenPaneWidth="200" 
+        AllowBuiltInNavigation="True">
+        <dxwui:HamburgerMenu.Items>
+            <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
+                                                 Content="Invoice Entry"/>
+            <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
+                                                 Content="Product Stock Entry" SelectOnClick="True"/>
+        </dxwui:HamburgerMenu.Items>
+        <dxwui:HamburgerMenu.Content>
+            <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade" NavigationCacheMode="Required" BackNavigationMode="PreviousScreen">
+                <dxmvvm:Interaction.Behaviors>
+                    <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}"/>
+                    <ext:AttachServiceBehavior AtachableService="{Binding NavigationService}"/>
+                </dxmvvm:Interaction.Behaviors>
+            </dxwui:NavigationFrame>
+        </dxwui:HamburgerMenu.Content>
+    </dxwui:HamburgerMenu>
 </dx:ThemedWindow>
