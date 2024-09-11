@@ -97,7 +97,7 @@
                             <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
                             <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
                             <dxg:GridColumn FieldName="VaPercent" Header="VA (%)"/>
-                            <dxg:GridColumn FieldName="TaxAmountUnbound" Header="Taxable" 
+                            <dxg:GridColumn FieldName="InvlTaxableAmountUnbound" Header="Taxable" 
                                             UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True"
                                             UnboundExpression="[ProdQty] * [ProdNetWeight]"/>
                         </dxg:GridControl.Columns>
