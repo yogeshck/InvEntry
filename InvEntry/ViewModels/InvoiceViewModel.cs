@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DevExpress.Mvvm;
+using DevExpress.Xpf.Grid;
 
 namespace InvEntry.ViewModels;
 
@@ -35,7 +36,8 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
     private readonly IInvoiceService _invoiceService;
-    
+    private Dictionary<string, Action<object, object>> copyExpression;
+
     public InvoiceViewModel(ICustomerService customerService, 
         IProductService productService, 
         IDialogService dialogService,
@@ -45,12 +47,22 @@ public partial class InvoiceViewModel : ObservableObject
         {
             InvDate = DateTime.Now,
             InvNbr = InvoiceNumberGenerator.Generate(),
-            Lines = new()
+            Lines = new(),
+            PaymentMode = "CASH",
+            TaxType = "GST"
         };
         _customerService = customerService;
         _productService = productService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
+        PopulateUnboundDataMap();
+    }
+
+    private void PopulateUnboundDataMap()
+    {
+        if (copyExpression is null) copyExpression = new();
+
+        copyExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}Unbound", TaxableUnboundUpdate);
     }
 
     [RelayCommand]
@@ -76,7 +88,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (product is null)
         {
-            invoiceLine = new();
+            invoiceLine = new() { ProdQty = 1 };
         }
         else
         {
@@ -121,5 +133,22 @@ public partial class InvoiceViewModel : ObservableObject
 
         _invoiceService.CreatHeader(Header);
         _invoiceService.CreatInvoiceLine(Header.Lines);
+    }
+
+    [RelayCommand]
+    private void CellUpdate(CellValueChangedEventArgs args)
+    {
+        if (args.Column.FieldName.Contains("Unbound") && copyExpression.TryGetValue(args.Column.FieldName, out var action))
+        {
+            action.Invoke(args.Row, args.Value);
+        }
+    }
+
+    private void TaxableUnboundUpdate(object obj, object value)
+    {
+        if(obj is InvoiceLine item && value is decimal val)
+        {
+            item.InvlTaxableAmount = Convert.ToDouble(val);
+        }
     }
 }

@@ -8,7 +8,7 @@
 
         public static string Generate(int alphalength = 3, int numbericLength = 5)
         {
-            return string.Concat(RandomString(ALPHABET, alphalength), RandomString(NUMERIC, numbericLength));
+            return string.Concat("B", RandomString(NUMERIC, numbericLength));
         }
 
         public static string RandomString(string chars, int length)
