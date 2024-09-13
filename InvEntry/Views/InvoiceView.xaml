@@ -41,14 +41,17 @@
                         <dxlc:LayoutItem Label="Discount">
                             <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Width="200"/>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Receivable Amount">
-                            <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" Width="200" IsReadOnly="True"/>
+                        <dxlc:LayoutItem Label="Round Off">
+                            <dxe:TextEdit EditValue="{Binding RoundOff}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Receivable Amount">
                             <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Recieved Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" Width="200" IsReadOnly="True"/>
+                        </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Balance Amount">
-                            <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200" IsEnabled="True"/>
+                            <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom">
