@@ -48,10 +48,12 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
+    private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceService _invoiceService;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
-    private decimal IGSTPercent = 0.03M;
+    private decimal IGSTPercent = 0M;
+    private decimal SCGSTPercent = 3M;
 
     private List<string> IGNORE_UPDATE = new List<string>
     {
@@ -61,13 +63,15 @@ public partial class InvoiceViewModel : ObservableObject
     public InvoiceViewModel(ICustomerService customerService, 
         IProductService productService, 
         IDialogService dialogService,
-        IInvoiceService invoiceService)
+        IInvoiceService invoiceService,
+        IMessageBoxService messageBoxService)
     {
         SetHeader();
         _customerService = customerService;
         _productService = productService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
+        _messageBoxService = messageBoxService;
         _currentRate = 2600;
         LineView = true;
         HeaderView = false;
@@ -92,6 +96,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (copyHeaderExpression is null) copyHeaderExpression = new();
 
+        copyHeaderExpression.Add($"{nameof(InvoiceHeader.RoundOff)}", (item, val) => item.RoundOff = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.GrossRcbAmount)}", (item, val) => item.GrossRcbAmount = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.AmountPayable)}", (item, val) => item.AmountPayable = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
@@ -107,6 +112,10 @@ public partial class InvoiceViewModel : ObservableObject
             Customer = new();
             createCustomer = true;
         }
+        else
+        {
+            IGSTPercent = 3 / 100;
+        }
     }
 
     [RelayCommand]
@@ -115,6 +124,13 @@ public partial class InvoiceViewModel : ObservableObject
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
         var product = await _productService.GetProduct(ProductIdUI);
+
+        if (product is null)
+        {
+            _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
+                "Product not found", MessageButton.OK, MessageIcon.Error);
+            return;
+        }
 
         InvoiceLine invoiceLine = new InvoiceLine()
         {
@@ -125,13 +141,9 @@ public partial class InvoiceViewModel : ObservableObject
             InvlIgstPercent = IGSTPercent
         };
 
-        if (product is not null)
-        {
-            invoiceLine.SetProductDetails(product);
-        }
+        invoiceLine.SetProductDetails(product);
 
-        if(product is not null)
-            EvaluateFormula(invoiceLine);
+        EvaluateFormula(invoiceLine, isInit: true);
 
         Header.Lines.Add(invoiceLine);
 
@@ -161,6 +173,12 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
+        if(string.IsNullOrEmpty(Customer.CustomerName))
+        {
+            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
+            return; 
+        }
+
         if (createCustomer)
             _customerService.CreatCustomer(Customer);
 
@@ -187,6 +205,12 @@ public partial class InvoiceViewModel : ObservableObject
         HeaderView = !LineView;
     }
 
+    [RelayCommand]
+    private void EvaluateHeader()
+    {
+        EvaluateFormula(Header);
+    }
+
     private void SetHeader()
     {
         Header = new()
@@ -202,7 +226,15 @@ public partial class InvoiceViewModel : ObservableObject
 
     private decimal GetGSTWithinState()
     {
-        return Convert.ToDecimal(0.03/2);
+        return Convert.ToDecimal((SCGSTPercent/2)/100);
+    }
+
+    private void EvaluateForAllLines()
+    {
+        foreach(var line in Header.Lines)
+        {
+            EvaluateFormula(line);
+        }
     }
 
     private void EvaluateFormula<T>(T line, bool isInit = false) where T: class

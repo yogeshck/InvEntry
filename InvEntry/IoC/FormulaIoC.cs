@@ -45,8 +45,11 @@ namespace InvEntry.IoC
 
         private static void ConfigureInvoiceHeaderFormulas(FormulaStore store)
         {
+            store.AddFormula<InvoiceHeader>(x => x.RoundOff,
+                $"Round({nameof(InvoiceHeader.InvlTaxTotal)})");
+
             store.AddFormula<InvoiceHeader>(x => x.GrossRcbAmount,
-                $"Round([{nameof(InvoiceHeader.InvlTaxableAmount)}]) - [{nameof(InvoiceHeader.DiscountAmount)}]");
+                $"[{nameof(InvoiceHeader.InvlTaxableAmount)}] + [{nameof(InvoiceHeader.RoundOff)}] - [{nameof(InvoiceHeader.DiscountAmount)}]");
 
             store.AddFormula<InvoiceHeader>(x => x.AmountPayable,
                 $"[{nameof(InvoiceHeader.GrossRcbAmount)}] - [{nameof(InvoiceHeader.OldGoldAmount)}] - [{nameof(InvoiceHeader.OldSilverAmount)}]");
