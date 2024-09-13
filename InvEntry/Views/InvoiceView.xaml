@@ -57,8 +57,7 @@
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local" Margin="10" >
                         <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
-                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200" EditValuePostDelay="500"
-                                          AcceptsReturn="True" AcceptsTab="True">
+                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200" EditValuePostDelay="500" AcceptsTab="True">
                                 <dxmvvm:Interaction.Behaviors>
                                     <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"/>
                                 </dxmvvm:Interaction.Behaviors>
