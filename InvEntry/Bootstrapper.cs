@@ -3,6 +3,7 @@ using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
+using InvEntry.IoC;
 using InvEntry.Metadata;
 using InvEntry.Services;
 using InvEntry.ViewModels;
@@ -98,6 +99,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductService, ProductService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
+                 .ConfigureFormulas()
                  .AddHttpClient("mijms", httpClient => 
                  {
                      httpClient.BaseAddress = new Uri("https://localhost:5000/");

@@ -42,7 +42,7 @@ namespace DataAccess.Controllers
 
         // PUT api/<InvoiceController>/5
         [HttpPut("{invNbr}")]
-        public void Put(long invNbr, [FromBody] InvoiceLine value)
+        public void Put(int invNbr, [FromBody] InvoiceLine value)
         {
             value.InvLineNbr = invNbr;
             _invoiceLineRepository.Update(value);

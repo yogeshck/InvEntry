@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class OrgAddress
 {
-    public decimal Gkey { get; set; }
+    public long Gkey { get; set; }
 
     public string? AddressLine1 { get; set; }
 

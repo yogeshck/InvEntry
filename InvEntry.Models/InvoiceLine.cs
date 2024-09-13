@@ -5,70 +5,67 @@ namespace InvEntry.Models;
 public partial class InvoiceLine : BaseEntity
 {
     [ObservableProperty]
-    private decimal? _gkey;
-
-    [ObservableProperty]
     private string? _hsnCode;
 
     [ObservableProperty]
-    private long? _invLineNbr;
+    private int? _invLineNbr;
 
     [ObservableProperty]
     private string? _invNote;
 
     [ObservableProperty]
-    private double? _invlBilledPrice;
+    private decimal? _invlBilledPrice;
 
     [ObservableProperty]
-    private double? _invlGrossAmt;
+    private decimal? _invlGrossAmt;
 
     [ObservableProperty]
-    private double? _invlMakingCharges;
+    private decimal? _invlMakingCharges;
 
     [ObservableProperty]
-    private double? _invlOtherCharges;
+    private decimal? _invlOtherCharges;
 
     [ObservableProperty]
-    private double? _invlPayableAmt;
+    private decimal? _invlPayableAmt;
 
     [ObservableProperty]
-    private double? _invlStoneAmount;
+    private decimal? _invlStoneAmount;
 
     [ObservableProperty]
-    private double? _invlTaxableAmount;
+    private decimal? _invlTaxableAmount;
 
     [ObservableProperty]
-    private double? _invlWastageAmt;
+    private decimal? _invlWastageAmt;
 
     [ObservableProperty]
-    private short? _isTaxable;
+    private bool? _isTaxable;
 
     [ObservableProperty]
     private string? _itemNotes;
 
     [ObservableProperty]
-    private short? _itemPacked;
+    private int? _itemPacked;
 
     [ObservableProperty]
     private string? _prodCategory;
 
     [ObservableProperty]
-    private double? _prodGrossWeight;
+    private decimal? _prodGrossWeight;
 
     [ObservableProperty]
-    private double? _prodNetWeight;
+    private decimal? _prodNetWeight;
 
     [ObservableProperty]
-    private long? _prodQty;
+    private int? _prodQty;
 
     [ObservableProperty]
-    private double? _prodStoneWeight;
+    private decimal? _prodStoneWeight;
 
     [ObservableProperty]
     private string? _productDesc;
 
     [ObservableProperty]
-    private decimal? _productGkey;
+    private long? _productGkey;
 
     [ObservableProperty]
     private string? _productName;
@@ -80,26 +77,47 @@ public partial class InvoiceLine : BaseEntity
     private string? _productPurity;
 
     [ObservableProperty]
-    private double? _taxAmount;
+    private decimal? _taxAmount;
 
     [ObservableProperty]
-    private double? _taxPercent;
+    private decimal? _taxPercent;
 
     [ObservableProperty]
     private string? _taxType;
 
     [ObservableProperty]
-    private double? _vaAmount;
+    private decimal? _vaAmount;
 
     [ObservableProperty]
-    private double? _vaPercent;
+    private decimal? _vaPercent;
 
     [ObservableProperty]
     private decimal? _invoiceHdrGkey;
 
     [ObservableProperty]
-    private decimal? _invoiceId;
+    private string? _invoiceId;
 
     [ObservableProperty]
-    private byte[]? _tenantGkey;
+    private string? _tenantGkey;
+
+    [ObservableProperty]
+    private decimal? _invlCgstPercent;
+
+    [ObservableProperty]
+    private decimal? _invlCgstAmount;
+
+    [ObservableProperty]
+    private decimal? _invlIgstPercent;
+
+    [ObservableProperty]
+    private decimal? _invlIgstAmount;
+
+    [ObservableProperty]
+    private decimal? _invlTotal;
+
+    [ObservableProperty]
+    private decimal? _invlSgstAmount;
+
+    [ObservableProperty]
+    private decimal? _invlSgstPercent;
 }

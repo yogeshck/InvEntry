@@ -35,6 +35,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<OrgGeoLocation> OrgGeoLocations { get; set; }
 
+    public virtual DbSet<OrgThisCompanyView> OrgThisCompanyViews { get; set; }
+
     public virtual DbSet<ProductGroup> ProductGroups { get; set; }
 
     public virtual DbSet<ProductStock> ProductStocks { get; set; }
@@ -43,18 +45,15 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=YOGESH-PC-INFIN\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<InvoiceHeader>(entity =>
         {
-            entity.HasKey(e => e.Gkey);
-
             entity
+                .HasNoKey()
                 .ToTable("INVOICE_HEADER");
-
-
 
             entity.Property(e => e.AdvanceAdj)
                 .HasDefaultValueSql("('0.00')")
@@ -99,10 +98,10 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("DISCOUNT_PERCENT");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("GKEY");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.GrossRcbAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("GROSS_RCB_AMOUNT");
             entity.Property(e => e.GstLocSeller)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -142,6 +141,9 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("INV_TAXABLE_AMOUNT");
+            entity.Property(e => e.InvlTaxTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_TAX_TOTAL");
             entity.Property(e => e.IsTaxApplicable).HasColumnName("IS_TAX_APPLICABLE");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(30)
@@ -197,7 +199,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("TAX_TYPE");
             entity.Property(e => e.TenantGkey)
-                .HasMaxLength(255)
+                .HasMaxLength(50)
                 .HasColumnName("TENANT_GKEY");
         });
 
@@ -208,14 +210,13 @@ public partial class MijmsContext : DbContext
                 .ToTable("INVOICE_LINE");
 
             entity.Property(e => e.CreatedBy)
-                .HasMaxLength(30)
-                .IsUnicode(false)
+                .HasMaxLength(50)
                 .HasColumnName("CREATED_BY");
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.Gkey)
-                .HasColumnType("decimal(19, 0)")
+                .ValueGeneratedOnAdd()
                 .HasColumnName("GKEY");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(255)
@@ -223,32 +224,64 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("HSN_CODE");
             entity.Property(e => e.InvLineNbr).HasColumnName("INV_LINE_NBR");
             entity.Property(e => e.InvNote)
-                .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("INV_NOTE");
-            entity.Property(e => e.InvlBilledPrice).HasColumnName("INVL_BILLED_PRICE");
-            entity.Property(e => e.InvlGrossAmt).HasColumnName("INVL_GROSS_AMT");
-            entity.Property(e => e.InvlMakingCharges).HasColumnName("INVL_MAKING_CHARGES");
-            entity.Property(e => e.InvlOtherCharges).HasColumnName("INVL_OTHER_CHARGES");
-            entity.Property(e => e.InvlPayableAmt).HasColumnName("INVL_PAYABLE_AMT");
-            entity.Property(e => e.InvlStoneAmount).HasColumnName("INVL_STONE_AMOUNT");
-            entity.Property(e => e.InvlTaxableAmount).HasColumnName("INVL_TAXABLE_AMOUNT");
-            entity.Property(e => e.InvlWastageAmt).HasColumnName("INVL_WASTAGE_AMT");
-            entity.Property(e => e.InvoiceHdrGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("INVOICE_HDR_GKEY");
+            entity.Property(e => e.InvlBilledPrice)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_BILLED_PRICE");
+            entity.Property(e => e.InvlCgstAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_CGST_AMOUNT");
+            entity.Property(e => e.InvlCgstPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_CGST_PERCENT");
+            entity.Property(e => e.InvlGrossAmt)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_GROSS_AMT");
+            entity.Property(e => e.InvlIgstAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_IGST_AMOUNT");
+            entity.Property(e => e.InvlIgstPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_IGST_PERCENT");
+            entity.Property(e => e.InvlMakingCharges)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_MAKING_CHARGES");
+            entity.Property(e => e.InvlOtherCharges)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_OTHER_CHARGES");
+            entity.Property(e => e.InvlPayableAmt)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_PAYABLE_AMT");
+            entity.Property(e => e.InvlSgstAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_SGST_AMOUNT");
+            entity.Property(e => e.InvlSgstPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_SGST_PERCENT");
+            entity.Property(e => e.InvlStoneAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_STONE_AMOUNT");
+            entity.Property(e => e.InvlTaxableAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_TAXABLE_AMOUNT");
+            entity.Property(e => e.InvlTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_TOTAL");
+            entity.Property(e => e.InvlWastageAmt)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("INVL_WASTAGE_AMT");
+            entity.Property(e => e.InvoiceHdrGkey).HasColumnName("INVOICE_HDR_GKEY");
             entity.Property(e => e.InvoiceId)
-                .HasColumnType("decimal(19, 0)")
+                .HasMaxLength(50)
                 .HasColumnName("INVOICE_ID");
             entity.Property(e => e.IsTaxable).HasColumnName("IS_TAXABLE");
             entity.Property(e => e.ItemNotes)
-                .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("ITEM_NOTES");
             entity.Property(e => e.ItemPacked).HasColumnName("ITEM_PACKED");
             entity.Property(e => e.ModifiedBy)
-                .HasMaxLength(30)
-                .IsUnicode(false)
+                .HasMaxLength(50)
                 .HasColumnName("MODIFIED_BY");
             entity.Property(e => e.ModifiedOn)
                 .HasPrecision(6)
@@ -257,21 +290,27 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PROD_CATEGORY");
-            entity.Property(e => e.ProdGrossWeight).HasColumnName("PROD_GROSS_WEIGHT");
-            entity.Property(e => e.ProdNetWeight).HasColumnName("PROD_NET_WEIGHT");
+            entity.Property(e => e.ProdGrossWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PROD_GROSS_WEIGHT");
+            entity.Property(e => e.ProdNetWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PROD_NET_WEIGHT");
             entity.Property(e => e.ProdPackCode)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PROD_PACK_CODE");
-            entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
-            entity.Property(e => e.ProdStoneWeight).HasColumnName("PROD_STONE_WEIGHT");
+            entity.Property(e => e.ProdQty)
+                .HasDefaultValue(1)
+                .HasColumnName("PROD_QTY");
+            entity.Property(e => e.ProdStoneWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PROD_STONE_WEIGHT");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_DESC");
-            entity.Property(e => e.ProductGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
             entity.Property(e => e.ProductName)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -280,17 +319,25 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_PURITY");
-            entity.Property(e => e.TaxAmount).HasColumnName("TAX_AMOUNT");
-            entity.Property(e => e.TaxPercent).HasColumnName("TAX_PERCENT");
+            entity.Property(e => e.TaxAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TAX_AMOUNT");
+            entity.Property(e => e.TaxPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TAX_PERCENT");
             entity.Property(e => e.TaxType)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("TAX_TYPE");
             entity.Property(e => e.TenantGkey)
-                .HasMaxLength(255)
+                .HasMaxLength(50)
                 .HasColumnName("TENANT_GKEY");
-            entity.Property(e => e.VaAmount).HasColumnName("VA_AMOUNT");
-            entity.Property(e => e.VaPercent).HasColumnName("VA_PERCENT");
+            entity.Property(e => e.VaAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("VA_AMOUNT");
+            entity.Property(e => e.VaPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("VA_PERCENT");
         });
 
         modelBuilder.Entity<Metal>(entity =>
@@ -319,7 +366,7 @@ public partial class MijmsContext : DbContext
             entity.HasIndex(e => e.Gkey, "ORG_ADDRESS_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
-                .HasColumnType("decimal(19, 0)")
+                .ValueGeneratedNever()
                 .HasColumnName("GKEY");
             entity.Property(e => e.AddressLine1)
                 .HasMaxLength(255)
@@ -434,20 +481,16 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("ORG_COMPANY");
 
-            entity.HasIndex(e => e.Gkey, "ORG_COMPANY_PK_2").IsUnique();
-
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
                 .HasColumnName("GKEY");
             entity.Property(e => e.AccountId)
-                .HasMaxLength(255)
+                .HasMaxLength(25)
                 .IsUnicode(false)
                 .HasColumnName("ACCOUNT_ID");
-            entity.Property(e => e.AddressGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("ADDRESS_GKEY");
+            entity.Property(e => e.AddressGkey).HasColumnName("ADDRESS_GKEY");
             entity.Property(e => e.CinNbr)
-                .HasMaxLength(200)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("CIN_NBR");
             entity.Property(e => e.CreatedBy)
@@ -459,6 +502,10 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.DeleteFlag).HasColumnName("DELETE_FLAG");
             entity.Property(e => e.DraftId).HasColumnName("DRAFT_ID");
+            entity.Property(e => e.GstNbr)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("GST_NBR");
             entity.Property(e => e.InvId).HasColumnName("INV_ID");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(30)
@@ -476,32 +523,31 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("NOTES");
             entity.Property(e => e.PanNbr)
-                .HasMaxLength(255)
+                .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("PAN_NBR");
             entity.Property(e => e.ServiceTaxNbr)
-                .HasMaxLength(255)
+                .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("SERVICE_TAX_NBR");
             entity.Property(e => e.Status)
-                .HasMaxLength(255)
+                .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("STATUS");
             entity.Property(e => e.Tagline)
                 .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("TAGLINE");
-            entity.Property(e => e.TenantGkey)
-                .HasMaxLength(255)
-                .HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.ThisCompany).HasColumnName("THIS_COMPANY");
             entity.Property(e => e.TinNbr)
-                .HasMaxLength(200)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("TIN_NBR");
 
             entity.HasOne(d => d.AddressGkeyNavigation).WithMany(p => p.OrgCompanies)
                 .HasForeignKey(d => d.AddressGkey)
-                .HasConstraintName("ORG_COMPANY_FK1");
+                .HasConstraintName("FK_ORG_COMPANY_ORG_ADDRESS");
         });
 
         modelBuilder.Entity<OrgContact>(entity =>
@@ -564,11 +610,9 @@ public partial class MijmsContext : DbContext
             entity.HasIndex(e => e.Gkey, "ORG_CUSTOMER_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
-                .HasColumnType("decimal(19, 0)")
+                .ValueGeneratedNever()
                 .HasColumnName("GKEY");
-            entity.Property(e => e.AddressGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("ADDRESS_GKEY");
+            entity.Property(e => e.AddressGkey).HasColumnName("ADDRESS_GKEY");
             entity.Property(e => e.ClientId)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -604,9 +648,7 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("LEDGER_NAME");
-            entity.Property(e => e.LocationGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("LOCATION_GKEY");
+            entity.Property(e => e.LocationGkey).HasColumnName("LOCATION_GKEY");
             entity.Property(e => e.MobileNbr)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -634,9 +676,7 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("STATUS");
-            entity.Property(e => e.TenantGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
 
             entity.HasOne(d => d.GkeyNavigation).WithOne(p => p.OrgCustomer)
                 .HasForeignKey<OrgCustomer>(d => d.Gkey)
@@ -675,6 +715,59 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PINCODE");
+        });
+
+        modelBuilder.Entity<OrgThisCompanyView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("ORG_THIS_COMPANY_VIEW");
+
+            entity.Property(e => e.AddressLine1)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("address_line1");
+            entity.Property(e => e.AddressLine2)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("address_line2");
+            entity.Property(e => e.Area)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("area");
+            entity.Property(e => e.City)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("city");
+            entity.Property(e => e.CompanyName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("company_name");
+            entity.Property(e => e.Country)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("country");
+            entity.Property(e => e.District)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("district");
+            entity.Property(e => e.GstCode)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .HasColumnName("gst_code");
+            entity.Property(e => e.GstNbr)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("gst_nbr");
+            entity.Property(e => e.PanNbr)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("pan_nbr");
+            entity.Property(e => e.State)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("state");
+            entity.Property(e => e.ThisCompany).HasColumnName("this_company");
         });
 
         modelBuilder.Entity<ProductGroup>(entity =>

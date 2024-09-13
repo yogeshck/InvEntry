@@ -27,40 +27,40 @@ public partial class InvoiceHeader : BaseEntity
     private DateTime? pymtDueDate;
 
     [ObservableProperty]
-    private double? invlTaxableAmount;
+    private decimal? invlTaxableAmount;
 
     [ObservableProperty]
-    private double? advanceAdj;
+    private decimal? advanceAdj;
 
     [ObservableProperty]
-    private double? rdAmountAdj;
+    private decimal? rdAmountAdj;
 
     [ObservableProperty]
-    private double? oldGoldAmount;
+    private decimal? oldGoldAmount;
 
     [ObservableProperty]
-    private double? oldSilverAmount;
+    private decimal? oldSilverAmount;
 
     [ObservableProperty]
-    private double? discountPercent;
+    private decimal? discountPercent;
 
     [ObservableProperty]
-    private double? discountAmount;
+    private decimal? discountAmount;
 
     [ObservableProperty]
-    private double? roundOff;
+    private decimal? roundOff;
 
     [ObservableProperty]
-    private double? amountPayable;
+    private decimal? amountPayable;
 
     [ObservableProperty]
-    private double? recdAmount;
+    private decimal? recdAmount;
 
     [ObservableProperty]
-    private double? invBalance;
+    private decimal? invBalance;
 
     [ObservableProperty]
-    private double? invRefund;
+    private decimal? invRefund;
 
     [ObservableProperty]
     private string? invNotes;
@@ -72,25 +72,34 @@ public partial class InvoiceHeader : BaseEntity
     private string? taxType;      // GST
 
     [ObservableProperty]
-    private double? cgstPercentage;
+    private decimal? cgstPercentage;
 
     [ObservableProperty]
-    private double? sgstPercent;
+    private decimal? sgstPercent;
 
     [ObservableProperty]
-    private double? igstPercent;
+    private decimal? igstPercent;
 
     [ObservableProperty]
-    private double? cgstAmount;
+    private decimal? cgstAmount;
 
     [ObservableProperty]
-    private double? sgstAmount;
+    private decimal? sgstAmount;
 
     [ObservableProperty]
-    private double? igstAmount;
+    private decimal? igstAmount;
 
     [ObservableProperty]
     private string? paymentMode;
+
+    [ObservableProperty]
+    private decimal? grossRcbAmount;
+
+    [ObservableProperty]
+    private decimal? invlTaxTotal;
+
+    [ObservableProperty]
+    private string? tenantGkey;
 
     [ObservableProperty]
     [property: JsonIgnore]

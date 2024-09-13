@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class OrgCustomer
 {
-    public decimal Gkey { get; set; }
+    public long Gkey { get; set; }
 
     public string? ClientId { get; set; }
 
@@ -27,9 +27,9 @@ public partial class OrgCustomer
 
     public string? CreditAvailed { get; set; }
 
-    public decimal? LocationGkey { get; set; }
+    public long? LocationGkey { get; set; }
 
-    public short? DeleteFlag { get; set; }
+    public bool? DeleteFlag { get; set; }
 
     public string? CreatedBy { get; set; }
 
@@ -39,9 +39,9 @@ public partial class OrgCustomer
 
     public DateTime? ModifiedOn { get; set; }
 
-    public decimal? TenantGkey { get; set; }
+    public long? TenantGkey { get; set; }
 
-    public decimal? AddressGkey { get; set; }
+    public long? AddressGkey { get; set; }
 
     public DateTime? CustomerSince { get; set; }
 

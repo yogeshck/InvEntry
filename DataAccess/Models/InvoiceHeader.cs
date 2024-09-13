@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class InvoiceHeader
 {
-    public decimal? Gkey { get; set; }
+    public long? Gkey { get; set; }
 
     public string? InvNbr { get; set; }
 
@@ -73,7 +73,7 @@ public partial class InvoiceHeader
 
     public DateTime? ModifiedOn { get; set; }
 
-    public byte[]? TenantGkey { get; set; }
+    public string? TenantGkey { get; set; }
 
     public string? DeliveryMethod { get; set; }
 
@@ -82,4 +82,8 @@ public partial class InvoiceHeader
     public string? OrderNbr { get; set; }
 
     public DateTime? OrderDate { get; set; }
+
+    public decimal? GrossRcbAmount { get; set; }
+
+    public decimal? InvlTaxTotal { get; set; }
 }

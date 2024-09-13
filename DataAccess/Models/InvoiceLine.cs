@@ -5,49 +5,49 @@ namespace DataAccess.Models;
 
 public partial class InvoiceLine
 {
-    public decimal? Gkey { get; set; }
+    public long Gkey { get; set; }
 
     public string? HsnCode { get; set; }
 
-    public long? InvLineNbr { get; set; }
+    public int? InvLineNbr { get; set; }
 
     public string? InvNote { get; set; }
 
-    public double? InvlBilledPrice { get; set; }
+    public decimal? InvlBilledPrice { get; set; }
 
-    public double? InvlGrossAmt { get; set; }
+    public decimal? InvlGrossAmt { get; set; }
 
-    public double? InvlMakingCharges { get; set; }
+    public decimal? InvlMakingCharges { get; set; }
 
-    public double? InvlOtherCharges { get; set; }
+    public decimal? InvlOtherCharges { get; set; }
 
-    public double? InvlPayableAmt { get; set; }
+    public decimal? InvlPayableAmt { get; set; }
 
-    public double? InvlStoneAmount { get; set; }
+    public decimal? InvlStoneAmount { get; set; }
 
-    public double? InvlTaxableAmount { get; set; }
+    public decimal? InvlTaxableAmount { get; set; }
 
-    public double? InvlWastageAmt { get; set; }
+    public decimal? InvlWastageAmt { get; set; }
 
-    public short? IsTaxable { get; set; }
+    public bool? IsTaxable { get; set; }
 
     public string? ItemNotes { get; set; }
 
-    public short? ItemPacked { get; set; }
+    public bool? ItemPacked { get; set; }
 
     public string? ProdCategory { get; set; }
 
-    public double? ProdGrossWeight { get; set; }
+    public decimal? ProdGrossWeight { get; set; }
 
-    public double? ProdNetWeight { get; set; }
+    public decimal? ProdNetWeight { get; set; }
 
-    public long? ProdQty { get; set; }
+    public int ProdQty { get; set; }
 
-    public double? ProdStoneWeight { get; set; }
+    public decimal? ProdStoneWeight { get; set; }
 
     public string? ProductDesc { get; set; }
 
-    public decimal? ProductGkey { get; set; }
+    public long? ProductGkey { get; set; }
 
     public string? ProductName { get; set; }
 
@@ -55,19 +55,19 @@ public partial class InvoiceLine
 
     public string? ProductPurity { get; set; }
 
-    public double? TaxAmount { get; set; }
+    public decimal? TaxAmount { get; set; }
 
-    public double? TaxPercent { get; set; }
+    public decimal? TaxPercent { get; set; }
 
     public string? TaxType { get; set; }
 
-    public double? VaAmount { get; set; }
+    public decimal? VaAmount { get; set; }
 
-    public double? VaPercent { get; set; }
+    public decimal? VaPercent { get; set; }
 
-    public decimal? InvoiceHdrGkey { get; set; }
+    public long? InvoiceHdrGkey { get; set; }
 
-    public decimal? InvoiceId { get; set; }
+    public string? InvoiceId { get; set; }
 
     public string? CreatedBy { get; set; }
 
@@ -77,5 +77,19 @@ public partial class InvoiceLine
 
     public DateTime? ModifiedOn { get; set; }
 
-    public byte[]? TenantGkey { get; set; }
+    public string? TenantGkey { get; set; }
+
+    public decimal? InvlCgstPercent { get; set; }
+
+    public decimal? InvlCgstAmount { get; set; }
+
+    public decimal? InvlIgstPercent { get; set; }
+
+    public decimal? InvlIgstAmount { get; set; }
+
+    public decimal? InvlTotal { get; set; }
+
+    public decimal? InvlSgstAmount { get; set; }
+
+    public decimal? InvlSgstPercent { get; set; }
 }

@@ -18,6 +18,9 @@
              DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <sys:String x:Key="Invl">InvoiceLine</sys:String>
+    </UserControl.Resources>
     <Grid>
         <dxlc:LayoutControl>
             <dxlc:LayoutGroup Orientation="Vertical">
@@ -80,7 +83,7 @@
                     <dxlc:LayoutGroup Orientation="Horizontal">
                         <dxlc:LayoutItem Label="Product ID">
                             <StackPanel Orientation="Horizontal">
-                                <dxe:TextEdit EditValue="{Binding ProductId}" Width="100"/>
+                                <dxe:TextEdit EditValue="{Binding ProductIdUI}" Width="100"/>
                                 <dx:SimpleButton Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
                                                  Command="{Binding FetchProductCommand}" BorderThickness="0" Background="Transparent"/>
                             </StackPanel>
@@ -95,15 +98,83 @@
                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
                             <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight"/>
                             <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
-                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
-                            <dxg:GridColumn FieldName="VaPercent" Header="VA (%)"/>
+
+                            <dxg:GridColumn FieldName="ProdNetWeightUnbound" Header="Net Weight" 
+                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="ProdNetWeight"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
+                            <dxg:GridColumn FieldName="VaAmountUnbound" Header="VA Amount (Rs)" 
+                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="VaAmount"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
+
                             <dxg:GridColumn FieldName="InvlTaxableAmountUnbound" Header="Taxable" 
-                                            UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True"
-                                            UnboundExpression="[ProdQty] * [ProdNetWeight]"/>
+                                            UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="InvlTaxableAmount"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
+                            <dxg:GridColumn FieldName="InvlCgstAmountUnbound" Header="CGST Amount (Rs)" 
+                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="InvlCgstAmount"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
+                            <dxg:GridColumn FieldName="InvlSgstAmountUnbound" Header="SGST Amount (Rs)" 
+                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="InvlSgstAmount"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
+                            <dxg:GridColumn FieldName="InvlIgstAmountUnbound" Header="IGST Amount (Rs)" 
+                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="InvlIgstAmount"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
+
+                            <dxg:GridColumn FieldName="InvlTotalUnbound" Header="Total (Rs)" 
+                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
+                                <dxg:GridColumn.UnboundExpression>
+                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
+                                        <Binding Source="{StaticResource Invl}"/>
+                                        <Binding Source="InvlTotal"/>
+                                    </MultiBinding>
+                                </dxg:GridColumn.UnboundExpression>
+                            </dxg:GridColumn>
+
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
                             <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
-                                                 FieldName="TaxAmount"/>
+                                                 FieldName="InvlTotal"/>
                         </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>
                             <dxg:TableView AllowGrouping="False"

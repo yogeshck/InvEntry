@@ -33,7 +33,7 @@ public partial class OrgCompany
 
     public DateTime? ModifiedOn { get; set; }
 
-    public byte[]? TenantGkey { get; set; }
+    public long TenantGkey { get; set; }
 
     public string? Tagline { get; set; }
 
@@ -41,7 +41,11 @@ public partial class OrgCompany
 
     public string? TinNbr { get; set; }
 
-    public decimal? AddressGkey { get; set; }
+    public long? AddressGkey { get; set; }
+
+    public string? GstNbr { get; set; }
+
+    public bool? ThisCompany { get; set; }
 
     public virtual OrgAddress? AddressGkeyNavigation { get; set; }
 }
