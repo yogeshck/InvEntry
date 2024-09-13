@@ -63,7 +63,7 @@
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Round Off">
-                                <dxe:TextEdit EditValue="{Binding RoundOff}" Width="200" IsReadOnly="True"/>
+                                <dxe:TextEdit EditValue="{Binding Header.RoundOff}" Width="200" IsReadOnly="True"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Grand Total">
                                 <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" Width="200" IsReadOnly="True"/>
@@ -106,7 +106,7 @@
                         </dxlc:LayoutItem>
                         <dxlc:LayoutGroup>
                             <dxlc:LayoutItem Label="Name" LabelPosition="Top">
-                                <dxe:TextEdit EditValue="{Binding Customer.Name}" Width="200" AcceptsTab="True"/>
+                                <dxe:TextEdit EditValue="{Binding Customer.CustomerName}" Width="200" AcceptsTab="True"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Address" LabelPosition="Top">
                                 <dxe:TextEdit EditValue="{Binding Customer.LedgerName}" Width="200" AcceptsTab="True"/>

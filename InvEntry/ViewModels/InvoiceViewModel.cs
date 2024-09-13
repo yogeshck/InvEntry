@@ -105,6 +105,12 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task FetchCustomer()
     {
+        if (string.IsNullOrEmpty(_customerPhoneNumber) || _customerPhoneNumber.Length < 10)
+            return;
+
+        if (Customer is not null && Customer.MobileNbr == _customerPhoneNumber)
+            return;
+
         Customer = await _customerService.GetCustomer(_customerPhoneNumber);
 
         if(Customer is null)
@@ -114,7 +120,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
         else
         {
-            IGSTPercent = 3 / 100;
+            IGSTPercent = Customer.GstStateCode == "33" ? 0.03M : 0M;
         }
     }
 
