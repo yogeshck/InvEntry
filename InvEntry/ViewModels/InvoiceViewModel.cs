@@ -189,7 +189,8 @@ public partial class InvoiceViewModel : ObservableObject
             InvNbr = InvoiceNumberGenerator.Generate(),
             Lines = new(),
             PaymentMode = "CASH",
-            TaxType = "GST"
+            TaxType = "GST",
+            TenantGkey = "1",
         };
     }
 

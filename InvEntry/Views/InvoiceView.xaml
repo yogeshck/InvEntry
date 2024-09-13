@@ -29,6 +29,9 @@
                         <dxlc:LayoutItem Label="Advance Amount">
                             <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}" Width="200"/>
                         </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="RD Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}" Width="200"/>
+                        </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
                             <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" Width="200"/>
                         </dxlc:LayoutItem>
@@ -38,11 +41,14 @@
                         <dxlc:LayoutItem Label="Discount">
                             <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Width="200"/>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Payable Amount">
-                            <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" Width="200"/>
+                        <dxlc:LayoutItem Label="Receivable Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" Width="200" IsReadOnly="True"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Receivable Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Balance Amount">
-                            <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200"/>
+                            <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200" IsEnabled="True"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom">
