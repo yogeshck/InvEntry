@@ -53,6 +53,11 @@ public partial class InvoiceViewModel : ObservableObject
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
     private decimal IGSTPercent = 0.03M;
 
+    private List<string> IGNORE_UPDATE = new List<string>
+    {
+        nameof(InvoiceLine.VaAmount)
+    };
+
     public InvoiceViewModel(ICustomerService customerService, 
         IProductService productService, 
         IDialogService dialogService,
@@ -200,12 +205,14 @@ public partial class InvoiceViewModel : ObservableObject
         return Convert.ToDecimal(0.03/2);
     }
 
-    private void EvaluateFormula<T>(T line) where T: class
+    private void EvaluateFormula<T>(T line, bool isInit = false) where T: class
     {
         var formulas = FormulaStore.Instance.GetFormulas<T>();
 
         foreach(var formula in formulas)
         {
+            if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
+
             var val = formula.Evaluate<T, decimal>(line);
 
             if(line is InvoiceLine invLine)
@@ -214,8 +221,10 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    private void EvaluateFormula<T>(T line, string fieldName) where T : class
+    private void EvaluateFormula<T>(T line, string fieldName, bool isInit = false) where T : class
     {
+        if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
+
         var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
 
         var val = formula.Evaluate<T, decimal>(line);

@@ -22,6 +22,6 @@ namespace InvEntry.Models
         private string ledgerName;
 
         [ObservableProperty]
-        private string GST;
+        private string gstStateCode;
     }
 }
