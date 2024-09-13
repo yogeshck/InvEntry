@@ -29,21 +29,29 @@ namespace InvEntry.Extension
             return body.Member.Name;
         }
 
-        public static TProperty Evaluate<TSource,TProperty>(this Formula formula, TSource source)
+        public static TProperty? Evaluate<TSource,TProperty>(this Formula formula, TSource source)
             where TSource : class
+            where TProperty : struct
         {
-            CriteriaOperator op = CriteriaOperator.Parse(formula.Expression);
-
-            EvaluatorContextDescriptorDefault? descriptor;
-
-            if (!_lookup.TryGetValue(formula.Type, out descriptor))
+            try
             {
-                descriptor = new(formula.Type);
-                _lookup[formula.Type] = descriptor;
-            }
+                CriteriaOperator op = CriteriaOperator.Parse(formula.Expression);
 
-            ExpressionEvaluator evaluator = new ExpressionEvaluator(descriptor, op);
-            return (TProperty)evaluator.Evaluate(source);
+                EvaluatorContextDescriptorDefault? descriptor;
+
+                if (!_lookup.TryGetValue(formula.Type, out descriptor))
+                {
+                    descriptor = new(formula.Type);
+                    _lookup[formula.Type] = descriptor;
+                }
+
+                ExpressionEvaluator evaluator = new ExpressionEvaluator(descriptor, op);
+                return (TProperty)evaluator.Evaluate(source);
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
         }
     }
 }

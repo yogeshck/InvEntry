@@ -49,8 +49,8 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
     private readonly IInvoiceService _invoiceService;
-    private Dictionary<string, Action<InvoiceLine, decimal>> copyInvoiceExpression;
-    private Dictionary<string, Action<InvoiceHeader, decimal>> copyHeaderExpression;
+    private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
+    private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
 
     public InvoiceViewModel(ICustomerService customerService, 
         IProductService productService, 
@@ -124,7 +124,8 @@ public partial class InvoiceViewModel : ObservableObject
             invoiceLine.SetProductDetails(product);
         }
 
-        EvaluateFormula(invoiceLine);
+        if(product is not null)
+            EvaluateFormula(invoiceLine);
 
         Header.Lines.Add(invoiceLine);
 
@@ -164,10 +165,9 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CellUpdate(CellValueChangedEventArgs args)
     {
-        if (args.Row is InvoiceLine line && args.Value is decimal value
-            && copyInvoiceExpression.TryGetValue(args.Column.FieldName, out var action))
+        if (args.Row is InvoiceLine line)
         {
-            EvaluateFormula(line, args.Column.FieldName);
+            EvaluateFormula(line);
         }
 
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
@@ -224,4 +224,6 @@ public partial class InvoiceViewModel : ObservableObject
         else if(line is InvoiceHeader head)
             copyHeaderExpression[fieldName].Invoke(head, val);
     }
+
+
 }
