@@ -10,7 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1DF041AD-ADBC-4F0C-BB73-D36410F29EA2}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		D:\Nugwet\Nuget.config = D:\Nugwet\Nuget.config
+		Nuget.config = Nuget.config
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvEntry.Utils", "InvEntry.Utils\InvEntry.Utils.csproj", "{62605388-F429-453C-8E1E-EE7A060F76A1}"
