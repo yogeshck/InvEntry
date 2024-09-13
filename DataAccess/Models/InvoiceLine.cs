@@ -92,4 +92,6 @@ public partial class InvoiceLine
     public decimal? InvlSgstAmount { get; set; }
 
     public decimal? InvlSgstPercent { get; set; }
+
+    public string? ProductId { get; set; }
 }

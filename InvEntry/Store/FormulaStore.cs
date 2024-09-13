@@ -29,15 +29,15 @@ public class FormulaStore
 
     Dictionary<string, List<Formula>> _storage;
 
-    public void AddFormula<TSource>(Expression<Func<TSource, object>> lamdaExpression, string expression) 
+    public void AddFormula<TSource>(Expression<Func<TSource, object>> lamdaExpression, string expression, Action<object, object>? action = null) 
         where TSource : class
     {
-        AddFormula<TSource>(lamdaExpression.GetMemberName(), expression);
+        AddFormula<TSource>(lamdaExpression.GetMemberName(), expression, action);
     }
 
-    public void AddFormula<T>(string fieldName, string expression) where T : class
+    public void AddFormula<T>(string fieldName, string expression, Action<object, object>? action = null) where T : class
     {
-        var formula = Formula.Create<T>(fieldName, expression);
+        var formula = Formula.Create<T>(fieldName, expression, action);
 
         var key = typeof(T).Name;
 
@@ -100,19 +100,21 @@ public class FormulaStore
 
 public class Formula
 {
-    public static Formula Create<T>(string fieldName, string expression) where T : class
-        => new(fieldName, expression, typeof(T));
+    public static Formula Create<T>(string fieldName, string expression, Action<object, object>? action = null) where T : class
+        => new(fieldName, expression, typeof(T), action);
 
-    public static Formula Create(string fieldName, string expression, Type type)
-    => new(fieldName, expression, type);
+    public static Formula Create(string fieldName, string expression, Type type, Action<object, object>? action = null)
+    => new(fieldName, expression, type, action);
 
-    private Formula(string fieldName, string expression, Type type) 
+    private Formula(string fieldName, string expression, Type type, Action<object, object>? action = null) 
     {
         FieldName = fieldName;
         Expression = expression;
         Type = type;
+        Action = action;
     }
     public string FieldName;
     public string Expression;
     public Type Type;
+    public Action<object, object>? Action;
 }

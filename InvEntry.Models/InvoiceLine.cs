@@ -120,4 +120,7 @@ public partial class InvoiceLine : BaseEntity
 
     [ObservableProperty]
     private decimal? _invlSgstPercent;
+
+    [ObservableProperty]
+    private string? _productId;
 }

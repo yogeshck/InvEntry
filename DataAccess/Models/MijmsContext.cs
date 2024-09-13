@@ -311,6 +311,9 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_DESC");
             entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductId)
+                .HasMaxLength(50)
+                .HasColumnName("PRODUCT_ID");
             entity.Property(e => e.ProductName)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -641,7 +644,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("CUSTOMER_TYPE");
             entity.Property(e => e.DeleteFlag).HasColumnName("DELETE_FLAG");
             entity.Property(e => e.GstinNbr)
-                .HasMaxLength(255)
+                .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("GSTIN_NBR");
             entity.Property(e => e.LedgerName)
@@ -650,7 +653,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("LEDGER_NAME");
             entity.Property(e => e.LocationGkey).HasColumnName("LOCATION_GKEY");
             entity.Property(e => e.MobileNbr)
-                .HasMaxLength(255)
+                .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("MOBILE_NBR");
             entity.Property(e => e.ModifiedBy)
@@ -665,7 +668,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("NOTES");
             entity.Property(e => e.PanNbr)
-                .HasMaxLength(255)
+                .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("PAN_NBR");
             entity.Property(e => e.Salutations)
@@ -673,7 +676,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("SALUTATIONS");
             entity.Property(e => e.Status)
-                .HasMaxLength(255)
+                .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("STATUS");
             entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");

@@ -15,6 +15,9 @@ using System.Windows.Forms;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Grid;
 using InvEntry.Models.Extensions;
+using InvEntry.Store;
+using DevExpress.XtraSpreadsheet.Model;
+using System.Windows.Input;
 
 namespace InvEntry.ViewModels;
 
@@ -35,12 +38,19 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private decimal _currentRate;
 
+    [ObservableProperty]
+    private bool _lineView;
+
+    [ObservableProperty]
+    public bool _headerView;
+
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
     private readonly IInvoiceService _invoiceService;
-    private Dictionary<string, Action<InvoiceLine, decimal>> copyExpression;
+    private Dictionary<string, Action<InvoiceLine, decimal>> copyInvoiceExpression;
+    private Dictionary<string, Action<InvoiceHeader, decimal>> copyHeaderExpression;
 
     public InvoiceViewModel(ICustomerService customerService, 
         IProductService productService, 
@@ -53,20 +63,32 @@ public partial class InvoiceViewModel : ObservableObject
         _dialogService = dialogService;
         _invoiceService = invoiceService;
         _currentRate = 2600;
-        PopulateUnboundDataMap();
+        LineView = true;
+        HeaderView = false;
+        PopulateUnboundLineDataMap();
+        PopulateUnboundHeaderDataMap();
     }
 
-    private void PopulateUnboundDataMap()
+    private void PopulateUnboundLineDataMap()
     {
-        if (copyExpression is null) copyExpression = new();
+        if (copyInvoiceExpression is null) copyInvoiceExpression = new();
 
-        copyExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}Unbound", (item, val) => item.InvlTaxableAmount = val);
-        copyExpression.Add($"{nameof(InvoiceLine.ProdNetWeight)}Unbound", (item, val) => item.ProdNetWeight = val);
-        copyExpression.Add($"{nameof(InvoiceLine.VaAmount)}Unbound", (item, val) => item.VaAmount = val);
-        copyExpression.Add($"{nameof(InvoiceLine.InvlCgstAmount)}Unbound", (item, val) => item.InvlCgstAmount = val);
-        copyExpression.Add($"{nameof(InvoiceLine.InvlSgstAmount)}Unbound", (item, val) => item.InvlSgstAmount = val);
-        copyExpression.Add($"{nameof(InvoiceLine.InvlIgstAmount)}Unbound", (item, val) => item.InvlIgstAmount = val);
-        copyExpression.Add($"{nameof(InvoiceLine.InvlTotal)}Unbound", (item, val) => item.InvlTotal = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}", (item, val) => item.InvlTaxableAmount = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.ProdNetWeight)}", (item, val) => item.ProdNetWeight = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.VaAmount)}", (item, val) => item.VaAmount = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlCgstAmount)}", (item, val) => item.InvlCgstAmount = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlSgstAmount)}", (item, val) => item.InvlSgstAmount = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlIgstAmount)}", (item, val) => item.InvlIgstAmount = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlTotal)}", (item, val) => item.InvlTotal = val);
+    }
+
+    private void PopulateUnboundHeaderDataMap()
+    {
+        if (copyHeaderExpression is null) copyHeaderExpression = new();
+
+        copyHeaderExpression.Add($"{nameof(InvoiceHeader.GrossRcbAmount)}", (item, val) => item.GrossRcbAmount = val);
+        copyHeaderExpression.Add($"{nameof(InvoiceHeader.AmountPayable)}", (item, val) => item.AmountPayable = val);
+        copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
     }
 
     [RelayCommand]
@@ -101,6 +123,8 @@ public partial class InvoiceViewModel : ObservableObject
         {
             invoiceLine.SetProductDetails(product);
         }
+
+        EvaluateFormula(invoiceLine);
 
         Header.Lines.Add(invoiceLine);
 
@@ -140,11 +164,21 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CellUpdate(CellValueChangedEventArgs args)
     {
-        if (args.Column.FieldName.Contains("Unbound") && args.Row is InvoiceLine line && args.Value is decimal value
-            && copyExpression.TryGetValue(args.Column.FieldName, out var action))
+        if (args.Row is InvoiceLine line && args.Value is decimal value
+            && copyInvoiceExpression.TryGetValue(args.Column.FieldName, out var action))
         {
-            action.Invoke(line, value);
+            EvaluateFormula(line, args.Column.FieldName);
         }
+
+        Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
+        EvaluateFormula(Header);
+    }
+
+    [RelayCommand]
+    private void ToggleVisibility()
+    {
+        LineView ^= true;
+        HeaderView = !LineView;
     }
 
     private void SetHeader()
@@ -162,5 +196,32 @@ public partial class InvoiceViewModel : ObservableObject
     private decimal GetGSTWithinState()
     {
         return Convert.ToDecimal(0.03/2);
+    }
+
+    private void EvaluateFormula<T>(T line) where T: class
+    {
+        var formulas = FormulaStore.Instance.GetFormulas<T>();
+
+        foreach(var formula in formulas)
+        {
+            var key = $"{formula.FieldName}Unbound";
+            var val = formula.Evaluate<T, decimal>(line);
+
+            if(line is InvoiceLine invLine)
+                copyInvoiceExpression[key].Invoke(invLine, val);
+            
+        }
+    }
+
+    private void EvaluateFormula<T>(T line, string fieldName) where T : class
+    {
+        var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
+
+        var val = formula.Evaluate<T, decimal>(line);
+
+        if (line is InvoiceLine invLine)
+            copyInvoiceExpression[fieldName].Invoke(invLine, val);
+        else if(line is InvoiceHeader head)
+            copyHeaderExpression[fieldName].Invoke(head, val);
     }
 }

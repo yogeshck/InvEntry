@@ -23,13 +23,21 @@
     </UserControl.Resources>
     <Grid>
         <dxlc:LayoutControl>
-            <dxlc:LayoutGroup Orientation="Vertical">
+            <dxlc:LayoutGroup Orientation="Vertical" Visibility="{Binding HeaderView, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
+                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding CreateInvoiceCommand}"/>
+                </dxlc:LayoutGroup>
+                <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
+                    <dx:SimpleButton Content="GoBack" Height="30" Width="100" Command="{Binding ToggleVisibilityCommand}"/>
+                </dxlc:LayoutGroup>
+            </dxlc:LayoutGroup>
+            <dxlc:LayoutGroup Orientation="Vertical" Visibility="{Binding LineView, Converter={dxmvvm:BooleanToVisibilityConverter}}">
                 <dxlc:LayoutGroup Orientation="Horizontal" Margin="10">
                     <dxlc:LayoutGroup View="GroupBox" Header="Customer Details"
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
-                                      ItemLabelsAlignment="Local" Margin="5" Orientation="Vertical">
-                        <dxlc:LayoutItem Label="Mobile">
-                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200">
+                                      ItemLabelsAlignment="Local" Margin="10" >
+                        <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
+                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200" EditValuePostDelay="500">
                                 <dxmvvm:Interaction.Behaviors>
                                     <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"/>
                                 </dxmvvm:Interaction.Behaviors>
@@ -61,7 +69,7 @@
                             <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>-->
-                    <dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
+                    <!--<dxlc:LayoutGroup Orientation="Vertical" View="Group" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local">
                         <dxlc:LayoutItem Label="Old Gold Amount">
                             <StackPanel Orientation="Horizontal" Width="300" Margin="10" Height="30">
@@ -77,7 +85,7 @@
                                 <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" Width="270"/>
                             </StackPanel>
                         </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>
+                    </dxlc:LayoutGroup>-->
                 </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup Orientation="Vertical">
                     <dxlc:LayoutGroup Orientation="Horizontal">
@@ -98,86 +106,14 @@
                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
                             <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight"/>
                             <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
-                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight (Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="VaAmount" Header="VA Amount (Rs)(Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (Rs)(Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)(Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlCgstAmount" Header="CGST Amount (Rs)(Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlSgstAmount" Header="SGST Amount (Rs)(Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlIgstAmount" Header="IGST Amount (Rs)(Original)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlTotal" Header="Total (Rs)(Original)" Visible="False"/>
-
-                            <dxg:GridColumn FieldName="ProdNetWeightUnbound" Header="Net Weight"
-                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="ProdNetWeight"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
-                            <dxg:GridColumn FieldName="VaAmountUnbound"   Header="VA Amount (Rs)"
-                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="VaAmount"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
-                            <dxg:GridColumn FieldName="InvlTaxableAmountUnbound" Header="Taxable Amount (Rs)"
-                                            UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="InvlTaxableAmount"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
-                            <dxg:GridColumn FieldName="InvlCgstAmountUnbound" Header="CGST Amount (Rs)"
-                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="InvlCgstAmount"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
-                            <dxg:GridColumn FieldName="InvlSgstAmountUnbound" Header="SGST Amount (Rs)"
-                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="InvlSgstAmount"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
-                            <dxg:GridColumn FieldName="InvlIgstAmountUnbound" Header="IGST Amount (Rs)"
-                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="InvlIgstAmount"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
-
-                            <dxg:GridColumn FieldName="InvlTotalUnbound"  Header="Total (Rs)"
-                                UnboundDataType="{x:Type sys:Decimal}" AllowUnboundExpressionEditor="True">
-                                <dxg:GridColumn.UnboundExpression>
-                                    <MultiBinding Converter="{StaticResource FormulaConverter}">
-                                        <Binding Source="{StaticResource Invl}"/>
-                                        <Binding Source="InvlTotal"/>
-                                    </MultiBinding>
-                                </dxg:GridColumn.UnboundExpression>
-                            </dxg:GridColumn>
-
+                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight" Visible="True"/>
+                            <dxg:GridColumn FieldName="VaAmount" Header="VA Amount (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="InvlCgstAmount" Header="CGST Amount (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="InvlSgstAmount" Header="SGST Amount (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="InvlIgstAmount" Header="IGST Amount (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="InvlTotal" Header="Total (Rs)" Visible="False"/>
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
                             <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
@@ -196,7 +132,7 @@
                         </dxg:GridControl>
                 </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
-                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding CreateInvoiceCommand}"/>
+                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding ToggleVisibilityCommand}"/>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>
