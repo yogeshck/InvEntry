@@ -25,6 +25,9 @@
         <dxlc:LayoutControl>
             <dxlc:LayoutGroup Orientation="Vertical" Visibility="{Binding HeaderView, Converter={dxmvvm:BooleanToVisibilityConverter}}">
                 <dxlc:LayoutGroup Orientation="Vertical">
+                    <dxlc:LayoutGroup>
+                        
+                    </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup HorizontalAlignment="Left" Margin="10" VerticalAlignment="Top" Orientation="Vertical">
                         <dxlc:LayoutItem Label="Advance Amount">
                             <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}" Width="200"/>
@@ -47,8 +50,8 @@
                         <dxlc:LayoutItem Label="Grand Total">
                             <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Recieved Amount">
-                            <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" Width="200" IsReadOnly="True"/>
+                        <dxlc:LayoutItem Label="Amount Received">
+                            <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" Width="200"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Balance Amount">
                             <dxe:TextEdit EditValue="{Binding Header.InvBalance}" Width="200" IsReadOnly="True"/>
@@ -140,11 +143,11 @@
                             <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
                             <dxg:GridColumn FieldName="VaAmount" Header="VA Amount (Rs)" />
                             <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
-                            <dxg:GridColumn FieldName="InvlTotal" Header="Total (Rs)" />
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
                             <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
-                                                 FieldName="InvlTotal"/>
+                                                 DisplayFormat="Total = {0}"
+                                                 FieldName="InvlTaxableAmount"/>
                         </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>
                             <dxg:TableView AllowGrouping="False"
