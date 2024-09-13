@@ -20,5 +20,8 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private string ledgerName;
+
+        [ObservableProperty]
+        private string GST;
     }
 }

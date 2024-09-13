@@ -51,6 +51,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IInvoiceService _invoiceService;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
+    private decimal IGSTPercent = 0.03M;
 
     public InvoiceViewModel(ICustomerService customerService, 
         IProductService productService, 
@@ -116,7 +117,7 @@ public partial class InvoiceViewModel : ObservableObject
             InvlBilledPrice = CurrentRate,
             InvlCgstPercent = GetGSTWithinState(),
             InvlSgstPercent = GetGSTWithinState(),
-            InvlIgstPercent = 0.03M
+            InvlIgstPercent = IGSTPercent
         };
 
         if (product is not null)
