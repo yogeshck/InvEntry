@@ -44,7 +44,7 @@
                         <dxlc:LayoutItem Label="Round Off">
                             <dxe:TextEdit EditValue="{Binding RoundOff}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Receivable Amount">
+                        <dxlc:LayoutItem Label="Grand Total">
                             <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" Width="200" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="Recieved Amount">
