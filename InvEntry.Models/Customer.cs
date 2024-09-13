@@ -19,6 +19,6 @@ namespace InvEntry.Models
         private string email;
 
         [ObservableProperty]
-        private string notes;
+        private string ledgerName;
     }
 }

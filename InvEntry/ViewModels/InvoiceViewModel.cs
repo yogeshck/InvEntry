@@ -204,11 +204,10 @@ public partial class InvoiceViewModel : ObservableObject
 
         foreach(var formula in formulas)
         {
-            var key = $"{formula.FieldName}Unbound";
             var val = formula.Evaluate<T, decimal>(line);
 
             if(line is InvoiceLine invLine)
-                copyInvoiceExpression[key].Invoke(invLine, val);
+                copyInvoiceExpression[formula.FieldName].Invoke(invLine, val);
             
         }
     }

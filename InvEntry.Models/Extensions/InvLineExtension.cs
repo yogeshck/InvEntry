@@ -14,6 +14,7 @@ namespace InvEntry.Models.Extensions
             line.ProdStoneWeight = product.OtherWeight;
             line.ProductDesc = product.ProductDesc;
             line.VaPercent = product.VaPercent;
+            line.ProductId = product.ProductId;
         }
 
     }

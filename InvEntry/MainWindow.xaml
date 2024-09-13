@@ -19,7 +19,11 @@
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         WindowState="Maximized"
-        ResizeMode="CanResizeWithGrip"
+        ResizeMode="CanMinimize"
+    MaxWidth="1500"
+    MaxHeight="800"
+    MinHeight="400"
+    MinWidth="700"
     DataContext="{ext:DISource Type=viewmodels:MainWindowViewModel}">
     <dxwui:HamburgerMenu
         NavigationTarget="{Binding ElementName=frame}"  

@@ -24,11 +24,31 @@
     <Grid>
         <dxlc:LayoutControl>
             <dxlc:LayoutGroup Orientation="Vertical" Visibility="{Binding HeaderView, Converter={dxmvvm:BooleanToVisibilityConverter}}">
-                <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
-                    <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding CreateInvoiceCommand}"/>
-                </dxlc:LayoutGroup>
-                <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
-                    <dx:SimpleButton Content="GoBack" Height="30" Width="100" Command="{Binding ToggleVisibilityCommand}"/>
+                <dxlc:LayoutGroup Orientation="Vertical">
+                    <dxlc:LayoutGroup HorizontalAlignment="Left" Margin="10" VerticalAlignment="Top" Orientation="Vertical">
+                        <dxlc:LayoutItem Label="Advance Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
+                            <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Old Silver Amoount (Rs)">
+                            <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Discount">
+                            <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Payable Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.AmountPayable}"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Balance Amount">
+                            <dxe:TextEdit EditValue="{Binding Header.InvBalance}"/>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10" VerticalAlignment="Bottom">
+                        <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding CreateInvoiceCommand}"/>
+                        <dx:SimpleButton Content="GoBack" Height="30" Width="100" Command="{Binding ToggleVisibilityCommand}"/>
+                    </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
             <dxlc:LayoutGroup Orientation="Vertical" Visibility="{Binding LineView, Converter={dxmvvm:BooleanToVisibilityConverter}}">
@@ -37,18 +57,21 @@
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local" Margin="10" >
                         <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
-                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200" EditValuePostDelay="500">
+                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200" EditValuePostDelay="500"
+                                          AcceptsReturn="True" AcceptsTab="True">
                                 <dxmvvm:Interaction.Behaviors>
                                     <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"/>
                                 </dxmvvm:Interaction.Behaviors>
                             </dxe:TextEdit>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Name" >
-                            <dxe:TextEdit EditValue="{Binding Customer.Name}" Width="200"/>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Address">
-                            <dxe:TextEdit EditValue="{Binding Customer.Address}" Width="200"/>
-                        </dxlc:LayoutItem>
+                        <dxlc:LayoutGroup>
+                            <dxlc:LayoutItem Label="Name" LabelPosition="Top">
+                                <dxe:TextEdit EditValue="{Binding Customer.Name}" Width="200" AcceptsTab="True"/>
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Address" LabelPosition="Top">
+                                <dxe:TextEdit EditValue="{Binding Customer.LedgerName}" Width="200" AcceptsTab="True"/>
+                            </dxlc:LayoutItem>
+                        </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                     <!--<dxlc:LayoutGroup  GroupBoxDisplayMode="Light" View="Group" Orientation="Vertical"
                             HorizontalAlignment="Left" Margin="5" 
@@ -106,14 +129,10 @@
                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
                             <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight"/>
                             <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
-                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight" Visible="True"/>
-                            <dxg:GridColumn FieldName="VaAmount" Header="VA Amount (Rs)" Visible="False"/>
-                            <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (Rs)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlCgstAmount" Header="CGST Amount (Rs)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlSgstAmount" Header="SGST Amount (Rs)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlIgstAmount" Header="IGST Amount (Rs)" Visible="False"/>
-                            <dxg:GridColumn FieldName="InvlTotal" Header="Total (Rs)" Visible="False"/>
+                            <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
+                            <dxg:GridColumn FieldName="VaAmount" Header="VA Amount (Rs)" />
+                            <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
+                            <dxg:GridColumn FieldName="InvlTotal" Header="Total (Rs)" />
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
                             <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
