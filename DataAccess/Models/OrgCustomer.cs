@@ -47,5 +47,5 @@ public partial class OrgCustomer
 
     public string? Salutations { get; set; }
 
-    public virtual OrgAddress GkeyNavigation { get; set; } = null!;
+    public string? GstStateCode { get; set; }
 }

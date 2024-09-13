@@ -643,6 +643,9 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("CUSTOMER_TYPE");
             entity.Property(e => e.DeleteFlag).HasColumnName("DELETE_FLAG");
+            entity.Property(e => e.GstStateCode)
+                .HasMaxLength(5)
+                .HasColumnName("GST_STATE_CODE");
             entity.Property(e => e.GstinNbr)
                 .HasMaxLength(15)
                 .IsUnicode(false)
@@ -680,10 +683,6 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("STATUS");
             entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
-
-            entity.HasOne(d => d.GkeyNavigation).WithOne(p => p.OrgCustomer)
-                .HasForeignKey<OrgCustomer>(d => d.Gkey)
-                .HasConstraintName("ORG_CUSTOMER_FK1");
         });
 
         modelBuilder.Entity<OrgGeoLocation>(entity =>
@@ -823,7 +822,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.DeletedFlag).HasColumnName("DELETED_FLAG");
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(9, 2)")
+                .HasColumnType("decimal(9, 3)")
                 .HasColumnName("GROSS_WEIGHT");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(255)
@@ -845,10 +844,10 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(9, 2)")
+                .HasColumnType("decimal(9, 3)")
                 .HasColumnName("NET_WEIGHT");
             entity.Property(e => e.OtherWeight)
-                .HasColumnType("decimal(9, 2)")
+                .HasColumnType("decimal(9, 3)")
                 .HasColumnName("OTHER_WEIGHT");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)

@@ -36,6 +36,4 @@ public partial class OrgAddress
     public string? GstStateCode { get; set; }
 
     public virtual ICollection<OrgCompany> OrgCompanies { get; set; } = new List<OrgCompany>();
-
-    public virtual OrgCustomer? OrgCustomer { get; set; }
 }
