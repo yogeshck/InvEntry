@@ -8,13 +8,13 @@ public partial class BaseEntity : ObservableObject
     private long gKey;
 
     [ObservableProperty]
-    private DateTime createdOn;
+    private DateTime? createdOn;
 
     [ObservableProperty]
     private string? createdBy;
 
     [ObservableProperty]
-    private DateTime modifiedOn;
+    private DateTime? modifiedOn;
 
     [ObservableProperty]
     private string? modifiedBy;

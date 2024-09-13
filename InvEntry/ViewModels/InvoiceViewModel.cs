@@ -33,7 +33,7 @@ public partial class InvoiceViewModel : ObservableObject
     private string _productIdUI;
 
     [ObservableProperty]
-    private decimal _invlBilledPrice;
+    private decimal _currentRate;
 
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
@@ -52,7 +52,7 @@ public partial class InvoiceViewModel : ObservableObject
         _productService = productService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
-        _invlBilledPrice = 2600;
+        _currentRate = 2600;
         PopulateUnboundDataMap();
     }
 
@@ -84,14 +84,18 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
-        if (string.IsNullOrEmpty(ProductId)) return;
+        if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        var product = await _productService.GetProduct(ProductId);
+        var product = await _productService.GetProduct(ProductIdUI);
 
         InvoiceLine invoiceLine = new InvoiceLine()
         {
             ProdQty = 1,
-        }; ;
+            InvlBilledPrice = CurrentRate,
+            InvlCgstPercent = GetGSTWithinState(),
+            InvlSgstPercent = GetGSTWithinState(),
+            InvlIgstPercent = 0.03M
+        };
 
         if (product is not null)
         {
@@ -100,7 +104,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.Lines.Add(invoiceLine);
 
-        ProductId = string.Empty;
+        ProductIdUI = string.Empty;
     }
 
     [RelayCommand]
@@ -153,5 +157,10 @@ public partial class InvoiceViewModel : ObservableObject
             PaymentMode = "CASH",
             TaxType = "GST"
         };
+    }
+
+    private decimal GetGSTWithinState()
+    {
+        return Convert.ToDecimal(0.03/2);
     }
 }

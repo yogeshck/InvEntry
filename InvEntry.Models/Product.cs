@@ -11,9 +11,6 @@ namespace InvEntry.Models
     public partial class Product : BaseEntity
     {
         [ObservableProperty]
-        private decimal? _gkey;
-
-        [ObservableProperty]
         private byte[]? _tenantGkey;
 
         [ObservableProperty]
@@ -23,7 +20,7 @@ namespace InvEntry.Models
         private string? _brand;
 
         [ObservableProperty]
-        private decimal? _productGkey;
+        private long? _productGkey;
 
         [ObservableProperty]
         private string? _hsnCode;
@@ -53,7 +50,7 @@ namespace InvEntry.Models
         private string? _productImageRef;
 
         [ObservableProperty]
-        private decimal? _qty;
+        private int? _qty;
 
         [ObservableProperty]
         private string? _setIdGkey;
@@ -62,30 +59,30 @@ namespace InvEntry.Models
         private string? _status;
 
         [ObservableProperty]
-        private decimal? _stockId;
+        private long? _stockId;
 
         [ObservableProperty]
-        private decimal? _supplierId;
+        private long? _supplierId;
 
         [ObservableProperty]
         private decimal? _taxRule;
 
         [ObservableProperty]
-        private string? _taxable;
+        private bool? _taxable;
 
         [ObservableProperty]
         private bool? _activeForSale;
 
         [ObservableProperty]
-        private decimal? _deletedFlag;
+        private bool? _deletedFlag;
 
         [ObservableProperty]
-        private decimal? _purchaseRef;
+        private string? _purchaseRef;
 
         [ObservableProperty]
         private string? _productId;
 
         [ObservableProperty]
-        private int? _vaPercent;
+        private decimal? _vaPercent;
     }
 }

@@ -17,7 +17,8 @@ namespace InvEntry.Converters
 
             if (values[0] is string key && values[1] is string fieldName)
             {
-                return FormulaStore.Instance.GetFormula(key, fieldName);
+                var formula = FormulaStore.Instance.GetFormula(key, fieldName);
+                return formula.Expression;
             }
 
             return null;

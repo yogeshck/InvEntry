@@ -817,14 +817,10 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
-            entity.Property(e => e.DeletedFlag)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("DELETED_FLAG");
-            entity.Property(e => e.Gkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("GKEY");
+            entity.Property(e => e.DeletedFlag).HasColumnName("DELETED_FLAG");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(9, 3)")
+                .HasColumnType("decimal(9, 2)")
                 .HasColumnName("GROSS_WEIGHT");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(255)
@@ -846,18 +842,16 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(9, 3)")
+                .HasColumnType("decimal(9, 2)")
                 .HasColumnName("NET_WEIGHT");
             entity.Property(e => e.OtherWeight)
-                .HasColumnType("decimal(9, 3)")
+                .HasColumnType("decimal(9, 2)")
                 .HasColumnName("OTHER_WEIGHT");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_DESC");
-            entity.Property(e => e.ProductGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
             entity.Property(e => e.ProductId)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -867,11 +861,9 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_IMAGE_REF");
             entity.Property(e => e.PurchaseRef)
-                .HasColumnType("decimal(19, 0)")
+                .HasMaxLength(50)
                 .HasColumnName("PURCHASE_REF");
-            entity.Property(e => e.Qty)
-                .HasColumnType("decimal(9, 3)")
-                .HasColumnName("QTY");
+            entity.Property(e => e.Qty).HasColumnName("QTY");
             entity.Property(e => e.SetIdGkey)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -880,19 +872,12 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("STATUS");
-            entity.Property(e => e.StockId)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("STOCK_ID");
-            entity.Property(e => e.SupplierId)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("SUPPLIER_ID");
+            entity.Property(e => e.StockId).HasColumnName("STOCK_ID");
+            entity.Property(e => e.SupplierId).HasColumnName("SUPPLIER_ID");
             entity.Property(e => e.TaxRule)
-                .HasColumnType("decimal(19, 0)")
+                .HasMaxLength(50)
                 .HasColumnName("TAX_RULE");
-            entity.Property(e => e.Taxable)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("TAXABLE");
+            entity.Property(e => e.Taxable).HasColumnName("TAXABLE");
             entity.Property(e => e.TenantGkey)
                 .HasMaxLength(255)
                 .HasColumnName("TENANT_GKEY");
@@ -900,7 +885,9 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("UOM");
-            entity.Property(e => e.VaPercent).HasColumnName("VA_PERCENT");
+            entity.Property(e => e.VaPercent)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("VA_PERCENT");
         });
 
         modelBuilder.Entity<ProductTransaction>(entity =>
