@@ -19,9 +19,7 @@
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         WindowState="Maximized"
-        ResizeMode="CanMinimize"
-    MaxWidth="1500"
-    MaxHeight="800"
+        ResizeMode="CanResizeWithGrip"
     MinHeight="400"
     MinWidth="700"
     DataContext="{ext:DISource Type=viewmodels:MainWindowViewModel}">
