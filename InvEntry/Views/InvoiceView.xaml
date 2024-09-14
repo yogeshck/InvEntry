@@ -100,7 +100,8 @@
                         <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
                             <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Width="200">
                                 <dxmvvm:Interaction.Behaviors>
-                                    <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"/>
+                                    <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
+                                                           PassEventArgsToCommand="True"/>
                                 </dxmvvm:Interaction.Behaviors>
                             </dxe:TextEdit>
                         </dxlc:LayoutItem>

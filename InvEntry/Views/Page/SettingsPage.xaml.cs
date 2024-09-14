@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevExpress.Xpf.WindowsUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,7 @@ namespace InvEntry.Views.Page
     /// <summary>
     /// Interaction logic for SettingsPage.xaml
     /// </summary>
-    public partial class SettingsPage : UserControl
+    public partial class SettingsPage : NavigationPage
     {
         public SettingsPage()
         {

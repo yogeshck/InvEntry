@@ -103,15 +103,17 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task FetchCustomer()
+    private async Task FetchCustomer(EditValueChangedEventArgs args)
     {
-        if (string.IsNullOrEmpty(_customerPhoneNumber) || _customerPhoneNumber.Length < 10)
+        if (args.NewValue is not string phoneNumber) return;
+
+        if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
             return;
 
-        if (Customer is not null && Customer.MobileNbr == _customerPhoneNumber)
+        if (Customer is not null && Customer.MobileNbr == phoneNumber)
             return;
 
-        Customer = await _customerService.GetCustomer(_customerPhoneNumber);
+        Customer = await _customerService.GetCustomer(phoneNumber);
 
         if(Customer is null)
         {
