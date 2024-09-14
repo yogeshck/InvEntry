@@ -11,14 +11,17 @@ namespace InvEntry.IoC
 {
     public static class FormulaIoC
     {
-        public static IServiceCollection ConfigureFormulas(this IServiceCollection services)
+        public static IServiceCollection ConfigureFormulas(this IServiceCollection services, Action<FormulaStore>? action = null)
         {
-            ConfigureInvoiceLineFormulas(FormulaStore.Instance);
-            ConfigureInvoiceHeaderFormulas(FormulaStore.Instance);
+            FormulaStore.Instance.ConfigureInvoiceLineFormulas();
+            FormulaStore.Instance.ConfigureInvoiceHeaderFormulas();
+
+            if (action is not null)
+                action.Invoke(FormulaStore.Instance);
             return services;
         }
 
-        private static void ConfigureInvoiceLineFormulas(FormulaStore store)
+        private static void ConfigureInvoiceLineFormulas(this FormulaStore store)
         {
             store.AddFormula<InvoiceLine>(x => x.ProdNetWeight, 
                 $"[{nameof(InvoiceLine.ProdGrossWeight)}] - [{nameof(InvoiceLine.ProdStoneWeight)}]");
@@ -43,7 +46,7 @@ namespace InvEntry.IoC
         }
 
 
-        private static void ConfigureInvoiceHeaderFormulas(FormulaStore store)
+        private static void ConfigureInvoiceHeaderFormulas(this FormulaStore store)
         {
             store.AddFormula<InvoiceHeader>(x => x.RoundOff,
                 $"Round({nameof(InvoiceHeader.InvlTaxTotal)})");
