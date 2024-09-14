@@ -24,10 +24,10 @@ namespace InvEntry.IoC
                 $"[{nameof(InvoiceLine.ProdGrossWeight)}] - [{nameof(InvoiceLine.ProdStoneWeight)}]");
 
             store.AddFormula<InvoiceLine>(x => x.VaAmount,
-                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.VaPercent)}] * [{nameof(InvoiceLine.ProdQty)}]");
+                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] * [{nameof(InvoiceLine.VaPercent)}]");
 
             store.AddFormula<InvoiceLine>(x => x.InvlTaxableAmount,
-                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.ProdQty)}] + [{nameof(InvoiceLine.VaAmount)}]");
+                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] + [{nameof(InvoiceLine.VaAmount)}]");
 
             store.AddFormula<InvoiceLine>(x => x.InvlCgstAmount,
                 $"[{nameof(InvoiceLine.InvlTaxableAmount)}] * [{nameof(InvoiceLine.InvlCgstPercent)}]");
