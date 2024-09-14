@@ -30,7 +30,7 @@ namespace InvEntry.IoC
                 $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] * [{nameof(InvoiceLine.VaPercent)}]");
 
             store.AddFormula<InvoiceLine>(x => x.InvlTaxableAmount,
-                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] + [{nameof(InvoiceLine.VaAmount)}]");
+                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] + [{nameof(InvoiceLine.VaAmount)}] + [{nameof(InvoiceLine.InvlStoneAmount)}]");
 
             store.AddFormula<InvoiceLine>(x => x.InvlCgstAmount,
                 $"[{nameof(InvoiceLine.InvlTaxableAmount)}] * [{nameof(InvoiceLine.InvlCgstPercent)}]");
@@ -49,7 +49,7 @@ namespace InvEntry.IoC
         private static void ConfigureInvoiceHeaderFormulas(this FormulaStore store)
         {
             store.AddFormula<InvoiceHeader>(x => x.RoundOff,
-                $"Round({nameof(InvoiceHeader.InvlTaxTotal)})");
+                $" Round([{nameof(InvoiceHeader.InvlTaxTotal)}]) - [{nameof(InvoiceHeader.InvlTaxTotal)}]");
 
             store.AddFormula<InvoiceHeader>(x => x.GrossRcbAmount,
                 $"[{nameof(InvoiceHeader.InvlTaxableAmount)}] + [{nameof(InvoiceHeader.RoundOff)}] - [{nameof(InvoiceHeader.DiscountAmount)}]");

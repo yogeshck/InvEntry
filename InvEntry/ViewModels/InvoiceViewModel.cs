@@ -122,12 +122,12 @@ public partial class InvoiceViewModel : ObservableObject
             Customer = new();
             createCustomer = true;
             CustomerReadOnly = true;
-            Messenger.Default.Send(MessageType.FocusTextEdit, "CustomerNameUI");
+            Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
         else
         {
             CustomerReadOnly = false;
-            Messenger.Default.Send(MessageType.FocusTextEdit, "ProductIdUIName");
+            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
             IGSTPercent = Customer.GstStateCode == "33" ? 0.03M : 0M;
         }
     }
@@ -152,7 +152,8 @@ public partial class InvoiceViewModel : ObservableObject
             InvlBilledPrice = CurrentRate,
             InvlCgstPercent = GetGSTWithinState(),
             InvlSgstPercent = GetGSTWithinState(),
-            InvlIgstPercent = IGSTPercent
+            InvlIgstPercent = IGSTPercent,
+            InvlStoneAmount = 0M
         };
 
         invoiceLine.SetProductDetails(product);
@@ -162,6 +163,8 @@ public partial class InvoiceViewModel : ObservableObject
         Header.Lines.Add(invoiceLine);
 
         ProductIdUI = string.Empty;
+
+        EvaluateHeader(null);
     }
 
     [RelayCommand]
@@ -208,13 +211,13 @@ public partial class InvoiceViewModel : ObservableObject
             EvaluateFormula(line);
         }
 
-        Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
-        EvaluateFormula(Header);
+        EvaluateHeader(null);
     }
 
     [RelayCommand]
-    private void EvaluateHeader()
+    private void EvaluateHeader(EditValueChangedEventArgs args)
     {
+        Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
         EvaluateFormula(Header);
     }
 
@@ -229,11 +232,7 @@ public partial class InvoiceViewModel : ObservableObject
         Header = new()
         {
             InvDate = DateTime.Now,
-            InvNbr = InvoiceNumberGenerator.Generate(),
-            Lines = new(),
-            PaymentMode = "CASH",
-            TaxType = "GST",
-            TenantGkey = "1",
+            InvNbr = InvoiceNumberGenerator.Generate()
         };
     }
 
@@ -250,7 +249,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    private void EvaluateFormula<T>(T line, bool isInit = false) where T: class
+    private void EvaluateFormula<T>(T item, bool isInit = false) where T: class
     {
         var formulas = FormulaStore.Instance.GetFormulas<T>();
 
@@ -258,25 +257,25 @@ public partial class InvoiceViewModel : ObservableObject
         {
             if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
 
-            var val = formula.Evaluate<T, decimal>(line);
+            var val = formula.Evaluate<T, decimal>(item, 0M);
 
-            if(line is InvoiceLine invLine)
+            if(item is InvoiceLine invLine)
                 copyInvoiceExpression[formula.FieldName].Invoke(invLine, val);
             
         }
     }
 
-    private void EvaluateFormula<T>(T line, string fieldName, bool isInit = false) where T : class
+    private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class
     {
         if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
 
         var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
 
-        var val = formula.Evaluate<T, decimal>(line);
+        var val = formula.Evaluate<T, decimal>(item, 0M);
 
-        if (line is InvoiceLine invLine)
+        if (item is InvoiceLine invLine)
             copyInvoiceExpression[fieldName].Invoke(invLine, val);
-        else if(line is InvoiceHeader head)
+        else if(item is InvoiceHeader head)
             copyHeaderExpression[fieldName].Invoke(head, val);
     }
 

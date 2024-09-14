@@ -7,6 +7,23 @@ namespace InvEntry.Models;
 
 public partial class InvoiceHeader : BaseEntity
 {
+    public InvoiceHeader()
+    {
+        Lines = new();
+        PaymentMode = "CASH";
+        TaxType = "GST";
+        TenantGkey = "1";
+        RoundOff = 0M;
+        InvlTaxTotal = 0M;
+        InvlTaxableAmount = 0M;
+        DiscountAmount = 0M;
+        OldGoldAmount = 0M;
+        OldSilverAmount = 0M;
+        AmountPayable = 0M;
+        AdvanceAdj = 0M;
+        RdAmountAdj = 0M;
+        RecdAmount = 0M;
+    }
 
     [ObservableProperty]
     private string? invNbr;

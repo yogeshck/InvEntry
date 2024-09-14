@@ -15,7 +15,7 @@ namespace InvEntry.Extension
 {
     public static class ExpressionExtensions
     {
-        private static IDictionary<Type, EvaluatorContextDescriptorDefault> _lookup = new Dictionary<Type, EvaluatorContextDescriptorDefault>();
+        private static Dictionary<string, EvaluatorContextDescriptorDefault> _lookup = new();
         public static string GetMemberName<TSource, TProperty>(this Expression<Func<TSource, TProperty>> lamdaExpression)
         {
             MemberExpression body = lamdaExpression.Body as MemberExpression;
@@ -29,7 +29,7 @@ namespace InvEntry.Extension
             return body.Member.Name;
         }
 
-        public static TProperty? Evaluate<TSource,TProperty>(this Formula formula, TSource source)
+        public static TProperty? Evaluate<TSource,TProperty>(this Formula formula, TSource source, TProperty? defaultValue = null)
             where TSource : class
             where TProperty : struct
         {
@@ -39,10 +39,10 @@ namespace InvEntry.Extension
 
                 EvaluatorContextDescriptorDefault? descriptor;
 
-                if (!_lookup.TryGetValue(formula.Type, out descriptor))
+                if (!_lookup.TryGetValue(formula.Type.Name, out descriptor))
                 {
                     descriptor = new(formula.Type);
-                    _lookup[formula.Type] = descriptor;
+                    _lookup[formula.Type.Name] = descriptor;
                 }
 
                 ExpressionEvaluator evaluator = new ExpressionEvaluator(descriptor, op);
@@ -50,7 +50,8 @@ namespace InvEntry.Extension
             }
             catch(Exception ex)
             {
-                return null;
+                Serilog.Log.Error(ex, "Exception while calculating for {Type} - {Field}", formula.Type.Name, formula.FieldName);
+                return defaultValue;
             }
         }
     }

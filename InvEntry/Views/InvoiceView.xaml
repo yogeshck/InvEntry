@@ -84,35 +84,45 @@
                                 <dxlc:LayoutItem Label="Advance Amount">
                                     <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding EvaluateHeaderCommand}"/>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"
+                                                                   PassEventArgsToCommand="True"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="RD Amount">
                                     <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding EvaluateHeaderCommand}"/>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"
+                                                                   PassEventArgsToCommand="True"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
                                     <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding EvaluateHeaderCommand}"/>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"
+                                                                   PassEventArgsToCommand="True"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Old Silver Amoount (Rs)">
                                     <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding EvaluateHeaderCommand}"/>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"
+                                                                   PassEventArgsToCommand="True"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Discount">
                                     <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding EvaluateHeaderCommand}"/>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"
+                                                                   PassEventArgsToCommand="True"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
@@ -127,7 +137,9 @@
                                 <dxlc:LayoutItem Label="Amount Received">
                                     <dxe:TextEdit EditValue="{Binding Header.RecdAmount}">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding EvaluateHeaderCommand}"/>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"
+                                                                   PassEventArgsToCommand="True"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
@@ -143,15 +155,15 @@
                                          MaxHeight="600" MinHeight="600">
                             <dxg:GridControl.Resources>
                                 <Style TargetType="dxg:GridColumn">
-                                    <Setter Property="Width" Value="Auto"/>
+                                    <Setter Property="Width" Value="*"/>
                                 </Style>
                             </dxg:GridControl.Resources>
                             <dxg:GridControl.Columns>
-                                <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True" Width="70"/>
-                                <dxg:GridColumn FieldName="ProductName" ReadOnly="True" Width="100"/>
-                                <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
+                                <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
+                                <dxg:GridColumn FieldName="ProductName" ReadOnly="True"/>
+                                <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" />
                                 <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
-                                <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" Width="50"/>
+                                <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
                                 <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
                                 <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
                                 <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" />
@@ -164,8 +176,8 @@
                                                  FieldName="InvlTaxableAmount"/>
                             </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>
-                                <dxg:TableView AllowGrouping="False" BestFitMode="AllRows" BestFitArea="Rows"
-                                               BestFitModeOnSourceChange="AllRows" AutoWidth="True"
+                                <dxg:TableView AllowGrouping="False" BestFitMode="Smart" BestFitArea="TotalSummary"
+                                               BestFitModeOnSourceChange="Smart" BestFitMaxRowCount="5"
                                AllowBestFit="True" ShowGroupPanel="False" TotalSummaryPosition="Bottom">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="CellValueChanged" 
