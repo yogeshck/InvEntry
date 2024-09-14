@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using InvEntry.Extension;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,16 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private INavigationService _navigationService;
 
+        [ObservableProperty]
+        private bool _WaitIndicatorVisible;
+
+        [ObservableProperty]
+        private string _WaitIndicatorContent;
+
         public MainWindowViewModel(INavigationService navigationService)
         {
             _navigationService = navigationService;
+            Messenger.Default.Register<WaitIndicatorVM>(this, MessageType.WaitIndicator, SetWaitIndicator);
         }
 
         [RelayCommand]
@@ -24,5 +32,12 @@ namespace InvEntry.ViewModels
         {
             NavigationService.Navigate("InvoiceEntryPage");
         }
+
+        private void SetWaitIndicator(WaitIndicatorVM vm)
+        {
+            WaitIndicatorContent = vm.Content;
+            WaitIndicatorVisible = vm.IsVisible;
+        }
+
     }
 }

@@ -18,6 +18,7 @@ using InvEntry.Models.Extensions;
 using InvEntry.Store;
 using DevExpress.XtraSpreadsheet.Model;
 using System.Windows.Input;
+using DevExpress.Xpf.Core.Native;
 
 namespace InvEntry.ViewModels;
 
@@ -39,10 +40,7 @@ public partial class InvoiceViewModel : ObservableObject
     private decimal _currentRate;
 
     [ObservableProperty]
-    private bool _lineView;
-
-    [ObservableProperty]
-    public bool _headerView;
+    public bool _customerReadOnly;
 
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
@@ -73,8 +71,7 @@ public partial class InvoiceViewModel : ObservableObject
         _invoiceService = invoiceService;
         _messageBoxService = messageBoxService;
         _currentRate = 2600;
-        LineView = true;
-        HeaderView = false;
+        _customerReadOnly = true;
         PopulateUnboundLineDataMap();
         PopulateUnboundHeaderDataMap();
     }
@@ -113,15 +110,24 @@ public partial class InvoiceViewModel : ObservableObject
         if (Customer is not null && Customer.MobileNbr == phoneNumber)
             return;
 
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
+
         Customer = await _customerService.GetCustomer(phoneNumber);
 
-        if(Customer is null)
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
+        if (Customer is null)
         {
+            _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
             Customer = new();
             createCustomer = true;
+            CustomerReadOnly = true;
+            Messenger.Default.Send(MessageType.FocusTextEdit, "CustomerNameUI");
         }
         else
         {
+            CustomerReadOnly = false;
+            Messenger.Default.Send(MessageType.FocusTextEdit, "ProductIdUIName");
             IGSTPercent = Customer.GstStateCode == "33" ? 0.03M : 0M;
         }
     }
@@ -181,7 +187,7 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
-        if(string.IsNullOrEmpty(Customer.CustomerName))
+        if(Customer is null || string.IsNullOrEmpty(Customer.CustomerName))
         {
             _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
             return; 
@@ -207,16 +213,15 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ToggleVisibility()
-    {
-        LineView ^= true;
-        HeaderView = !LineView;
-    }
-
-    [RelayCommand]
     private void EvaluateHeader()
     {
         EvaluateFormula(Header);
+    }
+
+    [RelayCommand]
+    private void Focus(TextEdit sender)
+    {
+        sender.Focus();
     }
 
     private void SetHeader()

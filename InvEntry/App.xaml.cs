@@ -18,6 +18,16 @@ namespace InvEntry
     {
         public const string LoggerDistince = "InvEntry-DEV";
 
+        public App()
+        {
+            foreach (Theme theme in Theme.Themes.ToList())
+            {
+                if (theme.Category == Theme.Office2007Category ||
+                    theme.Category == Theme.MetropolisCategory ||
+                    theme.Name == "DeepBlue") theme.ShowInThemeSelector = false;
+            }
+        }
+
         static App()
         {
             ApplicationThemeHelper.Preload(PreloadCategories.Controls);
