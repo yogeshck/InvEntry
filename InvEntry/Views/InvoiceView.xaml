@@ -171,7 +171,8 @@
                             <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight"/>
                             <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
                             <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
-                            <dxg:GridColumn FieldName="VaAmount" Header="VA Amount (Rs)" />
+                            <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" />
+                            <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" ReadOnly="True" />
                             <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
                         </dxg:GridControl.Columns>
                         <dxg:GridControl.TotalSummary>
