@@ -19,6 +19,7 @@ using InvEntry.Store;
 using DevExpress.XtraSpreadsheet.Model;
 using System.Windows.Input;
 using DevExpress.Xpf.Core.Native;
+using DevExpress.Mvvm.Native;
 
 namespace InvEntry.ViewModels;
 
@@ -28,7 +29,7 @@ public partial class InvoiceViewModel : ObservableObject
     private string _customerPhoneNumber;
 
     [ObservableProperty]
-    private Customer _customer;
+    private Customer _buyer;
 
     [ObservableProperty]
     private InvoiceHeader _header;
@@ -107,19 +108,19 @@ public partial class InvoiceViewModel : ObservableObject
         if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
             return;
 
-        if (Customer is not null && Customer.MobileNbr == phoneNumber)
+        if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
             return;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
-        Customer = await _customerService.GetCustomer(phoneNumber);
+        Buyer = await _customerService.GetCustomer(phoneNumber);
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
-        if (Customer is null)
+        if (Buyer is null)
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
-            Customer = new();
+            Buyer = new();
             createCustomer = true;
             CustomerReadOnly = false;
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
@@ -127,11 +128,12 @@ public partial class InvoiceViewModel : ObservableObject
         else
         {
             CustomerReadOnly = true;
+            Header.GstLocBuyer = Buyer.GstStateCode;
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-            IGSTPercent = Customer.GstStateCode == "33" ? 0M : 3M;
+            IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
         }
 
-        Header.InvCustMobile = phoneNumber;
+        Header.CustMobile = phoneNumber;
     }
 
     [RelayCommand]
@@ -156,7 +158,6 @@ public partial class InvoiceViewModel : ObservableObject
             InvlSgstPercent = GetGSTWithinState(),
             InvlIgstPercent = IGSTPercent,
             InvlStoneAmount = 0M,
-            InvoiceId = Header.InvNbr
         };
 
         invoiceLine.SetProductDetails(product);
@@ -193,23 +194,34 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
-        if (Customer is null || string.IsNullOrEmpty(Customer.CustomerName))
+        if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
             _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
             return;
         }
 
         if (createCustomer)
-            _customerService.CreatCustomer(Customer);
+            _customerService.CreatCustomer(Buyer);
 
-        if (Header.InvBalance > 0)
+        Header.InvNbr = InvoiceNumberGenerator.Generate();
+        Header.CustGkey = Buyer.GKey;
+        Header.CgstAmount = Header.Lines.Select(x => x.InvlCgstAmount).Sum();
+        Header.SgstAmount = Header.Lines.Select(x => x.InvlSgstAmount).Sum();
+        Header.IgstAmount = Header.Lines.Select(x => x.InvlIgstAmount).Sum();
+
+        Header.CgstPercent = Header.Lines.FirstOrDefault().InvlCgstPercent;
+        Header.SgstPercent = Header.Lines.FirstOrDefault().InvlSgstPercent;
+        Header.IgstPercent = Header.Lines.FirstOrDefault().InvlIgstPercent;
+
+        Header.Lines.ForEach(x =>
         {
-            Header.PymtDueDate = Header.InvDate.Value.AddDays(7);
-        }
-
+            x.InvLineNbr = Header.Lines.IndexOf(x) + 1;
+            x.InvoiceId = Header.InvNbr;
+        });
         _invoiceService.CreatHeader(Header);
         _invoiceService.CreatInvoiceLine(Header.Lines);
 
+        Buyer = null;
         SetHeader();
     }
 
@@ -236,6 +248,11 @@ public partial class InvoiceViewModel : ObservableObject
         Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
 
         Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
+
+        if (Header.InvBalance > 0 && !Header.PaymentDueDate.HasValue)
+        {
+            Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
+        }
     }
 
     [RelayCommand]
@@ -249,7 +266,8 @@ public partial class InvoiceViewModel : ObservableObject
         Header = new()
         {
             InvDate = DateTime.Now,
-            InvNbr = InvoiceNumberGenerator.Generate()
+            IsTaxApplicable = true,
+            GstLocSeller = "33"
         };
     }
 

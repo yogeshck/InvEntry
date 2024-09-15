@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class Customer : ObservableObject
+    public partial class Customer : BaseEntity
     {
         [ObservableProperty]
         private string mobileNbr;

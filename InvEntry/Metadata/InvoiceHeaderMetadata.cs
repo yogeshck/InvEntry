@@ -14,12 +14,12 @@ public class InvoiceHeaderMetadata : IMetadataProvider<InvoiceHeader>
     {
         builder.DataFormLayout()
             .GroupBox("Header")
-                .ContainsProperty(x => x.InvCustMobile)
+                .ContainsProperty(x => x.CustMobile)
                 .ContainsProperty(x => x.InvNbr)
                 .ContainsProperty(x => x.InvDate)
             .EndGroup();
 
         builder.Property(x => x.InvDate).DateTimeDataType();
-        builder.Property(x => x.InvCustMobile).PhoneNumberDataType();
+        builder.Property(x => x.CustMobile).PhoneNumberDataType();
     }
 }

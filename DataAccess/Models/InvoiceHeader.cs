@@ -13,7 +13,7 @@ public partial class InvoiceHeader
 
     public string? PaymentMode { get; set; }
 
-    public decimal? CustGkey { get; set; }
+    public long? CustGkey { get; set; }
 
     public string? CustMobile { get; set; }
 
@@ -31,7 +31,7 @@ public partial class InvoiceHeader
 
     public string? GstLocSeller { get; set; }
 
-    public string? GstLocSupplier { get; set; }
+    public string? GstLocBuyer { get; set; }
 
     public decimal? CgstPercent { get; set; }
 

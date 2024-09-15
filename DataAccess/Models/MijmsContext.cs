@@ -79,9 +79,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
-            entity.Property(e => e.CustGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("CUST_GKEY");
+            entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
             entity.Property(e => e.CustMobile)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -102,14 +100,14 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.GrossRcbAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("GROSS_RCB_AMOUNT");
+            entity.Property(e => e.GstLocBuyer)
+                .HasMaxLength(5)
+                .IsUnicode(false)
+                .HasColumnName("GST_LOC_BUYER");
             entity.Property(e => e.GstLocSeller)
-                .HasMaxLength(255)
+                .HasMaxLength(5)
                 .IsUnicode(false)
                 .HasColumnName("GST_LOC_SELLER");
-            entity.Property(e => e.GstLocSupplier)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("GST_LOC_SUPPLIER");
             entity.Property(e => e.IgstAmount)
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")

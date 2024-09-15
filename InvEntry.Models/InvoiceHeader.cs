@@ -32,7 +32,7 @@ public partial class InvoiceHeader : BaseEntity
     private DateTime? invDate;
 
     [ObservableProperty]
-    private string? invCustMobile;
+    private string? custMobile;
 
     [ObservableProperty]
     private string? placeOfSeller;          // Default to seller location GST code if TN - 33
@@ -41,7 +41,7 @@ public partial class InvoiceHeader : BaseEntity
     private string? placeOfSupply;           // Based on goods / service receiver
 
     [ObservableProperty]
-    private DateTime? pymtDueDate;
+    private DateTime? paymentDueDate;
 
     [ObservableProperty]
     private decimal? invlTaxableAmount;
@@ -89,7 +89,7 @@ public partial class InvoiceHeader : BaseEntity
     private string? taxType;      // GST
 
     [ObservableProperty]
-    private decimal? cgstPercentage;
+    private decimal? cgstPercent;
 
     [ObservableProperty]
     private decimal? sgstPercent;
@@ -117,6 +117,15 @@ public partial class InvoiceHeader : BaseEntity
 
     [ObservableProperty]
     private string? tenantGkey;
+
+    [ObservableProperty]
+    private long? custGkey;
+
+    [ObservableProperty]
+    private string? gstLocSeller;
+
+    [ObservableProperty]
+    private string? gstLocBuyer;
 
     [ObservableProperty]
     [property: JsonIgnore]
