@@ -128,8 +128,10 @@ public partial class InvoiceViewModel : ObservableObject
         {
             CustomerReadOnly = true;
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-            IGSTPercent = Customer.GstStateCode == "33" ? 0.03M : 0M;
+            IGSTPercent = Customer.GstStateCode == "33" ? 0M : 3M;
         }
+
+        Header.InvCustMobile = phoneNumber;
     }
 
     [RelayCommand]
@@ -153,7 +155,8 @@ public partial class InvoiceViewModel : ObservableObject
             InvlCgstPercent = GetGSTWithinState(),
             InvlSgstPercent = GetGSTWithinState(),
             InvlIgstPercent = IGSTPercent,
-            InvlStoneAmount = 0M
+            InvlStoneAmount = 0M,
+            InvoiceId = Header.InvNbr
         };
 
         invoiceLine.SetProductDetails(product);
@@ -199,8 +202,15 @@ public partial class InvoiceViewModel : ObservableObject
         if (createCustomer)
             _customerService.CreatCustomer(Customer);
 
+        if (Header.InvBalance > 0)
+        {
+            Header.PymtDueDate = Header.CreatedOn.Value.AddDays(7);
+        }
+
         _invoiceService.CreatHeader(Header);
         _invoiceService.CreatInvoiceLine(Header.Lines);
+
+        SetHeader();
     }
 
     [RelayCommand]
@@ -249,7 +259,11 @@ public partial class InvoiceViewModel : ObservableObject
 
     private decimal GetGSTWithinState()
     {
-        return Convert.ToDecimal((SCGSTPercent/2)/100);
+        if(Customer.GstStateCode == "33")
+        {
+            return Math.Round(SCGSTPercent/ 2, 3);
+        }
+        return 0M;
     }
 
     private void EvaluateForAllLines()
