@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,7 @@ namespace InvEntry.Models.Extensions
             line.ProductPurity = product.ProductPurity;
             line.VaPercent = product.VaPercent;
             line.ProductId = product.ProductId;
+            line.Metal = product.Metal;
         }
 
     }
