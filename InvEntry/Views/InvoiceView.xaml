@@ -30,7 +30,15 @@
         <dxlc:LayoutControl AllowItemSizing="True" 
                             StretchContentVertically="False" 
                             StretchContentHorizontally="False">
-            <dxlc:LayoutGroup Orientation="Horizontal">
+            <dxlc:LayoutGroup>
+                <dxlc:LayoutGroup Orientation="Horizontal" View="Group" Header="Invoice">
+                    <dxlc:LayoutItem Label="Number">
+                        <Label Content="{Binding Header.InvNbr}"/>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Date">
+                        <dxe:DateEdit EditValue="{Binding Header.InvDate}" IsReadOnly="True"/>
+                    </dxlc:LayoutItem>
+                </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup Orientation="Vertical">
                     <dxlc:LayoutGroup Orientation="Horizontal">
                         <dxlc:LayoutGroup Orientation="Vertical" Margin="10">

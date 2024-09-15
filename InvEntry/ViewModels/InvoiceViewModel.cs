@@ -204,7 +204,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Header.InvBalance > 0)
         {
-            Header.PymtDueDate = Header.CreatedOn.Value.AddDays(7);
+            Header.PymtDueDate = Header.InvDate.Value.AddDays(7);
         }
 
         _invoiceService.CreatHeader(Header);
