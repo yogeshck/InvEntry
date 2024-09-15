@@ -238,6 +238,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
         SetHeader();
+        IsPrint = false;
     }
 
     [RelayCommand]
