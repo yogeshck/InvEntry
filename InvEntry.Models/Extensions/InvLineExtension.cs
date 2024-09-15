@@ -21,6 +21,7 @@ namespace InvEntry.Models.Extensions
             line.Metal = product.Metal;
             line.IsTaxable = product.Taxable;
             line.ProdCategory = product.ProductCategory;
+            line.HsnCode = product.HsnCode;
         }
 
     }
