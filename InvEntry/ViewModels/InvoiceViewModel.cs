@@ -121,12 +121,12 @@ public partial class InvoiceViewModel : ObservableObject
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
             Customer = new();
             createCustomer = true;
-            CustomerReadOnly = true;
+            CustomerReadOnly = false;
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
         else
         {
-            CustomerReadOnly = false;
+            CustomerReadOnly = true;
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
             IGSTPercent = Customer.GstStateCode == "33" ? 0.03M : 0M;
         }
