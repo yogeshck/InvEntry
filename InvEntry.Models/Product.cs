@@ -87,5 +87,8 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private string? productName;
+
+        [ObservableProperty]
+        private string? productPurity;
     }
 }

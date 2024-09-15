@@ -66,4 +66,6 @@ public partial class ProductStock
     public decimal? VaPercent { get; set; }
 
     public string? ProductName { get; set; }
+
+    public string? ProductPurity { get; set; }
 }
