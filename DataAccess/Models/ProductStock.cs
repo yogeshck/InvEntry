@@ -68,4 +68,6 @@ public partial class ProductStock
     public string? ProductName { get; set; }
 
     public string? ProductPurity { get; set; }
+
+    public string? ProductCategory { get; set; }
 }

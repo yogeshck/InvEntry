@@ -19,6 +19,8 @@ namespace InvEntry.Models.Extensions
             line.VaPercent = product.VaPercent;
             line.ProductId = product.ProductId;
             line.Metal = product.Metal;
+            line.IsTaxable = product.Taxable;
+            line.ProdCategory = product.ProductCategory;
         }
 
     }

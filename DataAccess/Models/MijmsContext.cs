@@ -848,6 +848,9 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.OtherWeight)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("OTHER_WEIGHT");
+            entity.Property(e => e.ProductCategory)
+                .HasMaxLength(50)
+                .HasColumnName("PRODUCT_CATEGORY");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)
                 .IsUnicode(false)

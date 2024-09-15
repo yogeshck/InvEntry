@@ -90,5 +90,8 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private string? productPurity;
+
+        [ObservableProperty]
+        private string? productCategory;
     }
 }

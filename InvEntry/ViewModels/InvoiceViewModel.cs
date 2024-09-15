@@ -58,8 +58,8 @@ public partial class InvoiceViewModel : ObservableObject
         nameof(InvoiceLine.VaAmount)
     };
 
-    public InvoiceViewModel(ICustomerService customerService, 
-        IProductService productService, 
+    public InvoiceViewModel(ICustomerService customerService,
+        IProductService productService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
         IMessageBoxService messageBoxService)
@@ -177,9 +177,9 @@ public partial class InvoiceViewModel : ObservableObject
 
         var vm = new DialogOldJewelVM();
 
-        if(_dialogService.ShowDialog(MessageButton.OKCancel, "Exchange", "DialogOldJewel", vm) == MessageResult.OK)
+        if (_dialogService.ShowDialog(MessageButton.OKCancel, "Exchange", "DialogOldJewel", vm) == MessageResult.OK)
         {
-            if(enumVal == MetalType.Gold)
+            if (enumVal == MetalType.Gold)
             {
                 Header.OldGoldAmount = vm.Rate * vm.Weight;
             }
@@ -193,10 +193,10 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void CreateInvoice()
     {
-        if(Customer is null || string.IsNullOrEmpty(Customer.CustomerName))
+        if (Customer is null || string.IsNullOrEmpty(Customer.CustomerName))
         {
             _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
-            return; 
+            return;
         }
 
         if (createCustomer)
@@ -229,17 +229,13 @@ public partial class InvoiceViewModel : ObservableObject
     {
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
-        if(Header.InvlTaxTotal.HasValue)
-            Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.GetValueOrDefault(), 0) - Header.InvlTaxTotal.GetValueOrDefault());
+        Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.GetValueOrDefault(), 0) - Header.InvlTaxTotal.GetValueOrDefault());
 
-        if(Header.InvlTaxTotal.HasValue && Header.RoundOff.HasValue && Header.DiscountAmount.HasValue)
-            Header.GrossRcbAmount = MathUtils.Normalize(Header.InvlTaxTotal.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault() - Header.DiscountAmount.GetValueOrDefault());
+        Header.GrossRcbAmount = MathUtils.Normalize(Header.InvlTaxTotal.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault() - Header.DiscountAmount.GetValueOrDefault());
 
-        if (Header.GrossRcbAmount.HasValue && Header.OldGoldAmount.HasValue && Header.OldSilverAmount.HasValue)
-            Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
+        Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
 
-        if (Header.AmountPayable.HasValue && Header.AdvanceAdj.HasValue && Header.RdAmountAdj.HasValue && Header.RecdAmount.HasValue)
-            Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
+        Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
     }
 
     [RelayCommand]
@@ -259,34 +255,33 @@ public partial class InvoiceViewModel : ObservableObject
 
     private decimal GetGSTWithinState()
     {
-        if(Customer.GstStateCode == "33")
+        if (Customer.GstStateCode == "33")
         {
-            return Math.Round(SCGSTPercent/ 2, 3);
+            return Math.Round(SCGSTPercent / 2, 3);
         }
         return 0M;
     }
 
     private void EvaluateForAllLines()
     {
-        foreach(var line in Header.Lines)
+        foreach (var line in Header.Lines)
         {
             EvaluateFormula(line);
         }
     }
 
-    private void EvaluateFormula<T>(T item, bool isInit = false) where T: class
+    private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
     {
         var formulas = FormulaStore.Instance.GetFormulas<T>();
 
-        foreach(var formula in formulas)
+        foreach (var formula in formulas)
         {
             if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
 
             var val = formula.Evaluate<T, decimal>(item, 0M);
 
-            if(item is InvoiceLine invLine)
+            if (item is InvoiceLine invLine)
                 copyInvoiceExpression[formula.FieldName].Invoke(invLine, val);
-            
         }
     }
 
@@ -300,7 +295,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (item is InvoiceLine invLine)
             copyInvoiceExpression[fieldName].Invoke(invLine, val);
-        else if(item is InvoiceHeader head)
+        else if (item is InvoiceHeader head)
             copyHeaderExpression[fieldName].Invoke(head, val);
     }
 }

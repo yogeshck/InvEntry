@@ -153,6 +153,9 @@
                                 <dxlc:LayoutItem Label="Balance Amount">
                                     <dxe:TextEdit EditValue="{Binding Header.InvBalance}" IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Due Date">
+                                    <dxe:DateEdit EditValue="{Binding Header.PymtDueDate}" IsTabStop="False"/>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
