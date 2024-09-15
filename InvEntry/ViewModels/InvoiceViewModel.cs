@@ -43,6 +43,9 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     public bool _customerReadOnly;
 
+    [ObservableProperty]
+    public bool _isPrint;
+
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
@@ -73,6 +76,7 @@ public partial class InvoiceViewModel : ObservableObject
         _messageBoxService = messageBoxService;
         _currentRate = 2600;
         _customerReadOnly = true;
+        _isPrint = false;
         PopulateUnboundLineDataMap();
         PopulateUnboundHeaderDataMap();
     }
@@ -223,6 +227,15 @@ public partial class InvoiceViewModel : ObservableObject
         _invoiceService.CreatInvoiceLine(Header.Lines);
 
         Buyer = null;
+
+        _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.None);
+        IsPrint = true;
+    }
+
+    [RelayCommand]
+    private void PrintInvoice()
+    {
+        _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
         SetHeader();
     }
 
