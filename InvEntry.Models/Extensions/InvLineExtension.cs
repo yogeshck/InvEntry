@@ -13,6 +13,7 @@ namespace InvEntry.Models.Extensions
             line.ProdGrossWeight = product.GrossWeight;
             line.ProdStoneWeight = product.OtherWeight;
             line.ProductDesc = product.ProductDesc;
+            line.ProductName = product.ProductName;
             line.VaPercent = product.VaPercent;
             line.ProductId = product.ProductId;
         }
