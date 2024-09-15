@@ -7,8 +7,8 @@
              xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking"
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
-                    xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
-                    xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+             xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
+             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
              xmlns:local="clr-namespace:InvEntry.Views"
@@ -28,7 +28,7 @@
     </UserControl.Resources>
     <Grid>
         <dxlc:LayoutControl AllowItemSizing="True" 
-                            StretchContentVertically="True" 
+                            StretchContentVertically="False" 
                             StretchContentHorizontally="False">
             <dxlc:LayoutGroup Orientation="Horizontal">
                 <dxlc:LayoutGroup Orientation="Vertical">
@@ -76,6 +76,7 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
+                        <dxlc:GroupSeparator Orientation="Vertical"/>
                         <dxlc:LayoutGroup HorizontalAlignment="Left" 
                                 Margin="10" VerticalAlignment="Top" 
                                 Orientation="Horizontal" View="GroupBox" Header="Invoice Amount"
@@ -128,6 +129,12 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Vertical">
+                                <dxlc:LayoutGroup.Resources>
+                                    <Style TargetType="dxe:TextEdit">
+                                        <Setter Property="Width" Value="150"/>
+                                        <Setter Property="Height" Value="35"/>
+                                    </Style>
+                                </dxlc:LayoutGroup.Resources>
                                 <dxlc:LayoutItem Label="Round Off">
                                     <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
@@ -152,7 +159,7 @@
                     <dxlc:LayoutItem>
                         <dxg:GridControl ItemsSource="{Binding Header.Lines}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="600" MinHeight="600">
+                                         MaxHeight="600" MinHeight="400">
                             <dxg:GridControl.Resources>
                                 <!--<Style TargetType="dxg:GridColumn">
                                     <Setter Property="Width" Value="*"/>

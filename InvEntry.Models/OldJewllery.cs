@@ -22,5 +22,6 @@ public partial class OldJewllery : ObservableObject
 public enum MetalType
 {
     Gold,
-    Silver
+    Silver,
+    Diamond
 }
