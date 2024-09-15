@@ -236,6 +236,7 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void PrintInvoice()
     {
+        CustomerPhoneNumber = null;
         _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
         SetHeader();
         IsPrint = false;
