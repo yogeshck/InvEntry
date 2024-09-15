@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class InvoiceHeader
 {
-    public long? Gkey { get; set; }
+    public long Gkey { get; set; }
 
     public string? InvNbr { get; set; }
 

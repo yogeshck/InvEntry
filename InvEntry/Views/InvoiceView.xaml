@@ -172,11 +172,16 @@
                                 <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" />
                                 <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" ReadOnly="True" />
                                 <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
+                                <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" />
                             </dxg:GridControl.Columns>
                             <dxg:GridControl.TotalSummary>
                                 <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
-                                                 DisplayFormat="Total = {0}"
+                                                 DisplayFormat="Taxable = {0}"
                                                  FieldName="InvlTaxableAmount"/>
+
+                                <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
+                                                 DisplayFormat="Total = {0}"
+                                                 FieldName="InvlTotal"/>
                             </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>
                                 <dxg:TableView AllowGrouping="False"

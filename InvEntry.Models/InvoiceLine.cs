@@ -123,4 +123,7 @@ public partial class InvoiceLine : BaseEntity
 
     [ObservableProperty]
     private string? _productId;
+
+    [ObservableProperty]
+    private string? _metal;
 }

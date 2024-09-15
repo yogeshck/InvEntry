@@ -84,5 +84,8 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private decimal? _vaPercent;
+
+        [ObservableProperty]
+        private string? productName;
     }
 }

@@ -45,16 +45,17 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Data Source=YOGESH-PC-INFIN\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<InvoiceHeader>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("INVOICE_HEADER");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("INVOICE_HEADER");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AdvanceAdj)
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
@@ -98,7 +99,6 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("DISCOUNT_PERCENT");
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GrossRcbAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("GROSS_RCB_AMOUNT");
@@ -205,19 +205,17 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<InvoiceLine>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("INVOICE_LINE");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("INVOICE_LINE");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(50)
                 .HasColumnName("CREATED_BY");
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("GKEY");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -280,6 +278,9 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("ITEM_NOTES");
             entity.Property(e => e.ItemPacked).HasColumnName("ITEM_PACKED");
+            entity.Property(e => e.Metal)
+                .HasMaxLength(20)
+                .HasColumnName("METAL");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(50)
                 .HasColumnName("MODIFIED_BY");
@@ -799,10 +800,11 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<ProductStock>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("PRODUCT_STOCK");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("PRODUCT_STOCK");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.ActiveForSale).HasColumnName("ACTIVE_FOR_SALE");
             entity.Property(e => e.BaseUnit)
                 .HasMaxLength(255)
@@ -820,9 +822,8 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.DeletedFlag).HasColumnName("DELETED_FLAG");
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(9, 3)")
+                .HasColumnType("decimal(9, 2)")
                 .HasColumnName("GROSS_WEIGHT");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(255)
@@ -844,10 +845,10 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(9, 3)")
+                .HasColumnType("decimal(9, 2)")
                 .HasColumnName("NET_WEIGHT");
             entity.Property(e => e.OtherWeight)
-                .HasColumnType("decimal(9, 3)")
+                .HasColumnType("decimal(9, 2)")
                 .HasColumnName("OTHER_WEIGHT");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)
@@ -862,6 +863,9 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_IMAGE_REF");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(200)
+                .HasColumnName("PRODUCT_NAME");
             entity.Property(e => e.PurchaseRef)
                 .HasMaxLength(50)
                 .HasColumnName("PURCHASE_REF");
