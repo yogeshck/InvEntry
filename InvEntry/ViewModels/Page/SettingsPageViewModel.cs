@@ -13,6 +13,9 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private DailyMetalRate dailyMetalRate;
 
+        private void SaveDailyRate()
+        {
 
+        }
     }
 }

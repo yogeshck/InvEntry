@@ -613,9 +613,7 @@ public partial class MijmsContext : DbContext
 
             entity.HasIndex(e => e.Gkey, "ORG_CUSTOMER_PK_2").IsUnique();
 
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedNever()
-                .HasColumnName("GKEY");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AddressGkey).HasColumnName("ADDRESS_GKEY");
             entity.Property(e => e.ClientId)
                 .HasMaxLength(255)
