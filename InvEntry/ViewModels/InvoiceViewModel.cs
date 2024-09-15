@@ -220,16 +220,16 @@ public partial class InvoiceViewModel : ObservableObject
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
         if(Header.InvlTaxTotal.HasValue)
-            Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.Value, 0) - Header.InvlTaxTotal.Value);
+            Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.GetValueOrDefault(), 0) - Header.InvlTaxTotal.GetValueOrDefault());
 
         if(Header.InvlTaxTotal.HasValue && Header.RoundOff.HasValue && Header.DiscountAmount.HasValue)
-            Header.GrossRcbAmount = MathUtils.Normalize(Header.InvlTaxTotal + Header.RoundOff - Header.DiscountAmount);
+            Header.GrossRcbAmount = MathUtils.Normalize(Header.InvlTaxTotal.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault() - Header.DiscountAmount.GetValueOrDefault());
 
         if (Header.GrossRcbAmount.HasValue && Header.OldGoldAmount.HasValue && Header.OldSilverAmount.HasValue)
-            Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount - Header.OldGoldAmount - Header.OldSilverAmount);
+            Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
 
         if (Header.AmountPayable.HasValue && Header.AdvanceAdj.HasValue && Header.RdAmountAdj.HasValue && Header.RecdAmount.HasValue)
-            Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.Value - Header.AdvanceAdj.Value - Header.RdAmountAdj.Value - Header.RecdAmount.Value);
+            Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
     }
 
     [RelayCommand]
