@@ -158,6 +158,7 @@ public partial class InvoiceViewModel : ObservableObject
             InvlSgstPercent = GetGSTWithinState(),
             InvlIgstPercent = IGSTPercent,
             InvlStoneAmount = 0M,
+            TaxType = "GST"
         };
 
         invoiceLine.SetProductDetails(product);

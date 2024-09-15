@@ -26,11 +26,14 @@ namespace InvEntry.IoC
             store.AddFormula<InvoiceLine>(x => x.ProdNetWeight, 
                 $"[{nameof(InvoiceLine.ProdGrossWeight)}] - [{nameof(InvoiceLine.ProdStoneWeight)}]");
 
+            store.AddFormula<InvoiceLine>(x => x.InvlGrossAmt,
+                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}]");
+
             store.AddFormula<InvoiceLine>(x => x.VaAmount,
-                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] * Round(([{nameof(InvoiceLine.VaPercent)}] / 100), 3)");
+                $"[{nameof(InvoiceLine.InvlGrossAmt)}] * Round(([{nameof(InvoiceLine.VaPercent)}] / 100), 3)");
 
             store.AddFormula<InvoiceLine>(x => x.InvlTaxableAmount,
-                $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}] + [{nameof(InvoiceLine.VaAmount)}] + [{nameof(InvoiceLine.InvlStoneAmount)}]");
+                $"[{nameof(InvoiceLine.InvlGrossAmt)}] + [{nameof(InvoiceLine.VaAmount)}] + [{nameof(InvoiceLine.InvlStoneAmount)}]");
 
             store.AddFormula<InvoiceLine>(x => x.InvlCgstAmount,
                 $"[{nameof(InvoiceLine.InvlTaxableAmount)}] * Round(([{nameof(InvoiceLine.InvlCgstPercent)}]/ 100), 3)");
