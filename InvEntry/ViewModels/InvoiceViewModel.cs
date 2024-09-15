@@ -218,7 +218,18 @@ public partial class InvoiceViewModel : ObservableObject
     private void EvaluateHeader(EditValueChangedEventArgs args)
     {
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
-        EvaluateFormula(Header);
+
+        if(Header.InvlTaxTotal.HasValue)
+            Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.Value, 0) - Header.InvlTaxTotal.Value);
+
+        if(Header.InvlTaxTotal.HasValue && Header.RoundOff.HasValue && Header.DiscountAmount.HasValue)
+            Header.GrossRcbAmount = MathUtils.Normalize(Header.InvlTaxTotal + Header.RoundOff - Header.DiscountAmount);
+
+        if (Header.GrossRcbAmount.HasValue && Header.OldGoldAmount.HasValue && Header.OldSilverAmount.HasValue)
+            Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount - Header.OldGoldAmount - Header.OldSilverAmount);
+
+        if (Header.AmountPayable.HasValue && Header.AdvanceAdj.HasValue && Header.RdAmountAdj.HasValue && Header.RecdAmount.HasValue)
+            Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.Value - Header.AdvanceAdj.Value - Header.RdAmountAdj.Value - Header.RecdAmount.Value);
     }
 
     [RelayCommand]
@@ -278,6 +289,4 @@ public partial class InvoiceViewModel : ObservableObject
         else if(item is InvoiceHeader head)
             copyHeaderExpression[fieldName].Invoke(head, val);
     }
-
-
 }

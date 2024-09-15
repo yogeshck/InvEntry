@@ -1,5 +1,6 @@
 ﻿using DevExpress.XtraSpreadsheet.Model;
 using InvEntry.Extension;
+using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,7 +110,7 @@ public class Formula
     private Formula(string fieldName, string expression, Type type, Action<object, object>? action = null) 
     {
         FieldName = fieldName;
-        Expression = expression;
+        Expression = MathUtils.NormalizeRounding(expression);
         Type = type;
         Action = action;
     }

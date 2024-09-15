@@ -154,8 +154,11 @@
                                          DeleteKeyBehavior="DeleteFocusedRow"
                                          MaxHeight="600" MinHeight="600">
                             <dxg:GridControl.Resources>
-                                <Style TargetType="dxg:GridColumn">
+                                <!--<Style TargetType="dxg:GridColumn">
                                     <Setter Property="Width" Value="*"/>
+                                </Style>-->
+                                <Style TargetType="dxe:TextEdit">
+                                    <Setter Property="Width" Value="Auto"/>
                                 </Style>
                             </dxg:GridControl.Resources>
                             <dxg:GridControl.Columns>
@@ -176,8 +179,7 @@
                                                  FieldName="InvlTaxableAmount"/>
                             </dxg:GridControl.TotalSummary>
                             <dxg:GridControl.View>
-                                <dxg:TableView AllowGrouping="False" BestFitMode="Smart" BestFitArea="TotalSummary"
-                                               BestFitModeOnSourceChange="Smart" BestFitMaxRowCount="5"
+                                <dxg:TableView AllowGrouping="False"
                                AllowBestFit="True" ShowGroupPanel="False" TotalSummaryPosition="Bottom">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="CellValueChanged" 
