@@ -307,7 +307,7 @@ public partial class InvoiceViewModel : ObservableObject
         Header = new()
         {
             InvDate = DateTime.Now,
-            IsTaxApplicable = true,
+           //IsTaxApplicable = true,
             GstLocSeller = "33"
         };
     }
