@@ -11,7 +11,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Grid;
 using InvEntry.Models.Extensions;
@@ -300,6 +299,12 @@ public partial class InvoiceViewModel : ObservableObject
 
         EvaluateForAllLines();
         EvaluateHeader();
+    }
+
+    [RelayCommand]
+    private void DeleteSingleRow(InvoiceLine line)
+    {
+        var index = Header.Lines.Remove(line);
     }
 
     private void SetHeader()

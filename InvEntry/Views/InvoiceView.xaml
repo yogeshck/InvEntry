@@ -49,8 +49,8 @@
                             Grid.Row="1">
             <dxlc:LayoutGroup Orientation="Vertical">
                 <dxlc:LayoutGroup Orientation="Horizontal">
-                    <dxlc:LayoutGroup Orientation="Vertical" Margin="10">
-                        <dxlc:LayoutGroup Orientation="Horizontal" View="Group" Header="Invoice">
+                    <dxlc:LayoutGroup Margin="10">
+                        <dxlc:LayoutGroup View="Group" Header="Invoice">
                             <dxlc:LayoutItem Label="Number">
                                 <Label Content="{Binding Header.InvNbr}"/>
                             </dxlc:LayoutItem>
@@ -60,7 +60,7 @@
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Customer Details"
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
-                                      ItemLabelsAlignment="Local" >
+                                      ItemLabelsAlignment="Local">
                             <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
                                 <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
                                     <dxmvvm:Interaction.Behaviors>
@@ -236,6 +236,10 @@
                                                            Command="{Binding CellUpdateCommand}"
                                                            PassEventArgsToCommand="True"/>
                                     </dxmvvm:Interaction.Behaviors>
+                                    <dxg:TableView.RowCellMenuCustomizations>
+                                        <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" Command="{Binding DeleteSingleRowCommand}"
+                                                           Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
+                                    </dxg:TableView.RowCellMenuCustomizations>
                                 </dxg:TableView>
                             </dxg:GridControl.View>
                         </dxg:GridControl>

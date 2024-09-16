@@ -16,6 +16,12 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private ObservableCollection<DailyRate> dailyMetalRate;
 
+        [ObservableProperty]
+        private ObservableCollection<DailyRate> todayDailyMetalRate;
+
+        [ObservableProperty]
+        private ObservableCollection<DailyRate> historyDailyMetalRate;
+
         private readonly IMijmsApiService _mijmsApiService;
 
         public SettingsPageViewModel(IMijmsApiService mijmsApiService)
@@ -28,12 +34,25 @@ namespace InvEntry.ViewModels
             var dialyRates = await _mijmsApiService.GetEnumerable<DailyRate>("api/dailyrate/latest");
 
             DailyMetalRate = new(dialyRates);
+
+            TodayDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date == DateTime.Now.Date));
+            HistoryDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date != DateTime.Now.Date));
         }
 
         [RelayCommand]
-        private void SaveDailyRate()
+        private async Task SaveAllDailyRate()
         {
+            if (!TodayDailyMetalRate.Any()) return;
 
+            await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate);
+        }
+
+        [RelayCommand]
+        private async Task SaveDailyRate(DailyRate rate)
+        {
+            if (rate is null) return;
+
+            await _mijmsApiService.Post<DailyRate>("api/dailyrate/save", rate);
         }
     }
 }

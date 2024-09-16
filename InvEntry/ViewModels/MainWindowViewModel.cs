@@ -21,6 +21,15 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private string _WaitIndicatorContent;
 
+        [ObservableProperty]
+        private decimal? GoldRate;
+
+        [ObservableProperty]
+        private decimal? SilverRate;
+
+        [ObservableProperty]
+        private decimal? DiamondRate;
+
         public MainWindowViewModel(INavigationService navigationService)
         {
             _navigationService = navigationService;

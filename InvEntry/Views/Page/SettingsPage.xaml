@@ -13,14 +13,33 @@
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <dxwui:NavigationPage.Resources>
+        <DataTemplate x:Key="DailyRateItemTemplate">
+            <StackPanel>
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding EffectiveDate}" IsReadOnly="True"/>
+                <dxe:TextEdit EditValue="{Binding Price}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="HistoryDailyRateItemTemplate">
+            <StackPanel>
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding EffectiveDate}" IsReadOnly="True"/>
+                <dxe:TextEdit EditValue="{Binding Price}" IsReadOnly="True"/>
+            </StackPanel>
+        </DataTemplate>
+    </dxwui:NavigationPage.Resources>
     <Grid>
-        <dxlc:LayoutControl StretchContentVertically="False" StretchContentHorizontally="False">
-            <dxlc:LayoutGroup>
-                <dxlc:LayoutItem>
-                    <dxe:TextEdit EditValue="{Binding GoldRate}" />
-                </dxlc:LayoutItem>
-            </dxlc:LayoutGroup>
-        </dxlc:LayoutControl>
+        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}">
+            
+        </dxlc:FlowLayoutControl>
+        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource HistoryDailyRateItemTemplate}">
+        </dxlc:FlowLayoutControl>
     </Grid>
 </dxwui:NavigationPage>
  
