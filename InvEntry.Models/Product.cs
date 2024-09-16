@@ -93,5 +93,34 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private string? productCategory;
+
+        [ObservableProperty]
+        private decimal? _SupplierRate;
+        [ObservableProperty]
+        private decimal? _MakingCharges;
+        [ObservableProperty]
+        private string? _CustomerOrderRefId;
+        [ObservableProperty]
+        private int? _Size;
+        [ObservableProperty]
+        private string? _SizeId;
+        [ObservableProperty]
+        private string? _SizeUom;
+        [ObservableProperty]
+        private decimal? _WastageAmount;
+        [ObservableProperty]
+        private decimal? _WastagePercent;
+        [ObservableProperty]
+        private string? _ProductSku;
+        [ObservableProperty]
+        private decimal? _OriginalGrossWieght;
+        [ObservableProperty]
+        private decimal? _AdjustedWieght;
+        [ObservableProperty]
+        private string? _DocRef;
+        [ObservableProperty]
+        private DateTime? _DocDate;
+        [ObservableProperty]
+        private bool? _ProductSold;
     }
 }

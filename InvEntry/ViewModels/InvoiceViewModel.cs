@@ -46,6 +46,9 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     public bool _isPrint;
 
+    [ObservableProperty]
+    private ObservableCollection<InvoiceLine> selectedRows;
+
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
@@ -174,7 +177,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         ProductIdUI = string.Empty;
 
-        EvaluateHeader(null);
+        EvaluateHeader();
     }
 
     [RelayCommand]
@@ -250,11 +253,11 @@ public partial class InvoiceViewModel : ObservableObject
             EvaluateFormula(line);
         }
 
-        EvaluateHeader(null);
+        EvaluateHeader();
     }
 
     [RelayCommand]
-    private void EvaluateHeader(EditValueChangedEventArgs args)
+    private void EvaluateHeader()
     {
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
@@ -276,6 +279,27 @@ public partial class InvoiceViewModel : ObservableObject
     private void Focus(TextEdit sender)
     {
         sender.Focus();
+    }
+
+    [RelayCommand]
+    private void DeleteRows()
+    {
+        List<int> indexs = new List<int>();
+       foreach(var row in SelectedRows)
+       {
+            indexs.Add(Header.Lines.IndexOf(row));
+       }
+
+        indexs.ForEach(x => 
+        {
+            if(x >= 0)
+            {
+                Header.Lines.RemoveAt(x);
+            }
+        });
+
+        EvaluateForAllLines();
+        EvaluateHeader();
     }
 
     private void SetHeader()

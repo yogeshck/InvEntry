@@ -8,29 +8,32 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class DailyMetalRate : BaseEntity
+    public partial class DailyRate : BaseEntity
     {
         [ObservableProperty]
-        private string metalName;
+        private string? metal;
 
         [ObservableProperty]
-        private string purity;
+        private string? purity;
 
         [ObservableProperty]
-        private DateTime? effectiveDate;
+        private DateTime effectiveDate;
 
         [ObservableProperty]
-        private string carat;
+        private string? carat;
 
         [ObservableProperty]
         private decimal? price;
 
+        [ObservableProperty]
+        private bool isDisplay;
+
         [property: JsonIgnore]
-        public MetalType metalType 
+        public MetalType MetalType 
         {
             get 
             {
-                if(Enum.TryParse<MetalType>(MetalName, out var value))
+                if(Enum.TryParse<MetalType>(Metal, out var value))
                     return value;
                 return MetalType.Gold;
             }

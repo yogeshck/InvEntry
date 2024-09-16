@@ -15,6 +15,8 @@ public partial class MijmsContext : DbContext
     {
     }
 
+    public virtual DbSet<DailyRate> DailyRates { get; set; }
+
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
 
     public virtual DbSet<InvoiceLine> InvoiceLines { get; set; }
@@ -49,6 +51,37 @@ public partial class MijmsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<DailyRate>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("DAILY_RATE");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.Carat)
+                .HasMaxLength(20)
+                .HasColumnName("CARAT");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(30)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn).HasColumnName("CREATED_ON");
+            entity.Property(e => e.EffectiveDate).HasColumnName("EFFECTIVE_DATE");
+            entity.Property(e => e.IsDisplay).HasColumnName("IS_DISPLAY");
+            entity.Property(e => e.Metal)
+                .HasMaxLength(20)
+                .HasColumnName("METAL");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(20)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn).HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.Price)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("PRICE");
+            entity.Property(e => e.Purity)
+                .HasMaxLength(20)
+                .HasColumnName("PURITY");
+        });
+
         modelBuilder.Entity<InvoiceHeader>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -142,7 +175,9 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.InvlTaxTotal)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("INVL_TAX_TOTAL");
-            entity.Property(e => e.IsTaxApplicable).HasColumnName("IS_TAX_APPLICABLE");
+            entity.Property(e => e.IsTaxApplicable)
+                .HasDefaultValue(true)
+                .HasColumnName("IS_TAX_APPLICABLE");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(30)
                 .IsUnicode(false)
@@ -802,6 +837,9 @@ public partial class MijmsContext : DbContext
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.ActiveForSale).HasColumnName("ACTIVE_FOR_SALE");
+            entity.Property(e => e.AdjustedWieght)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("ADJUSTED_WIEGHT");
             entity.Property(e => e.BaseUnit)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -817,7 +855,16 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
+            entity.Property(e => e.CustomerOrderRefId)
+                .HasMaxLength(50)
+                .HasColumnName("CUSTOMER_ORDER_REF_ID");
             entity.Property(e => e.DeletedFlag).HasColumnName("DELETED_FLAG");
+            entity.Property(e => e.DocDate)
+                .HasColumnType("datetime")
+                .HasColumnName("DOC_DATE");
+            entity.Property(e => e.DocRef)
+                .HasMaxLength(50)
+                .HasColumnName("DOC_REF");
             entity.Property(e => e.GrossWeight)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("GROSS_WEIGHT");
@@ -825,6 +872,9 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("HSN_CODE");
+            entity.Property(e => e.MakingCharges)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("MAKING_CHARGES");
             entity.Property(e => e.Metal)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -843,6 +893,9 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.NetWeight)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("NET_WEIGHT");
+            entity.Property(e => e.OriginalGrossWieght)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("ORIGINAL_GROSS_WIEGHT");
             entity.Property(e => e.OtherWeight)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("OTHER_WEIGHT");
@@ -868,6 +921,10 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ProductPurity)
                 .HasMaxLength(10)
                 .HasColumnName("PRODUCT_PURITY");
+            entity.Property(e => e.ProductSku)
+                .HasMaxLength(50)
+                .HasColumnName("PRODUCT_SKU");
+            entity.Property(e => e.ProductSold).HasColumnName("PRODUCT_SOLD");
             entity.Property(e => e.PurchaseRef)
                 .HasMaxLength(50)
                 .HasColumnName("PURCHASE_REF");
@@ -876,12 +933,22 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("SET_ID_GKEY");
+            entity.Property(e => e.Size).HasColumnName("SIZE");
+            entity.Property(e => e.SizeId)
+                .HasMaxLength(10)
+                .HasColumnName("SIZE_ID");
+            entity.Property(e => e.SizeUom)
+                .HasMaxLength(5)
+                .HasColumnName("SIZE_UOM");
             entity.Property(e => e.Status)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("STATUS");
             entity.Property(e => e.StockId).HasColumnName("STOCK_ID");
             entity.Property(e => e.SupplierId).HasColumnName("SUPPLIER_ID");
+            entity.Property(e => e.SupplierRate)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("SUPPLIER_RATE");
             entity.Property(e => e.TaxRule)
                 .HasMaxLength(50)
                 .HasColumnName("TAX_RULE");
@@ -896,6 +963,12 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.VaPercent)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("VA_PERCENT");
+            entity.Property(e => e.WastageAmount)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("WASTAGE_AMOUNT");
+            entity.Property(e => e.WastagePercent)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("WASTAGE_PERCENT");
         });
 
         modelBuilder.Entity<ProductTransaction>(entity =>

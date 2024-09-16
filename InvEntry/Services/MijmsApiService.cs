@@ -83,6 +83,11 @@ public class MijmsApiService : IMijmsApiService
             var completeUrl = $"{httpClient.BaseAddress}{url}";
 
             var httpResponse = await httpClient.PostAsJsonAsync<T>(completeUrl, data);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                Serilog.Log.Error("Error while post on {url} - {reason}", url, httpResponse.ReasonPhrase);
+            }
         }
         catch (Exception ex)
         {
@@ -99,6 +104,11 @@ public class MijmsApiService : IMijmsApiService
             var completeUrl = $"{httpClient.BaseAddress}{url}";
 
             var httpResponse = await httpClient.PutAsJsonAsync<T>(completeUrl, data);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                Serilog.Log.Error("Error while post on {url} - {reason}", url, httpResponse.ReasonPhrase);
+            }
         }
         catch (Exception ex)
         {

@@ -70,4 +70,32 @@ public partial class ProductStock
     public string? ProductPurity { get; set; }
 
     public string? ProductCategory { get; set; }
+
+    public decimal? SupplierRate { get; set; }
+
+    public decimal? MakingCharges { get; set; }
+
+    public string? CustomerOrderRefId { get; set; }
+
+    public int? Size { get; set; }
+
+    public string? SizeId { get; set; }
+
+    public string? SizeUom { get; set; }
+
+    public decimal? WastageAmount { get; set; }
+
+    public decimal? WastagePercent { get; set; }
+
+    public string? ProductSku { get; set; }
+
+    public decimal? OriginalGrossWieght { get; set; }
+
+    public decimal? AdjustedWieght { get; set; }
+
+    public string? DocRef { get; set; }
+
+    public DateTime? DocDate { get; set; }
+
+    public bool? ProductSold { get; set; }
 }

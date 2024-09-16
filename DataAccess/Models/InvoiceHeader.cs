@@ -21,7 +21,7 @@ public partial class InvoiceHeader
 
     public decimal? InvTaxableAmount { get; set; }
 
-    public short? IsTaxApplicable { get; set; }
+    public bool IsTaxApplicable { get; set; }
 
     public decimal? OldGoldAmount { get; set; }
 

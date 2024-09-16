@@ -6,14 +6,14 @@
     xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
     xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
     xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking"
-    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
     xmlns:dxwuin="http://schemas.devexpress.com/winfx/2008/xaml/windowsui/navigation"
-    xmlns:dxa="http://schemas.devexpress.com/winfx/2008/xaml/accordion" 
+    xmlns:dxa="http://schemas.devexpress.com/winfx/2008/xaml/accordion"
     xmlns:views="clr-namespace:InvEntry.Views"
     xmlns:page="clr-namespace:InvEntry.Views.Page"
     xmlns:ext="clr-namespace:InvEntry.Extension"
     xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
-        xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars" 
+        xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
         xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon"
     Title="InvEntry" Height="800" Width="1000"
         WindowStartupLocation="CenterScreen"
@@ -25,33 +25,35 @@
     DataContext="{ext:DISource Type=viewmodels:MainWindowViewModel}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
             <dxwui:HamburgerMenu
-        NavigationTarget="{Binding ElementName=frame}"  
-        OpenPaneWidth="200" 
+        NavigationTarget="{Binding ElementName=frame}"
+        OpenPaneWidth="200"
         AllowBuiltInNavigation="True"
-         Header="Menu">
+         Header="Menu"
+                ViewState="Closed">
                 <dxwui:HamburgerMenu.Items>
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                  Content="Invoice Entry"
-                                                 Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}"/>
+                                                 Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
-                                                 Content="Product Stock Entry" 
-                                                 Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}"/>
+                                                 Content="Product Stock Entry"
+                                                 Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}" />
                     <dxwui:HamburgerSubMenu>
                         <dxmvvm:Interaction.Behaviors>
-                            <dxwui:HamburgerSubMenuThemeSelectorBehavior ShowTouchThemes="False"/>
+                            <dxwui:HamburgerSubMenuThemeSelectorBehavior ShowTouchThemes="False" />
                         </dxmvvm:Interaction.Behaviors>
                     </dxwui:HamburgerSubMenu>
                 </dxwui:HamburgerMenu.Items>
                 <dxwui:HamburgerMenu.Content>
-                    <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade" NavigationCacheMode="Required" BackNavigationMode="PreviousScreen">
+                    <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade"
+                                           NavigationCacheMode="Required" BackNavigationMode="PreviousScreen" Width="1500">
                         <dxmvvm:Interaction.Behaviors>
-                            <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}"/>
-                            <ext:AttachServiceBehavior AtachableService="{Binding NavigationService}"/>
+                            <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}" />
+                            <ext:AttachServiceBehavior AtachableService="{Binding NavigationService}" />
                         </dxmvvm:Interaction.Behaviors>
                     </dxwui:NavigationFrame>
                 </dxwui:HamburgerMenu.Content>
@@ -59,15 +61,15 @@
         </DockPanel>
         <dxb:BarContainerControl ContainerType="Bottom" Grid.Row="1">
             <dxb:StatusBarControl Caption="Status Bar">
-                <dxb:BarStaticItem Content=""/>
+                <dxb:BarStaticItem Content="" />
             </dxb:StatusBarControl>
         </dxb:BarContainerControl>
         <dx:WaitIndicator DeferedVisibility="{Binding WaitIndicatorVisible}" Content="{Binding WaitIndicatorContent}">
             <dx:WaitIndicator.ContentTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Vertical">
-                        <TextBlock Text="Please Wait" FontSize="20"/>
-                        <TextBlock Text="{Binding}"/>
+                        <TextBlock Text="Please Wait" FontSize="20" />
+                        <TextBlock Text="{Binding}" />
                     </StackPanel>
                 </DataTemplate>
             </dx:WaitIndicator.ContentTemplate>
