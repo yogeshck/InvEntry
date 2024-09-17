@@ -29,6 +29,7 @@ namespace InvEntry.ViewModels
             _mijmsApiService = mijmsApiService;
         }
 
+        [RelayCommand]
         private async Task OnLoaded()
         {
             var dialyRates = await _mijmsApiService.GetEnumerable<DailyRate>("api/dailyrate/latest");
@@ -53,6 +54,18 @@ namespace InvEntry.ViewModels
             if (rate is null) return;
 
             await _mijmsApiService.Post<DailyRate>("api/dailyrate/save", rate);
+        }
+
+        private ObservableCollection<DailyRate> GenerateTodayRate()
+        {
+            ObservableCollection<DailyRate> rates = new();
+
+            rates.Add(new DailyRate()
+            {
+                
+            });
+
+            return rates;
         }
     }
 }

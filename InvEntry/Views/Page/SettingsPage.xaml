@@ -11,8 +11,15 @@
              xmlns:local="clr-namespace:InvEntry.Views.Page"
              xmlns:views="clr-namespace:InvEntry.Views"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
+             xmlns:ext="clr-namespace:InvEntry.Extension"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
              mc:Ignorable="d" 
+             xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+             DataContext="{ext:DISource Type=viewmodels:SettingsPageViewModel}" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <dxmvvm:Interaction.Behaviors>
+        <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}"/>
+    </dxmvvm:Interaction.Behaviors>
     <dxwui:NavigationPage.Resources>
         <DataTemplate x:Key="DailyRateItemTemplate">
             <StackPanel>
@@ -35,10 +42,12 @@
         </DataTemplate>
     </dxwui:NavigationPage.Resources>
     <Grid>
-        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}">
+        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}"
+                                ItemsSource="{Binding TodayDailyMetalRate}">
             
         </dxlc:FlowLayoutControl>
-        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource HistoryDailyRateItemTemplate}">
+        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource HistoryDailyRateItemTemplate}"
+                                ItemsSource="{Binding HistoryDailyMetalRate}">
         </dxlc:FlowLayoutControl>
     </Grid>
 </dxwui:NavigationPage>

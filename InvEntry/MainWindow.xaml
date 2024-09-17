@@ -48,6 +48,11 @@
                         </dxmvvm:Interaction.Behaviors>
                     </dxwui:HamburgerSubMenu>
                 </dxwui:HamburgerMenu.Items>
+                <dxwui:HamburgerMenu.BottomBarItems>
+                    <dxwui:HamburgerMenuBottomBarNavigationButton 
+                        NavigationTargetType="{x:Type page:SettingsPage}"
+                        Glyph="{dx:DXImage 'Images/Programming/Technology_32x32.png'}"/>
+                </dxwui:HamburgerMenu.BottomBarItems>
                 <dxwui:HamburgerMenu.Content>
                     <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade"
                                            NavigationCacheMode="Required" BackNavigationMode="PreviousScreen" Width="1500">
