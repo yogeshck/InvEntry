@@ -22,9 +22,17 @@ namespace DataAccess.Controllers
         }
 
         [HttpPost("save")]
-        public void PostList([FromBody] IEnumerable<DailyRate> data) 
+        public IEnumerable<DailyRate> PostList([FromBody] IEnumerable<DailyRate> data) 
         {
             _repository.AddRange(data);
+            return data;
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Put(long id, [FromBody] DailyRate data)
+        {
+            _repository.Update(data);
+            return Ok();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class DailyRate : BaseEntity
+    public partial class DailyRate : BaseEntity, IEqualityComparer<DailyRate>
     {
         [ObservableProperty]
         private string? metal;
@@ -37,6 +38,20 @@ namespace InvEntry.Models
                     return value;
                 return MetalType.Gold;
             }
+        }
+
+        public bool Equals(DailyRate? x, DailyRate? y)
+        {
+            return x is not null
+                && y is not null
+                && x.Metal.Equals(y.Metal, StringComparison.OrdinalIgnoreCase)
+                && x.Carat.Equals(y.Carat, StringComparison.OrdinalIgnoreCase)
+                && x.Purity.Equals(y.Purity, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public int GetHashCode([DisallowNull] DailyRate obj)
+        {
+            return obj.GetHashCode();
         }
     }
 }

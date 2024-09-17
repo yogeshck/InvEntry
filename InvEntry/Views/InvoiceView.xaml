@@ -18,7 +18,7 @@
              d:DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800" HorizontalAlignment="Left">
     <UserControl.Resources>
         <sys:String x:Key="Invl">InvoiceLine</sys:String>
         <Style TargetType="dxe:TextEdit">
@@ -47,10 +47,18 @@
                             StretchContentVertically="False" 
                             StretchContentHorizontally="False"
                             Grid.Row="1">
+            <dxlc:LayoutControl.Resources>
+                <Style x:Key="labelStyle" TargetType="dxlc:LayoutItemLabel">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+                <Style TargetType="dxlc:LayoutItem">
+                    <Setter Property="LabelStyle" Value="{StaticResource labelStyle}"/>
+                </Style>
+            </dxlc:LayoutControl.Resources>
             <dxlc:LayoutGroup Orientation="Vertical">
                 <dxlc:LayoutGroup Orientation="Horizontal">
-                    <dxlc:LayoutGroup Margin="10">
-                        <dxlc:LayoutGroup View="Group" Header="Invoice">
+                    <dxlc:LayoutGroup Orientation="Vertical">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Invoice">
                             <dxlc:LayoutItem Label="Number">
                                 <Label Content="{Binding Header.InvNbr}"/>
                             </dxlc:LayoutItem>
@@ -86,7 +94,7 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,10">
+                        <!--<dxlc:LayoutGroup Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,10">
                             <dxlc:LayoutItem Label="Product ID" LabelPosition="Top" >
                                 <StackPanel Orientation="Horizontal">
                                     <dxe:TextEdit EditValue="{Binding ProductIdUI}" Name="ProductIdUIName">
@@ -98,7 +106,8 @@
                                                  Command="{Binding FetchProductCommand}" BorderThickness="0" Background="Transparent"/>
                                 </StackPanel>
                             </dxlc:LayoutItem>
-                        </dxlc:LayoutGroup>
+                        </dxlc:LayoutGroup>-->
+                        <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
                     <dxlc:LayoutGroup HorizontalAlignment="Left" 
@@ -182,22 +191,27 @@
                         <dxb:BarManager.Bars>
                             <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
                                              AllowCustomizationMenu="False" ShowDragWidget="False" UseWholeRow="True">
-                                <!--<dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
+                                <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
+                                                 Content="Product Id" EditWidth="150" EditHeight="30">
+                                    <dxb:BarEditItem.EditSettings>
+                                        <dxe:TextEditSettings />
+                                    </dxb:BarEditItem.EditSettings>
+                                </dxb:BarEditItem>
+                                <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
                                                  Command="{Binding FetchProductCommand}" GlyphSize="Large" 
-                                                 Content="Add Product" GlyphAlignment="Right" 
+                                                 GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
-                                <dxb:BarItemSeparator/>-->
+                                <dxb:BarItemSeparator/>
                                 <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
                                                  Command="{Binding DeleteRowsCommand}" GlyphSize="Large" 
-                                                 Content="Delete" GlyphAlignment="Right" />
-                                <dxb:BarItemSeparator/>
+                                                 Content="Delete" GlyphAlignment="Right"/>
                                 <dxb:BarItemLink BarItemName="btnPrint" Alignment="Far"/>
                                 <dxb:BarItemLink BarItemName="btnPrintPreview" Alignment="Far"/>
                             </dxb:Bar>
                         </dxb:BarManager.Bars>
                         <dxg:GridControl ItemsSource="{Binding Header.Lines}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="600" MinHeight="400" SelectedItems="{Binding SelectedRows}">
+                                         MaxHeight="600" MinHeight="400" Height="150" SelectedItems="{Binding SelectedRows}" HorizontalAlignment="Left">
                             <dxg:GridControl.Resources>
                                 <!--<Style TargetType="dxg:GridColumn">
                                     <Setter Property="Width" Value="*"/>

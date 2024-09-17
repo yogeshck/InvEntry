@@ -83,7 +83,7 @@ public partial class InvoiceHeader : BaseEntity
     private string? invNotes;
 
     [ObservableProperty]
-    private bool? isTaxApplicable;
+    private bool isTaxApplicable;
 
     [ObservableProperty]
     private string? taxType;      // GST

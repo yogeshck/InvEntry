@@ -14,8 +14,10 @@ public interface IMijmsApiService
 {
     Task<T> Get<T>(string url) where T : class;
     Task<IEnumerable<T>> GetEnumerable<T>(string url) where T : class;
-    Task Post<T>(string url, T data) where T : class;
+    Task<T> Post<T>(string url, T data) where T : class;
+    Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : class;
     Task Put<T>(string url, T data) where T : class;
+    Task Put<T>(string url, IEnumerable<T> data) where T : class;
 }
 
 public class MijmsApiService : IMijmsApiService
@@ -74,7 +76,7 @@ public class MijmsApiService : IMijmsApiService
         return default;
     }
 
-    public async Task Post<T>(string url, T data) where T : class
+    public async Task<T> Post<T>(string url, T data) where T : class
     {
         try
         {
@@ -88,10 +90,37 @@ public class MijmsApiService : IMijmsApiService
             {
                 Serilog.Log.Error("Error while post on {url} - {reason}", url, httpResponse.ReasonPhrase);
             }
+
+            return await httpResponse.Content.ReadFromJsonAsync<T>();
         }
         catch (Exception ex)
         {
             Serilog.Log.Error(ex, "Error while get on {url}", url);
+            return default;
+        }
+    }
+
+    public async Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : class
+    {
+        try
+        {
+            var httpClient = _httpClientFactory.CreateClient("mijms");
+
+            var completeUrl = $"{httpClient.BaseAddress}{url}";
+
+            var httpResponse = await httpClient.PostAsJsonAsync(completeUrl, data);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                Serilog.Log.Error("Error while post on {url} - {reason}", url, httpResponse.ReasonPhrase);
+            }
+
+            return await httpResponse.Content.ReadFromJsonAsync<IEnumerable<T>>();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error while get on {url}", url);
+            return default;
         }
     }
 
@@ -103,7 +132,28 @@ public class MijmsApiService : IMijmsApiService
 
             var completeUrl = $"{httpClient.BaseAddress}{url}";
 
-            var httpResponse = await httpClient.PutAsJsonAsync<T>(completeUrl, data);
+            var httpResponse = await httpClient.PutAsJsonAsync(completeUrl, data);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                Serilog.Log.Error("Error while post on {url} - {reason}", url, httpResponse.ReasonPhrase);
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error while get on {url}", url);
+        }
+    }
+
+    public async Task Put<T>(string url, IEnumerable<T> data) where T : class
+    {
+        try
+        {
+            var httpClient = _httpClientFactory.CreateClient("mijms");
+
+            var completeUrl = $"{httpClient.BaseAddress}{url}";
+
+            var httpResponse = await httpClient.PutAsJsonAsync(completeUrl, data);
 
             if (!httpResponse.IsSuccessStatusCode)
             {

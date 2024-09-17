@@ -22,13 +22,17 @@
     </dxmvvm:Interaction.Behaviors>
     <dxwui:NavigationPage.Resources>
         <DataTemplate x:Key="DailyRateItemTemplate">
-            <StackPanel>
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True"/>
-                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True"/>
-                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True"/>
-                <dxe:TextEdit Text="{Binding EffectiveDate}" IsReadOnly="True"/>
-                <dxe:TextEdit EditValue="{Binding Price}" />
+            <Border BorderThickness="5">
+                <StackPanel>
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="120"/>
+                    <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="120"/>
+                    <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" Width="120"/>
+                    <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="120"/>
+                    <dxe:TextEdit EditValue="{Binding Price}" Width="120"/>
+                <dx:SimpleButton Content="Save" Command="{Binding SaveDailyRateCommand, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" 
+                                 CommandParameter="{Binding .}" Width="120"/>
             </StackPanel>
+            </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="HistoryDailyRateItemTemplate">
@@ -41,14 +45,13 @@
             </StackPanel>
         </DataTemplate>
     </dxwui:NavigationPage.Resources>
-    <Grid>
+    <StackPanel>
+        <Label Content="Today's Rate"/>
         <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}"
-                                ItemsSource="{Binding TodayDailyMetalRate}">
-            
-        </dxlc:FlowLayoutControl>
+                                ItemsSource="{Binding TodayDailyMetalRate}" Orientation="Horizontal"/>
+        <Label Content="Yesterday's Rate" Margin="0,50,0,0"/>
         <dxlc:FlowLayoutControl ItemTemplate="{StaticResource HistoryDailyRateItemTemplate}"
-                                ItemsSource="{Binding HistoryDailyMetalRate}">
-        </dxlc:FlowLayoutControl>
-    </Grid>
+                                ItemsSource="{Binding HistoryDailyMetalRate}" Orientation="Horizontal"/>
+    </StackPanel>
 </dxwui:NavigationPage>
  

@@ -34,9 +34,10 @@ namespace DataAccess.Controllers
 
         // POST api/<BaseController>
         [HttpPost]
-        public void Post([FromBody] T value)
+        public T Post([FromBody] T value)
         {
             _repository.Add(value);
+            return value;
         }
     }
 }

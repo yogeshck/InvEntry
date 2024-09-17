@@ -319,7 +319,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     private decimal GetGSTWithinState()
     {
-        if (Buyer.GstStateCode == "33")
+        if (Buyer?.GstStateCode == "33")
         {
             return Math.Round(SCGSTPercent / 2, 3);
         }
