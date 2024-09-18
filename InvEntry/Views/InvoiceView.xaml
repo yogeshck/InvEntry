@@ -11,7 +11,7 @@
              xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
-             xmlns:local="clr-namespace:InvEntry.Views"ReRe
+             xmlns:local="clr-namespace:InvEntry.Views"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
@@ -36,10 +36,22 @@
         </Grid.ColumnDefinitions>
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
+                <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
+                                   BarItemDisplayMode="ContentAndGlyph"
+                                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
+                    GlyphSize="Large"
+                                    Command="{Binding CreateInvoiceCommand}"/>
+                <dxb:BarItemSeparator/>
+
                 <dxb:BarButtonItem x:Name="btnPrint" 
                                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
-                                   GlyphSize="Large"/>
+                                   GlyphSize="Large"
+                                    BarItemDisplayMode="ContentAndGlyph"
+ GlyphAlignment="Top"/>
                 <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
+                                    BarItemDisplayMode="ContentAndGlyph"
+ GlyphAlignment="Top"
                                    GlyphSize="Large"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
@@ -55,7 +67,7 @@
                     <Setter Property="LabelStyle" Value="{StaticResource labelStyle}"/>
                 </Style>
             </dxlc:LayoutControl.Resources>
-            <dxlc:LayoutGroup Orientation="Vertical">
+            <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Invoice Entry">
                 <dxlc:LayoutGroup Orientation="Horizontal">
                     <dxlc:LayoutGroup Orientation="Vertical">
                         <dxlc:LayoutGroup View="GroupBox" Header="Invoice">
@@ -94,19 +106,6 @@
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
-                        <!--<dxlc:LayoutGroup Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,0,10">
-                            <dxlc:LayoutItem Label="Product ID" LabelPosition="Top" >
-                                <StackPanel Orientation="Horizontal">
-                                    <dxe:TextEdit EditValue="{Binding ProductIdUI}" Name="ProductIdUIName">
-                                        <dxmvvm:Interaction.Behaviors>
-                                            <behavior:FocusTextEditBehavior />
-                                        </dxmvvm:Interaction.Behaviors>
-                                    </dxe:TextEdit>
-                                    <dx:SimpleButton Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
-                                                 Command="{Binding FetchProductCommand}" BorderThickness="0" Background="Transparent"/>
-                                </StackPanel>
-                            </dxlc:LayoutItem>
-                        </dxlc:LayoutGroup>-->
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
@@ -185,86 +184,94 @@
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
+                    <dxlc:GroupSeparator Orientation="Vertical"/>
+                    <dxlc:LayoutGroup Orientation="Vertical">
+                        <dxlc:LayoutItem Label="Gold Price (Rs)" LabelPosition="Top" Margin="10">
+                            <dxe:TextEdit EditValue="{Binding Gold22C.Price, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" IsReadOnly="True"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Silver Price (Rs)" LabelPosition="Top"  Margin="10">
+                            <dxe:TextEdit EditValue="{Binding Silver.Price, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" IsReadOnly="True"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Gold Price (Rs)" LabelPosition="Top"  Margin="10">
+                            <dxe:TextEdit EditValue="{Binding Diamond.Price, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" IsReadOnly="True"/>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
-                <dxlc:LayoutItem>
-                    <dxb:BarManager AllowCustomization="False" >
-                        <dxb:BarManager.Bars>
-                            <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
-                                             AllowCustomizationMenu="False" ShowDragWidget="False" UseWholeRow="True">
-                                <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
+                <dxlc:LayoutGroup>
+                    <dxlc:LayoutItem>
+                        <dxb:BarManager AllowCustomization="False" >
+                            <dxb:BarManager.Bars>
+                                <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
+                                             AllowCustomizationMenu="False" ShowDragWidget="False">
+                                    <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
                                                  Content="Product Id" EditWidth="150" EditHeight="30">
-                                    <dxb:BarEditItem.EditSettings>
-                                        <dxe:TextEditSettings />
-                                    </dxb:BarEditItem.EditSettings>
-                                </dxb:BarEditItem>
-                                <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
+                                        <dxb:BarEditItem.EditSettings>
+                                            <dxe:TextEditSettings />
+                                        </dxb:BarEditItem.EditSettings>
+                                    </dxb:BarEditItem>
+                                    <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
                                                  Command="{Binding FetchProductCommand}" GlyphSize="Large" 
                                                  GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
-                                <dxb:BarItemSeparator/>
-                                <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
+                                    <dxb:BarItemSeparator/>
+                                    <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
                                                  Command="{Binding DeleteRowsCommand}" GlyphSize="Large" 
                                                  Content="Delete" GlyphAlignment="Right"/>
-                                <dxb:BarItemLink BarItemName="btnPrint" Alignment="Far"/>
-                                <dxb:BarItemLink BarItemName="btnPrintPreview" Alignment="Far"/>
-                            </dxb:Bar>
-                        </dxb:BarManager.Bars>
-                        <dxg:GridControl ItemsSource="{Binding Header.Lines}" 
+                                </dxb:Bar>
+                            </dxb:BarManager.Bars>
+                            <dxg:GridControl ItemsSource="{Binding Header.Lines}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="600" MinHeight="400" Height="150" SelectedItems="{Binding SelectedRows}" HorizontalAlignment="Left">
-                            <dxg:GridControl.Resources>
-                                <!--<Style TargetType="dxg:GridColumn">
-                                    <Setter Property="Width" Value="*"/>
-                                </Style>-->
-                                <Style TargetType="dxe:TextEdit">
-                                    <Setter Property="Width" Value="Auto"/>
-                                </Style>
-                            </dxg:GridControl.Resources>
-                            <dxg:GridControl.Columns>
-                                <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
-                                <dxg:GridColumn FieldName="ProductName" ReadOnly="True"/>
-                                <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" />
-                                <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
-                                <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
-                                <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
-                                <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
-                                <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" />
-                                <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" ReadOnly="True" />
-                                <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
-                                <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" />
-                            </dxg:GridControl.Columns>
-                            <dxg:GridControl.TotalSummary>
-                                <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
+                                         MaxHeight="600" MinHeight="400" SelectedItems="{Binding SelectedRows}" HorizontalAlignment="Left">
+                                <dxg:GridControl.Resources>
+                                    <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                    </Style>
+                                    <Style TargetType="dxg:GridColumn">
+                                        <Setter Property="HeaderStyle" Value="{StaticResource boldHeader}"/>
+                                    </Style>
+                                    <Style TargetType="dxe:TextEdit">
+                                        <Setter Property="Width" Value="Auto"/>
+                                    </Style>
+                                </dxg:GridControl.Resources>
+                                <dxg:GridControl.Columns>
+                                    <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
+                                    <dxg:GridColumn FieldName="ProductName" ReadOnly="True"/>
+                                    <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" />
+                                    <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
+                                    <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
+                                    <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
+                                    <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
+                                    <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" />
+                                    <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" ReadOnly="True" />
+                                    <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
+                                    <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" />
+                                </dxg:GridControl.Columns>
+                                <dxg:GridControl.TotalSummary>
+                                    <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
                                                  DisplayFormat="Taxable = {0}"
                                                  FieldName="InvlTaxableAmount"/>
 
-                                <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
+                                    <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
                                                  DisplayFormat="Total = {0}"
                                                  FieldName="InvlTotal"/>
-                            </dxg:GridControl.TotalSummary>
-                            <dxg:GridControl.View>
-                                <dxg:TableView AllowGrouping="False"
+                                </dxg:GridControl.TotalSummary>
+                                <dxg:GridControl.View>
+                                    <dxg:TableView AllowGrouping="False"
                                AllowBestFit="True" ShowGroupPanel="False" TotalSummaryPosition="Bottom">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="CellValueChanged" 
+                                        <dxmvvm:Interaction.Behaviors>
+                                            <dxmvvm:EventToCommand EventName="CellValueChanged" 
                                                            Command="{Binding CellUpdateCommand}"
                                                            PassEventArgsToCommand="True"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                    <dxg:TableView.RowCellMenuCustomizations>
-                                        <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" Command="{Binding DeleteSingleRowCommand}"
+                                        </dxmvvm:Interaction.Behaviors>
+                                        <dxg:TableView.RowCellMenuCustomizations>
+                                            <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
+                                                           Command="{Binding DataContext.DeleteSingleRowCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
                                                            Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
-                                    </dxg:TableView.RowCellMenuCustomizations>
-                                </dxg:TableView>
-                            </dxg:GridControl.View>
-                        </dxg:GridControl>
-                    </dxb:BarManager>
-                </dxlc:LayoutItem>
-                <dxlc:LayoutGroup HorizontalAlignment="Right" Margin="10">
-                    <dxlc:LayoutItem>
-                        <dx:SimpleButton Content="Submit" Height="30" Width="100" Command="{Binding CreateInvoiceCommand}"/>
-                    </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Visibility="{Binding IsPrint, Converter={dxmvvm:BooleanToVisibilityConverter}}">
-                        <dx:SimpleButton Content="Print Invoice" Height="30" Width="100" Command="{Binding PrintInvoiceCommand}"/>
+                                        </dxg:TableView.RowCellMenuCustomizations>
+                                    </dxg:TableView>
+                                </dxg:GridControl.View>
+                            </dxg:GridControl>
+                        </dxb:BarManager>
                     </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>

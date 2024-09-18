@@ -285,7 +285,7 @@ public partial class InvoiceViewModel : ObservableObject
         sender.Focus();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanDeleteRows))]
     private void DeleteRows()
     {
         var result = _messageBoxService.ShowMessage("Delete all selected rows", "Delete Rows", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
@@ -311,10 +311,25 @@ public partial class InvoiceViewModel : ObservableObject
         EvaluateHeader();
     }
 
-    [RelayCommand]
+    private bool CanDeleteRows()
+    {
+        return SelectedRows?.Any() ?? false;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanDeleteSingleRow))]
     private void DeleteSingleRow(InvoiceLine line)
     {
+        var result = _messageBoxService.ShowMessage("Delete current row", "Delete Row", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+        if (result == MessageResult.No)
+            return;
+
         var index = Header.Lines.Remove(line);
+    }
+
+    private bool CanDeleteSingleRow(InvoiceLine line)
+    {
+        return line is not null && Header.Lines.IndexOf(line) > -1;
     }
 
     private void SetHeader()

@@ -34,7 +34,8 @@
         OpenPaneWidth="200"
         AllowBuiltInNavigation="True"
          Header="Menu"
-                ViewState="Inline">
+                ViewState="Closed"
+                AvailableViewStates="Overlay">
                 <dxwui:HamburgerMenu.Items>
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                  Content="Invoice Entry"
