@@ -29,8 +29,6 @@
                 <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" 
                               DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250"/>
                 <dxe:TextEdit EditValue="{Binding Price}" Width="250" NullText="Today Price" MaskType="Numeric" />
-                <dx:SimpleButton Content="Save" Command="{Binding SaveDailyRateCommand, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" 
-                                 CommandParameter="{Binding .}" Width="250"/>
             </StackPanel>
         </DataTemplate>
 
@@ -45,7 +43,12 @@
         </DataTemplate>
     </dxwui:NavigationPage.Resources>
     <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Margin="70,0,0,0">
-        <Label Content="Today's Rate" FontSize="20" Margin="50"/>
+        <StackPanel Orientation="Horizontal" Margin="50">
+            <Label Content="Today's Rate" FontSize="20" />
+            <dx:SimpleButton Content="Save All" Command="{Binding SaveAllDailyRateCommand}" 
+                             Glyph="{dx:DXImage 'Images/Save/SaveAll_32x32.png'}"
+                             Background="Transparent" Margin="20,0,0,0"/>
+        </StackPanel>
         <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}"
                                 ItemsSource="{Binding TodayDailyMetalRate}" Orientation="Horizontal" Width="1500"/>
         <Label Content="Yesterday's Rate" FontSize="20" Margin="50"/>

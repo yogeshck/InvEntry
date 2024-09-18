@@ -45,7 +45,8 @@ namespace InvEntry.IoC
                 $"[{nameof(InvoiceLine.InvlTaxableAmount)}] * Round(([{nameof(InvoiceLine.InvlIgstPercent)}]/ 100), 3)");
 
             store.AddFormula<InvoiceLine>(x => x.InvlTotal,
-                $"[{nameof(InvoiceLine.InvlTaxableAmount)}] + [{nameof(InvoiceLine.InvlCgstAmount)}] + [{nameof(InvoiceLine.InvlSgstAmount)}] + [{nameof(InvoiceLine.InvlIgstAmount)}]");
+                //$"[{nameof(InvoiceLine.InvlTaxableAmount)}] + [{nameof(InvoiceLine.InvlCgstAmount)}] + [{nameof(InvoiceLine.InvlSgstAmount)}] + [{nameof(InvoiceLine.InvlIgstAmount)}]");
+                $"[{nameof(InvoiceLine.InvlTaxableAmount)}]");
         }
 
 

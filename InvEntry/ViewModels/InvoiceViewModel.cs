@@ -141,6 +141,10 @@ public partial class InvoiceViewModel : ObservableObject
             Header.GstLocBuyer = Buyer.GstStateCode;
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
             IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
+
+            Header.CgstPercent = GetGSTWithinState();
+            Header.SgstPercent = GetGSTWithinState();
+            Header.IgstPercent = IGSTPercent;
         }
 
         Header.CustMobile = phoneNumber;
@@ -222,10 +226,6 @@ public partial class InvoiceViewModel : ObservableObject
         Header.SgstAmount = Header.Lines.Select(x => x.InvlSgstAmount).Sum();
         Header.IgstAmount = Header.Lines.Select(x => x.InvlIgstAmount).Sum();
 
-        Header.CgstPercent = Header.Lines.FirstOrDefault().InvlCgstPercent;
-        Header.SgstPercent = Header.Lines.FirstOrDefault().InvlSgstPercent;
-        Header.IgstPercent = Header.Lines.FirstOrDefault().InvlIgstPercent;
-
         Header.Lines.ForEach(x =>
         {
             x.InvLineNbr = Header.Lines.IndexOf(x) + 1;
@@ -263,15 +263,32 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
+        // TaxableTotal
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
-        Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.GetValueOrDefault(), 0) - Header.InvlTaxTotal.GetValueOrDefault());
+        // Line Taxable Total minus Old Gold & Silver Amount
+        var BeforeTax = Header.InvlTaxTotal - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault();
 
-        Header.GrossRcbAmount = MathUtils.Normalize(Header.InvlTaxTotal.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault() - Header.DiscountAmount.GetValueOrDefault());
+        var CGSTAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
+        var SGSTAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
+        var IGSTAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
 
-        Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
+        // After Tax
+        var AfterTax = BeforeTax + CGSTAmount + SGSTAmount + IGSTAmount;
 
-        Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
+        //Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.GetValueOrDefault(), 0) - Header.InvlTaxTotal.GetValueOrDefault());
+        
+        Header.RoundOff = MathUtils.Normalize(Math.Round(AfterTax.GetValueOrDefault(), 0) - AfterTax.GetValueOrDefault());
+
+        Header.AmountPayable = MathUtils.Normalize(AfterTax.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault());
+
+        //Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
+
+        var AmountTobeReduced = Header.DiscountAmount.GetValueOrDefault() + Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault() + Header.RecdAmount.GetValueOrDefault();
+
+        //Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
+        
+        Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - AmountTobeReduced);
 
         if (Header.InvBalance > 0 && !Header.PaymentDueDate.HasValue)
         {

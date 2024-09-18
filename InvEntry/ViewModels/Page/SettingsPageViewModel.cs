@@ -83,7 +83,17 @@ namespace InvEntry.ViewModels
         {
             if (!TodayDailyMetalRate.Any()) return;
 
-            await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate);
+            var savedRates = await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate);
+
+            foreach(var savedRate in savedRates)
+            {
+                if(TodayDailyMetalRate.Any(x => IsSame(x, savedRate)))
+                {
+                    TodayDailyMetalRate.First(x => IsSame(x, savedRate)).GKey = savedRate.GKey;
+                }
+            }
+
+            GenerateTodayRate();
         }
 
         [RelayCommand]
