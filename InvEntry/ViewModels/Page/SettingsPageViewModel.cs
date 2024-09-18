@@ -100,16 +100,26 @@ namespace InvEntry.ViewModels
             {
                 await _mijmsApiService.Put($"api/dailyrate/{rate.GKey}", rate);
             }
+
+            GenerateTodayRate();
         }
 
         private void GenerateTodayRate()
         {
             if (!TodayDailyMetalRate.Any(x => IsSame(x, Gold22C)))
                 TodayDailyMetalRate.Add(Gold22C);
+            else
+                Gold22C = TodayDailyMetalRate.First(x => IsSame(x, Gold22C));
+
             if (!TodayDailyMetalRate.Any(x => IsSame(x, Silver)))
                 TodayDailyMetalRate.Add(Silver);
+            else
+                Silver = TodayDailyMetalRate.First(x => IsSame(x, Silver));
+
             if (!TodayDailyMetalRate.Any(x => IsSame(x, Diamond)))
                 TodayDailyMetalRate.Add(Diamond);
+            else
+                Diamond = TodayDailyMetalRate.First(x => IsSame(x, Diamond));
         }
 
         private bool IsSame(DailyRate x, DailyRate y)
@@ -118,5 +128,36 @@ namespace InvEntry.ViewModels
                 && x.Metal.Equals(y.Metal, StringComparison.OrdinalIgnoreCase)
                 && ((x.Carat is null && y.Carat is null)  || x.Carat.Equals(y.Carat, StringComparison.OrdinalIgnoreCase))
                 && x.Purity.Equals(y.Purity, StringComparison.OrdinalIgnoreCase);
+
+        public bool IsAllPriceUpdated()
+        {
+            var date = DateTime.Now.Date;
+
+            return Gold22C.EffectiveDate.Date == date && Gold22C.Price.HasValue
+                && Silver.EffectiveDate.Date == date && Silver.Price.HasValue
+                && Diamond.EffectiveDate.Date == date && Diamond.Price.HasValue;
+        }
+
+        public decimal? GetPrice(MetalType metalType)
+        {
+            return metalType switch
+            {
+                MetalType.Gold => Gold22C.Price,
+                MetalType.Silver => Silver.Price,
+                MetalType.Diamond => Diamond.Price,
+                _ => 0M
+            };
+        }
+
+        public decimal? GetPrice(string metalType)
+        {
+            return metalType switch
+            {
+                var s when s.Equals("GOLD", StringComparison.OrdinalIgnoreCase) => Gold22C.Price,
+                var s when s.Equals("Silver", StringComparison.OrdinalIgnoreCase) => Silver.Price,
+                var s when s.Equals("Diamond", StringComparison.OrdinalIgnoreCase) => Diamond.Price,
+                _ => 0M
+            };
+        }
     }
 }

@@ -21,25 +21,33 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private string _WaitIndicatorContent;
 
-        [ObservableProperty]
-        private decimal? goldRate;
+        public decimal? GoldRate
+            => _settingsPageViewModel?.Gold22C?.Price;
 
-        [ObservableProperty]
-        private decimal? silverRate;
+        public decimal? SilverRate
+            => _settingsPageViewModel?.Silver?.Price;
 
-        [ObservableProperty]
-        private decimal? diamondRate;
+        public decimal? DiamondRate
+            => _settingsPageViewModel?.Diamond?.Price;
 
-        public MainWindowViewModel(INavigationService navigationService)
+        private SettingsPageViewModel _settingsPageViewModel;
+
+        public MainWindowViewModel(INavigationService navigationService, SettingsPageViewModel settingsPageViewModel)
         {
             _navigationService = navigationService;
+            _settingsPageViewModel = settingsPageViewModel;
             Messenger.Default.Register<WaitIndicatorVM>(this, MessageType.WaitIndicator, SetWaitIndicator);
         }
 
         [RelayCommand]
-        private void OnLoaded()
+        private async Task OnLoaded()
         {
-            NavigationService.Navigate("InvoiceEntryPage");
+            await _settingsPageViewModel.LoadedCommand.ExecuteAsync(null);
+
+            if(_settingsPageViewModel.IsAllPriceUpdated())
+                NavigationService.Navigate("InvoiceEntryPage");
+            else
+                NavigationService.Navigate("SettingsPage");
         }
 
         private void SetWaitIndicator(WaitIndicatorVM vm)

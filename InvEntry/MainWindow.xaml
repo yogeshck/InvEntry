@@ -34,7 +34,7 @@
         OpenPaneWidth="200"
         AllowBuiltInNavigation="True"
          Header="Menu"
-                ViewState="Closed">
+                ViewState="Inline">
                 <dxwui:HamburgerMenu.Items>
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                  Content="Invoice Entry"
@@ -42,17 +42,15 @@
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
                                                  Content="Product Stock Entry"
                                                  Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}" />
-                    <dxwui:HamburgerSubMenu>
+                    <dxwui:HamburgerMenuNavigationButton Content="Price Setting"
+                        NavigationTargetType="{x:Type page:SettingsPage}"
+                        Glyph="{dx:DXImage 'Images/Programming/Technology_32x32.png'}"/>
+                    <!--<dxwui:HamburgerSubMenu>
                         <dxmvvm:Interaction.Behaviors>
                             <dxwui:HamburgerSubMenuThemeSelectorBehavior ShowTouchThemes="False" />
                         </dxmvvm:Interaction.Behaviors>
-                    </dxwui:HamburgerSubMenu>
+                    </dxwui:HamburgerSubMenu>--> 
                 </dxwui:HamburgerMenu.Items>
-                <dxwui:HamburgerMenu.BottomBarItems>
-                    <dxwui:HamburgerMenuBottomBarNavigationButton 
-                        NavigationTargetType="{x:Type page:SettingsPage}"
-                        Glyph="{dx:DXImage 'Images/Programming/Technology_32x32.png'}"/>
-                </dxwui:HamburgerMenu.BottomBarItems>
                 <dxwui:HamburgerMenu.Content>
                     <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade"
                                            NavigationCacheMode="Required" BackNavigationMode="PreviousScreen" Width="1500">
@@ -66,7 +64,9 @@
         </DockPanel>
         <dxb:BarContainerControl ContainerType="Bottom" Grid.Row="1">
             <dxb:StatusBarControl Caption="Status Bar">
-                <dxb:BarStaticItem Content="" />
+                <dxb:BarStaticItem Content="{Binding GoldRate, StringFormat=GoldRate:{0}}"/>
+                <dxb:BarStaticItem Content="{Binding SilverRate, StringFormat=SilverRate:{0}}"/>
+                <dxb:BarStaticItem Content="{Binding DiamondRate, StringFormat=DiamondRate:{0}}"/>
             </dxb:StatusBarControl>
         </dxb:BarContainerControl>
         <dx:WaitIndicator DeferedVisibility="{Binding WaitIndicatorVisible}" Content="{Binding WaitIndicatorContent}">

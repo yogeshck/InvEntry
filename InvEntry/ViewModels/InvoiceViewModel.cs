@@ -54,6 +54,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IDialogService _dialogService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceService _invoiceService;
+    private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
     private decimal IGSTPercent = 0M;
@@ -68,7 +69,8 @@ public partial class InvoiceViewModel : ObservableObject
         IProductService productService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
-        IMessageBoxService messageBoxService)
+        IMessageBoxService messageBoxService,
+        SettingsPageViewModel settingsPageViewModel)
     {
         SetHeader();
         _customerService = customerService;
@@ -79,6 +81,7 @@ public partial class InvoiceViewModel : ObservableObject
         _currentRate = 2600;
         _customerReadOnly = true;
         _isPrint = false;
+        _settingsPageViewModel = settingsPageViewModel;
         PopulateUnboundLineDataMap();
         PopulateUnboundHeaderDataMap();
     }
@@ -157,10 +160,12 @@ public partial class InvoiceViewModel : ObservableObject
             return;
         }
 
+        var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
+
         InvoiceLine invoiceLine = new InvoiceLine()
         {
             ProdQty = 1,
-            InvlBilledPrice = CurrentRate,
+            InvlBilledPrice = billedPrice,
             InvlCgstPercent = GetGSTWithinState(),
             InvlSgstPercent = GetGSTWithinState(),
             InvlIgstPercent = IGSTPercent,
@@ -283,6 +288,11 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void DeleteRows()
     {
+        var result = _messageBoxService.ShowMessage("Delete all selected rows", "Delete Rows", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+        if (result == MessageResult.No)
+            return;
+
         List<int> indexs = new List<int>();
        foreach(var row in SelectedRows)
        {
@@ -312,7 +322,7 @@ public partial class InvoiceViewModel : ObservableObject
         Header = new()
         {
             InvDate = DateTime.Now,
-           //IsTaxApplicable = true,
+            IsTaxApplicable = true,
             GstLocSeller = "33"
         };
     }

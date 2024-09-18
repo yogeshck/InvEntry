@@ -22,17 +22,16 @@
     </dxmvvm:Interaction.Behaviors>
     <dxwui:NavigationPage.Resources>
         <DataTemplate x:Key="DailyRateItemTemplate">
-            <Border BorderThickness="5">
-                <StackPanel>
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="120"/>
-                    <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="120"/>
-                    <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" Width="120"/>
-                    <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="120"/>
-                    <dxe:TextEdit EditValue="{Binding Price}" Width="120"/>
+            <StackPanel Margin="20">
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="250"/>
+                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="250"/>
+                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" Width="250"/>
+                <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" 
+                              DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250"/>
+                <dxe:TextEdit EditValue="{Binding Price}" Width="250" NullText="Today Price" MaskType="Numeric" />
                 <dx:SimpleButton Content="Save" Command="{Binding SaveDailyRateCommand, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" 
-                                 CommandParameter="{Binding .}" Width="120"/>
+                                 CommandParameter="{Binding .}" Width="250"/>
             </StackPanel>
-            </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="HistoryDailyRateItemTemplate">
@@ -45,11 +44,11 @@
             </StackPanel>
         </DataTemplate>
     </dxwui:NavigationPage.Resources>
-    <StackPanel>
-        <Label Content="Today's Rate"/>
+    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Margin="70,0,0,0">
+        <Label Content="Today's Rate" FontSize="20" Margin="50"/>
         <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}"
-                                ItemsSource="{Binding TodayDailyMetalRate}" Orientation="Horizontal"/>
-        <Label Content="Yesterday's Rate" Margin="0,50,0,0"/>
+                                ItemsSource="{Binding TodayDailyMetalRate}" Orientation="Horizontal" Width="1500"/>
+        <Label Content="Yesterday's Rate" FontSize="20" Margin="50"/>
         <dxlc:FlowLayoutControl ItemTemplate="{StaticResource HistoryDailyRateItemTemplate}"
                                 ItemsSource="{Binding HistoryDailyMetalRate}" Orientation="Horizontal"/>
     </StackPanel>
