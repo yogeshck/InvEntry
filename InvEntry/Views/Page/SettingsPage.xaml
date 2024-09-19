@@ -23,22 +23,22 @@
     <dxwui:NavigationPage.Resources>
         <DataTemplate x:Key="DailyRateItemTemplate">
             <StackPanel Margin="20">
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="250"/>
-                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="250"/>
-                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" Width="250"/>
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="250" IsTabStop="False"/>
+                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="250" IsTabStop="False"/>
+                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" Width="250" IsTabStop="False"/>
                 <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" 
-                              DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250"/>
+                              DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250" IsTabStop="False"/>
                 <dxe:TextEdit EditValue="{Binding Price}" Width="250" NullText="Today Price" MaskType="Numeric" />
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="HistoryDailyRateItemTemplate">
             <StackPanel>
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True"/>
-                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True"/>
-                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True"/>
-                <dxe:TextEdit Text="{Binding EffectiveDate}" IsReadOnly="True"/>
-                <dxe:TextEdit EditValue="{Binding Price}" IsReadOnly="True"/>
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" IsTabStop="False"/>
+                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" IsTabStop="False"/>
+                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" IsTabStop="False"/>
+                <dxe:TextEdit Text="{Binding EffectiveDate}" IsReadOnly="True" IsTabStop="False"/>
+                <dxe:TextEdit EditValue="{Binding Price}" IsReadOnly="True" IsTabStop="False"/>
             </StackPanel>
         </DataTemplate>
     </dxwui:NavigationPage.Resources>

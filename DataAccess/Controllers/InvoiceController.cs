@@ -38,9 +38,10 @@ namespace DataAccess.Controllers
 
         // POST api/<InvoiceController>
         [HttpPost]
-        public void Post([FromBody] InvoiceHeader value)
+        public InvoiceHeader Post([FromBody] InvoiceHeader value)
         {
             _invoiceHeaderRepository.Add(value);
+            return value;
         }
 
         // PUT api/<InvoiceController>/5

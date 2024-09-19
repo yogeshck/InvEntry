@@ -29,17 +29,17 @@ namespace DataAccess.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(long id, [FromBody] DailyRate data)
+        public DailyRate Put(long id, [FromBody] DailyRate data)
         {
             _repository.Update(data);
-            return Ok();
+            return data;
         }
 
         [HttpPut("update")]
-        public IActionResult Put([FromBody] IEnumerable<DailyRate> data)
+        public IEnumerable<DailyRate> Put([FromBody] IEnumerable<DailyRate> data)
         {
             _repository.BulkUpdate(data);
-            return Ok();
+            return data;
         }
     }
 }

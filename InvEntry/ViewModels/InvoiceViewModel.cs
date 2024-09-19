@@ -422,7 +422,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         foreach (var formula in formulas)
         {
-            if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
+            //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
 
             var val = formula.Evaluate<T, decimal>(item, 0M);
 
@@ -433,7 +433,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class
     {
-        if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
+        //if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
 
         var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
 
