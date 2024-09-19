@@ -266,6 +266,9 @@ public partial class InvoiceViewModel : ObservableObject
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
             ResetInvoice();
+
+            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+            PrintInvoiceCommand.NotifyCanExecuteChanged();
         }
     }
 
