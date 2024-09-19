@@ -77,9 +77,9 @@ public partial class ProductStock
 
     public string? CustomerOrderRefId { get; set; }
 
-    public int? Size { get; set; }
-
     public string? SizeId { get; set; }
+
+    public int? Size { get; set; }
 
     public string? SizeUom { get; set; }
 
@@ -95,7 +95,7 @@ public partial class ProductStock
 
     public string? DocRef { get; set; }
 
-    public DateTime? DocDate { get; set; }
+    public DateOnly? DocDate { get; set; }
 
     public bool? ProductSold { get; set; }
 }

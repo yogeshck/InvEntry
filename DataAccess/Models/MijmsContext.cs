@@ -39,9 +39,13 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<OrgThisCompanyView> OrgThisCompanyViews { get; set; }
 
+    public virtual DbSet<ProductCategory> ProductCategories { get; set; }
+
     public virtual DbSet<ProductGroup> ProductGroups { get; set; }
 
     public virtual DbSet<ProductStock> ProductStocks { get; set; }
+
+    public virtual DbSet<ProductStockOldsystem> ProductStockOldsystems { get; set; }
 
     public virtual DbSet<ProductTransaction> ProductTransactions { get; set; }
 
@@ -719,7 +723,7 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<OrgGeoLocation>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("PK__ORG_GEO___5F3369A0459AE569");
+            entity.HasKey(e => e.Gkey).HasName("PK__ORG_GEO___5F3369A044869AB7");
 
             entity.ToTable("ORG_GEO_LOCATIONS");
 
@@ -804,6 +808,18 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ThisCompany).HasColumnName("this_company");
         });
 
+        modelBuilder.Entity<ProductCategory>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("PRODUCT_CATEGORY");
+
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasColumnName("NAME");
+            entity.Property(e => e.Sn).HasColumnName("SN");
+        });
+
         modelBuilder.Entity<ProductGroup>(entity =>
         {
             entity.HasKey(e => e.Gkey).HasName("PRODUCT_GROUP_PK");
@@ -859,14 +875,12 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("CUSTOMER_ORDER_REF_ID");
             entity.Property(e => e.DeletedFlag).HasColumnName("DELETED_FLAG");
-            entity.Property(e => e.DocDate)
-                .HasColumnType("datetime")
-                .HasColumnName("DOC_DATE");
+            entity.Property(e => e.DocDate).HasColumnName("DOC_DATE");
             entity.Property(e => e.DocRef)
                 .HasMaxLength(50)
                 .HasColumnName("DOC_REF");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(9, 2)")
+                .HasColumnType("decimal(9, 3)")
                 .HasColumnName("GROSS_WEIGHT");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(255)
@@ -891,13 +905,13 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(9, 2)")
+                .HasColumnType("decimal(9, 3)")
                 .HasColumnName("NET_WEIGHT");
             entity.Property(e => e.OriginalGrossWieght)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("ORIGINAL_GROSS_WIEGHT");
             entity.Property(e => e.OtherWeight)
-                .HasColumnType("decimal(9, 2)")
+                .HasColumnType("decimal(9, 3)")
                 .HasColumnName("OTHER_WEIGHT");
             entity.Property(e => e.ProductCategory)
                 .HasMaxLength(50)
@@ -969,6 +983,40 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.WastagePercent)
                 .HasColumnType("decimal(9, 2)")
                 .HasColumnName("WASTAGE_PERCENT");
+        });
+
+        modelBuilder.Entity<ProductStockOldsystem>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("product_stock_oldsystem");
+
+            entity.Property(e => e.Categoryname).HasMaxLength(20);
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.EstAmt).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.GrWtGram).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.GrossWt).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Mcharge).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.MilliGram).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.ProdName).HasMaxLength(20);
+            entity.Property(e => e.ProdcuctCode).HasMaxLength(20);
+            entity.Property(e => e.ProductType).HasMaxLength(20);
+            entity.Property(e => e.Purity)
+                .HasMaxLength(20)
+                .HasColumnName("purity");
+            entity.Property(e => e.Qty).HasColumnName("qty");
+            entity.Property(e => e.Rate).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.StoneAmt).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.StoneGrWtGram).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.StoneWtMilliGram).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.StoneWtNet).HasColumnType("decimal(9, 2)");
+            entity.Property(e => e.StoreId)
+                .HasMaxLength(20)
+                .HasColumnName("store_id");
+            entity.Property(e => e.Wastage)
+                .HasColumnType("decimal(9, 2)")
+                .HasColumnName("wastage");
         });
 
         modelBuilder.Entity<ProductTransaction>(entity =>

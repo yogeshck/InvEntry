@@ -98,6 +98,7 @@ public sealed class Bootstrapper
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddSingleton<ICustomerService, CustomerService>()
                  .AddSingleton<IProductService, ProductService>()
+                 .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .ConfigureFormulas()

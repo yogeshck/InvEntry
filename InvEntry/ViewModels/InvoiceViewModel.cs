@@ -48,12 +48,16 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<InvoiceLine> selectedRows;
 
+    [ObservableProperty]
+    private ObservableCollection<ProductCategory> productCategoryList;
+
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceService _invoiceService;
+    private readonly IProductCategoryService _productCategoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
@@ -69,12 +73,14 @@ public partial class InvoiceViewModel : ObservableObject
         IProductService productService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
+        IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
         SettingsPageViewModel settingsPageViewModel)
     {
         SetHeader();
         _customerService = customerService;
         _productService = productService;
+        _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
         _messageBoxService = messageBoxService;
@@ -82,10 +88,16 @@ public partial class InvoiceViewModel : ObservableObject
         _customerReadOnly = true;
         _isPrint = false;
         _settingsPageViewModel = settingsPageViewModel;
+        PopulateProductCategoryList();
         PopulateUnboundLineDataMap();
         PopulateUnboundHeaderDataMap();
     }
 
+    private async void PopulateProductCategoryList()
+    {
+        var list = await _productCategoryService.GetProductCategoryList();
+        ProductCategoryList = new(list);
+    }
     private void PopulateUnboundLineDataMap()
     {
         if (copyInvoiceExpression is null) copyInvoiceExpression = new();
@@ -269,30 +281,37 @@ public partial class InvoiceViewModel : ObservableObject
         // Line Taxable Total minus Old Gold & Silver Amount
         var BeforeTax = Header.InvlTaxTotal - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault();
 
-        var CGSTAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
-        var SGSTAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
-        var IGSTAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
+        Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
+        Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
+        Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
 
-        // After Tax
-        var AfterTax = BeforeTax + CGSTAmount + SGSTAmount + IGSTAmount;
+        // After Tax Gross Value
+        Header.GrossRcbAmount = BeforeTax + Header.CgstAmount + Header.SgstAmount + Header.IgstAmount;
 
-        //Header.RoundOff = MathUtils.Normalize(Math.Round(Header.InvlTaxTotal.GetValueOrDefault(), 0) - Header.InvlTaxTotal.GetValueOrDefault());
+        var AmountTobeReduced = Header.DiscountAmount.GetValueOrDefault() + Header.AdvanceAdj.GetValueOrDefault() +
+            Header.RdAmountAdj.GetValueOrDefault();
+
+        var payableValue = Header.GrossRcbAmount - AmountTobeReduced;
+
+        Header.RoundOff = MathUtils.Normalize(Math.Round(payableValue.GetValueOrDefault(), 0) - payableValue.GetValueOrDefault());
+
+        Header.AmountPayable = MathUtils.Normalize(payableValue.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault());
         
-        Header.RoundOff = MathUtils.Normalize(Math.Round(AfterTax.GetValueOrDefault(), 0) - AfterTax.GetValueOrDefault());
+        Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
 
-        Header.AmountPayable = MathUtils.Normalize(AfterTax.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault());
-
-        //Header.AmountPayable = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault());
-
-        var AmountTobeReduced = Header.DiscountAmount.GetValueOrDefault() + Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault() + Header.RecdAmount.GetValueOrDefault();
-
-        //Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault() - Header.RdAmountAdj.GetValueOrDefault() - Header.RecdAmount.GetValueOrDefault());
-        
-        Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault() - AmountTobeReduced);
-
-        if (Header.InvBalance > 0 && !Header.PaymentDueDate.HasValue)
+        if (Header.InvBalance > 0 )
         {
             Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
+            Header.InvRefund = 0M;
+        }
+        else if (Header.InvBalance == 0)
+        {
+            Header.PaymentDueDate = null;
+        } else if (Header.InvBalance < 0)
+        {
+            Header.PaymentDueDate = null;
+            Header.InvRefund = Header.InvBalance * -1;
+            Header.InvBalance = 0M;
         }
     }
 

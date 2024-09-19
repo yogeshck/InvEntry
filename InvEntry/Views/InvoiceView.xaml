@@ -206,7 +206,7 @@
                                     <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
                                                  Content="Product Id" EditWidth="150" EditHeight="30">
                                         <dxb:BarEditItem.EditSettings>
-                                            <dxe:TextEditSettings />
+                                            <dxg:LookUpEditSettings ItemsSource="{Binding ProductCategoryList}" ValueMember="Name" DisplayMember="Name" />
                                         </dxb:BarEditItem.EditSettings>
                                     </dxb:BarEditItem>
                                     <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
