@@ -5,6 +5,7 @@ using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
 using InvEntry.IoC;
 using InvEntry.Metadata;
+using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.ViewModels;
 using InvEntry.Views;
@@ -29,8 +30,8 @@ public sealed class Bootstrapper
     {
         DISource.Resolver = Resolve;
 
-        //MetadataLocator.Default = MetadataLocator.Create()
-        //            .AddMetadata<InvoiceHeader, InvoiceHeaderMetadata>();
+        MetadataLocator.Default = MetadataLocator.Create()
+                    .AddMetadata<ProductCategory, ProductCategoryMetadata>();
     }
 
     public static Bootstrapper Default { get; private set; }
