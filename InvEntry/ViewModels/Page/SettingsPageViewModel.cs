@@ -81,9 +81,11 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task SaveAllDailyRate()
         {
-            if (!TodayDailyMetalRate.Any()) return;
+            if (!TodayDailyMetalRate.Where(x => x.GKey == 0).Any()) return;
 
-            var savedRates = await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate);
+            var savedRates = await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate.Where(x => x.GKey == 0));
+
+            if (savedRates is null) return;
 
             foreach(var savedRate in savedRates)
             {

@@ -17,6 +17,8 @@ public interface IRepositoryBase<T> where T : class
     int Count();
     Task<int> CountAsync();
     void Update(T objModel);
+
+    void BulkUpdate(IEnumerable<T> objModels);
     void Remove(T objModel);
     void Dispose();
 }

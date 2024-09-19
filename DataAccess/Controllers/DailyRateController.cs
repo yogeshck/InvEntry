@@ -34,5 +34,12 @@ namespace DataAccess.Controllers
             _repository.Update(data);
             return Ok();
         }
+
+        [HttpPut("update")]
+        public IActionResult Put([FromBody] IEnumerable<DailyRate> data)
+        {
+            _repository.BulkUpdate(data);
+            return Ok();
+        }
     }
 }

@@ -23,7 +23,7 @@
         <sys:String x:Key="Invl">InvoiceLine</sys:String>
         <Style TargetType="dxe:TextEdit">
             <Setter Property="Width" Value="150"/>
-            <Setter Property="Height" Value="35"/>
+            <Setter Property="Height" Value="35"/> 
         </Style>
     </UserControl.Resources>
     <Grid>
@@ -36,23 +36,26 @@
         </Grid.ColumnDefinitions>
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
+                <dxb:BarButtonItem x:Name="btnReset" Content="Reset Invoice"
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                    GlyphSize="Large"
+                    Command="{Binding ResetInvoiceCommand}"/>
+                <dxb:BarItemSeparator/>
+                <dxb:BarButtonItem x:Name="btnPrint" 
+                                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                                   GlyphSize="Large"
+                                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"/>
+                <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
+                                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
+                                   GlyphSize="Large"/>
+                <dxb:BarItemSeparator/>
                 <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top"
                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
-                    GlyphSize="Large"
-                                    Command="{Binding CreateInvoiceCommand}"/>
-                <dxb:BarItemSeparator/>
-
-                <dxb:BarButtonItem x:Name="btnPrint" 
-                                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
-                                   GlyphSize="Large"
-                                    BarItemDisplayMode="ContentAndGlyph"
- GlyphAlignment="Top"/>
-                <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
-                                    BarItemDisplayMode="ContentAndGlyph"
- GlyphAlignment="Top"
-                                   GlyphSize="Large"/>
+                    GlyphSize="Large" Command="{Binding CreateInvoiceCommand}"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxlc:LayoutControl AllowItemSizing="True" 
@@ -231,6 +234,7 @@
                                     </Style>
                                     <Style TargetType="dxe:TextEdit">
                                         <Setter Property="Width" Value="Auto"/>
+                                        <Setter Property="EditValuePostMode" Value="Immediate"/>
                                     </Style>
                                 </dxg:GridControl.Resources>
                                 <dxg:GridControl.Columns>
@@ -239,12 +243,12 @@
                                     <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" />
                                     <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
                                     <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
-                                    <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
-                                    <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight"/>
+                                    <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/> 
+                                    <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight" ReadOnly="True"/>
                                     <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" />
-                                    <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" ReadOnly="True" />
-                                    <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" />
-                                    <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" />
+                                    <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" />
+                                    <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" ReadOnly="True"/>
+                                    <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" ReadOnly="True"/>
                                 </dxg:GridControl.Columns>
                                 <dxg:GridControl.TotalSummary>
                                     <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"

@@ -221,8 +221,14 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CreateInvoice()
+    private async Task CreateInvoice()
     {
+        if (string.IsNullOrEmpty(Header.InvNbr))
+        {
+            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
+            return;
+        }
+
         if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
             _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
@@ -230,7 +236,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
         if (createCustomer)
-            _customerService.CreatCustomer(Buyer);
+            await _customerService.CreatCustomer(Buyer);
 
         Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = Buyer.GKey;
@@ -240,22 +246,27 @@ public partial class InvoiceViewModel : ObservableObject
             x.InvLineNbr = Header.Lines.IndexOf(x) + 1;
             x.InvoiceId = Header.InvNbr;
         });
-        _invoiceService.CreatHeader(Header);
-        _invoiceService.CreatInvoiceLine(Header.Lines);
+        var header = await _invoiceService.CreatHeader(Header);
 
-        Buyer = null;
-
-        _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.None);
-        IsPrint = true;
+        if(header is not null)
+        {
+            Header.GKey = header.GKey;
+            Header.Lines.ForEach(x => x.InvoiceHdrGkey = header.GKey);
+            await _invoiceService.CreatInvoiceLine(Header.Lines);
+            _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
+            ResetInvoice();
+        }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
     {
-        CustomerPhoneNumber = null;
         _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
-        SetHeader();
-        IsPrint = false;
+    }
+
+    private bool CanPrintInvoice()
+    {
+        return !string.IsNullOrEmpty(Header?.InvNbr);
     }
 
     [RelayCommand]
@@ -317,6 +328,18 @@ public partial class InvoiceViewModel : ObservableObject
     private void Focus(TextEdit sender)
     {
         sender.Focus();
+    }
+
+    [RelayCommand]
+    private void ResetInvoice()
+    {
+        var result = _messageBoxService.ShowMessage("Reset all values", "Reset Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+        if (result == MessageResult.No)
+            return;
+
+        SetHeader();
+        Buyer = null;
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]

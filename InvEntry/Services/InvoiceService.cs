@@ -11,7 +11,7 @@ namespace InvEntry.Services
     {
         Task<InvoiceHeader> GetHeader(string productId);
 
-        Task CreatHeader(InvoiceHeader product);
+        Task<InvoiceHeader> CreatHeader(InvoiceHeader product);
 
         Task UpdateHeader(InvoiceHeader product);
 
@@ -34,9 +34,9 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<InvoiceHeader>($"api/invoice/{invNbr}");
         }
 
-        public async Task CreatHeader(InvoiceHeader product)
+        public async Task<InvoiceHeader> CreatHeader(InvoiceHeader product)
         {
-            await _mijmsApiService.Post($"api/invoice/", product);
+            return await _mijmsApiService.Post($"api/invoice/", product);
         }
 
         public async Task UpdateHeader(InvoiceHeader product)

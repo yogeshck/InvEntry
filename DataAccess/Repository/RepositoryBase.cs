@@ -77,6 +77,14 @@ public class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : 
         _context.SaveChanges();
     }
 
+    public void BulkUpdate(IEnumerable<TEntity> objModels)
+    {
+        foreach(var objModel in objModels)
+            _context.Entry(objModel).State = EntityState.Modified;
+
+        _context.SaveChanges();
+    }
+
     public void Remove(TEntity objModel)
     {
         _context.Set<TEntity>().Remove(objModel);
