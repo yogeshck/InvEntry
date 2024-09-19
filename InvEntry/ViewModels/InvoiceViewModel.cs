@@ -234,9 +234,6 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = Buyer.GKey;
-        Header.CgstAmount = Header.Lines.Select(x => x.InvlCgstAmount).Sum();
-        Header.SgstAmount = Header.Lines.Select(x => x.InvlSgstAmount).Sum();
-        Header.IgstAmount = Header.Lines.Select(x => x.InvlIgstAmount).Sum();
 
         Header.Lines.ForEach(x =>
         {
@@ -275,7 +272,7 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
-        // TaxableTotal
+        // TaxableTotal from line without tax value
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
         // Line Taxable Total minus Old Gold & Silver Amount
@@ -286,7 +283,8 @@ public partial class InvoiceViewModel : ObservableObject
         Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
 
         // After Tax Gross Value
-        Header.GrossRcbAmount = BeforeTax + Header.CgstAmount + Header.SgstAmount + Header.IgstAmount;
+        Header.GrossRcbAmount = BeforeTax + Header.CgstAmount.GetValueOrDefault() + Header.SgstAmount.GetValueOrDefault()
+            + Header.IgstAmount.GetValueOrDefault();
 
         var AmountTobeReduced = Header.DiscountAmount.GetValueOrDefault() + Header.AdvanceAdj.GetValueOrDefault() +
             Header.RdAmountAdj.GetValueOrDefault();
