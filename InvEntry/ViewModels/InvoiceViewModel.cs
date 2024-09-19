@@ -19,6 +19,11 @@ using DevExpress.XtraSpreadsheet.Model;
 using System.Windows.Input;
 using DevExpress.Xpf.Core.Native;
 using DevExpress.Mvvm.Native;
+using Microsoft.Extensions.DependencyInjection;
+using DevExpress.Xpf.Printing;
+using InvEntry.Reports;
+using IDialogService = DevExpress.Mvvm.IDialogService;
+using InvEntry.Views;
 
 namespace InvEntry.ViewModels;
 
@@ -37,9 +42,6 @@ public partial class InvoiceViewModel : ObservableObject
     private string _productIdUI;
 
     [ObservableProperty]
-    private decimal _currentRate;
-
-    [ObservableProperty]
     public bool _customerReadOnly;
 
     [ObservableProperty]
@@ -49,12 +51,13 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<InvoiceLine> selectedRows;
 
     [ObservableProperty]
-    private ObservableCollection<ProductCategory> productCategoryList;
+    private ObservableCollection<string> productCategoryList;
 
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
+    private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceService _invoiceService;
     private readonly IProductCategoryService _productCategoryService;
@@ -75,7 +78,8 @@ public partial class InvoiceViewModel : ObservableObject
         IInvoiceService invoiceService,
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
-        SettingsPageViewModel settingsPageViewModel)
+        SettingsPageViewModel settingsPageViewModel,
+        [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
     {
         SetHeader();
         _customerService = customerService;
@@ -84,7 +88,9 @@ public partial class InvoiceViewModel : ObservableObject
         _dialogService = dialogService;
         _invoiceService = invoiceService;
         _messageBoxService = messageBoxService;
-        _currentRate = 2600;
+        _reportDialogService = reportDialogService;
+
+        selectedRows = new();
         _customerReadOnly = true;
         _isPrint = false;
         _settingsPageViewModel = settingsPageViewModel;
@@ -96,7 +102,7 @@ public partial class InvoiceViewModel : ObservableObject
     private async void PopulateProductCategoryList()
     {
         var list = await _productCategoryService.GetProductCategoryList();
-        ProductCategoryList = new(list);
+        ProductCategoryList = new(list.Select(x => x.Name));
     }
     private void PopulateUnboundLineDataMap()
     {
@@ -223,9 +229,14 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task CreateInvoice()
     {
-        if (string.IsNullOrEmpty(Header.InvNbr))
+        if (!string.IsNullOrEmpty(Header.InvNbr))
         {
-            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
+            var result = _messageBoxService.ShowMessage("Invoice already created, Do you want to print preview the invoice ?", "Invoice", MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
+
+            if(result == MessageResult.OK)
+            {
+                PrintPreviewInvoice();
+            }
             return;
         }
 
@@ -261,10 +272,27 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
     {
-        _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
+        var printed = PrintHelper.Print(ReportFactory.CreateInvoiceReport(Header.InvNbr));
+
+        if(printed.HasValue && printed.Value)
+            _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
     }
 
     private bool CanPrintInvoice()
+    {
+        return !string.IsNullOrEmpty(Header?.InvNbr);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPrintPreviewInvoice))]
+    private void PrintPreviewInvoice()
+    {
+        var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+        dialogVM.Init(Header.InvNbr);
+
+        _reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
+    }
+
+    private bool CanPrintPreviewInvoice()
     {
         return !string.IsNullOrEmpty(Header?.InvNbr);
     }

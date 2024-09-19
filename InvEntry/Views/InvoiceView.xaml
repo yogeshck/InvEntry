@@ -46,10 +46,10 @@
                 <dxb:BarButtonItem x:Name="btnPrint" 
                                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                                    GlyphSize="Large"
-                                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"/>
+                                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintInvoiceCommand}"/>
                 <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
                                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
-                                   GlyphSize="Large"/>
+                                   GlyphSize="Large" Command="{Binding PrintPreviewInvoiceCommand}"/>
                 <dxb:BarItemSeparator/>
                 <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
                                    BarItemDisplayMode="ContentAndGlyph"
@@ -209,7 +209,7 @@
                                     <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
                                                  Content="Product Id" EditWidth="150" EditHeight="30">
                                         <dxb:BarEditItem.EditSettings>
-                                            <dxg:LookUpEditSettings ItemsSource="{Binding ProductCategoryList}" ValueMember="Name" DisplayMember="Name" />
+                                            <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
                                         </dxb:BarEditItem.EditSettings>
                                     </dxb:BarEditItem>
                                     <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 

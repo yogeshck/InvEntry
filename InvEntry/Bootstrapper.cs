@@ -91,10 +91,20 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
+                 .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) => 
+                 {
+                     if (Application.Current.TryFindResource("ReportDialogService") is DialogService dialogService)
+                     {
+                         return dialogService;
+                     }
+
+                     return new DialogService();
+                 })
                  .AddTransient<InvoiceListViewModel>()
                  .AddTransient<InvoiceViewModel>()
                  .AddTransient<ProductStockViewModel>()
-                 .AddTransient<MainWindowViewModel>()
+                 .AddSingleton<MainWindowViewModel>()
+                 .AddTransient<ReportDialogViewModel>()
                  .AddSingleton<SettingsPageViewModel>()
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddSingleton<ICustomerService, CustomerService>()
