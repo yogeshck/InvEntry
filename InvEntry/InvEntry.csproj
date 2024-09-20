@@ -43,9 +43,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Views\Images\diamond.svg" />
-    <Resource Include="Views\Images\gold.svg" />
-    <Resource Include="Views\Images\silver.svg" />
+    <Content Include="Views\Images\diamond.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Images\gold.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Images\silver.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
