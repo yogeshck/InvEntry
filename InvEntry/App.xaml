@@ -33,6 +33,10 @@
             </dx:DialogService>
 
             <converter:FormulaConverter x:Key="FormulaConverter"/>
+
+            <Image x:Key="diamondSvg" Source="\Images\diamond.svg" />
+            <Image x:Key="goldSvg" Source="\Images\gold.svg" />
+            <Image x:Key="silverSvg" Source="\Images\silver.svg" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

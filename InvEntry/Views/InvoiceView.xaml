@@ -25,6 +25,7 @@
             <Setter Property="Width" Value="150"/>
             <Setter Property="Height" Value="35"/> 
         </Style>
+        <dxmvvm:FormatStringConverter x:Key="FormatStringConverter" FormatString=""/>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -56,6 +57,13 @@
                                    GlyphAlignment="Top"
                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
                     GlyphSize="Large" Command="{Binding CreateInvoiceCommand}"/>
+                <dxb:BarStaticItem Content="{Binding Gold22C.PriceDisplay, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
+                                   Alignment="Far" BarItemDisplayMode="ContentAndGlyph"
+                                   />
+                <dxb:BarStaticItem Content="{Binding Silver.PriceDisplay, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
+                   Alignment="Far" />
+                <dxb:BarStaticItem Content="{Binding Diamond.PriceDisplay, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
+                   Alignment="Far" />
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxlc:LayoutControl AllowItemSizing="True" 
@@ -189,14 +197,14 @@
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
                     <dxlc:LayoutGroup Orientation="Vertical">
-                        <dxlc:LayoutItem Label="Gold Price (Rs)" LabelPosition="Top" Margin="10">
-                            <dxe:TextEdit EditValue="{Binding Gold22C.Price, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" IsReadOnly="True"/>
+                        <dxlc:LayoutItem Label="CGST Amount" LabelPosition="Top" Margin="10">
+                            <dxe:TextEdit EditValue="{Binding Header.CgstAmount}" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Silver Price (Rs)" LabelPosition="Top"  Margin="10">
-                            <dxe:TextEdit EditValue="{Binding Silver.Price, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" IsReadOnly="True"/>
+                        <dxlc:LayoutItem Label="SGST Amount" LabelPosition="Top"  Margin="10">
+                            <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
-                        <dxlc:LayoutItem Label="Gold Price (Rs)" LabelPosition="Top"  Margin="10">
-                            <dxe:TextEdit EditValue="{Binding Diamond.Price, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}" IsReadOnly="True"/>
+                        <dxlc:LayoutItem Label="IGST Amount" LabelPosition="Top"  Margin="10">
+                            <dxe:TextEdit EditValue="{Binding Header.IgstAmount}" IsReadOnly="True"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>

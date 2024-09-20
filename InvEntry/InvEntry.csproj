@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\Images\diamond.svg" />
+    <None Remove="Views\Images\gold.svg" />
+    <None Remove="Views\Images\silver.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DependencyPropertyGenerator" Version="1.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -34,6 +40,12 @@
   <ItemGroup>
     <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Views\Images\diamond.svg" />
+    <Resource Include="Views\Images\gold.svg" />
+    <Resource Include="Views\Images\silver.svg" />
   </ItemGroup>
 
   <ItemGroup>

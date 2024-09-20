@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -28,6 +29,9 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private bool isDisplay;
+
+        [JsonIgnore]
+        public string PriceDisplay => string.Create(CultureInfo.CurrentCulture, $"{Metal} (Rs) : {Price:F2}");
 
         [property: JsonIgnore]
         public MetalType MetalType 
