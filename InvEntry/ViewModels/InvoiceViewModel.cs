@@ -151,6 +151,13 @@ public partial class InvoiceViewModel : ObservableObject
             Buyer = new();
             createCustomer = true;
             CustomerReadOnly = false;
+
+            Buyer.GstStateCode = "33";    //Need to fetch based on pincode - future change
+            Header.GstLocBuyer = Buyer.GstStateCode;
+            Header.CgstPercent = GetGSTWithinState();
+            Header.SgstPercent = GetGSTWithinState();
+            Header.IgstPercent = IGSTPercent;
+
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
         else
