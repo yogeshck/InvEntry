@@ -14,10 +14,17 @@ namespace InvEntry.ViewModels
     {
         [ObservableProperty]
         private XtraReport _report;
+        
+        private readonly IReportFactoryService _reportFactoryService;
+
+        public ReportDialogViewModel(IReportFactoryService reportFactoryService)
+        {
+            _reportFactoryService = reportFactoryService;
+        }
 
         public void Init(string pInvoiceNbr)
         {
-            Report = ReportFactory.CreateInvoiceReport(pInvoiceNbr);
+            Report = _reportFactoryService.CreateInvoiceReport(pInvoiceNbr);
         }
     }
 }

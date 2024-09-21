@@ -80,6 +80,7 @@ public partial class InvoiceViewModel : ObservableObject
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
         SettingsPageViewModel settingsPageViewModel,
+        IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
     {
         SetHeader();
@@ -90,7 +91,7 @@ public partial class InvoiceViewModel : ObservableObject
         _invoiceService = invoiceService;
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
-
+        _reportFactoryService = reportFactoryService;
         selectedRows = new();
         _customerReadOnly = true;
         _isPrint = false;
@@ -283,7 +284,7 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
     {
-        var printed = PrintHelper.Print(ReportFactory.CreateInvoiceReport(Header.InvNbr));
+        var printed = PrintHelper.Print(_reportFactoryService.CreateInvoiceReport(Header.InvNbr));
 
         if(printed.HasValue && printed.Value)
             _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
