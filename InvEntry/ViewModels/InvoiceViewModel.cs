@@ -317,9 +317,15 @@ public partial class InvoiceViewModel : ObservableObject
     private void PrintPreviewInvoice()
     {
         var dialogVM = DISource.Resolve<ReportDialogViewModel>();
-        dialogVM.Init(Header.InvNbr);
-
+        //dialogVM.Init(Header.InvNbr);
+        dialogVM.Init("B0001");
         _reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
+    private void ExportToPdf()
+    {
+        _reportFactoryService.CreateInvoiceReportPdf(Header.InvNbr, "C:\\Madrone\\Invoice\\");
     }
 
     [RelayCommand]
