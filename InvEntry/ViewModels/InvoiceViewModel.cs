@@ -45,7 +45,10 @@ public partial class InvoiceViewModel : ObservableObject
     public bool _customerReadOnly;
 
     [ObservableProperty]
-    public bool _isPrint;
+    public bool _isRefund;
+
+    [ObservableProperty]
+    public bool _isBalance;
 
     [ObservableProperty]
     private ObservableCollection<InvoiceLine> selectedRows;
@@ -94,7 +97,9 @@ public partial class InvoiceViewModel : ObservableObject
         _reportFactoryService = reportFactoryService;
         selectedRows = new();
         _customerReadOnly = true;
-        _isPrint = false;
+
+        _isBalance = true;
+        _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
         PopulateProductCategoryList();
         PopulateUnboundLineDataMap();
@@ -272,11 +277,14 @@ public partial class InvoiceViewModel : ObservableObject
         {
             Header.GKey = header.GKey;
             Header.InvNbr = header.InvNbr;
-            Header.Lines.ForEach(x => x.InvoiceHdrGkey = header.GKey);
+            Header.Lines.ForEach(x => 
+            {
+                x.InvoiceHdrGkey = header.GKey;
+                x.InvoiceId = header.InvNbr;
+            });
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
-            ResetInvoice();
-
+            PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
         }
@@ -353,15 +361,19 @@ public partial class InvoiceViewModel : ObservableObject
         {
             Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
             Header.InvRefund = 0M;
+            BalanceVisible();
         }
         else if (Header.InvBalance == 0)
         {
             Header.PaymentDueDate = null;
+            BalanceVisible();
+
         } else if (Header.InvBalance < 0)
         {
             Header.PaymentDueDate = null;
             Header.InvRefund = Header.InvBalance * -1;
             Header.InvBalance = 0M;
+            RefundVisible();
         }
     }
 
@@ -381,6 +393,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         SetHeader();
         Buyer = null;
+        CustomerPhoneNumber = null;
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]
@@ -484,5 +497,14 @@ public partial class InvoiceViewModel : ObservableObject
             copyInvoiceExpression[fieldName].Invoke(invLine, val);
         else if (item is InvoiceHeader head)
             copyHeaderExpression[fieldName].Invoke(head, val);
+    }
+
+    private void RefundVisible() => SetVisibilityForRefund();
+    private void BalanceVisible() => SetVisibilityForRefund(isVisible: false);
+
+    private void SetVisibilityForRefund(bool isVisible = true)
+    {
+        IsRefund = isVisible;
+        IsBalance = !isVisible;
     }
 }

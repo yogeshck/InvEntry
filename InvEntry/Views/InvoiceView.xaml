@@ -25,6 +25,14 @@
             <Setter Property="Width" Value="150"/>
             <Setter Property="Height" Value="35"/> 
         </Style>
+        <Style TargetType="dxe:TextEdit" x:Key="MaskCultureStyle">
+            <Setter Property="Mask" Value="N2"/>
+            <Setter Property="MaskType" Value="Numeric"/>
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="MaskUseAsDisplayFormat" Value="True"/>
+            <!--<Setter Property="MaskCulture" Value=""/>-->
+        </Style>
         <dxmvvm:FormatStringConverter x:Key="FormatStringConverter" FormatString=""/>
     </UserControl.Resources>
     <Grid>
@@ -130,7 +138,7 @@
                                 IsCollapsible="True">
                         <dxlc:LayoutGroup Orientation="Vertical">
                             <dxlc:LayoutItem Label="Advance Amount">
-                                <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}">
+                                <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}" Style="{StaticResource MaskCultureStyle}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
@@ -138,7 +146,7 @@
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="RD Amount">
-                                <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}">
+                                <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}" Style="{StaticResource MaskCultureStyle}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
@@ -146,7 +154,7 @@
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
-                                <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}">
+                                <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" Style="{StaticResource MaskCultureStyle}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
@@ -154,7 +162,7 @@
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Old Silver Amoount (Rs)">
-                                <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}">
+                                <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" Style="{StaticResource MaskCultureStyle}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
@@ -162,7 +170,7 @@
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Discount">
-                                <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}">
+                                <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Style="{StaticResource MaskCultureStyle}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
@@ -178,37 +186,42 @@
                                 </Style>
                             </dxlc:LayoutGroup.Resources>
                             <dxlc:LayoutItem Label="Round Off">
-                                <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
+                                <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True" Style="{StaticResource MaskCultureStyle}"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Grand Total">
-                                <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True"/>
+                                <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True" Style="{StaticResource MaskCultureStyle}"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Amount Received">
-                                <dxe:TextEdit EditValue="{Binding Header.RecdAmount}">
+                                <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold" Style="{StaticResource MaskCultureStyle}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
                                     </dxmvvm:Interaction.Behaviors>
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Balance Amount">
-                                <dxe:TextEdit EditValue="{Binding Header.InvBalance}" IsReadOnly="True"/>
+                            <dxlc:LayoutItem Label="Balance Amount" Visibility="{Binding IsBalance, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                                <dxe:TextEdit EditValue="{Binding Header.InvBalance}" IsReadOnly="True"
+                                              FontWeight="Bold" Style="{StaticResource MaskCultureStyle}"/>
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Refund Amount" Visibility="{Binding IsRefund, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                                <dxe:TextEdit EditValue="{Binding Header.InvRefund}" IsReadOnly="True"
+                                              FontWeight="Bold" Style="{StaticResource MaskCultureStyle}"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Due Date">
-                                <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"/>
+                                <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False" Style="{StaticResource MaskCultureStyle}"/>
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
                     <dxlc:LayoutGroup Orientation="Vertical">
                         <dxlc:LayoutItem Label="CGST Amount" LabelPosition="Top" Margin="10">
-                            <dxe:TextEdit EditValue="{Binding Header.CgstAmount}" IsReadOnly="True"/>
+                            <dxe:TextEdit EditValue="{Binding Header.CgstAmount}" IsReadOnly="True" Style="{StaticResource MaskCultureStyle}"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="SGST Amount" LabelPosition="Top"  Margin="10">
-                            <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" IsReadOnly="True"/>
+                            <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" IsReadOnly="True" Style="{StaticResource MaskCultureStyle}"/>
                         </dxlc:LayoutItem>
                         <dxlc:LayoutItem Label="IGST Amount" LabelPosition="Top"  Margin="10">
-                            <dxe:TextEdit EditValue="{Binding Header.IgstAmount}" IsReadOnly="True"/>
+                            <dxe:TextEdit EditValue="{Binding Header.IgstAmount}" IsReadOnly="True" Style="{StaticResource MaskCultureStyle}"/>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
