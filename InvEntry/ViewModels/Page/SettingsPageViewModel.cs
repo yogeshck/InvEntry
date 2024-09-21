@@ -146,8 +146,8 @@ namespace InvEntry.ViewModels
             var date = DateTime.Now.Date;
 
             return Gold22C.EffectiveDate.Date == date && Gold22C.Price.HasValue
-                && Silver.EffectiveDate.Date == date && Silver.Price.HasValue
-                && Diamond.EffectiveDate.Date == date && Diamond.Price.HasValue;
+                && Silver.EffectiveDate.Date == date && Silver.Price.HasValue;
+                //&& Diamond.EffectiveDate.Date == date && Diamond.Price.HasValue;
         }
 
         public decimal? GetPrice(MetalType metalType)

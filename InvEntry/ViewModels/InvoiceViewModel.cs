@@ -271,6 +271,7 @@ public partial class InvoiceViewModel : ObservableObject
             x.InvLineNbr = Header.Lines.IndexOf(x) + 1;
             x.InvoiceId = Header.InvNbr;
         });
+
         var header = await _invoiceService.CreatHeader(Header);
 
         if(header is not null)
@@ -284,9 +285,12 @@ public partial class InvoiceViewModel : ObservableObject
             });
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
         }
     }
 

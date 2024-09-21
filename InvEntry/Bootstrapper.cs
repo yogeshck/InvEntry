@@ -117,7 +117,11 @@ public sealed class Bootstrapper
                  .ConfigureFormulas()
                  .AddHttpClient("mijms", httpClient => 
                  {
+#if DEBUG
                      httpClient.BaseAddress = new Uri("https://localhost:7001/");
+#else
+                     httpClient.BaseAddress = new Uri("http://localhost:8500/");
+#endif
                  }))
              .ConfigureLogging(logging =>
              {
