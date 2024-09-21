@@ -59,11 +59,15 @@
                     GlyphSize="Large" Command="{Binding CreateInvoiceCommand}"/>
                 <dxb:BarStaticItem Content="{Binding Gold22C.PriceDisplay, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
                                    Alignment="Far" BarItemDisplayMode="ContentAndGlyph"
-                                   />
+                                   Glyph=".\Images\gold.svg" GlyphAlignment="Top" GlyphSize="Large"/>
+                <dxb:BarItemSeparator Alignment="Far"/>
                 <dxb:BarStaticItem Content="{Binding Silver.PriceDisplay, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
-                   Alignment="Far" />
+                   Alignment="Far" BarItemDisplayMode="ContentAndGlyph"
+                                   Glyph=".\Images\silver.svg" GlyphAlignment="Top" GlyphSize="Large" />
+                <dxb:BarItemSeparator Alignment="Far"/>
                 <dxb:BarStaticItem Content="{Binding Diamond.PriceDisplay, Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
-                   Alignment="Far" />
+                   Alignment="Far" BarItemDisplayMode="ContentAndGlyph"
+                                   Glyph=".\Images\diamond.svg" GlyphAlignment="Top" GlyphSize="Large"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxlc:LayoutControl AllowItemSizing="True" 
