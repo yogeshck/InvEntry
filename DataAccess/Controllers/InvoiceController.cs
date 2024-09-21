@@ -43,6 +43,10 @@ namespace DataAccess.Controllers
         {
             var company = _orgCompanyRepository.Get(x => x.ThisCompany.HasValue && x.ThisCompany.Value);
 
+            company.InvId++;
+
+            _orgCompanyRepository.Update(company);
+
             value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId);
 
             _invoiceHeaderRepository.Add(value);
