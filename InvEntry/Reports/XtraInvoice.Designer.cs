@@ -2073,7 +2073,7 @@
             // silverWeight
             // 
             this.silverWeight.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[SILVER_QRY].[TOTNETWT]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([SILVER_QRY].[TOTNETWT],0)")});
             this.silverWeight.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F);
             this.silverWeight.Multiline = true;
             this.silverWeight.Name = "silverWeight";
@@ -2089,7 +2089,7 @@
             // xrTableCell20
             // 
             this.xrTableCell20.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[SILVER_QRY].[LINETOTAL]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([SILVER_QRY].[LINETOTAL],0)")});
             this.xrTableCell20.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F);
             this.xrTableCell20.Multiline = true;
             this.xrTableCell20.Name = "xrTableCell20";
@@ -2127,7 +2127,8 @@
             // totalMetalWeight
             // 
             this.totalMetalWeight.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[invoiceLineGOLD_QRY].[TOTNETWT]+[invoiceLineSILVER_QRY].[TOTNETWT]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([invoiceLineGOLD_QRY].[TOTNETWT],0)+\nIsNull([invoiceLineSILVER_QRY].[TOTNE" +
+                    "TWT],0)")});
             this.totalMetalWeight.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
             this.totalMetalWeight.Multiline = true;
             this.totalMetalWeight.Name = "totalMetalWeight";
@@ -2143,7 +2144,8 @@
             // xrTableCell21
             // 
             this.xrTableCell21.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[invoiceLineSILVER_QRY].[LINETOTAL]+[invoiceLineGOLD_QRY].[LINETOTAL]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([invoiceLineSILVER_QRY].[LINETOTAL],0)+\nIsNull([invoiceLineGOLD_QRY].[LINE" +
+                    "TOTAL],0)")});
             this.xrTableCell21.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrTableCell21.Multiline = true;
             this.xrTableCell21.Name = "xrTableCell21";
