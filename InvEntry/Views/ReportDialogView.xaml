@@ -9,6 +9,8 @@
     <Grid>
         <dxp:DocumentPreviewControl RequestDocumentCreation="True"
                                                 DocumentSource="{Binding Report}" 
-                                    AutoShowDocumentMap="True" />
+                                    AutoShowDocumentMap="False" AutoShowParametersPanel="True"
+                                    ShowNavigationPane="False" AllowDocumentEditing="False"
+                                    AllowDrop="False"/>
     </Grid>
 </UserControl>

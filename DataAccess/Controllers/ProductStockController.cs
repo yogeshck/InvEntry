@@ -11,16 +11,18 @@ namespace DataAccess.Controllers
     public class ProductStockController : ControllerBase
     {
         private readonly IRepositoryBase<ProductStock> _product;
-
-        public ProductStockController(IRepositoryBase<ProductStock> productRepo) 
+        private readonly ILogger<ProductStockController> _logger;
+        public ProductStockController(IRepositoryBase<ProductStock> productRepo, ILogger<ProductStockController> logger) 
         {
             _product = productRepo;
+            _logger = logger;
         }
 
         // GET: api/<ProductStockController>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            _logger.LogInformation("All Product Stock");
             return Ok(_product.GetAll());
         }
 
