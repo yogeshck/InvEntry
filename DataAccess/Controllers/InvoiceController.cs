@@ -10,14 +10,15 @@ namespace DataAccess.Controllers
     [ApiController]
     public class InvoiceController : ControllerBase
     {
+        private string InvoicePrefixFormat = "B{0}";
 
         private IRepositoryBase<InvoiceHeader> _invoiceHeaderRepository;
-        private IRepositoryBase<InvoiceLine> _invoiceLineRepository;
+        private IRepositoryBase<OrgCompany> _orgCompanyRepository;
 
-        public InvoiceController(IRepositoryBase<InvoiceHeader> invoiceHeaderRepository, IRepositoryBase<InvoiceLine> invoiceLineRepository)
+        public InvoiceController(IRepositoryBase<InvoiceHeader> invoiceHeaderRepository, IRepositoryBase<OrgCompany> orgCompanyRepository)
         {
             _invoiceHeaderRepository = invoiceHeaderRepository;
-            _invoiceLineRepository = invoiceLineRepository;
+            _orgCompanyRepository = orgCompanyRepository;
         }
 
 
@@ -40,6 +41,10 @@ namespace DataAccess.Controllers
         [HttpPost]
         public InvoiceHeader Post([FromBody] InvoiceHeader value)
         {
+            var company = _orgCompanyRepository.Get(x => x.ThisCompany.HasValue && x.ThisCompany.Value);
+
+            value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId);
+
             _invoiceHeaderRepository.Add(value);
             return value;
         }

@@ -38,8 +38,8 @@ public class ReportFactoryService : IReportFactoryService
     {
         var report = CreateInvoiceReport();
 
-        var customStringConnection =  new CustomStringConnectionParameters(_connectionString);
-        report.DataSource = new SqlDataSource(customStringConnection);
+        //var customStringConnection =  new CustomStringConnectionParameters(_connectionString);
+        //report.DataSource = new SqlDataSource(customStringConnection);
         report.Parameters["pInvoiceNbr"].Value = pInvoiceNbr;
         return report;
     }

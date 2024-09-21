@@ -258,7 +258,7 @@ public partial class InvoiceViewModel : ObservableObject
         if (createCustomer)
             await _customerService.CreatCustomer(Buyer);
 
-        Header.InvNbr = InvoiceNumberGenerator.Generate();
+        //Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = Buyer.GKey;
 
         Header.Lines.ForEach(x =>
@@ -271,6 +271,7 @@ public partial class InvoiceViewModel : ObservableObject
         if(header is not null)
         {
             Header.GKey = header.GKey;
+            Header.InvNbr = header.InvNbr;
             Header.Lines.ForEach(x => x.InvoiceHdrGkey = header.GKey);
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
