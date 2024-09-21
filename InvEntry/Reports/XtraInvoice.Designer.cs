@@ -933,7 +933,7 @@
             // 
             // sqlDataSource1
             // 
-            this.sqlDataSource1.ConnectionName = "localhost_mijms_Connection";
+            this.sqlDataSource1.ConnectionName = "DefaultConnection";
             this.sqlDataSource1.Name = "sqlDataSource1";
             customSqlQuery1.MetaSerializable = "<Meta X=\"212\" Y=\"20\" Width=\"179\" Height=\"744\" />";
             customSqlQuery1.Name = "invoiceLine";
