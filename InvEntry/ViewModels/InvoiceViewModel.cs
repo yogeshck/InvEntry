@@ -398,6 +398,7 @@ public partial class InvoiceViewModel : ObservableObject
         SetHeader();
         Buyer = null;
         CustomerPhoneNumber = null;
+        CreateInvoiceCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]
