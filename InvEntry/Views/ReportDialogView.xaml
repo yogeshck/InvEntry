@@ -8,6 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <dxp:DocumentPreviewControl RequestDocumentCreation="True"
-                                                DocumentSource="{Binding Report}" />
+                                                DocumentSource="{Binding Report}" 
+                                    AutoShowDocumentMap="True" />
     </Grid>
 </UserControl>

@@ -61,6 +61,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceService _invoiceService;
     private readonly IProductCategoryService _productCategoryService;
+    private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;

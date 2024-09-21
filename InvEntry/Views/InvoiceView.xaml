@@ -15,7 +15,7 @@
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
-             d:DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
+             d:DataContext="{Binding viewmodels:InvoiceViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" HorizontalAlignment="Left">

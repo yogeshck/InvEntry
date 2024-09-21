@@ -6,6 +6,7 @@ using InvEntry.Extension;
 using InvEntry.IoC;
 using InvEntry.Metadata;
 using InvEntry.Models;
+using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.ViewModels;
 using InvEntry.Views;
@@ -112,6 +113,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
+                 .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .ConfigureFormulas()
                  .AddHttpClient("mijms", httpClient => 
                  {
