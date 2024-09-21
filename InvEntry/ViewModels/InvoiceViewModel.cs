@@ -240,7 +240,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
     private async Task CreateInvoice()
     {
         if (!string.IsNullOrEmpty(Header.InvNbr))
@@ -290,6 +290,11 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
+    private bool CanCreateInvoice()
+    {
+        return string.IsNullOrEmpty(Header?.InvNbr);
+    }
+
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
     {
@@ -301,21 +306,16 @@ public partial class InvoiceViewModel : ObservableObject
 
     private bool CanPrintInvoice()
     {
-        return !string.IsNullOrEmpty(Header?.InvNbr);
+        return !CanCreateInvoice();
     }
 
-    [RelayCommand(CanExecute = nameof(CanPrintPreviewInvoice))]
+    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintPreviewInvoice()
     {
         var dialogVM = DISource.Resolve<ReportDialogViewModel>();
         dialogVM.Init(Header.InvNbr);
 
         _reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
-    }
-
-    private bool CanPrintPreviewInvoice()
-    {
-        return !string.IsNullOrEmpty(Header?.InvNbr);
     }
 
     [RelayCommand]
