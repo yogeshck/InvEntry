@@ -47,7 +47,7 @@ namespace DataAccess.Controllers
 
             _orgCompanyRepository.Update(company);
 
-            value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId);
+            value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId?.ToString("D4"));
 
             _invoiceHeaderRepository.Add(value);
             return value;
