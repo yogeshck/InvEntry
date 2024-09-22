@@ -320,6 +320,7 @@ public partial class InvoiceViewModel : ObservableObject
         dialogVM.Init(Header.InvNbr);
 
         _reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        ResetInvoice();
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
@@ -396,10 +397,10 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void ResetInvoice()
     {
-        var result = _messageBoxService.ShowMessage("Reset all values", "Reset Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+       // var result = _messageBoxService.ShowMessage("Reset all values", "Reset Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
-        if (result == MessageResult.No)
-            return;
+       // if (result == MessageResult.No)
+       //     return;
 
         SetHeader();
         Buyer = null;
