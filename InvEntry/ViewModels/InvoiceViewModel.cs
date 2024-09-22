@@ -317,8 +317,8 @@ public partial class InvoiceViewModel : ObservableObject
     private void PrintPreviewInvoice()
     {
         var dialogVM = DISource.Resolve<ReportDialogViewModel>();
-        //dialogVM.Init(Header.InvNbr);
-        dialogVM.Init("B0001");
+        dialogVM.Init(Header.InvNbr);
+
         _reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
     }
 
