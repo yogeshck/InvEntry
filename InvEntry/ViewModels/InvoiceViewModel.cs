@@ -146,6 +146,8 @@ public partial class InvoiceViewModel : ObservableObject
         if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
             return;
 
+        CustomerReadOnly = false;
+
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
         Buyer = await _customerService.GetCustomer(phoneNumber);
@@ -156,8 +158,8 @@ public partial class InvoiceViewModel : ObservableObject
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
             Buyer = new();
+            Buyer.MobileNbr = phoneNumber;
             createCustomer = true;
-            CustomerReadOnly = false;
 
             Buyer.GstStateCode = "33";    //Need to fetch based on pincode - future change
             Header.GstLocBuyer = Buyer.GstStateCode;
@@ -169,7 +171,6 @@ public partial class InvoiceViewModel : ObservableObject
         }
         else
         {
-            CustomerReadOnly = true;
             Header.GstLocBuyer = Buyer.GstStateCode;
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
             IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
@@ -261,7 +262,9 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
         if (createCustomer)
+        {
             Buyer = await _customerService.CreatCustomer(Buyer);
+        }
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = Buyer.GKey;
