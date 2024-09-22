@@ -48,10 +48,15 @@ namespace InvEntry.Utils
             //if (number < 0) return "minus " + Convert(Math.Abs(number));
             if (number < 0) return Convert(Math.Abs(number));
             string words = "";
-            if ((number / 1000000) > 0)
+            if ((number / 100000) > 0)
             {
-                words += Convert(number / 100000) + " LAKES ";
-                number %= 1000000;
+                var w = Convert(number / 100000);
+
+                if(w == "ONE")
+                    words += w + " LAKH ";
+                else
+                    words += w + " LAKHS ";
+                number %= 100000;
             }
             if ((number / 1000) > 0)
             {

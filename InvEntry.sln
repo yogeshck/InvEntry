@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvEntry.Utils", "InvEntry.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{61C3C982-A51C-4623-9BED-2BDCA502A541}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.Test", "InvEntry.Test\InvEntry.Test.csproj", "{7C8C42A9-4CA1-47FC-BAAE-CD93D944ABB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvEntry.Test", "InvEntry.Test\InvEntry.Test.csproj", "{7C8C42A9-4CA1-47FC-BAAE-CD93D944ABB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.PlayTest", "InvEntry.PlayTest\InvEntry.PlayTest.csproj", "{F665BE88-3036-4256-A697-4941728A5EE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{7C8C42A9-4CA1-47FC-BAAE-CD93D944ABB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C8C42A9-4CA1-47FC-BAAE-CD93D944ABB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C8C42A9-4CA1-47FC-BAAE-CD93D944ABB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F665BE88-3036-4256-A697-4941728A5EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F665BE88-3036-4256-A697-4941728A5EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F665BE88-3036-4256-A697-4941728A5EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F665BE88-3036-4256-A697-4941728A5EE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
