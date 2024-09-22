@@ -65,9 +65,7 @@
         </DockPanel>
         <dxb:BarContainerControl ContainerType="Bottom" Grid.Row="1">
             <dxb:StatusBarControl Caption="Status Bar">
-                <dxb:BarStaticItem Content="{Binding GoldRate, StringFormat=GoldRate:{0}}"/>
-                <dxb:BarStaticItem Content="{Binding SilverRate, StringFormat=SilverRate:{0}}"/>
-                <dxb:BarStaticItem Content="{Binding DiamondRate, StringFormat=DiamondRate:{0}}"/>
+                <dxb:BarStaticItem Content="{Binding Version}"/>
             </dxb:StatusBarControl>
         </dxb:BarContainerControl>
         <dx:WaitIndicator DeferedVisibility="{Binding WaitIndicatorVisible}" Content="{Binding WaitIndicatorContent}">

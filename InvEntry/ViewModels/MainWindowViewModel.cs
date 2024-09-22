@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.Xpo.Helpers;
 using InvEntry.Extension;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace InvEntry.ViewModels
 {
@@ -20,6 +22,8 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         private string _WaitIndicatorContent;
+
+        public string Version;
 
         public decimal? GoldRate
             => _settingsPageViewModel?.Gold22C?.Price;
@@ -37,6 +41,8 @@ namespace InvEntry.ViewModels
             _navigationService = navigationService;
             _settingsPageViewModel = settingsPageViewModel;
             Messenger.Default.Register<WaitIndicatorVM>(this, MessageType.WaitIndicator, SetWaitIndicator);
+
+            Version = "Version : 1.0.0.0";
         }
 
         [RelayCommand]
