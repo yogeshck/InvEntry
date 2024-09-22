@@ -109,14 +109,16 @@
                                 <dxlc:LayoutItem Label="Name" LabelPosition="Top">
                                     <dxe:TextEdit EditValue="{Binding Buyer.CustomerName}" 
                                                       IsReadOnly="{Binding CustomerReadOnly}"
-                                                      Name="CustomerNameUI">
+                                                      Name="CustomerNameUI"
+                                                  CharacterCasing="Upper">
                                         <dxmvvm:Interaction.Behaviors>
                                             <behavior:FocusTextEditBehavior />
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Address" LabelPosition="Top">
-                                    <dxe:TextEdit EditValue="{Binding Buyer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"/>
+                                    <dxe:TextEdit EditValue="{Binding Buyer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
+                                                  CharacterCasing="Upper"/>
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>

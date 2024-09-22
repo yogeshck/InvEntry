@@ -96,7 +96,7 @@ public partial class InvoiceViewModel : ObservableObject
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
         selectedRows = new();
-        _customerReadOnly = true;
+        _customerReadOnly = false;
 
         _isBalance = true;
         _isRefund = false;
