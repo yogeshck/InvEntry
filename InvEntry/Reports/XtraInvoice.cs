@@ -20,7 +20,7 @@ namespace mijmsReports
         {
             var words = NumberToWords.Convert(invGrandTotal.Value);
 
-            if (string.IsNullOrEmpty(words))
+            if (!string.IsNullOrEmpty(words))
                 e.Value = string.Format(NumberToWordsFormat, words);
             else
                 e.Value = "NIL";
