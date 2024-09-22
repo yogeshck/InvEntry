@@ -23,7 +23,8 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private string _WaitIndicatorContent;
 
-        public string Version;
+        [ObservableProperty]
+        private string _Version;
 
         public decimal? GoldRate
             => _settingsPageViewModel?.Gold22C?.Price;

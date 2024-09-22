@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XtraInvoice));
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery1 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter1 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery2 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
@@ -43,7 +44,6 @@
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo2 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo3 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo3 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XtraInvoice));
             this.Detail = new DevExpress.XtraReports.UI.DetailBand();
             this.detailTable = new DevExpress.XtraReports.UI.XRTable();
             this.detailTableRow1 = new DevExpress.XtraReports.UI.XRTableRow();
@@ -63,6 +63,9 @@
             this.detailTableCell2 = new DevExpress.XtraReports.UI.XRTableCell();
             this.detailTableCell5 = new DevExpress.XtraReports.UI.XRTableCell();
             this.TopMargin = new DevExpress.XtraReports.UI.TopMarginBand();
+            this.gstinTable = new DevExpress.XtraReports.UI.XRTable();
+            this.gstinRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.gstinCell = new DevExpress.XtraReports.UI.XRTableCell();
             this.vendorTable = new DevExpress.XtraReports.UI.XRTable();
             this.vendorNameRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.vendorName = new DevExpress.XtraReports.UI.XRTableCell();
@@ -76,6 +79,7 @@
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableRow5 = new DevExpress.XtraReports.UI.XRTableRow();
             this.gstCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.vendorLogo = new DevExpress.XtraReports.UI.XRPictureBox();
             this.xrLine4 = new DevExpress.XtraReports.UI.XRLine();
             this.invoiceDatesTable = new DevExpress.XtraReports.UI.XRTable();
             this.invoiceDateRow = new DevExpress.XtraReports.UI.XRTableRow();
@@ -179,7 +183,6 @@
             this.pymtSumryTable = new DevExpress.XtraReports.UI.XRTable();
             this.xrLabel1 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
-            this.xrRichText1 = new DevExpress.XtraReports.UI.XRRichText();
             this.GroupFooter1 = new DevExpress.XtraReports.UI.GroupFooterBand();
             this.xrLabel3 = new DevExpress.XtraReports.UI.XRLabel();
             this.metalSumryTable = new DevExpress.XtraReports.UI.XRTable();
@@ -202,11 +205,10 @@
             this.totalRow = new DevExpress.XtraReports.UI.XRTableCell();
             this.totalMetalWeight = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell21 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.gstinTable = new DevExpress.XtraReports.UI.XRTable();
-            this.gstinRow = new DevExpress.XtraReports.UI.XRTableRow();
-            this.gstinCell = new DevExpress.XtraReports.UI.XRTableCell();
-            this.vendorLogo = new DevExpress.XtraReports.UI.XRPictureBox();
+            this.calculatedField2 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.xrLabel15 = new DevExpress.XtraReports.UI.XRLabel();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -215,9 +217,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.oldExTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.taxTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pymtSumryTable)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.xrRichText1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.metalSumryTable)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             // 
             // Detail
@@ -453,6 +453,31 @@
             this.TopMargin.StylePriority.UseBackColor = false;
             this.TopMargin.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopLeft;
             // 
+            // gstinTable
+            // 
+            this.gstinTable.LocationFloat = new DevExpress.Utils.PointFloat(516.5535F, 143.5F);
+            this.gstinTable.Name = "gstinTable";
+            this.gstinTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
+            this.gstinRow});
+            this.gstinTable.SizeF = new System.Drawing.SizeF(205.659F, 25F);
+            // 
+            // gstinRow
+            // 
+            this.gstinRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.gstinCell});
+            this.gstinRow.Name = "gstinRow";
+            this.gstinRow.Weight = 0.75757619544300625D;
+            // 
+            // gstinCell
+            // 
+            this.gstinCell.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.gstinCell.Name = "gstinCell";
+            this.gstinCell.StylePriority.UseFont = false;
+            this.gstinCell.StylePriority.UseTextAlignment = false;
+            this.gstinCell.Text = "GSTIN-33ABBFM3746R1ZU        ";
+            this.gstinCell.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.gstinCell.Weight = 1.0513902674200124D;
+            // 
             // vendorTable
             // 
             this.vendorTable.LocationFloat = new DevExpress.Utils.PointFloat(0F, 27.5F);
@@ -577,6 +602,18 @@
             this.gstCaption.Text = "1319274";
             this.gstCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
             this.gstCaption.Weight = 1D;
+            // 
+            // vendorLogo
+            // 
+            this.vendorLogo.ImageAlignment = DevExpress.XtraPrinting.ImageAlignment.TopLeft;
+            this.vendorLogo.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("vendorLogo.ImageSource"));
+            this.vendorLogo.LocationFloat = new DevExpress.Utils.PointFloat(410.2792F, 23.00001F);
+            this.vendorLogo.Name = "vendorLogo";
+            this.vendorLogo.SizeF = new System.Drawing.SizeF(90.15945F, 75F);
+            this.vendorLogo.Sizing = DevExpress.XtraPrinting.ImageSizeMode.StretchImage;
+            this.vendorLogo.StylePriority.UseBorderColor = false;
+            this.vendorLogo.StylePriority.UseBorders = false;
+            this.vendorLogo.StylePriority.UsePadding = false;
             // 
             // xrLine4
             // 
@@ -1834,20 +1871,11 @@
             this.xrLabel2.Text = "0.00";
             this.xrLabel2.TextFormatString = "{0:##,###,##0.00}";
             // 
-            // xrRichText1
-            // 
-            this.xrRichText1.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F);
-            this.xrRichText1.LocationFloat = new DevExpress.Utils.PointFloat(0F, 171.3335F);
-            this.xrRichText1.Name = "xrRichText1";
-            this.xrRichText1.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrRichText1.SerializableRtfString = resources.GetString("xrRichText1.SerializableRtfString");
-            this.xrRichText1.SizeF = new System.Drawing.SizeF(468.2249F, 38.3333F);
-            // 
             // GroupFooter1
             // 
             this.GroupFooter1.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.xrLabel15,
             this.xrLabel3,
-            this.xrRichText1,
             this.xrLabel2,
             this.xrLabel1,
             this.pymtSumryTable,
@@ -2152,42 +2180,24 @@
             this.xrTableCell21.TextFormatString = "{0:##,###,##0.00}";
             this.xrTableCell21.Weight = 0.99364634971965293D;
             // 
-            // gstinTable
+            // calculatedField2
             // 
-            this.gstinTable.LocationFloat = new DevExpress.Utils.PointFloat(516.5535F, 143.5F);
-            this.gstinTable.Name = "gstinTable";
-            this.gstinTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
-            this.gstinRow});
-            this.gstinTable.SizeF = new System.Drawing.SizeF(205.659F, 25F);
+            this.calculatedField2.DataMember = "invoiceLine";
+            this.calculatedField2.Expression = "[INVL_PAYABLE_AMT]";
+            this.calculatedField2.Name = "calculatedField2";
+            this.calculatedField2.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField2_GetValue);
+
             // 
-            // gstinRow
+            // xrLabel15
             // 
-            this.gstinRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.gstinCell});
-            this.gstinRow.Name = "gstinRow";
-            this.gstinRow.Weight = 0.75757619544300625D;
-            // 
-            // gstinCell
-            // 
-            this.gstinCell.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.gstinCell.Name = "gstinCell";
-            this.gstinCell.StylePriority.UseFont = false;
-            this.gstinCell.StylePriority.UseTextAlignment = false;
-            this.gstinCell.Text = "GSTIN-33ABBFM3746R1ZU        ";
-            this.gstinCell.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.gstinCell.Weight = 1.0513902674200124D;
-            // 
-            // vendorLogo
-            // 
-            this.vendorLogo.ImageAlignment = DevExpress.XtraPrinting.ImageAlignment.TopLeft;
-            this.vendorLogo.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("vendorLogo.ImageSource"));
-            this.vendorLogo.LocationFloat = new DevExpress.Utils.PointFloat(410.2792F, 23.00001F);
-            this.vendorLogo.Name = "vendorLogo";
-            this.vendorLogo.SizeF = new System.Drawing.SizeF(90.15945F, 75F);
-            this.vendorLogo.Sizing = DevExpress.XtraPrinting.ImageSizeMode.StretchImage;
-            this.vendorLogo.StylePriority.UseBorderColor = false;
-            this.vendorLogo.StylePriority.UseBorders = false;
-            this.vendorLogo.StylePriority.UsePadding = false;
+            this.xrLabel15.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[calculatedField2]")});
+            this.xrLabel15.LocationFloat = new DevExpress.Utils.PointFloat(0F, 173.3335F);
+            this.xrLabel15.Multiline = true;
+            this.xrLabel15.Name = "xrLabel15";
+            this.xrLabel15.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
+            this.xrLabel15.SizeF = new System.Drawing.SizeF(458.2249F, 49.74995F);
+            this.xrLabel15.Text = "xrLabel15";
             // 
             // XtraInvoice
             // 
@@ -2199,7 +2209,8 @@
             this.GroupHeader1,
             this.PageHeader});
             this.CalculatedFields.AddRange(new DevExpress.XtraReports.UI.CalculatedField[] {
-            this.calculatedField1});
+            this.calculatedField1,
+            this.calculatedField2});
             this.ComponentStorage.AddRange(new System.ComponentModel.IComponent[] {
             this.sqlDataSource1});
             this.DataMember = "invoiceLine";
@@ -2213,6 +2224,7 @@
             this.baseControlStyle});
             this.Version = "24.1";
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).EndInit();
@@ -2221,9 +2233,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.oldExTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.taxTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pymtSumryTable)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.xrRichText1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.metalSumryTable)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
 
         }
@@ -2353,7 +2363,6 @@
         private DevExpress.XtraReports.UI.XRTable pymtSumryTable;
         private DevExpress.XtraReports.UI.XRLabel xrLabel1;
         private DevExpress.XtraReports.UI.XRLabel xrLabel2;
-        private DevExpress.XtraReports.UI.XRRichText xrRichText1;
         private DevExpress.XtraReports.UI.GroupFooterBand GroupFooter1;
         private DevExpress.XtraReports.UI.XRTable metalSumryTable;
         private DevExpress.XtraReports.UI.XRTableRow mSumryTableHdr;
@@ -2392,5 +2401,7 @@
         private DevExpress.XtraReports.UI.XRTableRow gstinRow;
         private DevExpress.XtraReports.UI.XRTableCell gstinCell;
         private DevExpress.XtraReports.UI.XRPictureBox vendorLogo;
+        private DevExpress.XtraReports.UI.XRLabel xrLabel15;
+        private DevExpress.XtraReports.UI.CalculatedField calculatedField2;
     }
 }
