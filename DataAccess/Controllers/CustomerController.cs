@@ -33,9 +33,22 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public void Post([FromBody] OrgCustomer value)
+        public OrgCustomer Post([FromBody] OrgCustomer value)
         {
-            _customer.Add(value);
+            var customer = _customer.Get(x => x.MobileNbr == value.MobileNbr);
+
+            if (customer == null)
+            {
+                _customer.Add(value);
+            }
+            else
+            {
+                customer.CustomerName = value.CustomerName;
+                customer.LedgerName = value.LedgerName;
+                _customer.Update(customer);
+            }
+
+            return customer ?? value;
         }
 
         // PUT api/<ProductStockController>/5

@@ -12,7 +12,7 @@ public interface ICustomerService
 {
     Task<Customer> GetCustomer(string productId);
 
-    Task CreatCustomer(Customer product);
+    Task<Customer> CreatCustomer(Customer product);
 
     Task UpdateCustomer(Customer product);
 }
@@ -26,9 +26,9 @@ public class CustomerService : ICustomerService
         _mijmsApiService = mijmsApiService;
     }
 
-    public async Task CreatCustomer(Customer customer)
+    public async Task<Customer> CreatCustomer(Customer customer)
     {
-        await _mijmsApiService.Post($"api/customer/", customer);
+        return await _mijmsApiService.Post($"api/customer/", customer);
     }
 
     public async Task<Customer> GetCustomer(string mobileNbr)

@@ -261,7 +261,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
         if (createCustomer)
-            await _customerService.CreatCustomer(Buyer);
+            Buyer = await _customerService.CreatCustomer(Buyer);
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = Buyer.GKey;
