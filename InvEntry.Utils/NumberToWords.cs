@@ -45,7 +45,8 @@ namespace InvEntry.Utils
         public static string Convert(long number)
         {
             if (number == 0) return "ZERO";
-            if (number < 0) return "minus " + Convert(Math.Abs(number));
+            //if (number < 0) return "minus " + Convert(Math.Abs(number));
+            if (number < 0) return Convert(Math.Abs(number));
             string words = "";
             if ((number / 1000000) > 0)
             {
