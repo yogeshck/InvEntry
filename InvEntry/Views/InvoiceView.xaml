@@ -130,22 +130,6 @@
                                 Orientation="Horizontal" View="GroupBox" Header="Invoice Amount"
                                 IsCollapsible="True">
                         <dxlc:LayoutGroup Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Advance Amount">
-                                <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="RD Amount">
-                                <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
                                 <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}">
                                     <dxmvvm:Interaction.Behaviors>
@@ -161,6 +145,13 @@
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
                                     </dxmvvm:Interaction.Behaviors>
                                 </dxe:TextEdit>
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Round Off">
+                                <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
+                            </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Grand Total">
+                                <!-- <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True"/> -->
+                                <dxe:TextEdit EditValue="{Binding Header.GrossRcbAmount}" IsReadOnly="True"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Discount">
                                 <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" >
@@ -178,11 +169,21 @@
                                     <Setter Property="Height" Value="35"/>
                                 </Style>
                             </dxlc:LayoutGroup.Resources>
-                            <dxlc:LayoutItem Label="Round Off">
-                                <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
+                            <dxlc:LayoutItem Label="Advance Amount">
+                                <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}">
+                                    <dxmvvm:Interaction.Behaviors>
+                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"/>
+                                    </dxmvvm:Interaction.Behaviors>
+                                </dxe:TextEdit>
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Grand Total">
-                                <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True"/>
+                            <dxlc:LayoutItem Label="RD Amount">
+                                <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}">
+                                    <dxmvvm:Interaction.Behaviors>
+                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"/>
+                                    </dxmvvm:Interaction.Behaviors>
+                                </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Amount Received">
                                 <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold">
