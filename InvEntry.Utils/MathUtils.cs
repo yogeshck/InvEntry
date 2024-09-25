@@ -8,8 +8,8 @@ namespace InvEntry.Utils
 {
     public class MathUtils
     {
-        public static decimal Normalize(decimal? value)
-                => value.HasValue ? Math.Round(value.Value, 2) : 0M;
+        public static decimal Normalize(decimal? value, int precision = 2)
+                => value.HasValue ? Math.Round(value.Value, precision) : 0M;
 
         public static string? NormalizeRounding(string criteria)
             => string.IsNullOrEmpty(criteria) ? null : $"Round({criteria}, 2)";

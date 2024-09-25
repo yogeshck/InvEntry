@@ -353,9 +353,18 @@ public partial class InvoiceViewModel : ObservableObject
         decimal BeforeTax = 0;
         BeforeTax = Header.InvlTaxTotal.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault();
 
-        Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
-        Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
-        Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
+        if (BeforeTax >= 0 )
+        {
+            Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
+            Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
+            Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
+
+        } else
+        {
+            Header.CgstAmount = 0;
+            Header.SgstAmount = 0;
+            Header.IgstAmount = 0;
+        }
 
         // After Tax Gross Value
         Header.GrossRcbAmount = 0;
@@ -371,7 +380,7 @@ public partial class InvoiceViewModel : ObservableObject
         //MathUtils.Normalize(Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
         //                Header.GrossRcbAmount.GetValueOrDefault());
 
-        Header.GrossRcbAmount = MathUtils.Normalize(Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0)) ;
+        Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0) ;
             //+                            Header.RoundOff.GetValueOrDefault());
 
         //Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault();
