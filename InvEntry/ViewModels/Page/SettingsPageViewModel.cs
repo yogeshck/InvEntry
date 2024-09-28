@@ -68,13 +68,22 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task OnLoaded()
         {
-            var dialyRates = await _mijmsApiService.GetEnumerable<DailyRate>("api/dailyrate/latest");
+            var dailyRates = await _mijmsApiService.GetEnumerable<DailyRate>("api/dailyrate/latest");
 
-            DailyMetalRate = new(dialyRates);
+            if (dailyRates is null)
+            {
+                DailyMetalRate = new();
+                TodayDailyMetalRate = new();
+                HistoryDailyMetalRate = new();
+
+            }
+            else { 
+            DailyMetalRate = new(dailyRates);
 
             TodayDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date == DateTime.Now.Date));
             HistoryDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date != DateTime.Now.Date));
 
+        }
             GenerateTodayRate();
         }
 
