@@ -4,29 +4,40 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:InvEntry.Views"
-             xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol" xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors" xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" x:Class="InvEntry.Views.VoucherEntryView"
+             xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol" 
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors" 
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
+             x:Class="InvEntry.Views.VoucherEntryView"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-
-        <dxlc:LayoutControl>
-            <dxlc:LayoutGroup Header="LayoutGroup" View="GroupBox" Margin="21,35,19,-333" Orientation="Vertical">
-                <dxlc:LayoutItem Label="LayoutItem" RenderTransformOrigin="0.505,0.327" Height="38">
-                    <dxe:TextEdit Margin="0,0,389,0" EditValue="Expense, Receipt" Text="Type"/>
-                </dxlc:LayoutItem>
-                <dxlc:LayoutItem Label="LayoutItem" Margin="0,17,0,0">
-                    <dxe:TextEdit Height="42"/>
-                </dxlc:LayoutItem>
+        <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Voucher Entry">
+            <dxlc:LayoutGroup HorizontalAlignment="Left" 
+                        Margin="10" VerticalAlignment="Top" 
+                        Orientation="Horizontal" View="GroupBox" Header="Invoice Amount"
+                        IsCollapsible="True">
+                <dxlc:LayoutGroup Orientation="Vertical" >
+                    <dxlc:LayoutGroup View="GroupBox" Header="Voucher" Orientation="Vertical">
+                        <dxlc:LayoutItem Label="Number" Width="300" FontSize="14" Margin="0,17,0,0">
+                            <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Nbr" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Date  " Width="300"  FontSize="14">
+                            <dxe:DateEdit Height="42" Width="250"
+                                          EditValue="{Binding Header.InvDate}" IsReadOnly="True"/>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Type" FontSize="14" Margin="0,17,0,0">
+                            <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Cash" />
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+                    <dxlc:LayoutItem Label="Amount" FontSize="14" Margin="0,17,0,0">
+                        <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Amount" />
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="0,17,0,0">
+                        <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Notes" />
+                    </dxlc:LayoutItem>
+                </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
-            <dx:SimpleButton Content="SimpleButton" HorizontalAlignment="Center" Height="2" VerticalAlignment="Center" Width="2"/>
-            <Canvas>
-                <DataGrid Height="426" Width="383" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="DataGrid_SelectionChanged">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Canvas>
-        </dxlc:LayoutControl>
+        </dxlc:LayoutGroup>
 
     </Grid>
 </UserControl>

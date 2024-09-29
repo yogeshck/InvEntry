@@ -1,4 +1,5 @@
 ﻿using DevExpress.Xpf.Docking;
+using DevExpress.Xpf.WindowsUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace InvEntry.Views
     /// <summary>
     /// Interaction logic for InvoiceListView.xaml
     /// </summary>
-    public partial class InvoiceListView : DocumentPanel
+    public partial class InvoiceListView : NavigationPage
     {
         public InvoiceListView()
         {

@@ -40,6 +40,9 @@
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                  Content="Invoice Entry"
                                                  Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
+                    <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
+                                                 Content="Invoice List View"
+                                                 Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
                                                  Content="Product Stock Entry"
                                                  Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}" />
