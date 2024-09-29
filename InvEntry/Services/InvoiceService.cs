@@ -15,6 +15,8 @@ namespace InvEntry.Services
 
         Task UpdateHeader(InvoiceHeader product);
 
+        Task<IEnumerable<InvoiceHeader>>  GetAll(DateTime from, DateTime to);
+
         Task CreatInvoiceLine(InvoiceLine line);
 
         Task CreatInvoiceLine(IEnumerable<InvoiceLine> line);
@@ -57,6 +59,14 @@ namespace InvEntry.Services
                 list.Add(CreatInvoiceLine(line));
 
             await Task.WhenAll(list);
+        }
+
+        public async Task<IEnumerable<InvoiceHeader>> GetAll(DateTime from, DateTime to)
+        {
+
+            return await _mijmsApiService.GetEnumerable<InvoiceHeader>($"api/invoice/{from.Date}/{to.Date}");
+
+
         }
     }
 }

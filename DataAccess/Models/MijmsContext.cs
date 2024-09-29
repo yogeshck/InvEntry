@@ -17,6 +17,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<DailyRate> DailyRates { get; set; }
 
+    public virtual DbSet<FinDayBook> FinDayBooks { get; set; }
+
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
 
     public virtual DbSet<InvoiceLine> InvoiceLines { get; set; }
@@ -51,7 +53,7 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +86,57 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Purity)
                 .HasMaxLength(20)
                 .HasColumnName("PURITY");
+        });
+
+        modelBuilder.Entity<FinDayBook>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("fin_day_book");
+
+            entity.Property(e => e.CbAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("cb_amount");
+            entity.Property(e => e.CustomerGkey).HasColumnName("customer_gkey");
+            entity.Property(e => e.FromLedgerGkey).HasColumnName("from_ledger_gkey");
+            entity.Property(e => e.FundTransferDate)
+                .HasColumnType("datetime")
+                .HasColumnName("fund_transfer_date");
+            entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
+            entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("gkey");
+            entity.Property(e => e.Mode).HasColumnName("mode");
+            entity.Property(e => e.ObAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ob_amount");
+            entity.Property(e => e.RefDocDate)
+                .HasColumnType("datetime")
+                .HasColumnName("ref_doc_date");
+            entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
+            entity.Property(e => e.RefDocNbr)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("ref_doc_nbr");
+            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
+            entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
+            entity.Property(e => e.TransAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("trans_amount");
+            entity.Property(e => e.TransDate)
+                .HasColumnType("datetime")
+                .HasColumnName("trans_date");
+            entity.Property(e => e.TransDesc).HasColumnName("trans_desc");
+            entity.Property(e => e.TransType).HasColumnName("trans_type");
+            entity.Property(e => e.VoucherDate)
+                .HasColumnType("datetime")
+                .HasColumnName("voucher_date");
+            entity.Property(e => e.VoucherNbr)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("voucher_nbr");
+            entity.Property(e => e.VoucherType).HasColumnName("voucher_type");
         });
 
         modelBuilder.Entity<InvoiceHeader>(entity =>

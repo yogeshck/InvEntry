@@ -30,6 +30,14 @@ namespace DataAccess.Controllers
             return _invoiceHeaderRepository.GetAll();
         }
 
+        // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
+        [HttpGet("{from}/{to}")]
+        public IEnumerable<InvoiceHeader> GetHeader(DateTime from, DateTime to)
+        {
+            return _invoiceHeaderRepository.GetList(x => x.InvDate.HasValue && x.InvDate.Value.Date >= from.Date &&
+                                                        x.InvDate.Value.Date <= to.Date);
+        }
+
         // GET api/<InvoiceController>/5
         [HttpGet("{invNbr}")]
         public InvoiceHeader? Get(string invNbr)

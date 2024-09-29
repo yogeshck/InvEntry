@@ -1,6 +1,4 @@
-﻿using DevExpress.Xpf.Docking;
-using DevExpress.Xpf.WindowsUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,13 +16,18 @@ using System.Windows.Shapes;
 namespace InvEntry.Views
 {
     /// <summary>
-    /// Interaction logic for InvoiceListView.xaml
+    /// Interaction logic for VoucherEntryView.xaml
     /// </summary>
-    public partial class InvoiceListView : NavigationPage
+    public partial class VoucherEntryView : UserControl
     {
-        public InvoiceListView()
+        public VoucherEntryView()
         {
             InitializeComponent();
+        }
+
+        private void DataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

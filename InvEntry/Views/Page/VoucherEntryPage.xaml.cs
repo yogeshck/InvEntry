@@ -1,5 +1,4 @@
-﻿using DevExpress.Xpf.Docking;
-using DevExpress.Xpf.WindowsUI;
+﻿using DevExpress.Xpf.WindowsUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +14,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace InvEntry.Views
+namespace InvEntry.Views.Page
 {
     /// <summary>
-    /// Interaction logic for InvoiceListView.xaml
+    /// Interaction logic for VoucherEntryPage.xaml
     /// </summary>
-    public partial class InvoiceListView : NavigationPage
+    public partial class VoucherEntryPage : NavigationPage
     {
-        public InvoiceListView()
+        public VoucherEntryPage()
         {
             InitializeComponent();
         }
