@@ -1,4 +1,5 @@
-﻿using InvEntry.Models;
+﻿using DevExpress.CodeParser;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,18 +27,22 @@ public class FinDayBookService : IFinDayBookService
         _mijmsApiService = mijmsApiService;
     }
 
-    public Task<Voucher> CreatVoucher(Voucher voucher)
+    public async Task<Voucher> CreatVoucher(Voucher voucher)
     {
-        throw new NotImplementedException();
+        return await _mijmsApiService.Post($"api/FinDayBook/", voucher);
     }
 
-    public Task<Voucher> GetVoucher(string voucherId)
+    public async Task<Voucher> GetVoucher(string voucherId)
     {
-        throw new NotImplementedException();
+        return await _mijmsApiService.Get<Voucher>($"api/FinDayBook/{voucherId}");
     }
 
-    public Task UpdateVoucher(Voucher voucher)
+    public async Task UpdateVoucher(Voucher voucher)
     {
-        throw new NotImplementedException();
+        await _mijmsApiService.Put($"api/FinDayBook/", voucher);
     }
+
+
+
+
 }

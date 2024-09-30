@@ -5,18 +5,17 @@ namespace DataAccess.Models;
 
 public partial class FinDayBook
 {
-
     public long Gkey { get; set; }
 
     public int? SeqNbr { get; set; }
 
     public long? CustomerGkey { get; set; }
 
-    public bool? TransType { get; set; }
+    public byte? TransType { get; set; }
 
-    public bool? VoucherType { get; set; }
+    public byte? VoucherType { get; set; }
 
-    public bool? Mode { get; set; }
+    public byte? Mode { get; set; }
 
     public decimal? TransAmount { get; set; }
 

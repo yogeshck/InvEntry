@@ -111,6 +111,7 @@ public partial class InvoiceViewModel : ObservableObject
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
     }
+
     private void PopulateUnboundLineDataMap()
     {
         if (copyInvoiceExpression is null) copyInvoiceExpression = new();
@@ -351,7 +352,9 @@ public partial class InvoiceViewModel : ObservableObject
 
         // Line Taxable Total minus Old Gold & Silver Amount
         decimal BeforeTax = 0;
-        BeforeTax = Header.InvlTaxTotal.GetValueOrDefault() - Header.OldGoldAmount.GetValueOrDefault() - Header.OldSilverAmount.GetValueOrDefault();
+        BeforeTax = Header.InvlTaxTotal.GetValueOrDefault()  - 
+                    Header.OldGoldAmount.GetValueOrDefault() - 
+                    Header.OldSilverAmount.GetValueOrDefault();
 
         if (BeforeTax >= 0 )
         {
@@ -368,8 +371,10 @@ public partial class InvoiceViewModel : ObservableObject
 
         // After Tax Gross Value
         Header.GrossRcbAmount = 0;
-        Header.GrossRcbAmount = BeforeTax + Header.CgstAmount.GetValueOrDefault() + Header.SgstAmount.GetValueOrDefault()
-            + Header.IgstAmount.GetValueOrDefault();
+        Header.GrossRcbAmount = BeforeTax + 
+                                Header.CgstAmount.GetValueOrDefault() +
+                                Header.SgstAmount.GetValueOrDefault() +
+                                Header.IgstAmount.GetValueOrDefault();
 
         decimal roundOff = 0;
         roundOff = Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
@@ -377,27 +382,23 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.RoundOff = roundOff; // Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0);
 
-        //MathUtils.Normalize(Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
-        //                Header.GrossRcbAmount.GetValueOrDefault());
-
         Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0) ;
-            //+                            Header.RoundOff.GetValueOrDefault());
 
         //Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault();
         //decimal AmountTobeDeducted = 0;
         //AmountTobeDeducted = Header.DiscountAmount.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault();
 
         decimal payableValue = 0;
-        payableValue = Header.GrossRcbAmount.GetValueOrDefault() - Header.DiscountAmount.GetValueOrDefault();
+        payableValue =  Header.GrossRcbAmount.GetValueOrDefault() - 
+                        Header.DiscountAmount.GetValueOrDefault();
 
         Header.AmountPayable = 0;
         Header.AmountPayable = MathUtils.Normalize(payableValue); 
-        //+ Header.RoundOff.GetValueOrDefault());
 
         Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
             (
                 Header.RecdAmount.GetValueOrDefault()  + 
-                Header.AdvanceAdj.GetValueOrDefault()   +
+                Header.AdvanceAdj.GetValueOrDefault()  +
                 Header.RdAmountAdj.GetValueOrDefault()
              );
 

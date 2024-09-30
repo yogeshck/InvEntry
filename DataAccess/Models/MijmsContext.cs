@@ -53,7 +53,7 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,10 +90,11 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<FinDayBook>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("fin_day_book");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("fin_day_book");
+
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.CbAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("cb_amount");
@@ -104,9 +105,6 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("fund_transfer_date");
             entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
             entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("gkey");
             entity.Property(e => e.Mode).HasColumnName("mode");
             entity.Property(e => e.ObAmount)
                 .HasColumnType("decimal(18, 2)")
