@@ -103,6 +103,7 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
+                 .AddTransient<VoucherEntryViewModel>()
                  .AddTransient<InvoiceListViewModel>()
                  .AddTransient<InvoiceViewModel>()
                  .AddTransient<ProductStockViewModel>()
@@ -115,6 +116,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
+                 .AddSingleton<IFinDayBookService, FinDayBookService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .ConfigureFormulas()

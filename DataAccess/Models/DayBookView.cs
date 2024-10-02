@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace DataAccess.Models;
 
-public partial class FinDayBook
+public partial class DayBookView
 {
     public long Gkey { get; set; }
 
@@ -11,11 +11,11 @@ public partial class FinDayBook
 
     public long? CustomerGkey { get; set; }
 
-    public byte? TransType { get; set; }
+    public string? Transtype { get; set; }
 
-    public byte? VoucherType { get; set; }
+    public string? VoucherType { get; set; }
 
-    public byte? Mode { get; set; }
+    public string? Mode { get; set; }
 
     public decimal? TransAmount { get; set; }
 
