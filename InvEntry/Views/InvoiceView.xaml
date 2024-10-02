@@ -204,13 +204,6 @@
                             <dxlc:LayoutItem Label="Due Date">
                                 <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"/>
                             </dxlc:LayoutItem>
-                            <Button Height="30"  Command="{Binding ShowWindowCommand}"
-                                    CommandParameter="{x:Reference Name= MainWindow}"
-                                    Content="Add Receipts" Width="100" VerticalContentAlignment="Center" 
-                                    Padding="5" Margin="25" VerticalAlignment="Top" HorizontalAlignment="Right"
-                                    BorderThickness="1" BorderBrush="#E0E0E0"  />
-                            <!--  -->
-
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
