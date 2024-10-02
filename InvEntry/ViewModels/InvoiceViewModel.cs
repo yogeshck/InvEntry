@@ -24,6 +24,7 @@ using DevExpress.Xpf.Printing;
 using InvEntry.Reports;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 using InvEntry.Views;
+using DevExpress.Xpf.Core;
 
 namespace InvEntry.ViewModels;
 
@@ -188,7 +189,14 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
+        var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
+  
+        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
         var product = await _productService.GetProduct(ProductIdUI);
+        await Task.Delay(30000);
+
+        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
         if (product is null)
         {

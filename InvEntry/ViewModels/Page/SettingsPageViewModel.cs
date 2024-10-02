@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.Mvvm;
 using DevExpress.Utils.Html.Internal;
+using DevExpress.Xpf.Core;
+using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
 using System;
@@ -9,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace InvEntry.ViewModels
 {
@@ -68,6 +72,9 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task OnLoaded()
         {
+            var vm = WaitIndicatorVM.ShowIndicator("Fetching Daily rate details...");
+            Messenger.Default.Send(MessageType.WaitIndicator, vm);
+
             var dailyRates = await _mijmsApiService.GetEnumerable<DailyRate>("api/dailyrate/latest");
 
             if (dailyRates is null)
@@ -85,12 +92,16 @@ namespace InvEntry.ViewModels
 
         }
             GenerateTodayRate();
+
+            Messenger.Default.Send(MessageType.WaitIndicator, vm);
         }
 
         [RelayCommand]
         private async Task SaveAllDailyRate()
         {
             if (!TodayDailyMetalRate.Where(x => x.GKey == 0).Any()) return;
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Saving..."));
 
             var savedRates = await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate.Where(x => x.GKey == 0));
 
@@ -105,12 +116,18 @@ namespace InvEntry.ViewModels
             }
 
             GenerateTodayRate();
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
+            DXMessageBox.Show("Sucessfully saved all rates", "Sucess", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
         [RelayCommand]
         private async Task SaveDailyRate(DailyRate rate)
         {
             if (rate is null) return;
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Saving..."));
 
             if (rate.GKey == 0)
             {
@@ -123,6 +140,10 @@ namespace InvEntry.ViewModels
             }
 
             GenerateTodayRate();
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
+            DXMessageBox.Show("Sucessfully saved rates", "Sucess", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
         private void GenerateTodayRate()

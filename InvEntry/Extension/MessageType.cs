@@ -10,4 +10,5 @@ public enum MessageType
 {
     FocusTextEdit,
     WaitIndicator,
+    HideWaitIndicator
 }

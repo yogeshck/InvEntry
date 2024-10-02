@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DevExpress.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,18 +7,17 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Extension
 {
-    public class WaitIndicatorVM
+    public class WaitIndicatorVM : DXSplashScreenViewModel
     {
         public bool IsVisible { get; set; }
-        public string Content { get; set; }
 
         private WaitIndicatorVM(bool visible, string content) 
         {
             IsVisible = visible;
-            Content = content;
+            Status = content;
         }
 
-        public static WaitIndicatorVM ShowIndicator(string content) 
+        public static WaitIndicatorVM ShowIndicator(string content)
             => new WaitIndicatorVM(true, content);
 
         public static WaitIndicatorVM HideIndicator()

@@ -3,6 +3,7 @@ using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
+using InvEntry.HostedServices;
 using InvEntry.IoC;
 using InvEntry.Metadata;
 using InvEntry.Models;
@@ -72,6 +73,7 @@ public sealed class Bootstrapper
 
         var builder = Host.CreateDefaultBuilder(arguments)
              .ConfigureServices((ctx, services) => services
+                 .AddHostedService<DataInitService>()
                  .AddSingleton(dispatcher)
                  .AddSingleton<IMessageBoxService>(_ =>
                  {
@@ -113,6 +115,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
+                 .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .ConfigureFormulas()
                  .AddHttpClient("mijms", httpClient => 

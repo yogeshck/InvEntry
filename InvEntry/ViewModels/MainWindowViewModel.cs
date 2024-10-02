@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.Xpf.Core;
 using DevExpress.Xpo.Helpers;
 using InvEntry.Extension;
 using System;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace InvEntry.ViewModels
 {
@@ -36,14 +38,18 @@ namespace InvEntry.ViewModels
             => _settingsPageViewModel?.Diamond?.Price;
 
         private SettingsPageViewModel _settingsPageViewModel;
+        private Dispatcher Dispatcher;
 
-        public MainWindowViewModel(INavigationService navigationService, SettingsPageViewModel settingsPageViewModel)
+        public MainWindowViewModel(INavigationService navigationService, 
+            SettingsPageViewModel settingsPageViewModel,
+            Dispatcher dispatcher)
         {
             _navigationService = navigationService;
             _settingsPageViewModel = settingsPageViewModel;
             Messenger.Default.Register<WaitIndicatorVM>(this, MessageType.WaitIndicator, SetWaitIndicator);
 
             Version = "Version : 1.0.0.0";
+            Dispatcher = dispatcher;
         }
 
         [RelayCommand]
@@ -59,7 +65,15 @@ namespace InvEntry.ViewModels
 
         private void SetWaitIndicator(WaitIndicatorVM vm)
         {
-            WaitIndicatorContent = vm.Content;
+            Dispatcher.Invoke(() =>
+            {
+                if (vm.IsVisible)
+                    SplashScreenManager.CreateWaitIndicator(vm, topmost: true).Show(owner: Application.Current.MainWindow);
+                else
+                    SplashScreenManager.CloseAll();
+            });
+
+            WaitIndicatorContent = vm.Status;
             WaitIndicatorVisible = vm.IsVisible;
         }
 
