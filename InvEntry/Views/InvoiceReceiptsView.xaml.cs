@@ -17,7 +17,7 @@ namespace InvEntry.Views
     /// <summary>
     /// Interaction logic for InvoiceReceiptsView.xaml
     /// </summary>
-    public partial class InvoiceReceiptsView : Window
+    public partial class InvoiceReceiptsView : UserControl
     {
         public InvoiceReceiptsView()
         {

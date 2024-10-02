@@ -26,6 +26,7 @@ using InvEntry.Reports;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 using InvEntry.Views;
 using DevExpress.Xpf.Core;
+using DevExpress.XtraCharts;
 
 namespace InvEntry.ViewModels;
 
@@ -140,16 +141,19 @@ public partial class InvoiceViewModel : ObservableObject
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
     }
 
-    private void ShowWindow(object obj)
+    [RelayCommand]
+    private void AddReceipts()
     {
-        var receiptsWindow = obj as Window;
+        var vm = new InvoiceReceiptsViewModel();
+        var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Receipts", "InvoiceReceiptsView", vm);
+    
+        if (result == MessageResult.OK)
+        {
 
-        ArInvoiceReceipt arInvoiceReceiptWin = new ArInvoiceReceipt();
-        receiptsWindow.Owner = receiptsWindow;
-        receiptsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        receiptsWindow.Show();
+        } else
+        {
 
-
+        }
     }
 
     [RelayCommand]
@@ -210,7 +214,7 @@ public partial class InvoiceViewModel : ObservableObject
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
         var product = await _productService.GetProduct(ProductIdUI);
-        await Task.Delay(30000);
+       // await Task.Delay(30000);
 
         SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
