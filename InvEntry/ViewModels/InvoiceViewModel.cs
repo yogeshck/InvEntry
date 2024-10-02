@@ -6,6 +6,7 @@ using InvEntry.Services;
 using InvEntry.Models;
 using InvEntry.Utils;
 using System;
+using System.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -55,6 +56,8 @@ public partial class InvoiceViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
+
+    public ICommand ShowWindowCommand { get; set; }
 
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
@@ -134,6 +137,18 @@ public partial class InvoiceViewModel : ObservableObject
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.GrossRcbAmount)}", (item, val) => item.GrossRcbAmount = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.AmountPayable)}", (item, val) => item.AmountPayable = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
+    }
+
+    private void ShowWindow(object obj)
+    {
+        var receiptsWindow = obj as Window;
+
+        ArInvoiceReceipt arInvoiceReceiptWin = new ArInvoiceReceipt();
+        receiptsWindow.Owner = receiptsWindow;
+        receiptsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        receiptsWindow.Show();
+
+
     }
 
     [RelayCommand]

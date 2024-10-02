@@ -15,7 +15,11 @@ public partial class MijmsContext : DbContext
     {
     }
 
+    public virtual DbSet<ArInvoiceReceipt> ArInvoiceReceipts { get; set; }
+
     public virtual DbSet<DailyRate> DailyRates { get; set; }
+
+    public virtual DbSet<DayBookView> DayBookViews { get; set; }
 
     public virtual DbSet<FinDayBook> FinDayBooks { get; set; }
 
@@ -24,6 +28,8 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<InvoiceLine> InvoiceLines { get; set; }
 
     public virtual DbSet<Metal> Metals { get; set; }
+
+    public virtual DbSet<MtblReference> MtblReferences { get; set; }
 
     public virtual DbSet<OrgAddress> OrgAddresses { get; set; }
 
@@ -53,10 +59,71 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ArInvoiceReceipt>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("ar_invoice_receipts");
+
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedNever()
+                .HasColumnName("gkey");
+            entity.Property(e => e.AdjustedAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("adjusted_amount");
+            entity.Property(e => e.BalBeforeAdj)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("bal_before_adj");
+            entity.Property(e => e.BalanceAfterAdj)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("balance_after_adj");
+            entity.Property(e => e.BankName)
+                .HasMaxLength(50)
+                .HasColumnName("bank_name");
+            entity.Property(e => e.CompanyBankAccountNbr)
+                .HasMaxLength(50)
+                .HasColumnName("company_bank_account_nbr");
+            entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
+            entity.Property(e => e.ExternalTransactionDate).HasColumnName("external_transaction_date");
+            entity.Property(e => e.ExternalTransactionId).HasColumnName("external_transaction_id");
+            entity.Property(e => e.InternalVoucherDate).HasColumnName("internal_voucher_date");
+            entity.Property(e => e.InternalVoucherNbr)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("internal_voucher_nbr");
+            entity.Property(e => e.InvoiceGkey).HasColumnName("invoice_gkey");
+            entity.Property(e => e.InvoiceNbr)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("invoice_nbr");
+            entity.Property(e => e.InvoiceReceivableAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("invoice_receivable_amount");
+            entity.Property(e => e.ModeOfReceipt).HasColumnName("mode_of_receipt");
+            entity.Property(e => e.OtherReference)
+                .HasMaxLength(50)
+                .HasColumnName("other_reference");
+            entity.Property(e => e.SenderBankAccountNbr)
+                .HasMaxLength(50)
+                .HasColumnName("sender_bank_account_nbr");
+            entity.Property(e => e.SenderBankBranch)
+                .HasMaxLength(50)
+                .HasColumnName("sender_bank_branch");
+            entity.Property(e => e.SenderBankGkey).HasColumnName("sender_bank_gkey");
+            entity.Property(e => e.SenderBankIfscCode)
+                .HasMaxLength(50)
+                .HasColumnName("sender_bank_ifsc_code");
+            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
+            entity.Property(e => e.Status)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("status");
+            entity.Property(e => e.TransactionType).HasColumnName("transaction_type");
+        });
+
         modelBuilder.Entity<DailyRate>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -86,6 +153,63 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Purity)
                 .HasMaxLength(20)
                 .HasColumnName("PURITY");
+        });
+
+        modelBuilder.Entity<DayBookView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("day_book_view");
+
+            entity.Property(e => e.CbAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("cb_amount");
+            entity.Property(e => e.CustomerGkey).HasColumnName("customer_gkey");
+            entity.Property(e => e.FromLedgerGkey).HasColumnName("from_ledger_gkey");
+            entity.Property(e => e.FundTransferDate)
+                .HasColumnType("datetime")
+                .HasColumnName("fund_transfer_date");
+            entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
+            entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("gkey");
+            entity.Property(e => e.Mode)
+                .HasMaxLength(50)
+                .HasColumnName("mode");
+            entity.Property(e => e.ObAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ob_amount");
+            entity.Property(e => e.RefDocDate)
+                .HasColumnType("datetime")
+                .HasColumnName("ref_doc_date");
+            entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
+            entity.Property(e => e.RefDocNbr)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("ref_doc_nbr");
+            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
+            entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
+            entity.Property(e => e.TransAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("trans_amount");
+            entity.Property(e => e.TransDate)
+                .HasColumnType("datetime")
+                .HasColumnName("trans_date");
+            entity.Property(e => e.TransDesc).HasColumnName("trans_desc");
+            entity.Property(e => e.Transtype)
+                .HasMaxLength(50)
+                .HasColumnName("TRANSTYPE");
+            entity.Property(e => e.VoucherDate)
+                .HasColumnType("datetime")
+                .HasColumnName("voucher_date");
+            entity.Property(e => e.VoucherNbr)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("voucher_nbr");
+            entity.Property(e => e.VoucherType)
+                .HasMaxLength(50)
+                .HasColumnName("voucher_type");
         });
 
         modelBuilder.Entity<FinDayBook>(entity =>
@@ -447,6 +571,30 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("METAL_NAME");
+        });
+
+        modelBuilder.Entity<MtblReference>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("mtbl_references");
+
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.Module)
+                .HasMaxLength(50)
+                .HasColumnName("module");
+            entity.Property(e => e.RefCode)
+                .HasMaxLength(50)
+                .HasColumnName("ref_code");
+            entity.Property(e => e.RefDesc).HasColumnName("ref_desc");
+            entity.Property(e => e.RefName)
+                .HasMaxLength(50)
+                .HasColumnName("ref_name");
+            entity.Property(e => e.RefValue)
+                .HasMaxLength(50)
+                .HasColumnName("ref_value");
+            entity.Property(e => e.SortSeq).HasColumnName("sort_seq");
         });
 
         modelBuilder.Entity<OrgAddress>(entity =>
