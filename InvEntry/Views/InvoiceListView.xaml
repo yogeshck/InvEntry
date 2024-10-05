@@ -31,9 +31,21 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshInvoicesCommand}"/>
+                <dxb:BarEditItem EditValue="{Binding From}" EditWidth="120" Content="From Date">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:DateEditSettings AllowDefaultButton="True" />
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
+                <dxb:BarEditItem EditValue="{Binding To}" EditWidth="120" Content="To Date">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding MaxDate}"/>
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxg:GridControl ItemsSource="{Binding Invoices}" AutoGenerateColumns="AddNew">
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="AddNew"
+                         Height="500"
+                         MaxHeight="1500">
             <dxg:GridControl.View>
                 <dxg:TableView />
             </dxg:GridControl.View>
