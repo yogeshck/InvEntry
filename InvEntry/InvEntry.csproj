@@ -4,6 +4,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <UserSecretsId>6bbfdca0-bde8-4a50-802f-731f5fbd6d8b</UserSecretsId>
+    <ApplicationIcon>Diamond 01-WF.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +49,7 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="InvEntry.ico" />
     <Content Include="Views\Images\diamond.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

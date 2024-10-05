@@ -1,4 +1,5 @@
-﻿using DevExpress.Mvvm;
+﻿using DevExpress.CodeParser;
+using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
@@ -11,6 +12,7 @@ using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.ViewModels;
 using InvEntry.Views;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -59,7 +61,11 @@ public sealed class Bootstrapper
         string[] arguments = args.Args;
         if(argSet.Count == 0 || !argSet.Any(d => d.Contains("environment")))
         {
+#if DEBUG
             arguments = ["--environment", "Development"];
+#else
+            arguments = ["--environment", "Production"];
+#endif
         }
 
         Log.Logger = new LoggerConfiguration()
@@ -131,6 +137,11 @@ public sealed class Bootstrapper
              .ConfigureLogging(logging =>
              {
                  logging.AddSerilog(dispose: true);
+             })
+             .ConfigureHostConfiguration(config => 
+             {
+                 config
+                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
              });
 
         _host = builder.Build();
