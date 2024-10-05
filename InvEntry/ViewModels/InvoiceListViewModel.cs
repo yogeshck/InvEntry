@@ -28,19 +28,14 @@ public partial class InvoiceListViewModel : ObservableObject
     public InvoiceListViewModel(IInvoiceService invoiceService) 
     {
         _invoiceService = invoiceService;
-        Init();
-    }
-
-    private async void Init()
-    {
-        var invoicesResult = await _invoiceService.GetAll(DateTime.Now.AddDays(-7), DateTime.Now);
-        Invoices = new(invoicesResult);
+        Task.Run(RefreshInvoicesAsync).Wait();
     }
 
     [RelayCommand]
     private async Task RefreshInvoicesAsync()
     {
         var invoicesResult = await _invoiceService.GetAll(From ?? DateTime.Now.AddDays(-7), To ?? DateTime.Now);
+        if(invoicesResult is not null)
         Invoices = new(invoicesResult);
     }
 }

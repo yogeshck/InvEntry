@@ -60,8 +60,8 @@
                     </dxwui:HamburgerSubMenu>--> 
                 </dxwui:HamburgerMenu.Items>
                 <dxwui:HamburgerMenu.Content>
-                    <dxwui:NavigationFrame x:Name="frame" AnimationType="Fade"
-                                           NavigationCacheMode="Required" BackNavigationMode="PreviousScreen" Width="1500">
+                    <dxwui:NavigationFrame x:Name="frame" BackNavigationMode="PreviousScreen" Width="1500" 
+                                           NavigationCacheMode="Disabled">
                         <dxmvvm:Interaction.Behaviors>
                             <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}" />
                             <ext:AttachServiceBehavior AtachableService="{Binding NavigationService}" />
