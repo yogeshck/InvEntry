@@ -5,7 +5,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UserSecretsId>6bbfdca0-bde8-4a50-802f-731f5fbd6d8b</UserSecretsId>
-    <ApplicationIcon>Diamond 01-WF.ico</ApplicationIcon>
+    <ApplicationIcon>InvEntry.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
