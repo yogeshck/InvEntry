@@ -1,4 +1,5 @@
 ﻿using InvEntry.Models;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace InvEntry.Services
 
         Task UpdateHeader(InvoiceHeader product);
 
-        Task<IEnumerable<InvoiceHeader>>  GetAll(DateTime from, DateTime to);
+        Task<IEnumerable<InvoiceHeader>>  GetAll(InvoiceSearchOption options);
 
         Task CreatInvoiceLine(InvoiceLine line);
 
@@ -61,10 +62,10 @@ namespace InvEntry.Services
             await Task.WhenAll(list);
         }
 
-        public async Task<IEnumerable<InvoiceHeader>> GetAll(DateTime from, DateTime to)
+        public async Task<IEnumerable<InvoiceHeader>> GetAll(InvoiceSearchOption options)
         {
 
-            return await _mijmsApiService.GetEnumerable<InvoiceHeader>($"api/invoice/{from.Date}/{to.Date}");
+            return await _mijmsApiService.PostEnumerable<InvoiceHeader, InvoiceSearchOption>($"api/invoice/filter", options);
 
 
         }

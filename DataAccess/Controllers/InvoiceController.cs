@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -31,11 +32,11 @@ namespace DataAccess.Controllers
         }
 
         // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
-        [HttpGet("{from}/{to}")]
-        public IEnumerable<InvoiceHeader> GetHeader(DateTime from, DateTime to)
+        [HttpPost("filter")]
+        public IEnumerable<InvoiceHeader> FilterHeader([FromBody] InvoiceSearchOption criteria)
         {
-            return _invoiceHeaderRepository.GetList(x => x.InvDate.HasValue && x.InvDate.Value.Date >= from.Date &&
-                                                        x.InvDate.Value.Date <= to.Date);
+            return _invoiceHeaderRepository.GetList(x => x.InvDate.HasValue && x.InvDate.Value.Date >= criteria.From.Date &&
+                                                        x.InvDate.Value.Date <= criteria.To.Date);
         }
 
         // GET api/<InvoiceController>/5

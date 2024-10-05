@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Utils;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,10 +22,7 @@ public partial class InvoiceListViewModel : ObservableObject
     private ObservableCollection<InvoiceHeader> _invoices;
 
     [ObservableProperty]
-    private DateTime? _from;
-
-    [ObservableProperty]
-    private DateTime? _to;
+    private InvoiceSearchOption _searchOption;
 
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
@@ -32,16 +30,16 @@ public partial class InvoiceListViewModel : ObservableObject
     public InvoiceListViewModel(IInvoiceService invoiceService) 
     {
         _invoiceService = invoiceService;
-
-        To = Today;
-        From = Today.AddDays(-7);
+        _searchOption = new();
+        SearchOption.To = Today;
+        SearchOption.From = Today.AddDays(-7);
         Task.Run(RefreshInvoicesAsync).Wait();
     }
 
     [RelayCommand]
     private async Task RefreshInvoicesAsync()
     {
-        var invoicesResult = await _invoiceService.GetAll(From ?? DateTime.Today.AddDays(-7), To ?? DateTime.Today);
+        var invoicesResult = await _invoiceService.GetAll(SearchOption);
         if(invoicesResult is not null)
         Invoices = new(invoicesResult);
     }
