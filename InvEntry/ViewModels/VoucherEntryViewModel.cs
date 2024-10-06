@@ -40,9 +40,9 @@ public partial class VoucherEntryViewModel: ObservableObject
         CashVoucherTypeList = new();
         _finDayBookService = finDayBookService;
         _messageBoxService = messageBoxService;
-        Voucher = new();
+        
         PopulateReferenceList();
-        SetVoucher();
+        ResetVoucher();
     }
 
     private  void PopulateReferenceList()
@@ -58,6 +58,17 @@ public partial class VoucherEntryViewModel: ObservableObject
         Voucher.VoucherType = 3;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
         Voucher.Mode = mode;              // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
+        SetVoucherMode();
+    }
+
+    private void SetVoucherMode()
+    {
+        VoucherMode = "Cash";
+
+        if(Voucher.Mode != 1)
+        {
+            VoucherMode = "Petty Cash";
+        }
     }
 
     [RelayCommand]
@@ -71,7 +82,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     private void CreateCashVoucher()
     {
         Voucher.Mode = 1;
-        VoucherMode = "Cash";
+        SetVoucherMode();
     }        
 
 
@@ -79,7 +90,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     private void CreatePettyCashVoucher()
     {
         Voucher.Mode = 2;
-        VoucherMode = "Petty Cash";
+        SetVoucherMode();
     }
 
     [RelayCommand]

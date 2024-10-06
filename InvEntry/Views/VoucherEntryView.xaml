@@ -52,7 +52,7 @@
             <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Voucher"  Margin="5">
                 <dxlc:LayoutGroup View="Group" Orientation="Vertical">
                     <dxlc:LayoutItem Label="Type" FontSize="14" Margin="5">
-                        <dxe:ComboBoxEdit Height="42" Width="250" ItemsSource="{Binding CashVoucherTypeList}"
+                        <dxe:TextEdit Height="42" Width="250" IsReadOnly="True" ShowBorder="False"
                                           EditValue="{Binding VoucherMode}"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Number" Width="300" FontSize="14" Margin="5">
@@ -60,7 +60,7 @@
                             CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Date  " Width="300"  FontSize="14">
-                        <dxe:DateEdit Height="42" Width="250"
+                        <dxe:DateEdit Height="42" Width="250" IsReadOnly="True" ShowBorder="False"
                                 EditValue="{Binding Voucher.VoucherDate}" >
                             <dxe:DateEdit.StyleSettings>
                                 <dxe:DateEditNavigatorWithTimePickerStyleSettings />
