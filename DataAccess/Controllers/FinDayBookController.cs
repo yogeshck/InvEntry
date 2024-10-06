@@ -42,7 +42,7 @@ namespace DataAccess.Controllers
                     .OrderByDescending(x => x.SeqNbr).FirstOrDefault()?.SeqNbr;
 
                 if (lastSeqNbr is not null)
-                    value.SeqNbr = lastSeqNbr++;
+                    value.SeqNbr = lastSeqNbr + 1;
                 else
                     value.SeqNbr = 1;
             }

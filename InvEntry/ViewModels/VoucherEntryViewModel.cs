@@ -40,7 +40,7 @@ public partial class VoucherEntryViewModel: ObservableObject
         CashVoucherTypeList = new();
         _finDayBookService = finDayBookService;
         _messageBoxService = messageBoxService;
-
+        Voucher = new();
         PopulateReferenceList();
         SetVoucher();
     }
@@ -63,6 +63,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     [RelayCommand]
     private void ResetVoucher()
     {
+        Voucher = new();
         SetVoucher();
     }
 

@@ -48,12 +48,12 @@
                     GlyphSize="Large" Command="{Binding SaveVoucherCommand}"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxlc:LayoutControl Grid.Row="1">
+        <dxlc:LayoutControl Grid.Row="1" Width="400">
             <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Voucher"  Margin="5">
                 <dxlc:LayoutGroup View="Group" Orientation="Vertical">
                     <dxlc:LayoutItem Label="Type" FontSize="14" Margin="5">
                         <dxe:ComboBoxEdit Height="42" Width="250" ItemsSource="{Binding CashVoucherTypeList}"
-                                          EditValue="{Binding Voucher.VoucherType}"/>
+                                          EditValue="{Binding VoucherMode}"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Number" Width="300" FontSize="14" Margin="5">
                         <dxe:TextEdit Height="42" Width="200"  FontSize="16" Text="Nbr" 
