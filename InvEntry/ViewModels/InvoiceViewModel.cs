@@ -61,12 +61,16 @@ public partial class InvoiceViewModel : ObservableObject
 
     public ICommand ShowWindowCommand { get; set; }
 
+    [ObservableProperty]
+    private Voucher _voucher;
+
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
+    private readonly IFinDayBookService _finDayBookService;
     private readonly IInvoiceService _invoiceService;
     private readonly IProductCategoryService _productCategoryService;
     private readonly IReportFactoryService _reportFactoryService;
@@ -87,6 +91,7 @@ public partial class InvoiceViewModel : ObservableObject
         IInvoiceService invoiceService,
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
+        IFinDayBookService finDayBookService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
@@ -100,6 +105,7 @@ public partial class InvoiceViewModel : ObservableObject
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
+        _finDayBookService = finDayBookService;
         selectedRows = new();
         _customerReadOnly = false;
 
@@ -317,6 +323,8 @@ public partial class InvoiceViewModel : ObservableObject
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
+            ProcessReceipts();
+
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
@@ -447,6 +455,74 @@ public partial class InvoiceViewModel : ObservableObject
             Header.InvBalance = 0M;
             RefundVisible();
         }
+    }
+
+    private async void ProcessReceipts()
+    {
+
+        if (Header.RecdAmount > 0)
+        {
+            SetVoucher();
+
+        }
+        /*else if (Header.AdvanceAdj > 0)
+        {
+
+        } else if (Header.RdAmountAdj > 0)
+        {
+
+        }
+                     */
+
+            await SaveVoucher();
+            Voucher = new();
+            SetVoucher();
+    }
+
+    private void SetVoucher()
+    {
+
+        Voucher = new()
+        {
+            VoucherDate = DateTime.Now
+        };
+
+        Voucher.SeqNbr = 1;
+        Voucher.CustomerGkey = Header.CustGkey;
+        Voucher.VoucherDate = Header.InvDate;
+        Voucher.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+        Voucher.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
+        Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
+        Voucher.TransAmount = Header.RecdAmount;
+        Voucher.VoucherNbr = "Sales-001";
+        Voucher.RefDocNbr = Header.InvNbr;
+        Voucher.RefDocDate = Header.InvDate;
+        Voucher.TransDesc = "Sales Voucher";
+
+        return;
+
+    }
+
+    [RelayCommand]
+    private async Task SaveVoucher()
+    {
+        if (Voucher.GKey == 0)
+        {
+            var voucher = await _finDayBookService.CreatVoucher(Voucher);
+
+            if (voucher != null)
+            {
+             //   Voucher = voucher;
+             //   _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created", 
+             //       MessageButton.OK, MessageIcon.Exclamation);
+            }
+        }
+        else
+        {
+            await _finDayBookService.UpdateVoucher(Voucher);
+        }
+
     }
 
     [RelayCommand]
