@@ -21,59 +21,64 @@ public partial class VoucherEntryViewModel: ObservableObject
     private Voucher _voucher;
 
     [ObservableProperty]
-    private ObservableCollection<string> productCategoryList;
+    private ObservableCollection<string> cashVoucherTypeList;
+
+    [ObservableProperty]
+    private string _voucherMode;
 
     private bool createVoucher = false;
 
     //private readonly IReportFactoryService _reportFactoryService;
     private readonly IFinDayBookService _finDayBookService;
     private readonly IMessageBoxService _messageBoxService;
-    private SettingsPageViewModel _settingsPageViewModel;
 
     public VoucherEntryViewModel(
             IFinDayBookService finDayBookService,
             IMessageBoxService messageBoxService)
 
     {
-        Voucher = new();
-        Voucher.VoucherDate = DateTime.Now;
-        SetVoucher();
+        CashVoucherTypeList = new();
         _finDayBookService = finDayBookService;
         _messageBoxService = messageBoxService;
 
         PopulateReferenceList();
+        SetVoucher();
     }
 
     private  void PopulateReferenceList()
     {
-        return; 
-      //  var list = await _referenceService.GetProductCategoryList();
-      //  ProductCategoryList = new(list.Select(x => x.Name));
+        CashVoucherTypeList.Add("Cash");
+        CashVoucherTypeList.Add("Petty Cash");
     }
 
-    private void SetVoucher()
+    private void SetVoucher(byte mode = 1)
     {
-        Voucher.SeqNbr = 1;
-        Voucher.CustomerGkey = 100;
         Voucher.VoucherDate = DateTime.Now;
         Voucher.TransType = 2;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
         Voucher.VoucherType = 3;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        Voucher.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
+        Voucher.Mode = mode;              // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-
-        return;
-
     }
 
     [RelayCommand]
     private void ResetVoucher()
     {
+        SetVoucher();
+    }
 
-        Voucher = new()
-        {
-            VoucherDate = DateTime.Now
-        };
+    [RelayCommand]
+    private void CreateCashVoucher()
+    {
+        Voucher.Mode = 1;
+        VoucherMode = "Cash";
+    }        
 
+
+    [RelayCommand]
+    private void CreatePettyCashVoucher()
+    {
+        Voucher.Mode = 2;
+        VoucherMode = "Petty Cash";
     }
 
     [RelayCommand]

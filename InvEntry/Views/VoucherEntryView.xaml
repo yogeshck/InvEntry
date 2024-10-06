@@ -7,63 +7,74 @@
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol" 
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors" 
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
+             xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
              x:Class="InvEntry.Views.VoucherEntryView"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
+             d:DataContext="{d:DesignInstance Type=viewmodels:VoucherEntryViewModel}"
              DataContext="{ext:DISource Type=viewmodels:VoucherEntryViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="550" d:DesignWidth="500">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="0*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <dxlc:LayoutControl>
-            <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Voucher Entry" Margin="0,0,0,10">
-                <dxlc:LayoutGroup HorizontalAlignment="Left" 
-                        Margin="0,10,0,0" VerticalAlignment="Top" 
-                        Orientation="Horizontal" View="GroupBox" 
-                        Height="476">
-                    <dxlc:LayoutGroup Orientation="Vertical" >
-                        <dxlc:LayoutGroup View="GroupBox" Header="Voucher" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Type" FontSize="14" Margin="0,17,0,0">
-                                <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Cash" />
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutGroup View="GroupBox" Header="Voucher" Orientation="Horizontal">
-                                <dx:SimpleButton Content="Cash" FontSize="14"  
-                                    Background="Transparent" Margin="20,37,0,0" Height="48" 
-                                         VerticalAlignment="Top" Width="296"/>
-                                <dx:SimpleButton Content="Petty Cash"  FontSize="14"
-                                    Background="Transparent" Margin="20,37,0,0" Height="48" 
-                                         VerticalAlignment="Top" Width="296"/>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutItem Label="Number" Width="300" FontSize="14" Margin="0,10,0,10">
-                                <dxe:TextEdit Height="42" Width="200"  FontSize="16" Text="Nbr" 
-                                          CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Date  " Width="300"  FontSize="14">
-                                <dxe:DateEdit Height="42" Width="250"
-                                          EditValue="{Binding Voucher.VoucherDate}" >
-                                    <dxe:DateEdit.StyleSettings>
-                                        <dxe:DateEditNavigatorWithTimePickerStyleSettings />
-                                    </dxe:DateEdit.StyleSettings>
-                                </dxe:DateEdit>
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Amount" FontSize="14" Margin="0,17,0,0">
-                                <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Amount"
-                                      EditValue="{Binding Voucher.TransAmount}"/>
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="0,17,0,0">
-                                <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Notes" 
-                                      EditValue="{Binding Voucher.TransDesc}"/>
-                            </dxlc:LayoutItem>
-                        </dxlc:LayoutGroup>
-                        <dx:SimpleButton Content="Submit" Command="{Binding SaveVoucherCommand}" 
-                                Glyph="{dx:DXImage 'Images/Save/SaveAll_32x32.png'}"
-                                Background="Transparent" Margin="20,37,0,0" Height="48" 
-                                         VerticalAlignment="Top" Width="296"/>
-                    </dxlc:LayoutGroup>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <dxb:BarContainerControl>
+            <dxb:MainMenuControl>
+                <dxb:BarButtonItem x:Name="reset" Content="Reset Voucher"
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                    GlyphSize="Large" Command="{Binding ResetVoucherCommand}"/>
+                <dxb:BarButtonItem x:Name="CashVoucher" Content="Cash"
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Spreadsheet/FormatNumberCurrency_32x32.png'}"
+                    GlyphSize="Large" Command="{Binding CreateCashVoucherCommand}"/>
+                <dxb:BarButtonItem x:Name="PettyCashVoucher" Content="Petty Cash"
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Spreadsheet/FunctionsFinancial_32x32.png'}"
+                    GlyphSize="Large" Command="{Binding CreatePettyCashVoucherCommand}"/>
+                <dxb:BarButtonItem x:Name="Save" Content="Save Voucher"
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
+                    GlyphSize="Large" Command="{Binding SaveVoucherCommand}"/>
+            </dxb:MainMenuControl>
+        </dxb:BarContainerControl>
+        <dxlc:LayoutControl Grid.Row="1">
+            <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Voucher"  Margin="5">
+                <dxlc:LayoutGroup View="Group" Orientation="Vertical">
+                    <dxlc:LayoutItem Label="Type" FontSize="14" Margin="5">
+                        <dxe:ComboBoxEdit Height="42" Width="250" ItemsSource="{Binding CashVoucherTypeList}"
+                                          EditValue="{Binding Voucher.VoucherType}"/>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Number" Width="300" FontSize="14" Margin="5">
+                        <dxe:TextEdit Height="42" Width="200"  FontSize="16" Text="Nbr" 
+                            CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Date  " Width="300"  FontSize="14">
+                        <dxe:DateEdit Height="42" Width="250"
+                                EditValue="{Binding Voucher.VoucherDate}" >
+                            <dxe:DateEdit.StyleSettings>
+                                <dxe:DateEditNavigatorWithTimePickerStyleSettings />
+                            </dxe:DateEdit.StyleSettings>
+                        </dxe:DateEdit>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Amount" FontSize="14" Margin="5">
+                        <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Amount"
+                                EditValue="{Binding Voucher.TransAmount}"/>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="5">
+                        <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Notes" 
+                                EditValue="{Binding Voucher.TransDesc}"/>
+                    </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>

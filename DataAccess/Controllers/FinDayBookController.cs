@@ -36,6 +36,20 @@ namespace DataAccess.Controllers
         [HttpPost]
         public FinDayBook Post([FromBody] FinDayBook value)
         {
+            try
+            {
+                var lastSeqNbr = _finDayBook.GetList(x => x.VoucherDate.Value.Date == DateTime.Today)
+                    .OrderByDescending(x => x.SeqNbr).FirstOrDefault()?.SeqNbr;
+
+                if (lastSeqNbr is not null)
+                    value.SeqNbr = lastSeqNbr++;
+                else
+                    value.SeqNbr = 1;
+            }
+            catch
+            {
+                value.SeqNbr = 1;
+            }
             _finDayBook.Add(value);
             return value;
         }
