@@ -56,7 +56,7 @@ public partial class VoucherEntryViewModel: ObservableObject
         Voucher.VoucherDate = DateTime.Now;
         Voucher.TransType = 2;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
         Voucher.VoucherType = 3;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        Voucher.Mode = mode;              // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
+        Voucher.Mode = mode;           // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         SetVoucherMode();
     }

@@ -52,15 +52,15 @@
             <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Voucher"  Margin="5">
                 <dxlc:LayoutGroup View="Group" Orientation="Vertical">
                     <dxlc:LayoutItem Label="Type" FontSize="14" Margin="5">
-                        <dxe:TextEdit Height="42" Width="250" IsReadOnly="True" ShowBorder="False"
+                        <dxe:TextEdit Height="42" IsReadOnly="True" ShowBorder="False" FontWeight="ExtraBold"
                                           EditValue="{Binding VoucherMode}"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Number" Width="300" FontSize="14" Margin="5">
-                        <dxe:TextEdit Height="42" Width="200"  FontSize="16" Text="Nbr" 
+                    <dxlc:LayoutItem Label="Number" FontSize="14" Margin="5">
+                        <dxe:TextEdit Height="42"  FontSize="16" Text="Nbr" 
                             CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Date  " Width="300"  FontSize="14">
-                        <dxe:DateEdit Height="42" Width="250" IsReadOnly="True" ShowBorder="False"
+                    <dxlc:LayoutItem Label="Date  "  FontSize="14" Margin="5">
+                        <dxe:DateEdit Height="42" IsReadOnly="True" ShowBorder="False"
                                 EditValue="{Binding Voucher.VoucherDate}" >
                             <dxe:DateEdit.StyleSettings>
                                 <dxe:DateEditNavigatorWithTimePickerStyleSettings />
@@ -68,11 +68,11 @@
                         </dxe:DateEdit>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Amount" FontSize="14" Margin="5">
-                        <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Amount"
+                        <dxe:TextEdit Height="42" FontSize="16" Text="Amount"
                                 EditValue="{Binding Voucher.TransAmount}"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="5">
-                        <dxe:TextEdit Height="42" Width="250"  FontSize="16" Text="Notes" 
+                        <dxe:TextEdit Height="80" FontSize="16" Text="Notes" 
                                 EditValue="{Binding Voucher.TransDesc}"/>
                     </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>
