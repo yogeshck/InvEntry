@@ -42,6 +42,9 @@ public partial class InvoiceViewModel : ObservableObject
     private InvoiceHeader _header;
 
     [ObservableProperty]
+    private ArInvoiceReceipt _arInvoiceReceipt;
+
+    [ObservableProperty]
     private string _productIdUI;
 
     [ObservableProperty]
@@ -59,6 +62,9 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
 
+    [ObservableProperty]
+    private ObservableCollection<string> mtblRefNameList;
+
     public ICommand ShowWindowCommand { get; set; }
 
     [ObservableProperty]
@@ -73,6 +79,8 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IFinDayBookService _finDayBookService;
     private readonly IInvoiceService _invoiceService;
     private readonly IProductCategoryService _productCategoryService;
+    private readonly IArInvoiceReceiptService _arInvoiceReceiptService;
+    private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
@@ -92,10 +100,15 @@ public partial class InvoiceViewModel : ObservableObject
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
         IFinDayBookService finDayBookService,
+        IArInvoiceReceiptService arInvoiceReceiptService,
+        IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
     {
+
+        MtblRefNameList = new();
+
         SetHeader();
         _customerService = customerService;
         _productService = productService;
@@ -106,14 +119,19 @@ public partial class InvoiceViewModel : ObservableObject
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
         _finDayBookService = finDayBookService;
+        _arInvoiceReceiptService = arInvoiceReceiptService;
+        _mtblReferencesService = mtblReferencesService;
+
         selectedRows = new();
         _customerReadOnly = false;
 
         _isBalance = true;
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
+
         PopulateProductCategoryList();
         PopulateUnboundLineDataMap();
+        PopulateMtblRefNameList();
         //PopulateUnboundHeaderDataMap();
     }
 
@@ -121,6 +139,19 @@ public partial class InvoiceViewModel : ObservableObject
     {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
+    }
+
+    private void PopulateMtblRefNameList()
+    {
+/*        var list = await _mtblReferencesService.GetReference("PAYMENT_MODE");
+        mtblRefNameList = new(list.Select(x => x.Name));*/
+
+        MtblRefNameList.Add("Advance");
+        MtblRefNameList.Add("Card");
+        MtblRefNameList.Add("Cash");
+        MtblRefNameList.Add("GPAY");
+        MtblRefNameList.Add("RD");
+
     }
 
     private void PopulateUnboundLineDataMap()
@@ -253,6 +284,27 @@ public partial class InvoiceViewModel : ObservableObject
         ProductIdUI = string.Empty;
 
         EvaluateHeader();
+    }
+
+    [RelayCommand]
+    private async Task ProcessArReceipts()
+    {
+        //var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
+        // _productService.GetProduct(ProductIdUI);
+
+        //if (string.IsNullOrEmpty(ProductIdUI)) return;
+
+        var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
+
+        ArInvoiceReceipt arInvoiceReceipt = new ArInvoiceReceipt()
+        {
+            BalBeforeAdj = 1000,
+            TransactionType = 1   //need to be modified 
+
+        };
+
+        Header.ReceiptLines.Add(arInvoiceReceipt);
+  
     }
 
     [RelayCommand]

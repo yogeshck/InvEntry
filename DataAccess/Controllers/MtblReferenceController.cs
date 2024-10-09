@@ -24,6 +24,14 @@ namespace DataAccess.Controllers
             }
 
             // GET api/<MtblReferenceController>/5
+            public string RefName { get; set; } = null!;
+            [HttpGet("{refName}")]
+            public MtblReference? Get(string refName)
+            {
+                return _mtblReference.Get(x => (x.RefName == refName ));
+            }
+
+            // GET api/<MtblReferenceController>/5
             public string RefCode { get; set; } = null!;
             [HttpGet("{refName}/{refCode}")]
             public MtblReference? Get(string refName, string refCode)

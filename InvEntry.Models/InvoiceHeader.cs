@@ -10,6 +10,7 @@ public partial class InvoiceHeader : BaseEntity
     public InvoiceHeader()
     {
         Lines = new();
+        ReceiptLines = new();
         PaymentMode = "CASH";
         TaxType = "GST";
         TenantGkey = "1";
@@ -131,4 +132,7 @@ public partial class InvoiceHeader : BaseEntity
     [property: JsonIgnore]
     private ObservableCollection<InvoiceLine>? lines;
 
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<ArInvoiceReceipt>? receiptLines;
 }

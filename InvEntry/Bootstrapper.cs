@@ -123,6 +123,8 @@ public sealed class Bootstrapper
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .AddSingleton<IFinDayBookService, FinDayBookService>()
+                 .AddSingleton<IArInvoiceReceiptService, ArInvoiceReceiptService>()
+                 .AddSingleton<IMtblReferencesService, MtblReferencesService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .ConfigureFormulas()

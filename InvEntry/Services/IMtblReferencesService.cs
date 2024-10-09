@@ -10,6 +10,8 @@ namespace InvEntry.Services
 
     public interface IMtblReferencesService
     {
+        Task<MtblReference> GetReference(string refName);
+
         Task<MtblReference> GetReference(string refName, string refCode);
 
         Task<MtblReference> CreatReference(MtblReference mtblReference);
@@ -31,6 +33,17 @@ namespace InvEntry.Services
         {
             return await _mijmsApiService.Post($"api/MtblReference/", mtblReference);
         }
+
+        public async Task<MtblReference> GetReference(string refName)
+        {
+            return await _mijmsApiService.Get<MtblReference>($"api/MtblReference/{refName}");
+        }
+
+/*        public async Task<IEnumerable<MtblReference>> GetProductCategoryList()
+        {
+            return await _mijmsApiService.GetEnumerable<ProductCategory>("api/productcategory/");
+
+        }*/
 
         public async Task<MtblReference> GetReference(string refName, string refCode)
         {
