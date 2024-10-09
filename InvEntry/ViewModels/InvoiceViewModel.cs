@@ -63,8 +63,8 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<string> productCategoryList;
 
     [ObservableProperty]
-    private ObservableCollection<string> mtblRefNameList;
-
+    private ObservableCollection<MtblReference> mtblReferencesList;
+  
     public ICommand ShowWindowCommand { get; set; }
 
     [ObservableProperty]
@@ -107,7 +107,7 @@ public partial class InvoiceViewModel : ObservableObject
         [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
     {
 
-        MtblRefNameList = new();
+        //MtblRefNameList = new();
 
         SetHeader();
         _customerService = customerService;
@@ -141,17 +141,17 @@ public partial class InvoiceViewModel : ObservableObject
         ProductCategoryList = new(list.Select(x => x.Name));
     }
 
-    private void PopulateMtblRefNameList()
+    private async void PopulateMtblRefNameList()
     {
-/*        var list = await _mtblReferencesService.GetReference("PAYMENT_MODE");
-        mtblRefNameList = new(list.Select(x => x.Name));*/
+        var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
+        MtblReferencesList = new(mtblRefList);
 
-        MtblRefNameList.Add("Advance");
-        MtblRefNameList.Add("Card");
-        MtblRefNameList.Add("Cash");
-        MtblRefNameList.Add("GPAY");
-        MtblRefNameList.Add("RD");
-
+        //to modify and fetch from db using service
+/*                MtblRefNameList.Add("Advance");
+                MtblRefNameList.Add("Card");
+                MtblRefNameList.Add("Cash");
+                MtblRefNameList.Add("GPAY");
+                MtblRefNameList.Add("RD");*/
     }
 
     private void PopulateUnboundLineDataMap()
@@ -287,25 +287,28 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ProcessArReceipts()
+    private async Task ProcessArReceipts()    //Mouli to take a look and modify ...........
     {
-        //var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
+      //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
         // _productService.GetProduct(ProductIdUI);
 
         //if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
+       // var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
 
         ArInvoiceReceipt arInvoiceReceipt = new ArInvoiceReceipt()
         {
             BalBeforeAdj = 1000,
-            TransactionType = 1   //need to be modified 
+            TransactionType = 1,   //need to be modified 
+            CustGkey = (int?)Header.CustGkey,   //will modify later to long, remove casting
+            Status = 1,   //Status - 1 = Open - Before Adjustment
 
         };
 
         Header.ReceiptLines.Add(arInvoiceReceipt);
   
     }
+
 
     [RelayCommand]
     private void AddOldJewel(string type)
@@ -325,6 +328,10 @@ public partial class InvoiceViewModel : ObservableObject
                 Header.OldSilverAmount = vm.Rate * vm.Weight;
             }
         }
+
+        //OMP - Old Metal Purchase
+/*        OMP.Metal = OmpUI.Metal;
+        OMP.Purity = OmpUI.Purity;*/
     }
 
     [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
@@ -526,6 +533,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
                      */
 
+        //For each Receipts row - seperate Voucher has to be created
             await SaveVoucher();
             Voucher = new();
             SetVoucher();

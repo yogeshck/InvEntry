@@ -555,7 +555,7 @@
                                         <dxb:BarEditItem EditValue="{Binding RefName}"
                                                  Content="Trans Type" EditWidth="150" EditHeight="30">
                                             <dxb:BarEditItem.EditSettings>
-                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding MtblRefNameList}"/>
+                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding MtblReferencesList}"/>
                                             </dxb:BarEditItem.EditSettings>
                                         </dxb:BarEditItem>
                                         <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
@@ -570,7 +570,7 @@
                                 </dxb:BarManager.Bars>
                                 <dxg:GridControl ItemsSource="{Binding Header.ReceiptLines}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="600" MinHeight="400" SelectedItems="{Binding SelectedRows}" HorizontalAlignment="Left">
+                                         MaxHeight="600" MinHeight="400" HorizontalAlignment="Left">
                                     <dxg:GridControl.Resources>
                                         <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
                                             <Setter Property="FontWeight" Value="Bold"/>
@@ -584,7 +584,19 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="TransactionType" Header="Transaction" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="TransactionType" Header="Transaction" ReadOnly="True">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
+                                                 DisplayMember="RefValue"
+                                                    ValueMember="RefCode" >
+                                                    <dxg:LookUpEditSettings.PopupContentTemplate>
+                                                        <DataTemplate>
+                                                            <
+                                                        </DataTemplate>
+                                                    </dxg:LookUpEditSettings.PopupContentTemplate>
+                                                </dxg:LookUpEditSettings>
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="ModeOfReceipt" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" />
                                         <dxg:GridColumn FieldName="BalAfterAdjustment" Header="Balance Amount (Rs)" ReadOnly="True"/>
