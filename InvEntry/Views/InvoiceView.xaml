@@ -585,7 +585,7 @@
                                                     ValueMember="RefCode" >
                                                     <dxg:LookUpEditSettings.PopupContentTemplate>
                                                         <ControlTemplate>
-                                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="None">
+                                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
                                                                 <dxg:GridControl.Columns>
                                                                     <dxg:GridColumn FieldName="RefCode"/>
                                                                     <dxg:GridColumn FieldName="RefValue"/>

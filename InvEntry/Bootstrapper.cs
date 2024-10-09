@@ -35,7 +35,8 @@ public sealed class Bootstrapper
         DISource.Resolver = Resolve;
 
         MetadataLocator.Default = MetadataLocator.Create()
-                    .AddMetadata<ProductCategory, ProductCategoryMetadata>();
+                    .AddMetadata<ProductCategory, ProductCategoryMetadata>()
+                    .AddMetadata<MtblReference, MtblRefrencesMetadata>();
     }
 
     public static Bootstrapper Default { get; private set; }

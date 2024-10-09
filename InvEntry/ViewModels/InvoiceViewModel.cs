@@ -67,9 +67,6 @@ public partial class InvoiceViewModel : ObservableObject
   
     public ICommand ShowWindowCommand { get; set; }
 
-    [ObservableProperty]
-    private Voucher _voucher;
-
     private bool createCustomer = false;
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
@@ -521,7 +518,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Header.RecdAmount > 0)
         {
-            SetVoucher();
+            CreateVoucher();
 
         }
         /*else if (Header.AdvanceAdj > 0)
@@ -534,15 +531,16 @@ public partial class InvoiceViewModel : ObservableObject
                      */
 
         //For each Receipts row - seperate Voucher has to be created
-            await SaveVoucher();
-            Voucher = new();
-            SetVoucher();
+        foreach(var receipts in Header.ReceiptLines)
+        {
+
+        }
     }
 
-    private void SetVoucher()
+    private Voucher CreateVoucher()
     {
 
-        Voucher = new()
+        Voucher Voucher = new()
         {
             VoucherDate = DateTime.Now
         };
@@ -560,27 +558,27 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.RefDocDate = Header.InvDate;
         Voucher.TransDesc = "Sales Voucher";
 
-        return;
+        return Voucher;
 
     }
 
     [RelayCommand]
-    private async Task SaveVoucher()
+    private async Task SaveVoucher(Voucher voucher)
     {
-        if (Voucher.GKey == 0)
+        if (voucher.GKey == 0)
         {
-            var voucher = await _finDayBookService.CreatVoucher(Voucher);
+            var voucherResult = await _finDayBookService.CreatVoucher(voucher);
 
-            if (voucher != null)
+            if (voucherResult != null)
             {
-             //   Voucher = voucher;
-             //   _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created", 
-             //       MessageButton.OK, MessageIcon.Exclamation);
+                voucher = voucherResult;
+                _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
+                    MessageButton.OK, MessageIcon.Exclamation);
             }
         }
         else
         {
-            await _finDayBookService.UpdateVoucher(Voucher);
+            await _finDayBookService.UpdateVoucher(voucher);
         }
 
     }
