@@ -590,9 +590,17 @@
                                                  DisplayMember="RefValue"
                                                     ValueMember="RefCode" >
                                                     <dxg:LookUpEditSettings.PopupContentTemplate>
-                                                        <DataTemplate>
-                                                            <
-                                                        </DataTemplate>
+                                                        <ControlTemplate>
+                                                            <dxg:GridControl Name="PART_GridControl">
+                                                                <dxg:GridControl.Columns>
+                                                                    <dxg:GridColumn FieldName="RefCode"/>
+                                                                    <dxg:GridColumn FieldName="RefValue"/>
+                                                                </dxg:GridControl.Columns>
+                                                                <dxg:GridControl.View>
+                                                                    <dxg:TableView AutoWidth="True"/>
+                                                                </dxg:GridControl.View>
+                                                            </dxg:GridControl>
+                                                        </ControlTemplate>
                                                     </dxg:LookUpEditSettings.PopupContentTemplate>
                                                 </dxg:LookUpEditSettings>
                                             </dxg:GridColumn.EditSettings>
