@@ -582,8 +582,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         arInvRct.SeqNbr                     = arInvoiceReceipt.SeqNbr;
         arInvRct.CustGkey                   = arInvoiceReceipt.CustGkey;
-        arInvRct.InvoiceGkey                = arInvoiceReceipt.InvoiceGkey;
-        arInvRct.InvoiceNbr                 = arInvoiceReceipt.InvoiceNbr;
+        arInvRct.InvoiceGkey                = (int?)Header.GKey;
+        arInvRct.InvoiceNbr                 = Header.InvNbr;
         arInvRct.InvoiceReceivableAmount    = arInvoiceReceipt.InvoiceReceivableAmount;
         arInvRct.BalanceAfterAdj            = arInvoiceReceipt.BalanceAfterAdj;
         arInvRct.TransactionType            = arInvoiceReceipt.TransactionType;
@@ -592,7 +592,7 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.AdjustedAmount             = arInvoiceReceipt.AdjustedAmount;
         arInvRct.InternalVoucherNbr         = arInvoiceReceipt.InternalVoucherNbr;
         arInvRct.InternalVoucherDate        = arInvoiceReceipt.InternalVoucherDate;
-        arInvRct.Status                     = arInvoiceReceipt.Status;
+        arInvRct.Status = 1; 
 
      //   arInvoiceReceipt.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
      //   arInvoiceReceipt.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
@@ -640,7 +640,7 @@ public partial class InvoiceViewModel : ObservableObject
                 _messageBoxService.ShowMessage("AR Invoice Receipt Created Successfully", "AR Inv Rct Created",
                     MessageButton.OK, MessageIcon.Exclamation);
             }
-        }
+         }
         else
         {
             await _arInvoiceReceiptService.UpdateARInvReceipt(arInvoiceReceipt);

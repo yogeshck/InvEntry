@@ -69,9 +69,7 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("ar_invoice_receipts");
 
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedNever()
-                .HasColumnName("gkey");
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.AdjustedAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("adjusted_amount");
