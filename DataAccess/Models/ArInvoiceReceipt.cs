@@ -7,7 +7,7 @@ public partial class ArInvoiceReceipt
 {
     public int Gkey { get; set; }
 
-    public int? CustGkey { get; set; }
+    public long? CustGkey { get; set; }
 
     public int? InvoiceGkey { get; set; }
 
@@ -49,5 +49,5 @@ public partial class ArInvoiceReceipt
 
     public string? CompanyBankAccountNbr { get; set; }
 
-    public bool Status { get; set; }
+    public string? Status { get; set; }
 }

@@ -300,8 +300,8 @@ public partial class InvoiceViewModel : ObservableObject
         ArInvoiceReceipt arInvRctLine = new ArInvoiceReceipt()
         {
             //BalBeforeAdj = Header.GrossRcbAmount, //Header.GrossRcbAmount,
-            CustGkey = (int?)Header.CustGkey,    //will modify later to long, remove casting
-            Status = 1,   //Status - 1 = Open - Before Adjustment
+            CustGkey = Header.CustGkey,    
+            Status = "Open",    //Status Open - Before Adjustment
             SeqNbr = noOfLines + 1
         };
 
@@ -385,7 +385,7 @@ public partial class InvoiceViewModel : ObservableObject
             ProcessReceipts();
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
-          //  PrintPreviewInvoice();
+            PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
@@ -592,7 +592,7 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.AdjustedAmount             = arInvoiceReceipt.AdjustedAmount;
         arInvRct.InternalVoucherNbr         = arInvoiceReceipt.InternalVoucherNbr;
         arInvRct.InternalVoucherDate        = arInvoiceReceipt.InternalVoucherDate;
-        arInvRct.Status = 1; 
+        arInvRct.Status = "Adj"; 
 
      //   arInvoiceReceipt.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
      //   arInvoiceReceipt.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
@@ -632,14 +632,22 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (arInvoiceReceipt.GKey == 0)
         {
-            var voucherResult = await _arInvoiceReceiptService.CreatARInvReceipt(arInvoiceReceipt); 
-
-            if (voucherResult != null)
+            try
             {
-                arInvoiceReceipt = voucherResult;
-                _messageBoxService.ShowMessage("AR Invoice Receipt Created Successfully", "AR Inv Rct Created",
-                    MessageButton.OK, MessageIcon.Exclamation);
-            }
+                var voucherResult = await _arInvoiceReceiptService.CreatARInvReceipt(arInvoiceReceipt);
+
+                if (voucherResult != null)
+                {
+                    arInvoiceReceipt = voucherResult;
+                    _messageBoxService.ShowMessage("AR Invoice Receipt Created Successfully", "AR Inv Rct Created",
+                        MessageButton.OK, MessageIcon.Exclamation);
+                }
+
+            } catch (Exception e)
+            {
+                Console.WriteLine(e);
+                            }
+
          }
         else
         {

@@ -10,7 +10,7 @@ namespace InvEntry.Models
      public partial class ArInvoiceReceipt : BaseEntity
     {
         [ObservableProperty]
-        public int? _custGkey;
+        public long? _custGkey;
 
         [ObservableProperty]
         public int? _invoiceGkey;
@@ -73,7 +73,7 @@ namespace InvEntry.Models
         public string? _companyBankAccountNbr;
 
         [ObservableProperty]
-        public byte? _status;
+        public string? _status;
     }
 
 }

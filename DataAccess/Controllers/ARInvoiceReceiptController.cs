@@ -34,22 +34,8 @@ namespace DataAccess.Controllers
 
         // POST api/<ARInvoiceReceiptController>
         [HttpPost]
-            public ArInvoiceReceipt Post([FromBody] ArInvoiceReceipt value)
+        public ArInvoiceReceipt Post([FromBody] ArInvoiceReceipt value)
             {
-/*                try
-                {
-                    var lastSeqNbr = _arInvoiceReceipt.GetList(x => x.in.Value.Date == DateTime.Today)
-                        .OrderByDescending(x => x.SeqNbr).FirstOrDefault()?.SeqNbr;
-
-                    if (lastSeqNbr is not null)
-                        value.SeqNbr = lastSeqNbr + 1;
-                    else
-                        value.SeqNbr = 1;
-                }
-                catch
-                {
-                    value.SeqNbr = 1;
-                }*/
                 _arInvoiceReceipt.Add(value);
                 return value;
             }

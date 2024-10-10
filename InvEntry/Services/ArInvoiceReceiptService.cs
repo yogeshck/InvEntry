@@ -29,7 +29,7 @@ namespace InvEntry.Services
 
         public async Task<ArInvoiceReceipt> CreatARInvReceipt(ArInvoiceReceipt arInvoiceReceipt)
         {
-            return await _mijmsApiService.Post($"api/ARInvoiceReceipt/", arInvoiceReceipt);
+             return await _mijmsApiService.Post($"api/ARInvoiceReceipt/", arInvoiceReceipt);
         }
 
 

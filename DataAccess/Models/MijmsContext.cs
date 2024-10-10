@@ -128,7 +128,10 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("sender_bank_ifsc_code");
             entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
-            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("status");
             entity.Property(e => e.TransactionType)
                 .HasMaxLength(50)
                 .IsUnicode(false)
