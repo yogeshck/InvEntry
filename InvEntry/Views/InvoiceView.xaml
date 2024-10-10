@@ -578,6 +578,7 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
+                                        <dxg:GridColumn FieldName="SeqNbr" Header="SN" />
                                         <dxg:GridColumn FieldName="TransactionType" Header="Transaction" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"

@@ -15,7 +15,7 @@ namespace DataAccess.Controllers
 
             public ARInvoiceReceiptController(IRepositoryBase<ArInvoiceReceipt> arInvoiceReceiptRepo)
             {
-            _arInvoiceReceipt = arInvoiceReceiptRepo;
+                _arInvoiceReceipt = arInvoiceReceiptRepo;
             }
 
         // GET: api/<ARInvoiceReceiptController>
@@ -50,7 +50,7 @@ namespace DataAccess.Controllers
                 {
                     value.SeqNbr = 1;
                 }*/
-            _arInvoiceReceipt.Add(value);
+                _arInvoiceReceipt.Add(value);
                 return value;
             }
 
