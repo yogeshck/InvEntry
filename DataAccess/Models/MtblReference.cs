@@ -13,7 +13,7 @@ public partial class MtblReference
 
     public string RefValue { get; set; } = null!;
 
-    public short SortSeq { get; set; }
+    public int SortSeq { get; set; }
 
     public string? RefDesc { get; set; }
 

@@ -83,45 +83,58 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("balance_after_adj");
             entity.Property(e => e.BankName)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("bank_name");
             entity.Property(e => e.CompanyBankAccountNbr)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("company_bank_account_nbr");
             entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
             entity.Property(e => e.ExternalTransactionDate).HasColumnName("external_transaction_date");
-            entity.Property(e => e.ExternalTransactionId).HasColumnName("external_transaction_id");
+            entity.Property(e => e.ExternalTransactionId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("external_transaction_id");
             entity.Property(e => e.InternalVoucherDate).HasColumnName("internal_voucher_date");
             entity.Property(e => e.InternalVoucherNbr)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("internal_voucher_nbr");
             entity.Property(e => e.InvoiceGkey).HasColumnName("invoice_gkey");
             entity.Property(e => e.InvoiceNbr)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("invoice_nbr");
             entity.Property(e => e.InvoiceReceivableAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("invoice_receivable_amount");
-            entity.Property(e => e.ModeOfReceipt).HasColumnName("mode_of_receipt");
+            entity.Property(e => e.ModeOfReceipt)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("mode_of_receipt");
             entity.Property(e => e.OtherReference)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("other_reference");
             entity.Property(e => e.SenderBankAccountNbr)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("sender_bank_account_nbr");
             entity.Property(e => e.SenderBankBranch)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("sender_bank_branch");
             entity.Property(e => e.SenderBankGkey).HasColumnName("sender_bank_gkey");
             entity.Property(e => e.SenderBankIfscCode)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("sender_bank_ifsc_code");
             entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
-            entity.Property(e => e.Status)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("status");
-            entity.Property(e => e.TransactionType).HasColumnName("transaction_type");
+            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.TransactionType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("transaction_type");
         });
 
         modelBuilder.Entity<DailyRate>(entity =>
@@ -238,8 +251,8 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("ref_doc_date");
             entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
             entity.Property(e => e.RefDocNbr)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("ref_doc_nbr");
             entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
             entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
@@ -249,14 +262,17 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.TransDate)
                 .HasColumnType("datetime")
                 .HasColumnName("trans_date");
-            entity.Property(e => e.TransDesc).HasColumnName("trans_desc");
+            entity.Property(e => e.TransDesc)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_desc");
             entity.Property(e => e.TransType).HasColumnName("trans_type");
             entity.Property(e => e.VoucherDate)
                 .HasColumnType("datetime")
                 .HasColumnName("voucher_date");
             entity.Property(e => e.VoucherNbr)
-                .HasMaxLength(10)
-                .IsFixedLength()
+                .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("voucher_nbr");
             entity.Property(e => e.VoucherType).HasColumnName("voucher_type");
         });
@@ -583,16 +599,23 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.IsActive).HasColumnName("is_active");
             entity.Property(e => e.Module)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("module");
             entity.Property(e => e.RefCode)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("ref_code");
-            entity.Property(e => e.RefDesc).HasColumnName("ref_desc");
+            entity.Property(e => e.RefDesc)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("ref_desc");
             entity.Property(e => e.RefName)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("ref_name");
             entity.Property(e => e.RefValue)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("ref_value");
             entity.Property(e => e.SortSeq).HasColumnName("sort_seq");
         });

@@ -17,11 +17,11 @@ public partial class ArInvoiceReceipt
 
     public decimal? BalanceAfterAdj { get; set; }
 
-    public short SeqNbr { get; set; }
+    public int SeqNbr { get; set; }
 
-    public short? TransactionType { get; set; }
+    public string? TransactionType { get; set; }
 
-    public short? ModeOfReceipt { get; set; }
+    public string? ModeOfReceipt { get; set; }
 
     public decimal? BalBeforeAdj { get; set; }
 
@@ -41,7 +41,7 @@ public partial class ArInvoiceReceipt
 
     public string? SenderBankAccountNbr { get; set; }
 
-    public short? SenderBankGkey { get; set; }
+    public int? SenderBankGkey { get; set; }
 
     public string? SenderBankBranch { get; set; }
 
@@ -49,5 +49,5 @@ public partial class ArInvoiceReceipt
 
     public string? CompanyBankAccountNbr { get; set; }
 
-    public short Status { get; set; }
+    public bool Status { get; set; }
 }

@@ -57,7 +57,7 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\InvEntry\InvEntry.csproj</EntryPointProjectUniqueName>
-    <PackageCertificateThumbprint>D2BDC15FA9DD2B81DA53DDA92322BA48EFDEFE0F</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>DB58BF091DD8043369E3D2617A6A3A117660AAE5</PackageCertificateThumbprint>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

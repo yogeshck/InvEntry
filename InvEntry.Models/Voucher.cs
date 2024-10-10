@@ -17,13 +17,13 @@ namespace InvEntry.Models
         private long? _CustomerGkey;
 
         [ObservableProperty]
-        private byte? _TransType;
+        private int? _TransType;
 
         [ObservableProperty]
-        private byte? _VoucherType;
+        private int? _VoucherType;
 
         [ObservableProperty]
-        private byte? _Mode;
+        private int? _Mode;
 
         [ObservableProperty]
         private decimal? _TransAmount;
@@ -62,7 +62,7 @@ namespace InvEntry.Models
         private decimal? _CbAmount;
 
         [ObservableProperty]
-        private byte? _FundTransferMode;
+        private int? _FundTransferMode;
 
         [ObservableProperty]
         private int? _FundTransferRefGkey;

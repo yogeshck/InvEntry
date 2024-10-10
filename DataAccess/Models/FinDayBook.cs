@@ -9,13 +9,13 @@ public partial class FinDayBook
 
     public int? SeqNbr { get; set; }
 
-    public long? CustomerGkey { get; set; }
+    public int? CustomerGkey { get; set; }
 
-    public byte? TransType { get; set; }
+    public int? TransType { get; set; }
 
-    public byte? VoucherType { get; set; }
+    public int? VoucherType { get; set; }
 
-    public byte? Mode { get; set; }
+    public int? Mode { get; set; }
 
     public decimal? TransAmount { get; set; }
 
@@ -23,7 +23,7 @@ public partial class FinDayBook
 
     public DateTime? VoucherDate { get; set; }
 
-    public long? RefDocGkey { get; set; }
+    public int? RefDocGkey { get; set; }
 
     public string? RefDocNbr { get; set; }
 
@@ -41,7 +41,7 @@ public partial class FinDayBook
 
     public decimal? CbAmount { get; set; }
 
-    public byte? FundTransferMode { get; set; }
+    public int? FundTransferMode { get; set; }
 
     public int? FundTransferRefGkey { get; set; }
 

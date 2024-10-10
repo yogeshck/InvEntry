@@ -27,6 +27,7 @@ using IDialogService = DevExpress.Mvvm.IDialogService;
 using InvEntry.Views;
 using DevExpress.Xpf.Core;
 using DevExpress.XtraCharts;
+using DevExpress.Data.Extensions;
 
 namespace InvEntry.ViewModels;
 
@@ -286,23 +287,22 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task ProcessArReceipts()    //Mouli to take a look and modify ...........
     {
-      //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
+        //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
         // _productService.GetProduct(ProductIdUI);
 
         //if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-       // var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
+        // var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
 
-        ArInvoiceReceipt arInvoiceReceipt = new ArInvoiceReceipt()
+        ArInvoiceReceipt arInvRctLine = new ArInvoiceReceipt()
         {
-            BalBeforeAdj = 1000,
-            TransactionType = 1,   //need to be modified 
-            CustGkey = (int?)Header.CustGkey,   //will modify later to long, remove casting
+            //BalBeforeAdj = Header.GrossRcbAmount, //Header.GrossRcbAmount,
+            //CustGkey = (int?)Header.CustGkey,    //will modify later to long, remove casting
             Status = 1,   //Status - 1 = Open - Before Adjustment
-
+            //SeqNbr = 0,
         };
 
-        Header.ReceiptLines.Add(arInvoiceReceipt);
+        Header.ReceiptLines.Add(arInvRctLine);
   
     }
 
@@ -430,9 +430,45 @@ public partial class InvoiceViewModel : ObservableObject
         if (args.Row is InvoiceLine line)
         {
             EvaluateFormula(line);
+        } else 
+        if (args.Row is ArInvoiceReceipt arInvRctline)
+        {
+            EvaluateArRctLine(arInvRctline);
         }
 
         EvaluateHeader();
+    }
+
+    [RelayCommand]
+    private void EvaluateArRctLine(ArInvoiceReceipt arInvRctLine)
+    {
+        decimal BalToAdjust = 0;
+
+        if (arInvRctLine.TransactionType is null)
+        {
+            return;
+        }
+
+        if (arInvRctLine.SeqNbr < 1 )
+        {
+            arInvRctLine.SeqNbr = 1;
+            BalToAdjust = Header.GrossRcbAmount.GetValueOrDefault();
+            arInvRctLine.BalBeforeAdj = BalToAdjust;
+        } else
+        {
+            arInvRctLine.SeqNbr = arInvRctLine.SeqNbr + 1;
+            arInvRctLine.BalBeforeAdj = arInvRctLine.BalanceAfterAdj;
+        };
+
+        BalToAdjust = arInvRctLine.BalBeforeAdj.GetValueOrDefault() -
+                        arInvRctLine.AdjustedAmount.GetValueOrDefault();
+        
+        arInvRctLine.BalanceAfterAdj = BalToAdjust;
+
+
+        Header.RecdAmount = Header.RecdAmount + arInvRctLine.AdjustedAmount.GetValueOrDefault();
+
+      
     }
 
     [RelayCommand]
@@ -518,7 +554,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Header.RecdAmount > 0)
         {
-            CreateVoucher();
+            //CreateVoucher();
 
         }
         /*else if (Header.AdvanceAdj > 0)
@@ -534,10 +570,14 @@ public partial class InvoiceViewModel : ObservableObject
         foreach(var receipts in Header.ReceiptLines)
         {
 
+            await _arInvoiceReceiptService.CreatARInvReceipt(receipts);
+
+            var voucher = CreateVoucher(receipts);
+            await SaveVoucher(voucher);
         }
     }
 
-    private Voucher CreateVoucher()
+    private Voucher CreateVoucher(ArInvoiceReceipt arInvoiceReceipt)
     {
 
         Voucher Voucher = new()
@@ -552,7 +592,7 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
         Voucher.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-        Voucher.TransAmount = Header.RecdAmount;
+        Voucher.TransAmount = arInvoiceReceipt.AdjustedAmount; // Header.RecdAmount;
         Voucher.VoucherNbr = "Sales-001";
         Voucher.RefDocNbr = Header.InvNbr;
         Voucher.RefDocDate = Header.InvDate;

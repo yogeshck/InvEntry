@@ -578,16 +578,15 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="TransactionType" Header="Transaction" ReadOnly="True">
+                                        <dxg:GridColumn FieldName="TransactionType" Header="Transaction" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
                                                  DisplayMember="RefValue"
-                                                    ValueMember="RefCode" >
+                                                    ValueMember="RefValue" >
                                                     <dxg:LookUpEditSettings.PopupContentTemplate>
                                                         <ControlTemplate>
                                                             <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
                                                                 <dxg:GridControl.Columns>
-                                                                    <dxg:GridColumn FieldName="RefCode"/>
                                                                     <dxg:GridColumn FieldName="RefValue"/>
                                                                 </dxg:GridControl.Columns>
                                                                 <dxg:GridControl.View>
@@ -599,11 +598,27 @@
                                                 </dxg:LookUpEditSettings>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="ModeOfReceipt" ReadOnly="True"/>
+                                     <!--   <dxg:GridColumn FieldName="ModeOfReceipt" ReadOnly="True"/>  -->
                                         <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" />
-                                        <dxg:GridColumn FieldName="BalAfterAdjustment" Header="Balance Amount (Rs)" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="BalanceAfterAdj" Header="Balance Amount (Rs)" />
+                                     <!--   <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" /> -->
                                     </dxg:GridControl.Columns>
+                                    <dxg:GridControl.View>
+                                        <dxg:TableView AllowGrouping="False"
+                                                AllowBestFit="True" ShowGroupPanel="False" 
+                                                       TotalSummaryPosition="Bottom">
+                                            <dxmvvm:Interaction.Behaviors>
+                                                <dxmvvm:EventToCommand EventName="CellValueChanged" 
+                                                           Command="{Binding CellUpdateCommand}"
+                                                           PassEventArgsToCommand="True"/>
+                                            </dxmvvm:Interaction.Behaviors>
+                                            <dxg:TableView.RowCellMenuCustomizations>
+                                                <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
+                                                           Command="{Binding DataContext.DeleteSingleRowCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                                           Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
+                                            </dxg:TableView.RowCellMenuCustomizations>
+                                        </dxg:TableView>
+                                    </dxg:GridControl.View>
                                 </dxg:GridControl>
                             </dxb:BarManager>
 

@@ -25,13 +25,13 @@ namespace InvEntry.Models
         public decimal? _balanceAfterAdj;
 
         [ObservableProperty]
-        public short _seqNbr;
+        public int _seqNbr;
 
         [ObservableProperty]
-        public short? _transactionType;
+        public string? _transactionType;
 
         [ObservableProperty]
-        public short? _modeOfReceipt;
+        public string? _modeOfReceipt;
 
         [ObservableProperty]
         public decimal? _balBeforeAdj;
@@ -61,7 +61,7 @@ namespace InvEntry.Models
         public string? _senderBankAccountNbr;
 
         [ObservableProperty]
-        public short? _senderBankGkey;
+        public int? _senderBankGkey;
 
         [ObservableProperty]
         public string? _senderBankBranch;
@@ -73,7 +73,7 @@ namespace InvEntry.Models
         public string? _companyBankAccountNbr;
 
         [ObservableProperty]
-        public short? _status;
+        public byte? _status;
     }
 
 }
