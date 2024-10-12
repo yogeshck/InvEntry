@@ -300,7 +300,7 @@ public partial class InvoiceViewModel : ObservableObject
         InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
         {
             //BalBeforeAdj = Header.GrossRcbAmount, //Header.GrossRcbAmount,
-            CustGkey = (int?)Header.CustGkey,      //Check......
+            CustGkey = Header.CustGkey,      
             Status = "Open",    //Status Open - Before Adjustment
             SeqNbr = noOfLines + 1
         };
