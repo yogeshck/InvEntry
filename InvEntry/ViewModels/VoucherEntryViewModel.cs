@@ -29,16 +29,16 @@ public partial class VoucherEntryViewModel: ObservableObject
     private bool createVoucher = false;
 
     //private readonly IReportFactoryService _reportFactoryService;
-    private readonly IFinDayBookService _finDayBookService;
+    private readonly IVoucherService _voucherService;
     private readonly IMessageBoxService _messageBoxService;
 
     public VoucherEntryViewModel(
-            IFinDayBookService finDayBookService,
+            IVoucherService voucherService,
             IMessageBoxService messageBoxService)
 
     {
         CashVoucherTypeList = new();
-        _finDayBookService = finDayBookService;
+        _voucherService = voucherService;
         _messageBoxService = messageBoxService;
         
         PopulateReferenceList();
@@ -54,9 +54,9 @@ public partial class VoucherEntryViewModel: ObservableObject
     private void SetVoucher(byte mode = 1)
     {
         Voucher.VoucherDate = DateTime.Now;
-        Voucher.TransType = 2;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = 3;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        Voucher.Mode = mode;           // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
+        Voucher.TransType = "Rect";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+        Voucher.VoucherType = "Sales";     // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.Mode = "Mode";           // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         SetVoucherMode();
     }
@@ -65,7 +65,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     {
         VoucherMode = "Cash";
 
-        if(Voucher.Mode != 1)
+        if(Voucher.Mode != "1")
         {
             VoucherMode = "Petty Cash";
         }
@@ -81,7 +81,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     [RelayCommand]
     private void CreateCashVoucher()
     {
-        Voucher.Mode = 1;
+        Voucher.Mode = "1";
         SetVoucherMode();
     }        
 
@@ -89,7 +89,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     [RelayCommand]
     private void CreatePettyCashVoucher()
     {
-        Voucher.Mode = 2;
+        Voucher.Mode = "2";
         SetVoucherMode();
     }
 
@@ -99,7 +99,7 @@ public partial class VoucherEntryViewModel: ObservableObject
 
         if (Voucher.GKey == 0)
         {
-            var voucher = await _finDayBookService.CreatVoucher(Voucher);
+            var voucher = await _voucherService.CreatVoucher(Voucher);
 
             if (voucher != null)
             {
@@ -116,7 +116,7 @@ public partial class VoucherEntryViewModel: ObservableObject
         }
         else
         {
-            await _finDayBookService.UpdateVoucher(Voucher);
+            await _voucherService.UpdateVoucher(Voucher);
         }
 
         ResetVoucher();

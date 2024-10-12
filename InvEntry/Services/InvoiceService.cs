@@ -10,11 +10,11 @@ namespace InvEntry.Services
 {
     public interface IInvoiceService
     {
-        Task<InvoiceHeader> GetHeader(string productId);
+        Task<InvoiceHeader> GetHeader(string invNbr);
 
-        Task<InvoiceHeader> CreatHeader(InvoiceHeader product);
+        Task<InvoiceHeader> CreatHeader(InvoiceHeader invHdr);
 
-        Task UpdateHeader(InvoiceHeader product);
+        Task UpdateHeader(InvoiceHeader invHdr);
 
         Task<IEnumerable<InvoiceHeader>>  GetAll(InvoiceSearchOption options);
 
@@ -37,14 +37,14 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<InvoiceHeader>($"api/invoice/{invNbr}");
         }
 
-        public async Task<InvoiceHeader> CreatHeader(InvoiceHeader product)
+        public async Task<InvoiceHeader> CreatHeader(InvoiceHeader invHdr)
         {
-            return await _mijmsApiService.Post($"api/invoice/", product);
+            return await _mijmsApiService.Post($"api/invoice/", invHdr);
         }
 
-        public async Task UpdateHeader(InvoiceHeader product)
+        public async Task UpdateHeader(InvoiceHeader invHdr)
         {
-            await _mijmsApiService.Put($"api/invoice/{product.InvNbr}", product);
+            await _mijmsApiService.Put($"api/invoice/{invHdr.InvNbr}", invHdr);
         }
 
         public async Task CreatInvoiceLine(InvoiceLine line)

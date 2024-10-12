@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace DataAccess.Models;
 
-public partial class FinDayBook
+public partial class Voucher
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public int? SeqNbr { get; set; }
 
     public int? CustomerGkey { get; set; }
 
-    public int? TransType { get; set; }
+    public string? TransType { get; set; }
 
-    public int? VoucherType { get; set; }
+    public string? VoucherType { get; set; }
 
-    public int? Mode { get; set; }
+    public string? Mode { get; set; }
 
     public decimal? TransAmount { get; set; }
 

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace DataAccess.Models;
 
-public partial class ArInvoiceReceipt
+public partial class InvoiceArReceipt
 {
     public int Gkey { get; set; }
 
-    public long? CustGkey { get; set; }
+    public int? CustGkey { get; set; }
 
     public int? InvoiceGkey { get; set; }
 
@@ -50,4 +50,6 @@ public partial class ArInvoiceReceipt
     public string? CompanyBankAccountNbr { get; set; }
 
     public string? Status { get; set; }
+
+    public string? InvoiceReceiptNbr { get; set; }
 }

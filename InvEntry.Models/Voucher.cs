@@ -10,6 +10,7 @@ namespace InvEntry.Models
 {
     public partial class Voucher : BaseEntity
     {
+
         [ObservableProperty]
         private int? _SeqNbr ;
 
@@ -17,13 +18,13 @@ namespace InvEntry.Models
         private long? _CustomerGkey;
 
         [ObservableProperty]
-        private int? _TransType;
+        private string? _TransType;
 
         [ObservableProperty]
-        private int? _VoucherType;
+        private string? _VoucherType;
 
         [ObservableProperty]
-        private int? _Mode;
+        private string? _Mode;
 
         [ObservableProperty]
         private decimal? _TransAmount;

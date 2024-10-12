@@ -71,7 +71,7 @@ public sealed class Bootstrapper
 
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
-            .WriteTo.File(@"C:\\Madrone\\Logs", rollingInterval: RollingInterval.Day, 
+            .WriteTo.File(@"C:\\Madrone\\InvEntry-.log", rollingInterval: RollingInterval.Day, 
             outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
 
@@ -123,8 +123,8 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
-                 .AddSingleton<IFinDayBookService, FinDayBookService>()
-                 .AddSingleton<IArInvoiceReceiptService, ArInvoiceReceiptService>()
+                 .AddSingleton<IVoucherService, VoucherService>()
+                 .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IMtblReferencesService, MtblReferencesService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()

@@ -5,13 +5,13 @@ namespace DataAccess.Models;
 
 public partial class OrgBankDetail
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public string? BankName { get; set; }
 
     public string? BranchName { get; set; }
 
-    public string? IfscCode { get; set; }
+    public string IfscCode { get; set; } = null!;
 
     public string? BankAccountNbr { get; set; }
 

@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class OrgGeoLocation
 {
-    public string Gkey { get; set; } = null!;
+    public int Gkey { get; set; }
 
     public string? ExternalId { get; set; }
 

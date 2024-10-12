@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class OrgCompany
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public string? AccountId { get; set; }
 
@@ -41,7 +41,7 @@ public partial class OrgCompany
 
     public string? TinNbr { get; set; }
 
-    public long? AddressGkey { get; set; }
+    public int? AddressGkey { get; set; }
 
     public string? GstNbr { get; set; }
 

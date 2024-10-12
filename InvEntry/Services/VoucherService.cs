@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Services;
 
-public interface IFinDayBookService
+public interface IVoucherService
 {
     Task<Voucher> GetVoucher(string voucherId);
 
@@ -17,29 +17,29 @@ public interface IFinDayBookService
     Task UpdateVoucher(Voucher voucher);
 }
 
-public class FinDayBookService : IFinDayBookService
+public class VoucherService : IVoucherService
 {
 
     private readonly IMijmsApiService _mijmsApiService;
 
-    public FinDayBookService(IMijmsApiService mijmsApiService)
+    public VoucherService(IMijmsApiService mijmsApiService)
     {
         _mijmsApiService = mijmsApiService;
     }
 
     public async Task<Voucher> CreatVoucher(Voucher voucher)
     {
-        return await _mijmsApiService.Post($"api/FinDayBook/", voucher);
+        return await _mijmsApiService.Post($"api/Voucher/", voucher);
     }
 
     public async Task<Voucher> GetVoucher(string voucherId)
     {
-        return await _mijmsApiService.Get<Voucher>($"api/FinDayBook/{voucherId}");
+        return await _mijmsApiService.Get<Voucher>($"api/Voucher/{voucherId}");
     }
 
     public async Task UpdateVoucher(Voucher voucher)
     {
-        await _mijmsApiService.Put($"api/FinDayBook/", voucher);
+        await _mijmsApiService.Put($"api/Voucher/", voucher);
     }
 
 

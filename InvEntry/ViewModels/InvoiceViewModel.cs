@@ -43,7 +43,7 @@ public partial class InvoiceViewModel : ObservableObject
     private InvoiceHeader _header;
 
     [ObservableProperty]
-    private ArInvoiceReceipt _arInvoiceReceipt;
+    private InvoiceArReceipt _invoiceArReceipt;
 
     [ObservableProperty]
     private string _productIdUI;
@@ -74,10 +74,10 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
-    private readonly IFinDayBookService _finDayBookService;
+    private readonly IVoucherService _voucherService;
     private readonly IInvoiceService _invoiceService;
     private readonly IProductCategoryService _productCategoryService;
-    private readonly IArInvoiceReceiptService _arInvoiceReceiptService;
+    private readonly IInvoiceArReceiptService _invoiceArReceiptService;
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
@@ -98,8 +98,8 @@ public partial class InvoiceViewModel : ObservableObject
         IInvoiceService invoiceService,
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
-        IFinDayBookService finDayBookService,
-        IArInvoiceReceiptService arInvoiceReceiptService,
+        IVoucherService voucherService,
+        IInvoiceArReceiptService invoiceArReceiptService,
         IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
@@ -117,8 +117,8 @@ public partial class InvoiceViewModel : ObservableObject
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
-        _finDayBookService = finDayBookService;
-        _arInvoiceReceiptService = arInvoiceReceiptService;
+        _voucherService = voucherService;
+        _invoiceArReceiptService = invoiceArReceiptService;
         _mtblReferencesService = mtblReferencesService;
 
         selectedRows = new();
@@ -297,10 +297,10 @@ public partial class InvoiceViewModel : ObservableObject
 
         var noOfLines = Header.ReceiptLines.Count;
 
-        ArInvoiceReceipt arInvRctLine = new ArInvoiceReceipt()
+        InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
         {
             //BalBeforeAdj = Header.GrossRcbAmount, //Header.GrossRcbAmount,
-            CustGkey = Header.CustGkey,    
+            CustGkey = (int?)Header.CustGkey,      //Check......
             Status = "Open",    //Status Open - Before Adjustment
             SeqNbr = noOfLines + 1
         };
@@ -360,7 +360,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
-        Header.CustGkey = Buyer.GKey;
+        Header.CustGkey = (int?)Buyer.GKey;
 
         Header.Lines.ForEach(x =>
         {
@@ -376,7 +376,7 @@ public partial class InvoiceViewModel : ObservableObject
             Header.InvNbr = header.InvNbr;
             Header.Lines.ForEach(x => 
             {
-                x.InvoiceHdrGkey = header.GKey;
+                x.InvoiceHdrGkey = header.GKey; 
                 x.InvoiceId = header.InvNbr;
             });
             await _invoiceService.CreatInvoiceLine(Header.Lines);
@@ -434,7 +434,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             EvaluateFormula(line);
         } else 
-        if (args.Row is ArInvoiceReceipt arInvRctline)
+        if (args.Row is InvoiceArReceipt arInvRctline)
         {
             EvaluateArRctLine(arInvRctline);
         }
@@ -443,7 +443,7 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void EvaluateArRctLine(ArInvoiceReceipt arInvRctLine)
+    private void EvaluateArRctLine(InvoiceArReceipt arInvRctLine)
     {
 
         if (arInvRctLine.TransactionType is null)
@@ -459,6 +459,14 @@ public partial class InvoiceViewModel : ObservableObject
 
         BalToAdjust = BalToAdjust - arInvRctLine.AdjustedAmount.GetValueOrDefault();
         arInvRctLine.BalanceAfterAdj = BalToAdjust;
+
+        if (arInvRctLine.TransactionType is null && arInvRctLine.TransactionType  == "Cash")
+        {
+            arInvRctLine.ModeOfReceipt = "Cash";
+        } else
+        {
+            arInvRctLine.ModeOfReceipt = "Bank";
+        }
 
         Header.RecdAmount = Header.RecdAmount + arInvRctLine.AdjustedAmount.GetValueOrDefault();
 
@@ -566,43 +574,43 @@ public partial class InvoiceViewModel : ObservableObject
             var voucher = CreateVoucher(receipts);
             await SaveVoucher(voucher);
 
-            var arReceipts = CreateArReceipts(receipts);
+            var arReceipts = CreateArReceipts(receipts, voucher);
             await SaveArReceipts(arReceipts);
 
         }
     }
 
-    private ArInvoiceReceipt CreateArReceipts(ArInvoiceReceipt arInvoiceReceipt)
+    private InvoiceArReceipt CreateArReceipts(InvoiceArReceipt invoiceArReceipt, Voucher voucher)
     {
 
-        ArInvoiceReceipt arInvRct = new()
+        InvoiceArReceipt arInvRct = new()
         {
             //VoucherDate = DateTime.Now
         };
 
-        arInvRct.SeqNbr                     = arInvoiceReceipt.SeqNbr;
-        arInvRct.CustGkey                   = arInvoiceReceipt.CustGkey;
+        arInvRct.SeqNbr                     = invoiceArReceipt.SeqNbr;
+        arInvRct.CustGkey                   = invoiceArReceipt.CustGkey;
         arInvRct.InvoiceGkey                = (int?)Header.GKey;
         arInvRct.InvoiceNbr                 = Header.InvNbr;
-        arInvRct.InvoiceReceivableAmount    = arInvoiceReceipt.InvoiceReceivableAmount;
-        arInvRct.BalanceAfterAdj            = arInvoiceReceipt.BalanceAfterAdj;
-        arInvRct.TransactionType            = arInvoiceReceipt.TransactionType;
-        arInvRct.ModeOfReceipt              = arInvoiceReceipt.ModeOfReceipt;
-        arInvRct.BalBeforeAdj               = arInvoiceReceipt.BalBeforeAdj;
-        arInvRct.AdjustedAmount             = arInvoiceReceipt.AdjustedAmount;
-        arInvRct.InternalVoucherNbr         = arInvoiceReceipt.InternalVoucherNbr;
-        arInvRct.InternalVoucherDate        = arInvoiceReceipt.InternalVoucherDate;
+        arInvRct.InvoiceReceivableAmount    = invoiceArReceipt.InvoiceReceivableAmount;
+        arInvRct.BalanceAfterAdj            = invoiceArReceipt.BalanceAfterAdj;
+        arInvRct.TransactionType            = invoiceArReceipt.TransactionType;
+        arInvRct.ModeOfReceipt              = invoiceArReceipt.ModeOfReceipt;
+        arInvRct.BalBeforeAdj               = invoiceArReceipt.BalBeforeAdj;
+        arInvRct.AdjustedAmount             = invoiceArReceipt.AdjustedAmount;
+        arInvRct.InternalVoucherNbr         = voucher.VoucherNbr;
+        arInvRct.InternalVoucherDate        = voucher.VoucherDate;
         arInvRct.Status = "Adj"; 
 
-     //   arInvoiceReceipt.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-     //   arInvoiceReceipt.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-     //   arInvoiceReceipt.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
+     //   invoiceArReceipt.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+     //   invoiceArReceipt.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+     //   invoiceArReceipt.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
 
         return arInvRct;
 
     }
 
-    private Voucher CreateVoucher(ArInvoiceReceipt arInvoiceReceipt)
+    private Voucher CreateVoucher(InvoiceArReceipt invoiceArReceipt)
     {
 
         Voucher Voucher = new()
@@ -613,14 +621,15 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.SeqNbr = 1;
         Voucher.CustomerGkey = Header.CustGkey;
         Voucher.VoucherDate = Header.InvDate;
-        Voucher.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        Voucher.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
+        Voucher.TransType = "Trans";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+        Voucher.VoucherType = "Vocher";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.Mode = "Mode";              // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-        Voucher.TransAmount = arInvoiceReceipt.AdjustedAmount; // Header.RecdAmount;
+        Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;
         Voucher.VoucherNbr = "Sales-001";
         Voucher.RefDocNbr = Header.InvNbr;
         Voucher.RefDocDate = Header.InvDate;
+        Voucher.RefDocGkey = Header.GKey;
         Voucher.TransDesc = "Sales Voucher";
 
         return Voucher;
@@ -628,17 +637,17 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task SaveArReceipts(ArInvoiceReceipt arInvoiceReceipt)
+    private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
     {
-        if (arInvoiceReceipt.GKey == 0)
+        if (invoiceArReceipt.GKey == 0)
         {
             try
             {
-                var voucherResult = await _arInvoiceReceiptService.CreatARInvReceipt(arInvoiceReceipt);
+                var voucherResult = await _invoiceArReceiptService.CreatInvArReceipt(invoiceArReceipt);
 
                 if (voucherResult != null)
                 {
-                    arInvoiceReceipt = voucherResult;
+                    invoiceArReceipt = voucherResult;
                     _messageBoxService.ShowMessage("AR Invoice Receipt Created Successfully", "AR Inv Rct Created",
                         MessageButton.OK, MessageIcon.Exclamation);
                 }
@@ -651,7 +660,7 @@ public partial class InvoiceViewModel : ObservableObject
          }
         else
         {
-            await _arInvoiceReceiptService.UpdateARInvReceipt(arInvoiceReceipt);
+            await _invoiceArReceiptService.UpdateInvArReceipt(invoiceArReceipt);
         }
 
     }
@@ -661,7 +670,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (voucher.GKey == 0)
         {
-            var voucherResult = await _finDayBookService.CreatVoucher(voucher);
+            var voucherResult = await _voucherService.CreatVoucher(voucher);
 
             if (voucherResult != null)
             {
@@ -672,7 +681,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
         else
         {
-            await _finDayBookService.UpdateVoucher(voucher);
+            await _voucherService.UpdateVoucher(voucher);
         }
 
     }

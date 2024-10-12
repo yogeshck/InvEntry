@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-     public partial class ArInvoiceReceipt : BaseEntity
+     public partial class InvoiceArReceipt : BaseEntity
     {
+
         [ObservableProperty]
-        public long? _custGkey;
+        public int? _custGkey;
 
         [ObservableProperty]
         public int? _invoiceGkey;
@@ -74,6 +75,14 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         public string? _status;
+
+        [ObservableProperty]
+        public string? _invoiceReceiptNbr;
+
     }
 
 }
+
+
+
+

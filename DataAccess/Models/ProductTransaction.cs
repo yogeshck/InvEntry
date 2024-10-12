@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class ProductTransaction
 {
-    public double? Gkey { get; set; }
+    public int? Gkey { get; set; }
 
     public double? RefGkey { get; set; }
 
@@ -15,7 +15,7 @@ public partial class ProductTransaction
 
     public string? DocType { get; set; }
 
-    public double? ProductRefGkey { get; set; }
+    public int? ProductRefGkey { get; set; }
 
     public decimal? Column1 { get; set; }
 

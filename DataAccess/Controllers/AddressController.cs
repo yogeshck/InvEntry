@@ -17,14 +17,14 @@ namespace DataAccess.Controllers
 
         // GET api/<AddressController>/5
         [HttpGet("{id}")]
-        public OrgAddress? Get(long id)
+        public OrgAddress? Get(int id)
         {
             return _repository.Get(x => x.Gkey == id);
         }
 
         // PUT api/<AddressController>/5
         [HttpPut("{id}")]
-        public void Put(long id, [FromBody] OrgAddress value)
+        public void Put(int id, [FromBody] OrgAddress value)
         {
             value.Gkey = id;
             _repository.Update(value);

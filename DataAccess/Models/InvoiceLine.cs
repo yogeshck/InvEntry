@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class InvoiceLine
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public string? HsnCode { get; set; }
 

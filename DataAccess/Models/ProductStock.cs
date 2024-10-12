@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class ProductStock
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public byte[]? TenantGkey { get; set; }
 
@@ -39,9 +39,9 @@ public partial class ProductStock
 
     public string? Status { get; set; }
 
-    public long? StockId { get; set; }
+    public int? StockId { get; set; }
 
-    public long? SupplierId { get; set; }
+    public int? SupplierId { get; set; }
 
     public string? TaxRule { get; set; }
 

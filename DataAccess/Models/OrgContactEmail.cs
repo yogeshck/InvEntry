@@ -5,9 +5,9 @@ namespace DataAccess.Models;
 
 public partial class OrgContactEmail
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
-    public double CustRefGkey { get; set; }
+    public int CustRefGkey { get; set; }
 
     public string? EmailId { get; set; }
 

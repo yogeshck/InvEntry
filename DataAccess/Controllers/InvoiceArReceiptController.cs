@@ -8,43 +8,43 @@ namespace DataAccess.Controllers
     {
         [Route("api/[controller]")]
         [ApiController]
-        public class ARInvoiceReceiptController : ControllerBase
+        public class InvoiceArReceiptController : ControllerBase
         {
 
-            private readonly IRepositoryBase<ArInvoiceReceipt> _arInvoiceReceipt;
+            private readonly IRepositoryBase<InvoiceArReceipt> _invoiceArReceipt;
 
-            public ARInvoiceReceiptController(IRepositoryBase<ArInvoiceReceipt> arInvoiceReceiptRepo)
+            public InvoiceArReceiptController(IRepositoryBase<InvoiceArReceipt> invoiceArReceiptRepo)
             {
-                _arInvoiceReceipt = arInvoiceReceiptRepo;
+                _invoiceArReceipt = invoiceArReceiptRepo;
             }
 
         // GET: api/<ARInvoiceReceiptController>
         [HttpGet]
-            public IEnumerable<ArInvoiceReceipt> Get()
+            public IEnumerable<InvoiceArReceipt> Get()
             {
-                return _arInvoiceReceipt.GetAll();
+                return _invoiceArReceipt.GetAll();
             }
 
         // GET api/<ARInvoiceReceiptController>/5
         [HttpGet("{invoiceNbr}")]
-            public ArInvoiceReceipt? Get(string invoiceNbr)
+            public InvoiceArReceipt? Get(string invoiceNbr)
             {
-                return _arInvoiceReceipt.Get(x => x.InvoiceNbr == invoiceNbr);
+                return _invoiceArReceipt.Get(x => x.InvoiceNbr == invoiceNbr);
             }
 
         // POST api/<ARInvoiceReceiptController>
         [HttpPost]
-        public ArInvoiceReceipt Post([FromBody] ArInvoiceReceipt value)
+        public InvoiceArReceipt Post([FromBody] InvoiceArReceipt value)
             {
-                _arInvoiceReceipt.Add(value);
+                _invoiceArReceipt.Add(value);
                 return value;
             }
 
         // PUT api/<ARInvoiceReceiptController>/5
         [HttpPut]
-            public void Put([FromBody] ArInvoiceReceipt value)
+            public void Put([FromBody] InvoiceArReceipt value)
             {
-            _arInvoiceReceipt.Update(value);
+            _invoiceArReceipt.Update(value);
             }
 
         // DELETE api/<ARInvoiceReceiptController>/5
@@ -52,10 +52,10 @@ namespace DataAccess.Controllers
             public void Delete(string invoiceNbr)
             {
 
-                var arInvoiceReceipt = _arInvoiceReceipt.Get(x => x.InvoiceNbr == invoiceNbr);
+                var arInvoiceReceipt = _invoiceArReceipt.Get(x => x.InvoiceNbr == invoiceNbr);
 
                 if (arInvoiceReceipt is not null)
-                    _arInvoiceReceipt.Remove(arInvoiceReceipt);
+                    _invoiceArReceipt.Remove(arInvoiceReceipt);
 
 
             }

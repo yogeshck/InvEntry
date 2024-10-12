@@ -13,7 +13,6 @@ public partial class InvoiceHeader : BaseEntity
         ReceiptLines = new();
         PaymentMode = "CASH";
         TaxType = "GST";
-        TenantGkey = "1";
         RoundOff = 0M;
         InvlTaxTotal = 0M;
         InvlTaxableAmount = 0M;
@@ -25,6 +24,9 @@ public partial class InvoiceHeader : BaseEntity
         RdAmountAdj = 0M;
         RecdAmount = 0M;
     }
+/*
+    [ObservableProperty]
+    private int gkey;*/
 
     [ObservableProperty]
     private string? invNbr;
@@ -117,10 +119,10 @@ public partial class InvoiceHeader : BaseEntity
     private decimal? invlTaxTotal;
 
     [ObservableProperty]
-    private string? tenantGkey;
+    private int? tenantGkey;
 
     [ObservableProperty]
-    private long? custGkey;
+    private int? custGkey;
 
     [ObservableProperty]
     private string? gstLocSeller;
@@ -134,5 +136,5 @@ public partial class InvoiceHeader : BaseEntity
 
     [ObservableProperty]
     [property: JsonIgnore]
-    private ObservableCollection<ArInvoiceReceipt>? receiptLines;
+    private ObservableCollection<InvoiceArReceipt>? receiptLines;
 }

@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class DailyRate
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public DateTime EffectiveDate { get; set; }
 

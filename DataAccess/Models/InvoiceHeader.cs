@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class InvoiceHeader
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public string? InvNbr { get; set; }
 
@@ -13,7 +13,7 @@ public partial class InvoiceHeader
 
     public string? PaymentMode { get; set; }
 
-    public long? CustGkey { get; set; }
+    public int? CustGkey { get; set; }
 
     public string? CustMobile { get; set; }
 
@@ -71,13 +71,13 @@ public partial class InvoiceHeader
 
     public string? ModifiedBy { get; set; }
 
-    public DateTime? ModifiedOn { get; set; }
+    public string? ModifiedOn { get; set; }
 
-    public string? TenantGkey { get; set; }
+    public int? TenantGkey { get; set; }
 
     public string? DeliveryMethod { get; set; }
 
-    public long? DeliveryRef { get; set; }
+    public int? DeliveryRef { get; set; }
 
     public string? OrderNbr { get; set; }
 

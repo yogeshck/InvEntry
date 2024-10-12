@@ -5,11 +5,11 @@ namespace DataAccess.Models;
 
 public partial class OrgContact
 {
-    public long Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public string MobileNbr { get; set; } = null!;
 
-    public string CustRefGkey { get; set; } = null!;
+    public int CustRefGkey { get; set; }
 
     public string? Status { get; set; }
 }

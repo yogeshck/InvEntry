@@ -15,13 +15,11 @@ public partial class MijmsContext : DbContext
     {
     }
 
-    public virtual DbSet<ArInvoiceReceipt> ArInvoiceReceipts { get; set; }
-
     public virtual DbSet<DailyRate> DailyRates { get; set; }
 
     public virtual DbSet<DayBookView> DayBookViews { get; set; }
 
-    public virtual DbSet<FinDayBook> FinDayBooks { get; set; }
+    public virtual DbSet<InvoiceArReceipt> InvoiceArReceipts { get; set; }
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
 
@@ -57,87 +55,14 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<ProductTransaction> ProductTransactions { get; set; }
 
+    public virtual DbSet<Voucher> Vouchers { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ArInvoiceReceipt>(entity =>
-        {
-            entity.HasKey(e => e.Gkey);
-
-            entity.ToTable("ar_invoice_receipts");
-
-            entity.Property(e => e.Gkey).HasColumnName("gkey");
-            entity.Property(e => e.AdjustedAmount)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("adjusted_amount");
-            entity.Property(e => e.BalBeforeAdj)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("bal_before_adj");
-            entity.Property(e => e.BalanceAfterAdj)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("balance_after_adj");
-            entity.Property(e => e.BankName)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("bank_name");
-            entity.Property(e => e.CompanyBankAccountNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("company_bank_account_nbr");
-            entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
-            entity.Property(e => e.ExternalTransactionDate).HasColumnName("external_transaction_date");
-            entity.Property(e => e.ExternalTransactionId)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("external_transaction_id");
-            entity.Property(e => e.InternalVoucherDate).HasColumnName("internal_voucher_date");
-            entity.Property(e => e.InternalVoucherNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("internal_voucher_nbr");
-            entity.Property(e => e.InvoiceGkey).HasColumnName("invoice_gkey");
-            entity.Property(e => e.InvoiceNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("invoice_nbr");
-            entity.Property(e => e.InvoiceReceivableAmount)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("invoice_receivable_amount");
-            entity.Property(e => e.ModeOfReceipt)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("mode_of_receipt");
-            entity.Property(e => e.OtherReference)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("other_reference");
-            entity.Property(e => e.SenderBankAccountNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("sender_bank_account_nbr");
-            entity.Property(e => e.SenderBankBranch)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("sender_bank_branch");
-            entity.Property(e => e.SenderBankGkey).HasColumnName("sender_bank_gkey");
-            entity.Property(e => e.SenderBankIfscCode)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("sender_bank_ifsc_code");
-            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("status");
-            entity.Property(e => e.TransactionType)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("transaction_type");
-        });
-
         modelBuilder.Entity<DailyRate>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -226,56 +151,82 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("voucher_type");
         });
 
-        modelBuilder.Entity<FinDayBook>(entity =>
+        modelBuilder.Entity<InvoiceArReceipt>(entity =>
         {
-            entity.HasKey(e => e.Gkey);
+            entity.HasKey(e => e.Gkey).HasName("PK_ar_invoice_receipts");
 
-            entity.ToTable("fin_day_book");
+            entity.ToTable("INVOICE_AR_RECEIPTS");
 
             entity.Property(e => e.Gkey).HasColumnName("gkey");
-            entity.Property(e => e.CbAmount)
+            entity.Property(e => e.AdjustedAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("cb_amount");
-            entity.Property(e => e.CustomerGkey).HasColumnName("customer_gkey");
-            entity.Property(e => e.FromLedgerGkey).HasColumnName("from_ledger_gkey");
-            entity.Property(e => e.FundTransferDate)
-                .HasColumnType("datetime")
-                .HasColumnName("fund_transfer_date");
-            entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
-            entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
-            entity.Property(e => e.Mode).HasColumnName("mode");
-            entity.Property(e => e.ObAmount)
+                .HasColumnName("adjusted_amount");
+            entity.Property(e => e.BalBeforeAdj)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("ob_amount");
-            entity.Property(e => e.RefDocDate)
-                .HasColumnType("datetime")
-                .HasColumnName("ref_doc_date");
-            entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
-            entity.Property(e => e.RefDocNbr)
+                .HasColumnName("bal_before_adj");
+            entity.Property(e => e.BalanceAfterAdj)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("balance_after_adj");
+            entity.Property(e => e.BankName)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("ref_doc_nbr");
+                .HasColumnName("bank_name");
+            entity.Property(e => e.CompanyBankAccountNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("company_bank_account_nbr");
+            entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
+            entity.Property(e => e.ExternalTransactionDate).HasColumnName("external_transaction_date");
+            entity.Property(e => e.ExternalTransactionId)
+                .HasMaxLength(50)
+                .HasColumnName("external_transaction_id");
+            entity.Property(e => e.InternalVoucherDate).HasColumnName("internal_voucher_date");
+            entity.Property(e => e.InternalVoucherNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("internal_voucher_nbr");
+            entity.Property(e => e.InvoiceGkey).HasColumnName("invoice_gkey");
+            entity.Property(e => e.InvoiceNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("invoice_nbr");
+            entity.Property(e => e.InvoiceReceiptNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("invoice_receipt_nbr");
+            entity.Property(e => e.InvoiceReceivableAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("invoice_receivable_amount");
+            entity.Property(e => e.ModeOfReceipt)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("mode_of_receipt");
+            entity.Property(e => e.OtherReference)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("other_reference");
+            entity.Property(e => e.SenderBankAccountNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("sender_bank_account_nbr");
+            entity.Property(e => e.SenderBankBranch)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("sender_bank_branch");
+            entity.Property(e => e.SenderBankGkey).HasColumnName("sender_bank_gkey");
+            entity.Property(e => e.SenderBankIfscCode)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("sender_bank_ifsc_code");
             entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
-            entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
-            entity.Property(e => e.TransAmount)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("trans_amount");
-            entity.Property(e => e.TransDate)
-                .HasColumnType("datetime")
-                .HasColumnName("trans_date");
-            entity.Property(e => e.TransDesc)
+            entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("trans_desc");
-            entity.Property(e => e.TransType).HasColumnName("trans_type");
-            entity.Property(e => e.VoucherDate)
-                .HasColumnType("datetime")
-                .HasColumnName("voucher_date");
-            entity.Property(e => e.VoucherNbr)
+                .HasColumnName("status");
+            entity.Property(e => e.TransactionType)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("voucher_nbr");
-            entity.Property(e => e.VoucherType).HasColumnName("voucher_type");
+                .HasColumnName("transaction_type");
         });
 
         modelBuilder.Entity<InvoiceHeader>(entity =>
@@ -302,7 +253,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(4, 2)")
                 .HasColumnName("CGST_PERCENT");
             entity.Property(e => e.CreatedBy)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("CREATED_BY");
             entity.Property(e => e.CreatedOn)
@@ -310,11 +261,11 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
             entity.Property(e => e.CustMobile)
-                .HasMaxLength(255)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("CUST_MOBILE");
             entity.Property(e => e.DeliveryMethod)
-                .HasMaxLength(20)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("DELIVERY_METHOD");
             entity.Property(e => e.DeliveryRef).HasColumnName("DELIVERY_REF");
@@ -330,11 +281,11 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("GROSS_RCB_AMOUNT");
             entity.Property(e => e.GstLocBuyer)
-                .HasMaxLength(5)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("GST_LOC_BUYER");
             entity.Property(e => e.GstLocSeller)
-                .HasMaxLength(5)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("GST_LOC_SELLER");
             entity.Property(e => e.IgstAmount)
@@ -353,11 +304,11 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("INV_DATE");
             entity.Property(e => e.InvNbr)
-                .HasMaxLength(255)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("INV_NBR");
             entity.Property(e => e.InvNotes)
-                .HasMaxLength(255)
+                .HasMaxLength(250)
                 .IsUnicode(false)
                 .HasColumnName("INV_NOTES");
             entity.Property(e => e.InvRefund)
@@ -375,11 +326,12 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValue(true)
                 .HasColumnName("IS_TAX_APPLICABLE");
             entity.Property(e => e.ModifiedBy)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("MODIFIED_BY");
             entity.Property(e => e.ModifiedOn)
-                .HasPrecision(6)
+                .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.OldGoldAmount)
                 .HasDefaultValueSql("('0.00')")
@@ -390,17 +342,17 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("OLD_SILVER_AMOUNT");
             entity.Property(e => e.OrderDate)
-                .HasColumnType("datetime")
+                .HasPrecision(6)
                 .HasColumnName("ORDER_DATE");
             entity.Property(e => e.OrderNbr)
-                .HasMaxLength(20)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("ORDER_NBR");
             entity.Property(e => e.PaymentDueDate)
                 .HasPrecision(6)
                 .HasColumnName("PAYMENT_DUE_DATE");
             entity.Property(e => e.PaymentMode)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("PAYMENT_MODE");
             entity.Property(e => e.RdAmountAdj)
@@ -424,12 +376,10 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(4, 2)")
                 .HasColumnName("SGST_PERCENT");
             entity.Property(e => e.TaxType)
-                .HasMaxLength(255)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("TAX_TYPE");
-            entity.Property(e => e.TenantGkey)
-                .HasMaxLength(50)
-                .HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
         });
 
         modelBuilder.Entity<InvoiceLine>(entity =>
@@ -441,12 +391,13 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("CREATED_BY");
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.HsnCode)
-                .HasMaxLength(255)
+                .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("HSN_CODE");
             entity.Property(e => e.InvLineNbr).HasColumnName("INV_LINE_NBR");
@@ -501,6 +452,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.InvoiceHdrGkey).HasColumnName("INVOICE_HDR_GKEY");
             entity.Property(e => e.InvoiceId)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("INVOICE_ID");
             entity.Property(e => e.IsTaxable).HasColumnName("IS_TAXABLE");
             entity.Property(e => e.ItemNotes)
@@ -508,10 +460,12 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("ITEM_NOTES");
             entity.Property(e => e.ItemPacked).HasColumnName("ITEM_PACKED");
             entity.Property(e => e.Metal)
-                .HasMaxLength(20)
+                .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("METAL");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("MODIFIED_BY");
             entity.Property(e => e.ModifiedOn)
                 .HasPrecision(6)
@@ -543,6 +497,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
             entity.Property(e => e.ProductId)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("PRODUCT_ID");
             entity.Property(e => e.ProductName)
                 .HasMaxLength(255)
@@ -564,6 +519,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("TAX_TYPE");
             entity.Property(e => e.TenantGkey)
                 .HasMaxLength(50)
+                .IsUnicode(false)
                 .HasColumnName("TENANT_GKEY");
             entity.Property(e => e.VaAmount)
                 .HasColumnType("decimal(18, 2)")
@@ -592,9 +548,9 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<MtblReference>(entity =>
         {
-            entity.HasKey(e => e.Gkey);
+            entity.HasKey(e => e.Gkey).HasName("PK_mtbl_references");
 
-            entity.ToTable("mtbl_references");
+            entity.ToTable("MTBL_REFERENCES");
 
             entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.IsActive).HasColumnName("is_active");
@@ -825,10 +781,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
                 .HasColumnName("GKEY");
-            entity.Property(e => e.CustRefGkey)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("CUST_REF_GKEY");
+            entity.Property(e => e.CustRefGkey).HasColumnName("CUST_REF_GKEY");
             entity.Property(e => e.MobileNbr)
                 .HasMaxLength(15)
                 .IsUnicode(false)
@@ -953,8 +906,7 @@ public partial class MijmsContext : DbContext
             entity.HasIndex(e => e.Gkey, "SYS_C009033").IsUnique();
 
             entity.Property(e => e.Gkey)
-                .HasMaxLength(255)
-                .IsUnicode(false)
+                .ValueGeneratedNever()
                 .HasColumnName("GKEY");
             entity.Property(e => e.ExternalId)
                 .HasMaxLength(255)
@@ -1281,6 +1233,59 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.UnitTransPrice)
                 .HasColumnType("decimal(19, 2)")
                 .HasColumnName("UNIT_TRANS_PRICE");
+        });
+
+        modelBuilder.Entity<Voucher>(entity =>
+        {
+            entity.HasKey(e => e.Gkey).HasName("PK_fin_day_book");
+
+            entity.ToTable("VOUCHER");
+
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
+            entity.Property(e => e.CbAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("cb_amount");
+            entity.Property(e => e.CustomerGkey).HasColumnName("customer_gkey");
+            entity.Property(e => e.FromLedgerGkey).HasColumnName("from_ledger_gkey");
+            entity.Property(e => e.FundTransferDate).HasColumnName("fund_transfer_date");
+            entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
+            entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
+            entity.Property(e => e.Mode)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("mode");
+            entity.Property(e => e.ObAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ob_amount");
+            entity.Property(e => e.RefDocDate).HasColumnName("ref_doc_date");
+            entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
+            entity.Property(e => e.RefDocNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ref_doc_nbr");
+            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
+            entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
+            entity.Property(e => e.TransAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("trans_amount");
+            entity.Property(e => e.TransDate).HasColumnName("trans_date");
+            entity.Property(e => e.TransDesc)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_desc");
+            entity.Property(e => e.TransType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_type");
+            entity.Property(e => e.VoucherDate).HasColumnName("voucher_date");
+            entity.Property(e => e.VoucherNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("voucher_nbr");
+            entity.Property(e => e.VoucherType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("voucher_type");
         });
 
         OnModelCreatingPartial(modelBuilder);
