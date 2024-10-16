@@ -645,8 +645,8 @@ public partial class InvoiceViewModel : ObservableObject
                 if (voucherResult != null)
                 {
                     invoiceArReceipt = voucherResult;
-                    _messageBoxService.ShowMessage("AR Invoice Receipt Created Successfully", "AR Inv Rct Created",
-                        MessageButton.OK, MessageIcon.Exclamation);
+                  //  _messageBoxService.ShowMessage("AR Invoice Receipt Created Successfully", "AR Inv Rct Created",
+                  //      MessageButton.OK, MessageIcon.Exclamation);
                 }
 
             } catch (Exception e)
@@ -672,8 +672,8 @@ public partial class InvoiceViewModel : ObservableObject
             if (voucherResult != null)
             {
                 voucher = voucherResult;
-                _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
-                    MessageButton.OK, MessageIcon.Exclamation);
+              //  _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
+              //      MessageButton.OK, MessageIcon.Exclamation);
             }
         }
         else
