@@ -2,6 +2,7 @@
 using DevExpress.Xpf.Core;
 using InvEntry.Metadata;
 using InvEntry.Utils;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -26,6 +27,7 @@ namespace InvEntry
                     theme.Category == Theme.MetropolisCategory ||
                     theme.Name == "DeepBlue") theme.ShowInThemeSelector = false;
             }
+
         }
 
         static App()
@@ -44,6 +46,16 @@ namespace InvEntry
         {
             ApplicationThemeHelper.SaveApplicationThemeName();
             base.OnExit(e);
+        }
+
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Log.Error(e.Exception?.Message, e.Exception);
+        }
+
+        private void Application_Exit(object sender, ExitEventArgs e)
+        {
+            Log.CloseAndFlush();
         }
     }
 }

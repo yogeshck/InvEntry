@@ -23,6 +23,10 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <!--<Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>-->
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
                 <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date">
@@ -32,21 +36,35 @@
                 </dxb:BarEditItem>
                 <dxb:BarEditItem EditValue="{Binding SearchOption.To}" EditWidth="120" Content="To Date">
                     <dxb:BarEditItem.EditSettings>
-                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding MaxDate}"/>
+                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}"/>
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh" 
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
-                    GlyphSize="Medium"
+                    GlyphSize="Large"
                     Command="{Binding RefreshInvoicesCommand}"/>
+                <dxb:BarButtonItem x:Name="btnPrint" 
+                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                   GlyphSize="Large" Alignment="Far"
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintInvoiceCommand}"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="AddNew"
-                         Height="1000"
-                         MaxHeight="1500">
+                         MinHeight="500"
+                         Height="900"
+                         MaxHeight="1000"
+                         MinWidth="700"
+                         Width="1500" SelectedItem="{Binding SelectedInvoice}">
             <dxg:GridControl.View>
-                <dxg:TableView />
+                <dxg:TableView ShowGroupPanel="False"  x:Name="tableView" NavigationStyle="Row">
+                    <dxg:TableView.ColumnMenuCustomizations>
+                        <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}"/>
+                    </dxg:TableView.ColumnMenuCustomizations>
+                </dxg:TableView>
             </dxg:GridControl.View>
         </dxg:GridControl>
+        <!--<dxg:ExtendedColumnChooserControl Grid.Column="1"
+                                          Owner="{Binding ElementName=tableView}" 
+                                          FlowDirection="{Binding Owner.FlowDirection, RelativeSource={RelativeSource Self}}"/>-->
     </Grid>
 </dxwui:NavigationPage>
