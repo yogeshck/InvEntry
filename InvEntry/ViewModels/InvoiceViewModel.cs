@@ -414,10 +414,7 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintPreviewInvoice()
     {
-        var dialogVM = DISource.Resolve<ReportDialogViewModel>();
-        dialogVM.Init(Header.InvNbr);
-
-        _reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        _reportDialogService.PrintPreview(Header.InvNbr);
         ResetInvoice();
     }
 
