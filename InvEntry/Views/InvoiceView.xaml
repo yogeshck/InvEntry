@@ -310,67 +310,67 @@
                                 IsCollapsible="False">
                                 <dxlc:LayoutGroup Orientation="Horizontal">
                                     <dxlc:LayoutItem Label="Metal" LabelPosition="Top" Width="70" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.Metal}" Width="70" IsReadOnly="True"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.GMetal}" Width="70" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Purity" LabelPosition="Top" Width="70" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="70" IsReadOnly="True"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.GPurity}" Width="70" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Price" LabelPosition="Top"  Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.GPrice}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Gross Wt" LabelPosition="Top" Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.GGrossWt}" Width="100"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Stone Wt" LabelPosition="Top" Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.GStoneWt}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Wastage Wt" LabelPosition="Top" Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.GWastageWt}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Net Wt" LabelPosition="Top" Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.GNetWt}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Ex. Value" LabelPosition="Top" Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" IsReadOnly="True"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.GExtValue}" Width="100" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Considered" LabelPosition="Top" Width="100" VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.GConsideredValue}" Width="100" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup Orientation="Horizontal">
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="70" IsReadOnly="True"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.SMetal}" Width="70" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="70" IsReadOnly="True"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.SPurity}" Width="70" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.SPrice}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.SGrossWt}" Width="100"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.SStoneWt}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem>
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.SWastageWt}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.SNetWt}" Width="100" />
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" IsReadOnly="True"/>
+                                        <dxe:TextEdit EditValue="{Binding Header.SExtValue}" Width="100" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem >
-                                        <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="100" />
+                                        <dxe:TextEdit EditValue="{Binding Header.SConsideredValue}" Width="100" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>                                
 
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup Header="Advance">
+             <!-- cmk       <dxlc:LayoutGroup Header="Advance">
                         <dxlc:LayoutItem>
                             <dxlc:LayoutGroup HorizontalAlignment="Left" 
                                 Margin="10" VerticalAlignment="Top" 
@@ -396,9 +396,9 @@
                                     <dxlc:LayoutItem Label="Round Off">
                                         <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Grand Total">
+                                    <dxlc:LayoutItem Label="Grand Total">    cmk-->
                                         <!-- <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True"/> -->
-                                        <dxe:TextEdit EditValue="{Binding Header.GrossRcbAmount}" IsReadOnly="True"/>
+                           <!-- cmk             <dxe:TextEdit EditValue="{Binding Header.GrossRcbAmount}" IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                     <dxlc:LayoutItem Label="Discount">
                                         <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" >
@@ -456,8 +456,8 @@
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>
+                        </dxlc:LayoutItem> 
+                    </dxlc:LayoutGroup> -->
                     <dxlc:LayoutGroup Header="RD">
                         <dxlc:LayoutItem>
                             <dxlc:LayoutGroup HorizontalAlignment="Left" 
@@ -545,7 +545,7 @@
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>                    
+                    </dxlc:LayoutGroup>                
                     <dxlc:LayoutGroup Header="Receipts">
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False" >
@@ -578,7 +578,7 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="SeqNbr" Header="SN" />
+                                        <dxg:GridColumn FieldName="SeqNbr" Header="SN" Width="30" />
                                         <dxg:GridColumn FieldName="TransactionType" Header="Transaction" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
