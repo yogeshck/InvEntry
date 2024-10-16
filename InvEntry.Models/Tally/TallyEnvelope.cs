@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InvEntry.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,15 +8,8 @@ using System.Xml.Serialization;
 
 namespace InvEntry.Models.Tally;
 
-// using System.Xml.Serialization;
-// XmlSerializer serializer = new XmlSerializer(typeof(ENVELOPE));
-// using (StringReader reader = new StringReader(xml))
-// {
-//    var test = (ENVELOPE)serializer.Deserialize(reader);
-// }
-
 [XmlRoot(ElementName = "HEADER")]
-public class HEADER
+public class HEADER : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "TALLYREQUEST")]
@@ -23,7 +17,7 @@ public class HEADER
 }
 
 [XmlRoot(ElementName = "STATICVARIABLES")]
-public class STATICVARIABLES
+public class STATICVARIABLES : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "SVCURRENTCOMPANY")]
@@ -31,7 +25,7 @@ public class STATICVARIABLES
 }
 
 [XmlRoot(ElementName = "REQUESTDESC")]
-public class REQUESTDESC
+public class REQUESTDESC : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "REPORTNAME")]
@@ -40,9 +34,9 @@ public class REQUESTDESC
     [XmlElement(ElementName = "STATICVARIABLES")]
     public STATICVARIABLES STATICVARIABLES { get; set; }
 }
-
+    
 [XmlRoot(ElementName = "OLDAUDITENTRYIDS.LIST")]
-public class OLDAUDITENTRYIDSLIST
+public class OLDAUDITENTRYIDSLIST : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "OLDAUDITENTRYIDS")]
@@ -56,7 +50,7 @@ public class OLDAUDITENTRYIDSLIST
 }
 
 [XmlRoot(ElementName = "GSTREGISTRATION")]
-public class GSTREGISTRATION
+public class GSTREGISTRATION : IInvEntryXmlSerializable
 {
 
     [XmlAttribute(AttributeName = "TAXTYPE")]
@@ -70,7 +64,7 @@ public class GSTREGISTRATION
 }
 
 [XmlRoot(ElementName = "RATEDETAILS.LIST")]
-public class RATEDETAILSLIST
+public class RATEDETAILSLIST : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "GSTRATEDUTYHEAD")]
@@ -78,7 +72,7 @@ public class RATEDETAILSLIST
 }
 
 [XmlRoot(ElementName = "ALLLEDGERENTRIES.LIST")]
-public class ALLLEDGERENTRIESLIST
+public class ALLLEDGERENTRIESLIST : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "OLDAUDITENTRYIDS.LIST")]
@@ -224,7 +218,7 @@ public class ALLLEDGERENTRIESLIST
 }
 
 [XmlRoot(ElementName = "VOUCHER")]
-public class VOUCHER
+public class VOUCHER : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "OLDAUDITENTRYIDS.LIST")]
@@ -245,11 +239,18 @@ public class VOUCHER
     [XmlElement(ElementName = "STATENAME")]
     public string STATENAME { get; set; }
 
+    // Payment - datatype is int
+    // Receipt - datatype is string
     [XmlElement(ElementName = "NARRATION")]
-    public string NARRATION { get; set; }
+    public int NARRATION { get; set; }
 
     [XmlElement(ElementName = "COUNTRYOFRESIDENCE")]
     public string COUNTRYOFRESIDENCE { get; set; }
+
+    // Payment - present
+    // Receipt - abset
+    [XmlElement(ElementName = "PLACEOFSUPPLY")]
+    public string PLACEOFSUPPLY { get; set; }
 
     [XmlElement(ElementName = "PARTYNAME")]
     public string PARTYNAME { get; set; }
@@ -790,7 +791,7 @@ public class VOUCHER
 }
 
 [XmlRoot(ElementName = "TALLYMESSAGE")]
-public class TALLYMESSAGE
+public class TALLYMESSAGE : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "VOUCHER")]
@@ -807,7 +808,7 @@ public class TALLYMESSAGE
 }
 
 [XmlRoot(ElementName = "REMOTECMPINFO.LIST")]
-public class REMOTECMPINFOLIST
+public class REMOTECMPINFOLIST : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "NAME")]
@@ -827,7 +828,7 @@ public class REMOTECMPINFOLIST
 }
 
 [XmlRoot(ElementName = "COMPANY")]
-public class COMPANY
+public class COMPANY : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "REMOTECMPINFO.LIST")]
@@ -835,7 +836,7 @@ public class COMPANY
 }
 
 [XmlRoot(ElementName = "REQUESTDATA")]
-public class REQUESTDATA
+public class REQUESTDATA : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "TALLYMESSAGE")]
@@ -843,7 +844,7 @@ public class REQUESTDATA
 }
 
 [XmlRoot(ElementName = "IMPORTDATA")]
-public class IMPORTDATA
+public class IMPORTDATA : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "REQUESTDESC")]
@@ -854,7 +855,7 @@ public class IMPORTDATA
 }
 
 [XmlRoot(ElementName = "BODY")]
-public class BODY
+public class BODY : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "IMPORTDATA")]
@@ -862,7 +863,7 @@ public class BODY
 }
 
 [XmlRoot(ElementName = "ENVELOPE")]
-public class ENVELOPE
+public class ENVELOPE : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "HEADER")]
