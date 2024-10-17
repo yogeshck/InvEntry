@@ -28,6 +28,7 @@ using InvEntry.Views;
 using DevExpress.Xpf.Core;
 using DevExpress.XtraCharts;
 using DevExpress.Data.Extensions;
+using DevExpress.Utils.Extensions;
 
 namespace InvEntry.ViewModels;
 
@@ -573,6 +574,7 @@ public partial class InvoiceViewModel : ObservableObject
                     Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
                     Header.InvRefund = 0M;
                     BalanceVisible();
+                    SetReceipts("Credit");
                 }
                 else
                 {
@@ -595,6 +597,7 @@ public partial class InvoiceViewModel : ObservableObject
                     Header.InvRefund = Header.InvBalance * -1;
                     Header.InvBalance = 0M;
                     RefundVisible();
+                    SetReceipts("Refund");
                 }
                 else
                 {
@@ -604,9 +607,14 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    private async void AddReceiptLines()
+    private void SetReceipts(String str)
     {
 
+        InvoiceArReceipt arInvRct = new InvoiceArReceipt();
+
+        arInvRct.InternalVoucherNbr = "Test";
+        arInvRct.AdjustedAmount = Header.InvBalance;
+        Header.ReceiptLines.Add(arInvRct);
     }
 
     private async void ProcessReceipts()
@@ -644,10 +652,6 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.InternalVoucherNbr         = voucher.VoucherNbr;
         arInvRct.InternalVoucherDate        = voucher.VoucherDate;
         arInvRct.Status = "Adj"; 
-
-     //   invoiceArReceipt.TransType = 1;         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-     //   invoiceArReceipt.VoucherType = 1;       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-     //   invoiceArReceipt.Mode = 1;              // Mode          1 = Cash,       2 = Bank,       3 = Credit
 
         return arInvRct;
 
