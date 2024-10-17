@@ -276,15 +276,25 @@ public partial class InvoiceViewModel : ObservableObject
             TaxType = "GST"
         };
 
-        invoiceLine.SetProductDetails(product);
 
-        EvaluateFormula(invoiceLine, isInit: true);
+            invoiceLine.SetProductDetails(product);
 
-        Header.Lines.Add(invoiceLine);
+            EvaluateFormula(invoiceLine, isInit: true);
 
-        ProductIdUI = string.Empty;
+            Header.Lines.Add(invoiceLine);
 
-        EvaluateHeader();
+            ProductIdUI = string.Empty;
+
+            EvaluateHeader();
+
+/*        if (invoiceLine.ProdGrossWeight > 0)
+        {
+        } else
+        {
+            _messageBoxService.ShowMessage("Gross Weight cannot be zero ....",
+                "Gross Weight", MessageButton.OK, MessageIcon.Error);
+            return;
+        }*/
     }
 
     [RelayCommand]
@@ -466,9 +476,13 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (arInvRctLine.TransactionType is not null) 
         { 
-            if (arInvRctLine.TransactionType == "Cash")
+            if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
             {
                 arInvRctLine.ModeOfReceipt = "Cash";
+            }
+            else if (arInvRctLine.TransactionType == "Credit")
+            {
+                arInvRctLine.ModeOfReceipt = "Credit";
             } else
             {
                 arInvRctLine.ModeOfReceipt = "Bank";
@@ -546,7 +560,7 @@ public partial class InvoiceViewModel : ObservableObject
     private void ProcessInvBalance()
     {
         //Note if inv balance is greater than zero - we need to show message to get confirmation from user
-        // and warn to check there is unpaid balance........ need to implement
+        // and warn to check there is unpaid balance........ 
 
         if (Header.RecdAmount > 0)
         {
@@ -588,6 +602,11 @@ public partial class InvoiceViewModel : ObservableObject
                 }
             }
         }
+    }
+
+    private async void AddReceiptLines()
+    {
+
     }
 
     private async void ProcessReceipts()
@@ -646,7 +665,7 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.CustomerGkey = Header.CustGkey;
         Voucher.VoucherDate = Header.InvDate;
         Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = "Voucher";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.VoucherType = "Sales";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
         Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;
@@ -654,7 +673,7 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.RefDocNbr = Header.InvNbr;
         Voucher.RefDocDate = Header.InvDate;
         Voucher.RefDocGkey = Header.GKey;
-        Voucher.TransDesc = "Sales Voucher";
+        Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
 
         return Voucher;
 
