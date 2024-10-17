@@ -69,6 +69,8 @@ public partial class InvoiceViewModel : ObservableObject
     public ICommand ShowWindowCommand { get; set; }
 
     private bool createCustomer = false;
+    private bool invBalanceChk = false;
+
     private readonly ICustomerService _customerService;
     private readonly IProductService _productService;
     private readonly IDialogService _dialogService;
@@ -286,12 +288,10 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ProcessArReceipts()    //Mouli to take a look and modify ...........
+    private async Task ProcessArReceipts()    
     {
         //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
         // _productService.GetProduct(ProductIdUI);
-
-        //if (string.IsNullOrEmpty(ProductIdUI)) return;
 
         // var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
 
@@ -299,7 +299,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
         {
-            //BalBeforeAdj = Header.GrossRcbAmount, //Header.GrossRcbAmount,
+            //BalBeforeAdj = Header.GrossRcbAmount, 
             CustGkey = Header.CustGkey,      
             Status = "Open",    //Status Open - Before Adjustment
             SeqNbr = noOfLines + 1
@@ -337,6 +337,9 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
     private async Task CreateInvoice()
     {
+        invBalanceChk = true;  //is this a right place to fix
+        ProcessInvBalance();
+
         if (!string.IsNullOrEmpty(Header.InvNbr))
         {
             var result = _messageBoxService.ShowMessage("Invoice already created, Do you want to print preview the invoice ?", "Invoice", MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
@@ -382,6 +385,7 @@ public partial class InvoiceViewModel : ObservableObject
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
+            //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
@@ -389,6 +393,7 @@ public partial class InvoiceViewModel : ObservableObject
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+ 
         }
     }
 
@@ -448,21 +453,26 @@ public partial class InvoiceViewModel : ObservableObject
             return;
         }
 
-        if (arInvRctLine.SeqNbr < 2 )
+        if (arInvRctLine.SeqNbr < 2)
         {
             arInvRctLine.BalBeforeAdj = Header.GrossRcbAmount.GetValueOrDefault();
             BalToAdjust = Header.GrossRcbAmount.GetValueOrDefault();
         };
 
+        arInvRctLine.BalBeforeAdj = BalToAdjust;
         BalToAdjust = BalToAdjust - arInvRctLine.AdjustedAmount.GetValueOrDefault();
         arInvRctLine.BalanceAfterAdj = BalToAdjust;
 
-        if (arInvRctLine.TransactionType is null && arInvRctLine.TransactionType  == "Cash")
-        {
-            arInvRctLine.ModeOfReceipt = "Cash";
-        } else
-        {
-            arInvRctLine.ModeOfReceipt = "Bank";
+
+        if (arInvRctLine.TransactionType is not null) 
+        { 
+            if (arInvRctLine.TransactionType == "Cash")
+            {
+                arInvRctLine.ModeOfReceipt = "Cash";
+            } else
+            {
+                arInvRctLine.ModeOfReceipt = "Bank";
+            }
         }
 
         Header.RecdAmount = Header.RecdAmount + arInvRctLine.AdjustedAmount.GetValueOrDefault();
@@ -477,11 +487,11 @@ public partial class InvoiceViewModel : ObservableObject
 
         // Line Taxable Total minus Old Gold & Silver Amount
         decimal BeforeTax = 0;
-        BeforeTax = Header.InvlTaxTotal.GetValueOrDefault()  - 
-                    Header.OldGoldAmount.GetValueOrDefault() - 
+        BeforeTax = Header.InvlTaxTotal.GetValueOrDefault() -
+                    Header.OldGoldAmount.GetValueOrDefault() -
                     Header.OldSilverAmount.GetValueOrDefault();
 
-        if (BeforeTax >= 0 )
+        if (BeforeTax >= 0)
         {
             Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
             Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
@@ -496,7 +506,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         // After Tax Gross Value
         Header.GrossRcbAmount = 0;
-        Header.GrossRcbAmount = BeforeTax + 
+        Header.GrossRcbAmount = BeforeTax +
                                 Header.CgstAmount.GetValueOrDefault() +
                                 Header.SgstAmount.GetValueOrDefault() +
                                 Header.IgstAmount.GetValueOrDefault();
@@ -507,67 +517,84 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.RoundOff = roundOff; // Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0);
 
-        Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0) ;
+        Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
 
         //Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault();
         //decimal AmountTobeDeducted = 0;
         //AmountTobeDeducted = Header.DiscountAmount.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault();
 
         decimal payableValue = 0;
-        payableValue =  Header.GrossRcbAmount.GetValueOrDefault() - 
+        payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
                         Header.DiscountAmount.GetValueOrDefault();
 
         Header.AmountPayable = 0;
-        Header.AmountPayable = MathUtils.Normalize(payableValue); 
+        Header.AmountPayable = MathUtils.Normalize(payableValue);
 
         Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
             (
-                Header.RecdAmount.GetValueOrDefault()  + 
-                Header.AdvanceAdj.GetValueOrDefault()  +
+                Header.RecdAmount.GetValueOrDefault() +
+                Header.AdvanceAdj.GetValueOrDefault() +
                 Header.RdAmountAdj.GetValueOrDefault()
              );
 
-        if (Header.InvBalance > 0 )
+        if (invBalanceChk)
         {
-            Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
-            Header.InvRefund = 0M;
-            BalanceVisible();
+            ProcessInvBalance();
         }
-        else if (Header.InvBalance == 0)
-        {
-            Header.PaymentDueDate = null;
-            BalanceVisible();
+    }
 
-        } else if (Header.InvBalance < 0)
+    private void ProcessInvBalance()
+    {
+        //Note if inv balance is greater than zero - we need to show message to get confirmation from user
+        // and warn to check there is unpaid balance........ need to implement
+
+        if (Header.RecdAmount > 0)
         {
-            Header.PaymentDueDate = null;
-            Header.InvRefund = Header.InvBalance * -1;
-            Header.InvBalance = 0M;
-            RefundVisible();
+            if (Header.InvBalance > 0)
+            {
+                var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, Do you want to make Credit for the balance Invoice Amount ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+                if (result == MessageResult.Yes)
+                {
+                    Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
+                    Header.InvRefund = 0M;
+                    BalanceVisible();
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else if (Header.InvBalance == 0)
+            {
+                Header.PaymentDueDate = null;
+                BalanceVisible();
+
+            }
+            else if (Header.InvBalance < 0)
+            {
+                var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, Do you want to Refund excess Amount ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+                if (result == MessageResult.Yes)
+                {
+                    Header.PaymentDueDate = null;
+                    Header.InvRefund = Header.InvBalance * -1;
+                    Header.InvBalance = 0M;
+                    RefundVisible();
+                }
+                else
+                {
+                    return;
+                }
+            }
         }
     }
 
     private async void ProcessReceipts()
     {
-
-        if (Header.RecdAmount > 0)
-        {
-            //CreateVoucher();
-
-        }
-        /*else if (Header.AdvanceAdj > 0)
-        {
-
-        } else if (Header.RdAmountAdj > 0)
-        {
-
-        }
-                     */
-
         //For each Receipts row - seperate Voucher has to be created
         foreach(var receipts in Header.ReceiptLines)
         {
-
             var voucher = CreateVoucher(receipts);
             await SaveVoucher(voucher);
 
@@ -618,9 +645,9 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.SeqNbr = 1;
         Voucher.CustomerGkey = Header.CustGkey;
         Voucher.VoucherDate = Header.InvDate;
-        Voucher.TransType = "Trans";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = "Vocher";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        Voucher.Mode = "Mode";              // Mode          1 = Cash,       2 = Bank,       3 = Credit
+        Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+        Voucher.VoucherType = "Voucher";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;
         Voucher.VoucherNbr = "Sales-001";
@@ -701,6 +728,7 @@ public partial class InvoiceViewModel : ObservableObject
         Buyer = null;
         CustomerPhoneNumber = null;
         CreateInvoiceCommand.NotifyCanExecuteChanged();
+        invBalanceChk = false;  //reset to false for next invoice
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]

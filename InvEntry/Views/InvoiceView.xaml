@@ -138,7 +138,7 @@
                                     </dxmvvm:Interaction.Behaviors>
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Old Silver Amoount (Rs)">
+                            <dxlc:LayoutItem Label="Old Silver Amount (Rs)">
                                 <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}">
                                     <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
@@ -204,9 +204,9 @@
                             <dxlc:LayoutItem Label="Due Date">
                                 <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"/>
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem>
+                     <!--       <dxlc:LayoutItem>
                                 <dx:SimpleButton Content="AddReceipts" Command="{Binding AddReceiptsCommand}"/>
-                            </dxlc:LayoutItem>
+                            </dxlc:LayoutItem>  -->
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
