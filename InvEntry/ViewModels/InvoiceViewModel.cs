@@ -1,34 +1,26 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.Mvvm;
+using DevExpress.Mvvm.Native;
+using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
+using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
-using InvEntry.Services;
 using InvEntry.Models;
+using InvEntry.Models.Extensions;
+using InvEntry.Reports;
+using InvEntry.Services;
+using InvEntry.Store;
 using InvEntry.Utils;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Windows;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using DevExpress.Mvvm;
-using DevExpress.Xpf.Grid;
-using InvEntry.Models.Extensions;
-using InvEntry.Store;
-using DevExpress.XtraSpreadsheet.Model;
 using System.Windows.Input;
-using DevExpress.Xpf.Core.Native;
-using DevExpress.Mvvm.Native;
-using Microsoft.Extensions.DependencyInjection;
-using DevExpress.Xpf.Printing;
-using InvEntry.Reports;
 using IDialogService = DevExpress.Mvvm.IDialogService;
-using InvEntry.Views;
-using DevExpress.Xpf.Core;
-using DevExpress.XtraCharts;
-using DevExpress.Data.Extensions;
-using DevExpress.Utils.Extensions;
 
 namespace InvEntry.ViewModels;
 
@@ -393,6 +385,7 @@ public partial class InvoiceViewModel : ObservableObject
                 x.InvoiceHdrGkey = header.GKey; 
                 x.InvoiceId = header.InvNbr;
             });
+            // loop for validation check for customer
             await _invoiceService.CreatInvoiceLine(Header.Lines);
             _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
@@ -623,7 +616,7 @@ public partial class InvoiceViewModel : ObservableObject
         foreach(var receipts in Header.ReceiptLines)
         {
             var voucher = CreateVoucher(receipts);
-            await SaveVoucher(voucher);
+            voucher = await SaveVoucher(voucher);
 
             var arReceipts = CreateArReceipts(receipts, voucher);
             await SaveArReceipts(arReceipts);
@@ -702,7 +695,7 @@ public partial class InvoiceViewModel : ObservableObject
             } catch (Exception e)
             {
                 Console.WriteLine(e);
-                            }
+            }
 
          }
         else
@@ -712,8 +705,8 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
-    [RelayCommand]
-    private async Task SaveVoucher(Voucher voucher)
+    //[RelayCommand]
+    private async Task<Voucher> SaveVoucher(Voucher voucher)
     {
         if (voucher.GKey == 0)
         {
@@ -730,6 +723,8 @@ public partial class InvoiceViewModel : ObservableObject
         {
             await _voucherService.UpdateVoucher(voucher);
         }
+
+        return voucher;
 
     }
 
