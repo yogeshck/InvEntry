@@ -11,6 +11,7 @@ public partial class InvoiceHeader : BaseEntity
     {
         Lines = new();
         ReceiptLines = new();
+        OldMetalTransactions = new();
         PaymentMode = "CASH";
         TaxType = "GST";
         RoundOff = 0M;
@@ -137,4 +138,9 @@ public partial class InvoiceHeader : BaseEntity
     [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<InvoiceArReceipt>? receiptLines;
+
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<OldMetalTransaction>? oldMetalTransactions;
+
 }

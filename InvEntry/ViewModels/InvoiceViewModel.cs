@@ -42,6 +42,9 @@ public partial class InvoiceViewModel : ObservableObject
     private string _productIdUI;
 
     [ObservableProperty]
+    private string _oldMetalIdUI;
+
+    [ObservableProperty]
     public bool _customerReadOnly;
 
     [ObservableProperty]
@@ -291,6 +294,48 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task ProcessOldMetalTransaction()
+    {
+         if (string.IsNullOrEmpty(OldMetalIdUI)) return;
+
+         //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching old product details...");
+
+       // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
+        //var product = await _productService.GetProduct(OldMetalIdUI);
+        // await Task.Delay(30000);
+
+        // SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+
+        //if (product is null)
+        // {
+        //     _messageBoxService.ShowMessage($"No Product found for {OldMetalIdUI}, Please make sure it exists",
+        //         "Product not found", MessageButton.OK, MessageIcon.Error);
+        //     return;
+        //  }
+
+        //   var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
+
+        OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
+        {
+            CustGkey = Header.CustGkey,
+            CustMobile = Header.CustMobile
+        };
+
+
+        //oldMetalTransactionLine.SetProductDetails(product);
+
+        //EvaluateFormula(invoiceLine, isInit: true);
+
+        Header.OldMetalTransactions.Add(oldMetalTransactionLine);
+
+        OldMetalIdUI = string.Empty;
+
+       // EvaluateHeader();
+
+    }
+
+    [RelayCommand]
     private async Task ProcessArReceipts()    
     {
         //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
@@ -439,13 +484,47 @@ public partial class InvoiceViewModel : ObservableObject
         if (args.Row is InvoiceLine line)
         {
             EvaluateFormula(line);
-        } else 
+        }
+        else
         if (args.Row is InvoiceArReceipt arInvRctline)
         {
             EvaluateArRctLine(arInvRctline);
         }
+        else
+        if (args.Row is OldMetalTransaction oldMetalTransaction)
+        {
+            EvaluateOldMetalTransactions(oldMetalTransaction);
+        }
 
-        EvaluateHeader();
+            EvaluateHeader();
+    }
+
+    [RelayCommand]
+    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
+    {
+
+        /*        if (oldMetalTransaction.ProductId is null)
+                {
+                    return;
+                }*/
+
+            oldMetalTransaction.NetWeight = (
+                                                oldMetalTransaction.GrossWeight.GetValueOrDefault() - 
+                                                oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                                oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                                );
+
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() * 
+                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice.GetValueOrDefault();
+
+
+       //     arInvRctLine.BalBeforeAdj = BalToAdjust;
+       // BalToAdjust = BalToAdjust - arInvRctLine.AdjustedAmount.GetValueOrDefault();
+       // arInvRctLine.BalanceAfterAdj = BalToAdjust;
+
+       // Header.RecdAmount = Header.RecdAmount + arInvRctLine.AdjustedAmount.GetValueOrDefault();
+
     }
 
     [RelayCommand]
@@ -468,8 +547,8 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRctLine.BalanceAfterAdj = BalToAdjust;
 
 
-        if (arInvRctLine.TransactionType is not null) 
-        { 
+        if (arInvRctLine.TransactionType is not null)
+        {
             if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
             {
                 arInvRctLine.ModeOfReceipt = "Cash";
@@ -477,7 +556,8 @@ public partial class InvoiceViewModel : ObservableObject
             else if (arInvRctLine.TransactionType == "Credit")
             {
                 arInvRctLine.ModeOfReceipt = "Credit";
-            } else
+            }
+            else
             {
                 arInvRctLine.ModeOfReceipt = "Bank";
             }
@@ -620,6 +700,32 @@ public partial class InvoiceViewModel : ObservableObject
 
             var arReceipts = CreateArReceipts(receipts, voucher);
             await SaveArReceipts(arReceipts);
+
+        }
+    }
+
+    private async void ProcessOldMetailTransLine()
+    {
+        //For each Receipts row - seperate Voucher has to be created
+        foreach (var oldMetalTrans in Header.OldMetalTransactions)
+        {
+
+            if (oldMetalTrans.Metal == "GOLD")
+            {
+                Header.OldGoldAmount = Header.OldGoldAmount + oldMetalTrans.FinalPurchasePrice;
+
+            }
+            else if (oldMetalTrans.Metal == "SILVER")
+            {
+                Header.OldSilverAmount = Header.OldSilverAmount + oldMetalTrans.FinalPurchasePrice;
+
+            }
+
+            //  var voucher = CreateVoucher(receipts);
+            //  voucher = await SaveVoucher(voucher);
+
+            //  var arReceipts = CreateArReceipts(receipts, voucher);
+            //  await SaveArReceipts(arReceipts);
 
         }
     }
