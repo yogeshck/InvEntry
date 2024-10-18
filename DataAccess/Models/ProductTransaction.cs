@@ -15,7 +15,7 @@ public partial class ProductTransaction
 
     public string? DocType { get; set; }
 
-    public int? ProductRefGkey { get; set; }
+    public int ProductRefGkey { get; set; }
 
     public decimal? Column1 { get; set; }
 

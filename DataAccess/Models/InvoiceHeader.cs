@@ -71,7 +71,7 @@ public partial class InvoiceHeader
 
     public string? ModifiedBy { get; set; }
 
-    public string? ModifiedOn { get; set; }
+    public DateTime? ModifiedOn { get; set; }
 
     public int? TenantGkey { get; set; }
 

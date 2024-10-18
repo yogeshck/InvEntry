@@ -77,7 +77,7 @@ public partial class InvoiceLine
 
     public DateTime? ModifiedOn { get; set; }
 
-    public string? TenantGkey { get; set; }
+    public int? TenantGkey { get; set; }
 
     public decimal? InvlCgstPercent { get; set; }
 

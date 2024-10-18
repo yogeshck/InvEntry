@@ -29,6 +29,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<MtblReference> MtblReferences { get; set; }
 
+    public virtual DbSet<OldMetalTransaction> OldMetalTransactions { get; set; }
+
     public virtual DbSet<OrgAddress> OrgAddresses { get; set; }
 
     public virtual DbSet<OrgBankDetail> OrgBankDetails { get; set; }
@@ -59,7 +61,7 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -330,8 +332,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("MODIFIED_BY");
             entity.Property(e => e.ModifiedOn)
-                .HasMaxLength(50)
-                .IsUnicode(false)
+                .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.OldGoldAmount)
                 .HasDefaultValueSql("('0.00')")
@@ -517,10 +518,7 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("TAX_TYPE");
-            entity.Property(e => e.TenantGkey)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
             entity.Property(e => e.VaAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("VA_AMOUNT");
@@ -575,6 +573,86 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("ref_value");
             entity.Property(e => e.SortSeq).HasColumnName("sort_seq");
+        });
+
+        modelBuilder.Entity<OldMetalTransaction>(entity =>
+        {
+            entity.HasKey(e => e.TransGkey).HasName("PK_old_metal_transaction");
+
+            entity.ToTable("OLD_METAL_TRANSACTION");
+
+            entity.HasIndex(e => e.TransGkey, "IX_old_metal_transaction");
+
+            entity.Property(e => e.TransGkey).HasColumnName("trans_gkey");
+            entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
+            entity.Property(e => e.CustMobile)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("cust_mobile");
+            entity.Property(e => e.DocRefDate).HasColumnName("doc_ref_date");
+            entity.Property(e => e.DocRefGkey).HasColumnName("doc_ref_gkey");
+            entity.Property(e => e.DocRefNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("doc_ref_nbr");
+            entity.Property(e => e.FinalPurchasePrice)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("final_purchase_price");
+            entity.Property(e => e.GrossWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("gross_weight");
+            entity.Property(e => e.Metal)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("metal");
+            entity.Property(e => e.NetWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("net_weight");
+            entity.Property(e => e.ProductCategory)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("product_category");
+            entity.Property(e => e.ProductGkey).HasColumnName("product_gkey");
+            entity.Property(e => e.ProductId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("product_id");
+            entity.Property(e => e.Purity)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("purity");
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("remarks");
+            entity.Property(e => e.StoneWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("stone_weight");
+            entity.Property(e => e.TotalProposedPrice)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("total_proposed_price");
+            entity.Property(e => e.TransDate).HasColumnName("trans_date");
+            entity.Property(e => e.TransNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_nbr");
+            entity.Property(e => e.TransType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_type");
+            entity.Property(e => e.TransactedRate)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("transacted_rate");
+            entity.Property(e => e.Uom)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("uom");
+            entity.Property(e => e.WastagePercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("wastage_percent");
+            entity.Property(e => e.WastageWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("wastage_weight");
         });
 
         modelBuilder.Entity<OrgAddress>(entity =>
