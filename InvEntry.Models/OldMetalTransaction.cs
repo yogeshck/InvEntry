@@ -20,7 +20,7 @@ namespace InvEntry.Models
         public DateTime? _transDate;
 
         [ObservableProperty]
-        public string? _tTransType;
+        public string? _transType;
 
         [ObservableProperty]
         public int? _docRefGkey;

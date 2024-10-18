@@ -315,7 +315,7 @@
                                             </dxb:BarEditItem.EditSettings>
                                         </dxb:BarEditItem>
                                         <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
-                                                 Command="{Binding ProcessOldMetalTransactionCommand}" GlyphSize="Large" 
+                                                 Command="{Binding EvaluateOldMetalTransactionCommand}" GlyphSize="Large" 
                                                  GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
                                         <dxb:BarItemSeparator/>
@@ -349,7 +349,7 @@
                                         <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" />
                                         <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="TotalFinalPrice" Header="Final Price" />                                        
+                                        <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />                                        
                                         <!--        <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" ReadOnly="True"/> -->
                                     </dxg:GridControl.Columns>
