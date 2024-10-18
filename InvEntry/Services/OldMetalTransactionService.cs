@@ -15,6 +15,8 @@ namespace InvEntry.Services
         Task<OldMetalTransaction> CreatOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
 
         Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
+
+        Task CreatOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
     }
 
     public class OldMetalTransactionService : IOldMetalTransactionService
@@ -30,6 +32,16 @@ namespace InvEntry.Services
         public async Task<OldMetalTransaction> CreatOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
         {
             return await _mijmsApiService.Post($"api/OldMetalTransaction/", oldMetalTransaction);
+        }
+
+        public async Task CreatOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
+        {
+            var list = new List<Task>();
+
+            foreach (var line in lines)
+                list.Add(CreatOldMetalTransaction(line));
+
+            await Task.WhenAll(list);
         }
 
 

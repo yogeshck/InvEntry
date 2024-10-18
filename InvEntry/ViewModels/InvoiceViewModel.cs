@@ -99,6 +99,7 @@ public partial class InvoiceViewModel : ObservableObject
         IMessageBoxService messageBoxService,
         IVoucherService voucherService,
         IInvoiceArReceiptService invoiceArReceiptService,
+        IOldMetalTransactionService oldMetalTransactionService,
         IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
@@ -116,6 +117,7 @@ public partial class InvoiceViewModel : ObservableObject
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
+        _oldMetalTransactionService = oldMetalTransactionService;
         _voucherService = voucherService;
         _invoiceArReceiptService = invoiceArReceiptService;
         _mtblReferencesService = mtblReferencesService;
@@ -433,11 +435,13 @@ public partial class InvoiceViewModel : ObservableObject
             });
             // loop for validation check for customer
             await _invoiceService.CreatInvoiceLine(Header.Lines);
-            _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
-            ProcessOldMetalTransaction();
+            await ProcessOldMetalTransaction();
+
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
+
+            _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
@@ -493,7 +497,8 @@ public partial class InvoiceViewModel : ObservableObject
             EvaluateArRctLine(arInvRctline);
         }
         else
-        if (args.Row is OldMetalTransaction oldMetalTransaction)
+        if (args.Row is OldMetalTransaction oldMetalTransaction &&
+            args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice) )
         {
             EvaluateOldMetalTransactions(oldMetalTransaction);
         }
@@ -569,9 +574,22 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
+    private decimal? FilterMetalTransactions(string metal)
+    {
+        return Header.OldMetalTransactions
+                        .Where(x => metal.Equals(x.Metal, StringComparison.OrdinalIgnoreCase))
+                        .Select(x => x.FinalPurchasePrice)
+                        .Sum();
+    }
+
     [RelayCommand]
     private void EvaluateHeader()
     {
+
+        Header.OldGoldAmount = FilterMetalTransactions("GOLD");
+
+        Header.OldSilverAmount = FilterMetalTransactions("SILVER");
+
         // TaxableTotal from line without tax value
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
@@ -706,18 +724,10 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    private async void ProcessOldMetalTransaction()
+    private async Task ProcessOldMetalTransaction()
     {
-        //For each Receipts row - seperate Voucher has to be created
-        foreach (var omTrans in Header.OldMetalTransactions)
-        {
-            var oldMTrans = CreateOldMetalTrans(omTrans);
-            await SaveOldMetalTransaction(oldMTrans);
-
-           // var arReceipts = CreateArReceipts(receipts, voucher);
-           // await SaveArReceipts(arReceipts);
-
-        }
+        Header.OldMetalTransactions.ForEach(x => x.EnrichHeaderDetails(Header));
+        await _oldMetalTransactionService.CreatOldMetalTransaction(Header.OldMetalTransactions);
     }
 
     private async void ProcessOldMetalTransLine()  //need to work out to add old metal totals to header old gold and silver amount
@@ -772,25 +782,6 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
-    private OldMetalTransaction CreateOldMetalTrans(OldMetalTransaction oldMetalTransaction)
-    {
-
-        OldMetalTransaction OldMetalTransaction = new()
-        {
-            TransDate = DateTime.Now
-        };
-
-        OldMetalTransaction.TransType = "Purchase";
-        OldMetalTransaction.DocRefGkey = Header.GKey;
-        OldMetalTransaction.DocRefNbr = Header.InvNbr;
-        OldMetalTransaction.DocRefDate = Header.InvDate;
-        OldMetalTransaction.CustGkey = Header.CustGkey;
-        OldMetalTransaction.CustMobile = Header.CustMobile;
-
-        return OldMetalTransaction;
-
-    }
-
     private Voucher CreateVoucher(InvoiceArReceipt invoiceArReceipt)
     {
 
@@ -817,32 +808,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
-    private async Task SaveOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
-    {
-        if (oldMetalTransaction.GKey == 0)
-        {
-            try
-            {
-                var oldMetalTransResult = await _oldMetalTransactionService.CreatOldMetalTransaction(oldMetalTransaction);
 
-                if (oldMetalTransResult != null)
-                {
-                    oldMetalTransaction = oldMetalTransResult;
-                }
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-
-        }
-        else
-        {
-            await _oldMetalTransactionService.UpdateOldMetalTransaction(oldMetalTransaction);
-        }
-
-    }
 
     private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
     {
