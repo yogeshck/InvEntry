@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Core.ConditionalFormatting.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
@@ -331,11 +332,6 @@ public partial class InvoiceViewModel : ObservableObject
             TransDate = DateTime.Now,
         };
 
-
-        //oldMetalTransactionLine.SetProductDetails(product);
-
-        //EvaluateFormula(invoiceLine, isInit: true);
-
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
         return Task.CompletedTask;
     }
@@ -381,10 +377,6 @@ public partial class InvoiceViewModel : ObservableObject
                 Header.OldSilverAmount = vm.Rate * vm.Weight;
             }
         }
-
-        //OMP - Old Metal Purchase
-/*        OMP.Metal = OmpUI.Metal;
-        OMP.Purity = OmpUI.Purity;*/
     }
 
     [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
@@ -527,13 +519,6 @@ public partial class InvoiceViewModel : ObservableObject
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
-
-       //     arInvRctLine.BalBeforeAdj = BalToAdjust;
-       // BalToAdjust = BalToAdjust - arInvRctLine.AdjustedAmount.GetValueOrDefault();
-       // arInvRctLine.BalanceAfterAdj = BalToAdjust;
-
-       // Header.RecdAmount = Header.RecdAmount + arInvRctLine.AdjustedAmount.GetValueOrDefault();
-
     }
 
     [RelayCommand]
@@ -548,7 +533,8 @@ public partial class InvoiceViewModel : ObservableObject
         if (arInvRctLine.SeqNbr < 2)
         {
             arInvRctLine.BalBeforeAdj = Header.GrossRcbAmount.GetValueOrDefault();
-            BalToAdjust = Header.GrossRcbAmount.GetValueOrDefault();
+            BalToAdjust = Header.AmountPayable.GetValueOrDefault();
+
         };
 
         arInvRctLine.BalBeforeAdj = BalToAdjust;
@@ -576,6 +562,14 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
+    private decimal FilterReceiptTransactions(string transType)
+    {
+        return (decimal)Header.ReceiptLines
+                        .Where(x => transType.Equals(x.TransactionType, StringComparison.OrdinalIgnoreCase))
+                        .Select(x => x.AdjustedAmount)
+                        .Sum();
+    }
+
     private decimal? FilterMetalTransactions(string metal)
     {
         return Header.OldMetalTransactions
@@ -587,6 +581,10 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
+
+        Header.AdvanceAdj = FilterReceiptTransactions("Advance");
+        Header.RdAmountAdj = FilterReceiptTransactions("RD");
+       // Header.OldGoldAmount = FilterReceiptTransactions("GOLD");
 
         Header.OldGoldAmount = FilterMetalTransactions("GOLD");
 
