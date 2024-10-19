@@ -1,5 +1,6 @@
 ﻿using DevExpress.CodeParser;
 using InvEntry.Models;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ public interface IVoucherService
     Task<Voucher> GetVoucher(string voucherId);
 
     Task<Voucher> CreatVoucher(Voucher voucher);
+
+    Task<IEnumerable<Voucher>> GetAll(VoucherSearchOption options);
 
     Task UpdateVoucher(Voucher voucher);
 }
@@ -35,6 +38,11 @@ public class VoucherService : IVoucherService
     public async Task<Voucher> GetVoucher(string voucherId)
     {
         return await _mijmsApiService.Get<Voucher>($"api/Voucher/{voucherId}");
+    }
+
+    public async Task<IEnumerable<Voucher>> GetAll(VoucherSearchOption options)
+    {
+        return await _mijmsApiService.PostEnumerable<Voucher, VoucherSearchOption>($"api/voucher/filter", options);
     }
 
     public async Task UpdateVoucher(Voucher voucher)

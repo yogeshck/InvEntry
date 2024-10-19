@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -24,6 +25,15 @@ namespace DataAccess.Controllers
         {
             return _voucher.GetAll();
         }
+
+        // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
+        [HttpPost("filter")]
+        public IEnumerable<Voucher> FilterVoucher([FromBody] VoucherSearchOption criteria)
+        {
+            return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
+                                                        x.TransDate.Value.Date <= criteria.To.Date);
+        }
+
 
         // GET api/<VoucherController>/5
         [HttpGet("{voucherNbr}")]

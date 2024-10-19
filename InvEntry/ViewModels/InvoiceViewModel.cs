@@ -336,7 +336,7 @@ public partial class InvoiceViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    [RelayCommand]
+    [RelayCommand (CanExecute = nameof(CanProcessArReceipts))]
     private async Task ProcessArReceipts()    
     {
         //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
@@ -358,6 +358,10 @@ public partial class InvoiceViewModel : ObservableObject
   
     }
 
+    private bool CanProcessArReceipts()
+    {
+        return !Header.DiscountAmount.HasValue || Header.DiscountAmount.Value == 0;
+    }
 
     [RelayCommand]
     private void AddOldJewel(string type)
@@ -525,26 +529,18 @@ public partial class InvoiceViewModel : ObservableObject
     private void EvaluateArRctLine(InvoiceArReceipt arInvRctLine)
     {
 
-        if (arInvRctLine.TransactionType is null)
+        if (string.IsNullOrEmpty(arInvRctLine.TransactionType))
         {
             return;
         }
 
-        if (arInvRctLine.SeqNbr < 2)
-        {
-            arInvRctLine.BalBeforeAdj = Header.GrossRcbAmount.GetValueOrDefault();
-            BalToAdjust = Header.AmountPayable.GetValueOrDefault();
+        if ( !arInvRctLine.BalBeforeAdj.HasValue) 
+            arInvRctLine.BalBeforeAdj = Header.InvBalance.GetValueOrDefault();
 
-        };
-
-        arInvRctLine.BalBeforeAdj = BalToAdjust;
-        BalToAdjust = BalToAdjust - arInvRctLine.AdjustedAmount.GetValueOrDefault();
-        arInvRctLine.BalanceAfterAdj = BalToAdjust;
+        arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() - arInvRctLine.AdjustedAmount.GetValueOrDefault();
 
 
-        if (arInvRctLine.TransactionType is not null)
-        {
-            if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
+           if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
             {
                 arInvRctLine.ModeOfReceipt = "Cash";
             }
@@ -556,9 +552,8 @@ public partial class InvoiceViewModel : ObservableObject
             {
                 arInvRctLine.ModeOfReceipt = "Bank";
             }
-        }
 
-        Header.RecdAmount = Header.RecdAmount + arInvRctLine.AdjustedAmount.GetValueOrDefault();
+        EvaluateHeader();
 
     }
 
@@ -582,9 +577,10 @@ public partial class InvoiceViewModel : ObservableObject
     private void EvaluateHeader()
     {
 
-        Header.AdvanceAdj = FilterReceiptTransactions("Advance");
-        Header.RdAmountAdj = FilterReceiptTransactions("RD");
-       // Header.OldGoldAmount = FilterReceiptTransactions("GOLD");
+        // Header.AdvanceAdj = FilterReceiptTransactions("Advance");
+        // Header.RdAmountAdj = FilterReceiptTransactions("RD");
+
+        Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
 
         Header.OldGoldAmount = FilterMetalTransactions("GOLD");
 

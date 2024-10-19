@@ -30,7 +30,7 @@ public partial class InvoiceListViewModel : ObservableObject
     private InvoiceSearchOption _searchOption;
 
     [ObservableProperty]
-    private InvoiceHeader _SelectedItem;
+    private InvoiceHeader _SelectedInvoice;
 
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
@@ -57,11 +57,11 @@ public partial class InvoiceListViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
     {
-        _reportDialogService.PrintPreview(SelectedItem.InvNbr);
+        _reportDialogService.PrintPreview(SelectedInvoice.InvNbr);
     }
 
     private bool CanPrintInvoice()
     {
-        return SelectedItem is not null;
+        return SelectedInvoice is not null;
     }
 }

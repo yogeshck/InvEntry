@@ -336,17 +336,7 @@
                                     <dxg:GridControl.Columns>
                                         <dxg:GridColumn FieldName="Metal" Header="Metal" >
                                             <dxg:GridColumn.EditSettings>
-                                                <dxg:LookUpEditSettings ItemsSource="{Binding MetalList}" >
-                                                    <dxg:LookUpEditSettings.PopupContentTemplate>
-                                                        <ControlTemplate>
-                                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
-                                                                <dxg:GridControl.View>
-                                                                    <dxg:TableView AutoWidth="True"/>
-                                                                </dxg:GridControl.View>
-                                                            </dxg:GridControl>
-                                                        </ControlTemplate>
-                                                    </dxg:LookUpEditSettings.PopupContentTemplate>
-                                                </dxg:LookUpEditSettings>
+                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalList}"/>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" />

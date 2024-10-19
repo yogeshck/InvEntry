@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Utils.Options;
 
-public partial class InvoiceSearchOption : ObservableObject
+public partial class VoucherSearchOption : ObservableObject
 {
     [ObservableProperty]
     private DateTime _From;
