@@ -577,13 +577,13 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<OldMetalTransaction>(entity =>
         {
-            entity.HasKey(e => e.TransGkey).HasName("PK_old_metal_transaction");
+            entity.HasKey(e => e.Gkey).HasName("PK_old_metal_transaction");
 
             entity.ToTable("OLD_METAL_TRANSACTION");
 
-            entity.HasIndex(e => e.TransGkey, "IX_old_metal_transaction");
+            entity.HasIndex(e => e.Gkey, "IX_old_metal_transaction");
 
-            entity.Property(e => e.TransGkey).HasColumnName("trans_gkey");
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
             entity.Property(e => e.CustMobile)
                 .HasMaxLength(50)

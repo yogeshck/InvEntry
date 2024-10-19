@@ -45,9 +45,9 @@ namespace InvEntry.Services
         }
 
 
-        public async Task<OldMetalTransaction> GetOldMetalTransaction(string invoiceNbr)
+        public async Task<OldMetalTransaction> GetOldMetalTransaction(string transNbr)
         {
-            return await _mijmsApiService.Get<OldMetalTransaction>($"api/OldMetalTransaction/{invoiceNbr}");
+            return await _mijmsApiService.Get<OldMetalTransaction>($"api/OldMetalTransaction/{transNbr}");
         }
 
         public async Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)

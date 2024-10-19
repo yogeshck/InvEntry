@@ -11,9 +11,6 @@ namespace InvEntry.Models
     {
 
         [ObservableProperty]
-        public int? _transGkey;
-
-        [ObservableProperty]
         public string? _transNbr;
 
         [ObservableProperty]

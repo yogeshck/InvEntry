@@ -36,6 +36,8 @@ namespace DataAccess.Controllers
         [HttpPost]
         public OldMetalTransaction Post([FromBody] OldMetalTransaction value)
         {
+            value.TransNbr = "T001";
+
             _oldMetalTransaction.Add(value);
             return value;
         }

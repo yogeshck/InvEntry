@@ -5,13 +5,13 @@ namespace DataAccess.Models;
 
 public partial class OldMetalTransaction
 {
-    public int TransGkey { get; set; }
+    public int Gkey { get; set; }
 
-    public string TransNbr { get; set; } = null!;
+    public string? TransNbr { get; set; }
 
-    public DateTime TransDate { get; set; }
+    public DateTime? TransDate { get; set; }
 
-    public string TransType { get; set; } = null!;
+    public string? TransType { get; set; }
 
     public int? DocRefGkey { get; set; }
 

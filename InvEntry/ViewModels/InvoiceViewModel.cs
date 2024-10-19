@@ -301,9 +301,9 @@ public partial class InvoiceViewModel : ObservableObject
     {
          if (string.IsNullOrEmpty(OldMetalIdUI)) return;
 
-         //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching old product details...");
+        //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching old product details...");
 
-       // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+        // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
         //var product = await _productService.GetProduct(OldMetalIdUI);
         // await Task.Delay(30000);
@@ -322,7 +322,9 @@ public partial class InvoiceViewModel : ObservableObject
         OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
         {
             CustGkey = Header.CustGkey,
-            CustMobile = Header.CustMobile
+            CustMobile = Header.CustMobile,
+            TransType = "Purchase",
+            TransDate = DateTime.Now,
         };
 
 
@@ -726,11 +728,15 @@ public partial class InvoiceViewModel : ObservableObject
 
     private async Task ProcessOldMetalTransaction()
     {
-        Header.OldMetalTransactions.ForEach(x => x.EnrichHeaderDetails(Header));
+        foreach(var omTrans in Header.OldMetalTransactions)
+        {
+            omTrans.EnrichHeaderDetails(Header);
+        }
+
         await _oldMetalTransactionService.CreatOldMetalTransaction(Header.OldMetalTransactions);
     }
 
-    private async void ProcessOldMetalTransLine()  //need to work out to add old metal totals to header old gold and silver amount
+/*    private async void ProcessOldMetalTransLine()  //need to work out to add old metal totals to header old gold and silver amount
     {
         //For each Receipts row - seperate Voucher has to be created
         foreach (var oldMetalTrans in Header.OldMetalTransactions)
@@ -747,14 +753,8 @@ public partial class InvoiceViewModel : ObservableObject
 
             }
 
-            //  var voucher = CreateVoucher(receipts);
-            //  voucher = await SaveVoucher(voucher);
-
-            //  var arReceipts = CreateArReceipts(receipts, voucher);
-            //  await SaveArReceipts(arReceipts);
-
         }
-    }
+    }*/
 
     private InvoiceArReceipt CreateArReceipts(InvoiceArReceipt invoiceArReceipt, Voucher voucher)
     {
