@@ -48,15 +48,15 @@ public partial class VoucherListViewModel: ObservableObject
             Vouchers = new(vouchersResult);
     }
 
-/*    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
-    private void PrintInvoice()
-    {
-        _reportDialogService.PrintPreview(SelectedVoucher.??);
-    }
+    /*    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
+        private void PrintInvoice()
+        {
+            _reportDialogService.PrintPreview(SelectedVoucher.??);
+        }
 
-    private bool CanPrintInvoice()
-    {
-        return SelectedVoucher is not null;
-    }*/
+        private bool CanPrintInvoice()
+        {
+            return SelectedVoucher is not null;
+        }*/
 
 }

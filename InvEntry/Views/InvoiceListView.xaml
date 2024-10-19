@@ -55,6 +55,10 @@
                          MaxHeight="1000"
                          MinWidth="700"
                          Width="1500" SelectedItem="{Binding SelectedInvoice}">
+            <dxmvvm:Interaction.Behaviors>
+                <dxmvvm:EventToCommand EventName="SelectedItemChanged" 
+                                       Command="{Binding SelectionChangedCommand}"/>
+            </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView ShowGroupPanel="False"  x:Name="tableView" NavigationStyle="Row">
                     <dxg:TableView.ColumnMenuCustomizations>

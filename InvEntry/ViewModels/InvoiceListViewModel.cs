@@ -64,4 +64,10 @@ public partial class InvoiceListViewModel : ObservableObject
     {
         return SelectedInvoice is not null;
     }
+
+    [RelayCommand]
+    private void SelectionChanged() 
+    {
+        PrintInvoiceCommand.NotifyCanExecuteChanged();
+    }
 }
