@@ -60,6 +60,9 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<string> productCategoryList;
 
     [ObservableProperty]
+    private ObservableCollection<string> metalList;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
   
     public ICommand ShowWindowCommand { get; set; }
@@ -132,6 +135,7 @@ public partial class InvoiceViewModel : ObservableObject
         PopulateProductCategoryList();
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
+        PopulateMetalList();
         //PopulateUnboundHeaderDataMap();
     }
 
@@ -141,17 +145,16 @@ public partial class InvoiceViewModel : ObservableObject
         ProductCategoryList = new(list.Select(x => x.Name));
     }
 
+    private async void PopulateMetalList()
+    {
+        var metalRefList = await _mtblReferencesService.GetReferenceList("METALS");
+        MetalList = new(metalRefList.Select(x => x.RefValue));
+    }
+
     private async void PopulateMtblRefNameList()
     {
         var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
         MtblReferencesList = new(mtblRefList);
-
-        //to modify and fetch from db using service
-/*                MtblRefNameList.Add("Advance");
-                MtblRefNameList.Add("Card");
-                MtblRefNameList.Add("Cash");
-                MtblRefNameList.Add("GPAY");
-                MtblRefNameList.Add("RD");*/
     }
 
     private void PopulateUnboundLineDataMap()
@@ -297,9 +300,10 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task EvaluateOldMetalTransaction()
+    private Task EvaluateOldMetalTransaction()
     {
-         if (string.IsNullOrEmpty(OldMetalIdUI)) return;
+        //if (string.IsNullOrEmpty(OldMetalIdUI))
+        //    return Task.CompletedTask;
 
         //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching old product details...");
 
@@ -333,11 +337,7 @@ public partial class InvoiceViewModel : ObservableObject
         //EvaluateFormula(invoiceLine, isInit: true);
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
-
-        OldMetalIdUI = string.Empty;
-
-       // EvaluateHeader();
-
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

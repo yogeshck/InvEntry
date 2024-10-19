@@ -308,12 +308,6 @@
                                 <dxb:BarManager.Bars>
                                     <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
                                              AllowCustomizationMenu="False" ShowDragWidget="False">
-                                        <dxb:BarEditItem EditValue="{Binding OldMetalIdUI}"
-                                                 Content="Product Id" EditWidth="150" EditHeight="30">
-                                            <dxb:BarEditItem.EditSettings>
-                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
-                                            </dxb:BarEditItem.EditSettings>
-                                        </dxb:BarEditItem>
                                         <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
                                                  Command="{Binding EvaluateOldMetalTransactionCommand}" GlyphSize="Large" 
                                                  GlyphAlignment="Right" 
@@ -340,8 +334,21 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="Metal" Header="Metal" />
+                                        <dxg:GridColumn FieldName="Metal" Header="Metal" >
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxg:LookUpEditSettings ItemsSource="{Binding MetalList}" >
+                                                    <dxg:LookUpEditSettings.PopupContentTemplate>
+                                                        <ControlTemplate>
+                                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
+                                                                <dxg:GridControl.View>
+                                                                    <dxg:TableView AutoWidth="True"/>
+                                                                </dxg:GridControl.View>
+                                                            </dxg:GridControl>
+                                                        </ControlTemplate>
+                                                    </dxg:LookUpEditSettings.PopupContentTemplate>
+                                                </dxg:LookUpEditSettings>
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" />
                                         <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />                                        
                                         <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" />
