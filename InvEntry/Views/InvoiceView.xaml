@@ -123,10 +123,25 @@
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
-                            <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                                <dxg:LookUpEdit Width="450" ItemSource="{Binding StateReferencesList}">
+                            <!--<dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
+                                <dxg:LookUpEdit Width="450" EditValue="{Binding CustomerState}" 
+                                                ItemsSource="{Binding StateReferencesList}"
+                                                DisplayMember="RefValue" ValueMember="RefValue">
+                                    <dxg:LookUpEdit.PopupContentTemplate>
+                                        <ControlTemplate>
+                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
+                                            <dxg:GridControl.Columns>
+                                                    <dxg:GridColumn FieldName="RefCode"/>
+                                                    <dxg:GridColumn FieldName="RefValue"/>
+                                            </dxg:GridControl.Columns>
+                                            <dxg:GridControl.View>
+                                                <dxg:TableView AutoWidth="True"/>
+                                            </dxg:GridControl.View>
+                                        </dxg:GridControl>
+                                        </ControlTemplate>
+                                    </dxg:LookUpEdit.PopupContentTemplate>
                                 </dxg:LookUpEdit> 
-                            </dxlc:LayoutItem>
+                            </dxlc:LayoutItem>-->
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>

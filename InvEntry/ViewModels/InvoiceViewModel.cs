@@ -155,6 +155,16 @@ public partial class InvoiceViewModel : ObservableObject
     private async void PopulateStateList()
     {
         var stateRefList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
+
+        if(stateRefList is null)
+        {
+            StateReferencesList = new();
+            StateReferencesList.Add(new MtblReference() { RefValue = "Tamil Nadu", RefCode = "33" });
+            StateReferencesList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
+            StateReferencesList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
+            return;
+        }
+
         StateReferencesList = new(stateRefList);
 
     }
@@ -193,6 +203,17 @@ public partial class InvoiceViewModel : ObservableObject
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.GrossRcbAmount)}", (item, val) => item.GrossRcbAmount = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.AmountPayable)}", (item, val) => item.AmountPayable = val);
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
+    }
+
+    partial void OnCustomerStateChanged(MtblReference value)
+    {
+        if (Buyer is null) return;
+
+        Buyer.GstStateCode = value.RefCode;    //Need to fetch based on pincode - future change
+        Header.GstLocBuyer = value.RefCode;
+        Header.CgstPercent = GetGSTWithinState();
+        Header.SgstPercent = GetGSTWithinState();
+        Header.IgstPercent = IGSTPercent;
     }
 
     [RelayCommand]
