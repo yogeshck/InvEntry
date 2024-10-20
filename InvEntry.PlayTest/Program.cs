@@ -25,7 +25,7 @@ XmlExample parent = new()
 parent.XmlExampleChilds.Add(child1);
 parent.XmlExampleChilds.Add(child2);
 
-var xmlstring = XMLUtil.SerializeToString(parent);
+var xmlstring = XMLUtil.SerializeToString(parent);   //seralize to file
 Console.WriteLine(xmlstring);
 
 [XmlRoot(ElementName = "XmlRoot")]
