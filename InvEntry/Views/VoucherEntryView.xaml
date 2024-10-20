@@ -8,6 +8,7 @@
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors" 
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
              xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
              x:Class="InvEntry.Views.VoucherEntryView"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
@@ -16,6 +17,9 @@
              DataContext="{ext:DISource Type=viewmodels:VoucherEntryViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="550" d:DesignWidth="500">
+    <dxmvvm:Interaction.Behaviors>
+        <dxmvvm:KeyToCommand KeyGesture="CTRL+S" Command="{Binding SaveVoucherCommand}"/>
+    </dxmvvm:Interaction.Behaviors>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -73,7 +77,11 @@
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="5">
                         <dxe:TextEdit Height="80" FontSize="16" Text="Notes" 
-                                EditValue="{Binding Voucher.TransDesc}"/>
+                                EditValue="{Binding Voucher.TransDesc}">
+                            <dxmvvm:Interaction.Behaviors>
+                                <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>
+                            </dxmvvm:Interaction.Behaviors>
+                        </dxe:TextEdit>
                     </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>

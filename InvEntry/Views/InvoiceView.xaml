@@ -94,33 +94,38 @@
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Customer Details"
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
-                                      ItemLabelsAlignment="Local">
-                            <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
-                                <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
-                                                           PassEventArgsToCommand="True"/>
-                                        <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
-                                                           CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutItem>
+                                      ItemLabelsAlignment="Local" Orientation="Vertical">
                             <dxlc:LayoutGroup>
-                                <dxlc:LayoutItem Label="Name" LabelPosition="Top">
-                                    <dxe:TextEdit EditValue="{Binding Buyer.CustomerName}" 
-                                                      IsReadOnly="{Binding CustomerReadOnly}"
-                                                      Name="CustomerNameUI"
-                                                  CharacterCasing="Upper">
+                                <dxlc:LayoutItem Label="Mobile" LabelPosition="Top" HorizontalAlignment="Left">
+                                    <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <behavior:FocusTextEditBehavior />
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
+                                                           PassEventArgsToCommand="True"/>
+                                            <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
+                                                           CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Address" LabelPosition="Top">
-                                    <dxe:TextEdit EditValue="{Binding Buyer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
+                                <dxlc:LayoutGroup HorizontalAlignment="Left">
+                                    <dxlc:LayoutItem Label="Name" LabelPosition="Top">
+                                        <dxe:TextEdit EditValue="{Binding Buyer.CustomerName}" 
+                                                      IsReadOnly="{Binding CustomerReadOnly}"
+                                                      Name="CustomerNameUI"
+                                                  CharacterCasing="Upper">
+                                            <dxmvvm:Interaction.Behaviors>
+                                                <behavior:FocusTextEditBehavior />
+                                            </dxmvvm:Interaction.Behaviors>
+                                        </dxe:TextEdit>
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Address" LabelPosition="Top">
+                                        <dxe:TextEdit EditValue="{Binding Buyer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
                                                   CharacterCasing="Upper"/>
-                                </dxlc:LayoutItem>
+                                    </dxlc:LayoutItem>
+                                </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
+                            <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
+                                <dxe:TextEdit Width="450"></dxe:TextEdit>
+                            </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
@@ -340,21 +345,14 @@
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" />
-                                        <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />                                        
+                                        <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />
                                         <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" />
                                         <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight"/>
                                         <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" />
                                         <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />                                        
-                                        <!--        <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" ReadOnly="True"/> -->
+                                        <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />
                                     </dxg:GridControl.Columns>
-                            <!--        <dxg:GridControl.TotalSummary>
-                                        <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
-                                                 DisplayFormat="Total = {0}"
-                                                 FieldName="OldMetalExchangeTotal"/>
-                                    </dxg:GridControl.TotalSummary>  -->
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
@@ -375,182 +373,6 @@
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <!-- cmk       <dxlc:LayoutGroup Header="Advance">
-                        <dxlc:LayoutItem>
-                            <dxlc:LayoutGroup HorizontalAlignment="Left" 
-                                Margin="10" VerticalAlignment="Top" 
-                                Orientation="Horizontal" View="GroupBox" Header="Invoice Amount"
-                                IsCollapsible="True">
-                                <dxlc:LayoutGroup Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
-                                        <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" IsReadOnly="True">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Old Silver Amoount (Rs)">
-                                        <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" IsReadOnly="True">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Round Off">
-                                        <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Grand Total">    cmk-->
-                                        <!-- <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True"/> -->
-                           <!-- cmk             <dxe:TextEdit EditValue="{Binding Header.GrossRcbAmount}" IsReadOnly="True"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Discount">
-                                        <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" >
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                </dxlc:LayoutGroup>
-                                <dxlc:LayoutGroup Orientation="Vertical">
-                                    <dxlc:LayoutGroup.Resources>
-                                        <Style TargetType="dxe:TextEdit">
-                                            <Setter Property="Width" Value="150"/>
-                                            <Setter Property="Height" Value="35"/>
-                                        </Style>
-                                    </dxlc:LayoutGroup.Resources>
-                                    <dxlc:LayoutItem Label="Advance Amount">
-                                        <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="RD Amount">
-                                        <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Amount Received">
-                                        <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Balance Amount" Visibility="{Binding IsBalance, Converter={dxmvvm:BooleanToVisibilityConverter}}">
-                                        <dxe:TextEdit EditValue="{Binding Header.InvBalance}" IsReadOnly="True"
-                                              FontWeight="Bold"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Refund Amount" Visibility="{Binding IsRefund, Converter={dxmvvm:BooleanToVisibilityConverter}}">
-                                        <dxe:TextEdit EditValue="{Binding Header.InvRefund}" IsReadOnly="True"
-                                              FontWeight="Bold"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Due Date">
-                                        <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem>
-                                        <dx:SimpleButton Content="AddReceipts" Command="{Binding AddReceiptsCommand}"/>
-                                    </dxlc:LayoutItem>
-                                </dxlc:LayoutGroup>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem> 
-                    </dxlc:LayoutGroup> -->
-                    <dxlc:LayoutGroup Header="RD">
-                        <dxlc:LayoutItem>
-                            <dxlc:LayoutGroup HorizontalAlignment="Left" 
-                                Margin="10" VerticalAlignment="Top" 
-                                Orientation="Horizontal" View="GroupBox" Header="Invoice Amount"
-                                IsCollapsible="True">
-                                <dxlc:LayoutGroup Orientation="Vertical">
-                                    <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
-                                        <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" IsReadOnly="True">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Old Silver Amoount (Rs)">
-                                        <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" IsReadOnly="True">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Round Off">
-                                        <dxe:TextEdit EditValue="{Binding Header.RoundOff}" IsReadOnly="True"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Grand Total">
-                                        <!-- <dxe:TextEdit EditValue="{Binding Header.AmountPayable}" IsReadOnly="True"/> -->
-                                        <dxe:TextEdit EditValue="{Binding Header.GrossRcbAmount}" IsReadOnly="True"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Discount">
-                                        <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" >
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                </dxlc:LayoutGroup>
-                                <dxlc:LayoutGroup Orientation="Vertical">
-                                    <dxlc:LayoutGroup.Resources>
-                                        <Style TargetType="dxe:TextEdit">
-                                            <Setter Property="Width" Value="150"/>
-                                            <Setter Property="Height" Value="35"/>
-                                        </Style>
-                                    </dxlc:LayoutGroup.Resources>
-                                    <dxlc:LayoutItem Label="Advance Amount">
-                                        <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="RD Amount">
-                                        <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Amount Received">
-                                        <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold">
-                                            <dxmvvm:Interaction.Behaviors>
-                                                <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                            </dxmvvm:Interaction.Behaviors>
-                                        </dxe:TextEdit>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Balance Amount" Visibility="{Binding IsBalance, Converter={dxmvvm:BooleanToVisibilityConverter}}">
-                                        <dxe:TextEdit EditValue="{Binding Header.InvBalance}" IsReadOnly="True"
-                                              FontWeight="Bold"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Refund Amount" Visibility="{Binding IsRefund, Converter={dxmvvm:BooleanToVisibilityConverter}}">
-                                        <dxe:TextEdit EditValue="{Binding Header.InvRefund}" IsReadOnly="True"
-                                              FontWeight="Bold"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem Label="Due Date">
-                                        <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"/>
-                                    </dxlc:LayoutItem>
-                                    <dxlc:LayoutItem>
-                                        <dx:SimpleButton Content="AddReceipts" Command="{Binding AddReceiptsCommand}"/>
-                                    </dxlc:LayoutItem>
-                                </dxlc:LayoutGroup>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutItem>
-                    </dxlc:LayoutGroup>                
                     <dxlc:LayoutGroup Header="Receipts">
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False" >
@@ -604,10 +426,8 @@
                                                 </dxg:LookUpEditSettings>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                     <!--   <dxg:GridColumn FieldName="ModeOfReceipt" ReadOnly="True"/>  -->
                                         <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" />
                                         <dxg:GridColumn FieldName="BalanceAfterAdj" Header="Balance Amount (Rs)" />
-                                     <!--   <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" /> -->
                                     </dxg:GridControl.Columns>
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
