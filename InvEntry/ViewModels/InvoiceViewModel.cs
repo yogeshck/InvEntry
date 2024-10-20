@@ -1020,4 +1020,15 @@ public partial class InvoiceViewModel : ObservableObject
         IsRefund = isVisible;
         IsBalance = !isVisible;
     }
+
+    private bool CustomerCheck()
+    {
+        if(Buyer is null)
+        {
+            _messageBoxService.ShowMessage("Please enter customer details to proceed", "Missing Customer", MessageButton.OK, MessageIcon.Error);
+            return false;
+        }
+
+        return true;
+    }
 }
