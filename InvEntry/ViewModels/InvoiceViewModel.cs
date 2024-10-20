@@ -582,9 +582,9 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
 
-        Header.OldGoldAmount = FilterMetalTransactions("GOLD");
+        Header.OldGoldAmount = FilterMetalTransactions("OLD GOLD");
 
-        Header.OldSilverAmount = FilterMetalTransactions("SILVER");
+        Header.OldSilverAmount = FilterMetalTransactions("OLD SILVER");
 
         // TaxableTotal from line without tax value
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
