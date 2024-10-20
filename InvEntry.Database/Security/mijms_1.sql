@@ -1,0 +1,3 @@
+﻿CREATE LOGIN [mijms]
+    WITH PASSWORD = N'lhfiysvowHgt|puzrdt.q5aumsFT7_&#$!~<pt{ikbeNmvnl' MUST_CHANGE, SID = 0x311532F34D12AD4B82B0CFD1EC6514CF, DEFAULT_DATABASE = [mijms], DEFAULT_LANGUAGE = [us_english], CHECK_EXPIRATION = ON;
+

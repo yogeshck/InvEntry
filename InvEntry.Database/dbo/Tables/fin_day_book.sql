@@ -1,0 +1,25 @@
+﻿CREATE TABLE [dbo].[fin_day_book] (
+    [gkey]                   BIGINT          IDENTITY (1, 1) NOT NULL,
+    [seq_nbr]                INT             NULL,
+    [customer_gkey]          BIGINT          NULL,
+    [trans_type]             TINYINT         NULL,
+    [voucher_type]           TINYINT         NULL,
+    [mode]                   TINYINT         NULL,
+    [trans_amount]           DECIMAL (18, 2) NULL,
+    [voucher_nbr]            NCHAR (10)      NULL,
+    [voucher_date]           DATETIME        NULL,
+    [ref_doc_gkey]           BIGINT          NULL,
+    [ref_doc_nbr]            NCHAR (10)      NULL,
+    [ref_doc_date]           DATETIME        NULL,
+    [trans_desc]             NVARCHAR (MAX)  NULL,
+    [trans_date]             DATETIME        NULL,
+    [from_ledger_gkey]       INT             NULL,
+    [to_kedger_gkey]         INT             NULL,
+    [ob_amount]              DECIMAL (18, 2) NULL,
+    [cb_amount]              DECIMAL (18, 2) NULL,
+    [fund_transfer_mode]     TINYINT         NULL,
+    [fund_transfer_ref_gkey] INT             NULL,
+    [fund_transfer_date]     DATETIME        NULL,
+    CONSTRAINT [PK_fin_day_book] PRIMARY KEY CLUSTERED ([gkey] ASC)
+);
+
