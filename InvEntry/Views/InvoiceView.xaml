@@ -347,14 +347,7 @@
                                         <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />
-                                        <!--        <dxg:GridColumn FieldName="InvlTaxableAmount" Header="Taxable Amount (Rs)" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" ReadOnly="True"/> -->
                                     </dxg:GridControl.Columns>
-                                    <!--        <dxg:GridControl.TotalSummary>
-                                        <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
-                                                 DisplayFormat="Total = {0}"
-                                                 FieldName="OldMetalExchangeTotal"/>
-                                    </dxg:GridControl.TotalSummary>  -->
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
@@ -428,10 +421,8 @@
                                                 </dxg:LookUpEditSettings>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                     <!--   <dxg:GridColumn FieldName="ModeOfReceipt" ReadOnly="True"/>  -->
                                         <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" />
                                         <dxg:GridColumn FieldName="BalanceAfterAdj" Header="Balance Amount (Rs)" />
-                                     <!--   <dxg:GridColumn FieldName="InvlTotal" Header="Total Amount (Rs)" /> -->
                                     </dxg:GridControl.Columns>
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
