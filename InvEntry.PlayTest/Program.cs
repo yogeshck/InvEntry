@@ -2,8 +2,11 @@
 using InvEntry.Utils;
 using System.Xml.Serialization;
 
-
-CultureInfo culture = new CultureInfo("en-IN");
+XmlExampleChild child1 = new()
+{
+    Name = "Mouli",
+    Description = "Passport"
+};
 
 XmlExampleChild child2 = new()
 {
