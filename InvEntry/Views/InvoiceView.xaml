@@ -124,7 +124,8 @@
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                                <dxe:TextEdit Width="450"></dxe:TextEdit>
+                        <!--        <dxe:TextEdit Width="450" EditValue="{Binding StateList}">
+                                </dxe:TextEdit> -->
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
@@ -136,19 +137,19 @@
                                 IsCollapsible="True">
                         <dxlc:LayoutGroup Orientation="Vertical">
                             <dxlc:LayoutItem Label="Old Gold Amount (Rs)">
-                                <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" IsReadOnly="True"/>
+                             <!--   <dxmvvm:Interaction.Behaviors>
+                                    <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
+                                </dxmvvm:Interaction.Behaviors> -->
+
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Old Silver Amount (Rs)">
-                                <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}">
-                                    <dxmvvm:Interaction.Behaviors>
+                                <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" IsReadOnly="True">
+                             <!--       <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
+                                    </dxmvvm:Interaction.Behaviors>  -->
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Round Off">
