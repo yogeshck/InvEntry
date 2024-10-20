@@ -64,6 +64,9 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<string> metalList;
 
     [ObservableProperty]
+    private ObservableCollection<string> stateList;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
   
     public ICommand ShowWindowCommand { get; set; }
@@ -88,7 +91,6 @@ public partial class InvoiceViewModel : ObservableObject
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
     private decimal IGSTPercent = 0M;
     private decimal SCGSTPercent = 3M;
-    private decimal BalToAdjust = 0;
 
     private List<string> IGNORE_UPDATE = new List<string>
     {
@@ -134,6 +136,7 @@ public partial class InvoiceViewModel : ObservableObject
         _settingsPageViewModel = settingsPageViewModel;
 
         PopulateProductCategoryList();
+        PopulateStateList();
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
@@ -146,9 +149,15 @@ public partial class InvoiceViewModel : ObservableObject
         ProductCategoryList = new(list.Select(x => x.Name));
     }
 
+    private async void PopulateStateList()
+    {
+        var stateRefList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
+        StateList = new(stateRefList.Select(x => x.RefValue));
+    }
+
     private async void PopulateMetalList()
     {
-        var metalRefList = await _mtblReferencesService.GetReferenceList("METALS");
+        var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
         MetalList = new(metalRefList.Select(x => x.RefValue));
     }
 
@@ -223,6 +232,7 @@ public partial class InvoiceViewModel : ObservableObject
             Buyer.MobileNbr = phoneNumber;
             createCustomer = true;
 
+        
             Buyer.GstStateCode = "33";    //Need to fetch based on pincode - future change
             Header.GstLocBuyer = Buyer.GstStateCode;
             Header.CgstPercent = GetGSTWithinState();
