@@ -1,0 +1,5 @@
+﻿CREATE TABLE [dbo].[PRODUCT_CATEGORY] (
+    [SN]   INT           NOT NULL,
+    [NAME] NVARCHAR (50) NOT NULL
+);
+

@@ -1,32 +1,37 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using InvEntry.Utils;
+using System.Globalization;
 using System.Xml.Serialization;
 
 
-XmlExampleChild child1 = new()
-{
-    Name = "Mouli",
-    Description = "Passport"
-};
+CultureInfo culture = new CultureInfo("en-IN");
 
-XmlExampleChild child2 = new()
-{
-    Name = "Arjun",
-    Description = "Aadhar"
-};
+Console.WriteLine(culture.NumberFormat.CurrencySymbol);
 
-XmlExample parent = new()
-{
-    Name = "Sridevi",
-    Description = "Passport/Aadhar",
-    XmlExampleChilds = new()
-};
+//XmlExampleChild child1 = new()
+//{
+//    Name = "Mouli",
+//    Description = "Passport"
+//};
 
-parent.XmlExampleChilds.Add(child1);
-parent.XmlExampleChilds.Add(child2);
+//XmlExampleChild child2 = new()
+//{
+//    Name = "Arjun",
+//    Description = "Aadhar"
+//};
 
-var xmlstring = XMLUtil.SerializeToString(parent);
-Console.WriteLine(xmlstring);
+//XmlExample parent = new()
+//{
+//    Name = "Sridevi",
+//    Description = "Passport/Aadhar",
+//    XmlExampleChilds = new()
+//};
+
+//parent.XmlExampleChilds.Add(child1);
+//parent.XmlExampleChilds.Add(child2);
+
+//var xmlstring = XMLUtil.SerializeToString(parent);
+//Console.WriteLine(xmlstring);
 
 [XmlRoot(ElementName = "XmlRoot")]
 public class XmlExample : IInvEntryXmlSerializable
