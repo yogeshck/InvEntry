@@ -94,33 +94,38 @@
                         </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Customer Details"
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
-                                      ItemLabelsAlignment="Local">
-                            <dxlc:LayoutItem Label="Mobile" LabelPosition="Top">
-                                <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
-                                                           PassEventArgsToCommand="True"/>
-                                        <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
-                                                           CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutItem>
+                                      ItemLabelsAlignment="Local" Orientation="Vertical">
                             <dxlc:LayoutGroup>
-                                <dxlc:LayoutItem Label="Name" LabelPosition="Top">
-                                    <dxe:TextEdit EditValue="{Binding Buyer.CustomerName}" 
-                                                      IsReadOnly="{Binding CustomerReadOnly}"
-                                                      Name="CustomerNameUI"
-                                                  CharacterCasing="Upper">
+                                <dxlc:LayoutItem Label="Mobile" LabelPosition="Top" HorizontalAlignment="Left">
+                                    <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <behavior:FocusTextEditBehavior />
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
+                                                           PassEventArgsToCommand="True"/>
+                                            <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
+                                                           CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
                                         </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Address" LabelPosition="Top">
-                                    <dxe:TextEdit EditValue="{Binding Buyer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
+                                <dxlc:LayoutGroup HorizontalAlignment="Left">
+                                    <dxlc:LayoutItem Label="Name" LabelPosition="Top">
+                                        <dxe:TextEdit EditValue="{Binding Buyer.CustomerName}" 
+                                                      IsReadOnly="{Binding CustomerReadOnly}"
+                                                      Name="CustomerNameUI"
+                                                  CharacterCasing="Upper">
+                                            <dxmvvm:Interaction.Behaviors>
+                                                <behavior:FocusTextEditBehavior />
+                                            </dxmvvm:Interaction.Behaviors>
+                                        </dxe:TextEdit>
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Address" LabelPosition="Top">
+                                        <dxe:TextEdit EditValue="{Binding Buyer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
                                                   CharacterCasing="Upper"/>
-                                </dxlc:LayoutItem>
+                                    </dxlc:LayoutItem>
+                                </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
+                            <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
+                                <dxe:TextEdit Width="450"></dxe:TextEdit>
+                            </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
