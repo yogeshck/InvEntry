@@ -124,8 +124,8 @@
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                        <!--        <dxe:TextEdit Width="450" EditValue="{Binding StateList}">
-                                </dxe:TextEdit> -->
+                                <dxg:LookUpEdit Width="450" ItemSource="{Binding StateReferencesList}">
+                                </dxg:LookUpEdit> 
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />

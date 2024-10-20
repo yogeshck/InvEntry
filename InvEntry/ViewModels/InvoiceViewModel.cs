@@ -31,6 +31,9 @@ public partial class InvoiceViewModel : ObservableObject
     private string _customerPhoneNumber;
 
     [ObservableProperty]
+    private MtblReference _customerState;
+
+    [ObservableProperty]
     private Customer _buyer;
 
     [ObservableProperty]
@@ -64,11 +67,11 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<string> metalList;
 
     [ObservableProperty]
-    private ObservableCollection<string> stateList;
+    private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> mtblReferencesList;
-  
+    private ObservableCollection<MtblReference> stateReferencesList;
+
     public ICommand ShowWindowCommand { get; set; }
 
     private bool createCustomer = false;
@@ -152,7 +155,8 @@ public partial class InvoiceViewModel : ObservableObject
     private async void PopulateStateList()
     {
         var stateRefList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
-        StateList = new(stateRefList.Select(x => x.RefValue));
+        StateReferencesList = new(stateRefList);
+
     }
 
     private async void PopulateMetalList()
