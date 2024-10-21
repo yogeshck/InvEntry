@@ -49,12 +49,15 @@
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintInvoiceCommand}"/> -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
+        <dxg:GridControl>
+            
+        </dxg:GridControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="AddNew"
                          MinHeight="500"
-                         Height="500"
+                         Height="700"
                          MaxHeight="1000"
                          MinWidth="700"
-                         Width="700" SelectedItem="{Binding SelectedVoucher}">
+                         Width="1450" SelectedItem="{Binding SelectedVoucher}">
 
             <dxg:GridControl.View>
                 <dxg:TableView x:Name="tableView" AllowBestFit="True"

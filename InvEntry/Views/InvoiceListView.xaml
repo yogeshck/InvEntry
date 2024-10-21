@@ -51,10 +51,10 @@
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="AddNew"
                          MinHeight="500"
-                         Height="900"
+                         Height="700"
                          MaxHeight="1000"
                          MinWidth="700"
-                         Width="1500" SelectedItem="{Binding SelectedInvoice}">
+                         Width="1450" SelectedItem="{Binding SelectedInvoice}">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged" 
                                        Command="{Binding SelectionChangedCommand}"/>

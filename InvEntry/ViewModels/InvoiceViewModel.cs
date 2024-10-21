@@ -687,8 +687,8 @@ public partial class InvoiceViewModel : ObservableObject
         //Note if inv balance is greater than zero - we need to show message to get confirmation from user
         // and warn to check there is unpaid balance........ 
 
-        if (Header.RecdAmount > 0)
-        {
+    //    if (Header.RecdAmount > 0)
+    //    {
             if (Header.InvBalance > 0)
             {
                 var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, Do you want to make Credit for the balance Invoice Amount ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
@@ -727,7 +727,7 @@ public partial class InvoiceViewModel : ObservableObject
                 {
                     return;
                 }
-            }
+    //        }
         }
     }
 
