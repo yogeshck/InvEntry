@@ -207,11 +207,11 @@
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Amount Received">
-                                <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold">
-                                    <dxmvvm:Interaction.Behaviors>
+                                <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold" IsReadOnly="True">
+                             <!--       <dxmvvm:Interaction.Behaviors>
                                         <dxmvvm:EventToCommand EventName="EditValueChanged" 
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
+                                    </dxmvvm:Interaction.Behaviors>  -->
                                 </dxe:TextEdit>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Balance Amount" Visibility="{Binding IsBalance, Converter={dxmvvm:BooleanToVisibilityConverter}}">

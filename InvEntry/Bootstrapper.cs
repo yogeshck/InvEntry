@@ -36,7 +36,9 @@ public sealed class Bootstrapper
 
         MetadataLocator.Default = MetadataLocator.Create()
                     .AddMetadata<ProductCategory, ProductCategoryMetadata>()
-                    .AddMetadata<MtblReference, MtblRefrencesMetadata>();
+                    .AddMetadata<MtblReference, MtblRefrencesMetadata>()
+                    .AddMetadata<Voucher, VoucherMetadata>();
+
     }
 
     public static Bootstrapper Default { get; private set; }

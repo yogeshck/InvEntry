@@ -51,10 +51,10 @@
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="AddNew"
                          MinHeight="500"
-                         Height="900"
+                         Height="500"
                          MaxHeight="1000"
                          MinWidth="700"
-                         Width="1500" SelectedItem="{Binding SelectedVoucher}">
+                         Width="700" SelectedItem="{Binding SelectedVoucher}">
 
             <dxg:GridControl.View>
                 <dxg:TableView x:Name="tableView" AllowBestFit="True"

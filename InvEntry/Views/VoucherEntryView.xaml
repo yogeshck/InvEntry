@@ -59,6 +59,11 @@
                         <dxe:TextEdit Height="42" IsReadOnly="True" ShowBorder="False" FontWeight="ExtraBold"
                                           EditValue="{Binding VoucherMode}"/>
                     </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Transacion Type">
+                        <dxe:ComboBoxEdit ItemsSource="{Binding TransactionTypeList}" 
+                                          EditValue="{Binding Voucher.TransType}">
+                        </dxe:ComboBoxEdit>
+                    </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Number" FontSize="14" Margin="5">
                         <dxe:TextEdit Height="42"  FontSize="16" Text="Nbr" 
                             CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
