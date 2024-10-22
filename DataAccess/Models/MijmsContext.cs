@@ -19,6 +19,10 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<DayBookView> DayBookViews { get; set; }
 
+    public virtual DbSet<EstimateHeader> EstimateHeaders { get; set; }
+
+    public virtual DbSet<EstimateLine> EstimateLines { get; set; }
+
     public virtual DbSet<InvoiceArReceipt> InvoiceArReceipts { get; set; }
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
@@ -151,6 +155,280 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.VoucherType)
                 .HasMaxLength(50)
                 .HasColumnName("voucher_type");
+        });
+
+        modelBuilder.Entity<EstimateHeader>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("ESTIMATE_HEADER");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.AdvanceAdj)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("ADVANCE_ADJ");
+            entity.Property(e => e.AmountPayable)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("AMOUNT_PAYABLE");
+            entity.Property(e => e.CgstAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("CGST_AMOUNT");
+            entity.Property(e => e.CgstPercent)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("CGST_PERCENT");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn)
+                .HasPrecision(6)
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
+            entity.Property(e => e.CustMobile)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CUST_MOBILE");
+            entity.Property(e => e.DeliveryMethod)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DELIVERY_METHOD");
+            entity.Property(e => e.DeliveryRef).HasColumnName("DELIVERY_REF");
+            entity.Property(e => e.DiscountAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("DISCOUNT_AMOUNT");
+            entity.Property(e => e.DiscountPercent)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("DISCOUNT_PERCENT");
+            entity.Property(e => e.EstBalance)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("EST_BALANCE");
+            entity.Property(e => e.EstDate)
+                .HasPrecision(6)
+                .HasColumnName("EST_DATE");
+            entity.Property(e => e.EstNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EST_NBR");
+            entity.Property(e => e.EstNotes)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("EST_NOTES");
+            entity.Property(e => e.EstRefund)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("EST_REFUND");
+            entity.Property(e => e.EstTaxableAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("EST_TAXABLE_AMOUNT");
+            entity.Property(e => e.EstlTaxTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_TAX_TOTAL");
+            entity.Property(e => e.GrossRcbAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("GROSS_RCB_AMOUNT");
+            entity.Property(e => e.GstLocBuyer)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("GST_LOC_BUYER");
+            entity.Property(e => e.GstLocSeller)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("GST_LOC_SELLER");
+            entity.Property(e => e.IgstAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("IGST_AMOUNT");
+            entity.Property(e => e.IgstPercent)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("IGST_PERCENT");
+            entity.Property(e => e.IsTaxApplicable).HasColumnName("IS_TAX_APPLICABLE");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn)
+                .HasPrecision(6)
+                .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.OldGoldAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("OLD_GOLD_AMOUNT");
+            entity.Property(e => e.OldSilverAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("OLD_SILVER_AMOUNT");
+            entity.Property(e => e.OrderDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DATE");
+            entity.Property(e => e.OrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.PaymentDueDate)
+                .HasPrecision(6)
+                .HasColumnName("PAYMENT_DUE_DATE");
+            entity.Property(e => e.PaymentMode)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PAYMENT_MODE");
+            entity.Property(e => e.RdAmountAdj)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("RD_AMOUNT_ADJ");
+            entity.Property(e => e.RecdAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("RECD_AMOUNT");
+            entity.Property(e => e.RoundOff)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("ROUND_OFF");
+            entity.Property(e => e.SgstAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("SGST_AMOUNT");
+            entity.Property(e => e.SgstPercent)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("SGST_PERCENT");
+            entity.Property(e => e.TaxType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("TAX_TYPE");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
+        });
+
+        modelBuilder.Entity<EstimateLine>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("ESTIMATE_LINE");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn)
+                .HasPrecision(6)
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.EstLineNbr).HasColumnName("EST_LINE_NBR");
+            entity.Property(e => e.EstNote)
+                .IsUnicode(false)
+                .HasColumnName("EST_NOTE");
+            entity.Property(e => e.EstimateHdrGkey).HasColumnName("ESTIMATE_HDR_GKEY");
+            entity.Property(e => e.EstimateId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ESTIMATE_ID");
+            entity.Property(e => e.EstlBilledPrice)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_BILLED_PRICE");
+            entity.Property(e => e.EstlCgstAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_CGST_AMOUNT");
+            entity.Property(e => e.EstlCgstPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_CGST_PERCENT");
+            entity.Property(e => e.EstlGrossAmt)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_GROSS_AMT");
+            entity.Property(e => e.EstlIgstAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_IGST_AMOUNT");
+            entity.Property(e => e.EstlIgstPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_IGST_PERCENT");
+            entity.Property(e => e.EstlMakingCharges)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_MAKING_CHARGES");
+            entity.Property(e => e.EstlOtherCharges)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_OTHER_CHARGES");
+            entity.Property(e => e.EstlPayableAmt)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_PAYABLE_AMT");
+            entity.Property(e => e.EstlSgstAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_SGST_AMOUNT");
+            entity.Property(e => e.EstlSgstPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_SGST_PERCENT");
+            entity.Property(e => e.EstlStoneAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_STONE_AMOUNT");
+            entity.Property(e => e.EstlTaxableAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_TAXABLE_AMOUNT");
+            entity.Property(e => e.EstlTotal)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_TOTAL");
+            entity.Property(e => e.EstlWastageAmt)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ESTL_WASTAGE_AMT");
+            entity.Property(e => e.HsnCode)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("HSN_CODE");
+            entity.Property(e => e.IsTaxable).HasColumnName("IS_TAXABLE");
+            entity.Property(e => e.ItemNotes)
+                .IsUnicode(false)
+                .HasColumnName("ITEM_NOTES");
+            entity.Property(e => e.ItemPacked).HasColumnName("ITEM_PACKED");
+            entity.Property(e => e.Metal)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("METAL");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn)
+                .HasPrecision(6)
+                .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.ProdCategory)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PROD_CATEGORY");
+            entity.Property(e => e.ProdGrossWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PROD_GROSS_WEIGHT");
+            entity.Property(e => e.ProdNetWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PROD_NET_WEIGHT");
+            entity.Property(e => e.ProdPackCode)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PROD_PACK_CODE");
+            entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
+            entity.Property(e => e.ProdStoneWeight)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PROD_STONE_WEIGHT");
+            entity.Property(e => e.ProductDesc)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_DESC");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_ID");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_NAME");
+            entity.Property(e => e.ProductPurity)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_PURITY");
+            entity.Property(e => e.TaxAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TAX_AMOUNT");
+            entity.Property(e => e.TaxPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TAX_PERCENT");
+            entity.Property(e => e.TaxType)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("TAX_TYPE");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.VaAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("VA_AMOUNT");
+            entity.Property(e => e.VaPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("VA_PERCENT");
         });
 
         modelBuilder.Entity<InvoiceArReceipt>(entity =>
