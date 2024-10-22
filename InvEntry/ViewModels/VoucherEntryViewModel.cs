@@ -47,7 +47,6 @@ public partial class VoucherEntryViewModel: ObservableObject
         
         PopulateReferenceList();
         ResetVoucher();
-        //Voucher.TransType = "Payment";
     }
 
     private  void PopulateReferenceList()
@@ -60,38 +59,25 @@ public partial class VoucherEntryViewModel: ObservableObject
 
     }
 
-    private void SetVoucher(byte mode = 1)
+    private void SetVoucher()
     {
         Voucher.VoucherDate = DateTime.Now;
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-        SetVoucherMode();
-        Voucher.Mode = VoucherMode;
-        SetTransType();
         SetVoucherType();
-    }
-
-    private void SetVoucherMode()
-    {
-        VoucherMode = "Cash";
-
-        if(Voucher.Mode != "1")
-        {
-            VoucherMode = "Petty Cash";
-        }
     }
 
     [RelayCommand]
     private void ResetVoucher()
     {
         Voucher = new();
+        Voucher.Mode = "Petty Cash";
         SetVoucher();
     }
 
     [RelayCommand]
     private void CreateCashVoucher()
     {
-        Voucher.Mode = "1";
-        SetVoucherMode();
+        Voucher.Mode = "Petty Cash";
         SetVoucherType();
     }
 
@@ -105,6 +91,7 @@ public partial class VoucherEntryViewModel: ObservableObject
 
     private void SetVoucherType()
     {
+        SetTransType();
 
         if (Voucher.TransType == "Payment")
         {
@@ -119,8 +106,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     [RelayCommand]
     private void CreatePettyCashVoucher()
     {
-        Voucher.Mode = "2";
-        SetVoucherMode();
+        Voucher.Mode = "Cash";
         SetVoucherType();
     }
 
@@ -138,12 +124,17 @@ public partial class VoucherEntryViewModel: ObservableObject
                 Voucher = voucher;
                 _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
 
-/*                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
-                PrintPreviewInvoice();
-                PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-                PrintInvoiceCommand.NotifyCanExecuteChanged();
-                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());*/
+                /*                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+                                PrintPreviewInvoice();
+                                PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+                                PrintInvoiceCommand.NotifyCanExecuteChanged();
+                                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());*/
 
+            }
+            else
+            {
+                _messageBoxService.ShowMessage("Error creating Voucher", "Error", MessageButton.OK, MessageIcon.Error);
+                return;
             }
         }
         else
