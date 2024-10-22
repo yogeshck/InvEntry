@@ -268,6 +268,7 @@ public partial class InvoiceViewModel : ObservableObject
         else
         {
             Header.GstLocBuyer = Buyer.GstStateCode;
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefValue==Buyer.GstStateCode);
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
             IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
 

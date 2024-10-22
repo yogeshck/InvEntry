@@ -60,7 +60,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XtraInvoice();
+        return new XtraEstimate();
     }
 
     public XtraReport CreateEstimateReport(string pEstimateNbr)

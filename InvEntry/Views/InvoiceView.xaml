@@ -126,7 +126,7 @@
                             <!--<dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
                                 <dxg:LookUpEdit Width="450" EditValue="{Binding CustomerState}" 
                                                 ItemsSource="{Binding StateReferencesList}"
-                                                DisplayMember="RefValue" ValueMember="RefValue">
+                                                DisplayMember="RefValue" >
                                     <dxg:LookUpEdit.PopupContentTemplate>
                                         <ControlTemplate>
                                             <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
