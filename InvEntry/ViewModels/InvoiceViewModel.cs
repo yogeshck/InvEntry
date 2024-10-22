@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
-using DevExpress.Xpf.Core.ConditionalFormatting.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
@@ -474,7 +473,7 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
-            _messageBoxService.ShowMessage("Invoice Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
+            _messageBoxService.ShowMessage("Invoice "+ Header.InvNbr + " Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
@@ -691,7 +690,8 @@ public partial class InvoiceViewModel : ObservableObject
     //    {
             if (Header.InvBalance > 0)
             {
-                var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, Do you want to make Credit for the balance Invoice Amount ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+                var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, " +
+                    "Do you want to make Credit for the balance Invoice Amount of Rs. "+ Header.InvBalance+" ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
                 if (result == MessageResult.Yes)
                 {
@@ -713,7 +713,8 @@ public partial class InvoiceViewModel : ObservableObject
             }
             else if (Header.InvBalance < 0)
             {
-                var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, Do you want to Refund excess Amount ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+                var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, " +
+                    "Do you want to Refund excess Amount of Rs. "+ Header.InvBalance+" ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
                 if (result == MessageResult.Yes)
                 {

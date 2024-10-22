@@ -65,7 +65,7 @@ namespace InvEntry.Services
         public async Task<IEnumerable<EstimateHeader>> GetAll(EstimateSearchOption options)
         {
 
-            return await _mijmsApiService.PostEnumerable<EstimateHeader, EstimateSearchOption>($"api/estimat/filter", options);
+            return await _mijmsApiService.PostEnumerable<EstimateHeader, EstimateSearchOption>($"api/estimate/filter", options);
 
 
         }
