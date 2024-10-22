@@ -15,6 +15,7 @@ namespace InvEntry.IoC
         {
             FormulaStore.Instance.ConfigureInvoiceLineFormulas();
             FormulaStore.Instance.ConfigureInvoiceHeaderFormulas();
+            FormulaStore.Instance.ConfigureEstimateLineFormulas();
 
             if (action is not null)
                 action.Invoke(FormulaStore.Instance);
@@ -49,6 +50,33 @@ namespace InvEntry.IoC
                 $"[{nameof(InvoiceLine.InvlTaxableAmount)}]");
         }
 
+        private static void ConfigureEstimateLineFormulas(this FormulaStore store)
+        {
+            store.AddFormula<EstimateLine>(x => x.ProdNetWeight,
+                $"[{nameof(EstimateLine.ProdGrossWeight)}] - [{nameof(EstimateLine.ProdStoneWeight)}]");
+
+            store.AddFormula<EstimateLine>(x => x.EstlGrossAmt,
+                $"[{nameof(EstimateLine.ProdNetWeight)}] * [{nameof(EstimateLine.EstlBilledPrice)}]");
+
+            store.AddFormula<EstimateLine>(x => x.VaAmount,
+                $"[{nameof(EstimateLine.EstlGrossAmt)}] * Round(([{nameof(EstimateLine.VaPercent)}] / 100), 3)");
+
+            store.AddFormula<EstimateLine>(x => x.EstlTaxableAmount,
+                $"[{nameof(EstimateLine.EstlGrossAmt)}] + [{nameof(EstimateLine.VaAmount)}] + [{nameof(EstimateLine.EstlStoneAmount)}]");
+
+            store.AddFormula<EstimateLine>(x => x.EstlCgstAmount,
+                $"[{nameof(EstimateLine.EstlTaxableAmount)}] * Round(([{nameof(EstimateLine.EstlCgstPercent)}]/ 100), 3)");
+
+            store.AddFormula<EstimateLine>(x => x.EstlSgstAmount,
+                $"[{nameof(EstimateLine.EstlTaxableAmount)}] * Round(([{nameof(EstimateLine.EstlSgstPercent)}]/ 100), 3)");
+
+            store.AddFormula<EstimateLine>(x => x.EstlIgstAmount,
+                $"[{nameof(EstimateLine.EstlTaxableAmount)}] * Round(([{nameof(EstimateLine.EstlIgstPercent)}]/ 100), 3)");
+
+            store.AddFormula<EstimateLine>(x => x.EstlTotal,
+                //$"[{nameof(EstimateLine.EstlTaxableAmount)}] + [{nameof(EstimateLine.EstlCgstAmount)}] + [{nameof(EstimateLine.EstlSgstAmount)}] + [{nameof(EstimateLine.EstlIgstAmount)}]");
+                $"[{nameof(EstimateLine.EstlTaxableAmount)}]");
+        }
 
         private static void ConfigureInvoiceHeaderFormulas(this FormulaStore store)
         {
