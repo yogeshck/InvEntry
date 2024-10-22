@@ -72,12 +72,13 @@ public partial class VoucherEntryViewModel: ObservableObject
         Voucher = new();
         Voucher.Mode = "Petty Cash";
         SetVoucher();
+        VoucherTransDesc = string.Empty;
     }
 
     [RelayCommand]
     private void CreateCashVoucher()
     {
-        Voucher.Mode = "Petty Cash";
+        Voucher.Mode = "Cash";
         SetVoucherType();
     }
 
@@ -106,7 +107,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     [RelayCommand]
     private void CreatePettyCashVoucher()
     {
-        Voucher.Mode = "Cash";
+        Voucher.Mode = "Petty Cash";
         SetVoucherType();
     }
 
