@@ -20,6 +20,12 @@ public interface IReportFactoryService
     XtraReport CreateInvoiceReport(string pInvoiceNbr);
 
     Task CreateInvoiceReportPdf(string pInvoiceNbr, string filePath);
+
+    XtraReport CreateEstimateReport();
+
+    XtraReport CreateEstimateReport(string pEstimateNbr);
+
+    Task CreateEstimateReportPdf(string pEstimateNbr, string filePath);
 }
 
 public class ReportFactoryService : IReportFactoryService
@@ -51,4 +57,26 @@ public class ReportFactoryService : IReportFactoryService
 
         await report.ExportToPdfAsync(filePath);
     }
+
+    public XtraReport CreateEstimateReport()
+    {
+        return new XtraInvoice();
+    }
+
+    public XtraReport CreateEstimateReport(string pEstimateNbr)
+    {
+        var report = CreateEstimateReport();
+
+        report.Parameters["pEstimateNbr"].Value = pEstimateNbr;
+        report.CreateDocument();
+        return report;
+    }
+
+    public async Task CreateEstimateReportPdf(string pEstimateNbr, string filePath)
+    {
+        var report = CreateEstimateReport(pEstimateNbr);
+
+        await report.ExportToPdfAsync(filePath);
+    }
+
 }

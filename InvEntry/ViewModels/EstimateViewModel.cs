@@ -5,6 +5,7 @@ using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
@@ -322,64 +323,6 @@ public partial class EstimateViewModel: ObservableObject
                 }*/
     }
 
-    /*    [RelayCommand]
-        private Task EvaluateOldMetalTransaction()
-        {
-            //if (string.IsNullOrEmpty(OldMetalIdUI))
-            //    return Task.CompletedTask;
-
-            //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching old product details...");
-
-            // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-            //var product = await _productService.GetProduct(OldMetalIdUI);
-            // await Task.Delay(30000);
-
-            // SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-            //if (product is null)
-            // {
-            //     _messageBoxService.ShowMessage($"No Product found for {OldMetalIdUI}, Please make sure it exists",
-            //         "Product not found", MessageButton.OK, MessageIcon.Error);
-            //     return;
-            //  }
-
-            //   var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
-
-            OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
-            {
-                CustGkey = Header.CustGkey,
-                CustMobile = Header.CustMobile,
-                TransType = "Purchase",
-                TransDate = DateTime.Now,
-            };
-
-            Header.OldMetalTransactions.Add(oldMetalTransactionLine);
-            return Task.CompletedTask;
-        }*/
-
-    /*    [RelayCommand(CanExecute = nameof(CanProcessArReceipts))]
-        private async Task ProcessArReceipts()
-        {
-            //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
-            // _productService.GetProduct(ProductIdUI);
-
-            // var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
-
-            var noOfLines = Header.ReceiptLines.Count;
-
-            InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
-            {
-                //BalBeforeAdj = Header.GrossRcbAmount, 
-                CustGkey = Header.CustGkey,
-                Status = "Open",    //Status Open - Before Adjustment
-                SeqNbr = noOfLines + 1
-            };
-
-            Header.ReceiptLines.Add(arInvRctLine);
-
-        }*/
-
     private bool CanProcessArReceipts()
     {
         return !Header.DiscountAmount.HasValue || Header.DiscountAmount.Value == 0;
@@ -481,10 +424,10 @@ public partial class EstimateViewModel: ObservableObject
     private void PrintEstimate()
     {
         //after report uncomment this
-        //    var printed = PrintHelper.Print(_reportFactoryService.CreateEstimateReport(Header.EstNbr));
-        //
-        //    if (printed.HasValue && printed.Value)
-        //        _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimatee print", MessageButton.OK, MessageIcon.None);
+            var printed = PrintHelper.Print(_reportFactoryService.CreateEstimateReport(Header.EstNbr));
+        
+            if (printed.HasValue && printed.Value)
+                _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimatee print", MessageButton.OK, MessageIcon.None);
     }
 
     private bool CanPrintEstimate()
@@ -513,89 +456,9 @@ public partial class EstimateViewModel: ObservableObject
         {
             EvaluateFormula(line);
         }
-        /*        else
-                if (args.Row is EstimateArReceipt arInvRctline)
-                {
-                    EvaluateArRctLine(arInvRctline);
-                }
-                else
-                if (args.Row is OldMetalTransaction oldMetalTransaction &&
-                    args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
-                {
-                    EvaluateOldMetalTransactions(oldMetalTransaction);
-                }*/
 
         EvaluateHeader();
     }
-
-    [RelayCommand]
-    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
-    {
-
-        /*        if (oldMetalTransaction.ProductId is null)
-                {
-                    return;
-                }*/
-
-        oldMetalTransaction.NetWeight = (
-                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
-                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
-                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
-                                        );
-
-        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
-                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
-        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
-
-    }
-
-    /*    [RelayCommand]
-        private void EvaluateArRctLine(InvoiceArReceipt arInvRctLine)
-        {
-
-            if (string.IsNullOrEmpty(arInvRctLine.TransactionType))
-            {
-                return;
-            }
-
-            if (!arInvRctLine.BalBeforeAdj.HasValue)
-                arInvRctLine.BalBeforeAdj = Header.InvBalance.GetValueOrDefault();
-
-            arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() - arInvRctLine.AdjustedAmount.GetValueOrDefault();
-
-
-            if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
-            {
-                arInvRctLine.ModeOfReceipt = "Cash";
-            }
-            else if (arInvRctLine.TransactionType == "Credit")
-            {
-                arInvRctLine.ModeOfReceipt = "Credit";
-            }
-            else
-            {
-                arInvRctLine.ModeOfReceipt = "Bank";
-            }
-
-            EvaluateHeader();
-
-        }*/
-
-    /*    private decimal FilterReceiptTransactions(string transType)
-        {
-            return (decimal)Header.ReceiptLines
-                            .Where(x => transType.Equals(x.TransactionType, StringComparison.OrdinalIgnoreCase))
-                            .Select(x => x.AdjustedAmount)
-                            .Sum();
-        }
-
-        private decimal? FilterMetalTransactions(string metal)
-        {
-            return Header.OldMetalTransactions
-                            .Where(x => metal.Equals(x.Metal, StringComparison.OrdinalIgnoreCase))
-                            .Select(x => x.FinalPurchasePrice)
-                            .Sum();
-        }*/
 
     [RelayCommand]
     private void EvaluateHeader()
@@ -648,10 +511,6 @@ public partial class EstimateViewModel: ObservableObject
 
         Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
 
-        //Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault();
-        //decimal AmountTobeDeducted = 0;
-        //AmountTobeDeducted = Header.DiscountAmount.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault();
-
         decimal payableValue = 0;
         payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
                         Header.DiscountAmount.GetValueOrDefault();
@@ -666,218 +525,8 @@ public partial class EstimateViewModel: ObservableObject
                 Header.RdAmountAdj.GetValueOrDefault()
              );
 
-        /*        if (estBalanceChk)
-                {
-                    ProcessEstBalance();
-                }*/
     }
 
-    /*    private void ProcessEstBalance()
-        {
-            //Note if inv balance is greater than zero - we need to show message to get confirmation from user
-            // and warn to check there is unpaid balance........ 
-
-            //    if (Header.RecdAmount > 0)
-            //    {
-            if (Header.EstBalance > 0)
-            {
-                var result = _messageBoxService.ShowMessage("Received Amount is less than Estimate Amount, Do you want to make Credit for the balance Estoice Amount ?", "Estoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
-
-                if (result == MessageResult.Yes)
-                {
-                    Header.PaymentDueDate = Header.EstDate.Value.AddDays(7);
-                    Header.EstRefund = 0M;
-                    BalanceVisible();
-                    SetReceipts("Credit");
-                }
-                else
-                {
-                    return;
-                }
-            }
-            else if (Header.EstBalance == 0)
-            {
-                Header.PaymentDueDate = null;
-                BalanceVisible();
-
-            }
-            else if (Header.EstBalance < 0)
-            {
-                var result = _messageBoxService.ShowMessage("Received Amount is more than Estoice Amount, Do you want to Refund excess Amount ?", "Estoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
-
-                if (result == MessageResult.Yes)
-                {
-                    Header.PaymentDueDate = null;
-                    Header.EstRefund = Header.EstBalance * -1;
-                    Header.EstBalance = 0M;
-                    RefundVisible();
-                    SetReceipts("Refund");
-                }
-                else
-                {
-                    return;
-                }
-                //        }
-            }
-        }*/
-
-    /*    private void SetReceipts(String str)
-        {
-
-            InvoiceArReceipt arInvRct = new InvoiceArReceipt();
-
-            arInvRct.InternalVoucherNbr = "Test";
-            arInvRct.AdjustedAmount = Header.InvBalance;
-            Header.ReceiptLines.Add(arInvRct);
-        }
-
-        private async void ProcessReceipts()
-        {
-            //For each Receipts row - seperate Voucher has to be created
-            foreach (var receipts in Header.ReceiptLines)
-            {
-                var voucher = CreateVoucher(receipts);
-                voucher = await SaveVoucher(voucher);
-
-                var arReceipts = CreateArReceipts(receipts, voucher);
-                await SaveArReceipts(arReceipts);
-
-            }
-        }*/
-
-    /*    private async Task ProcessOldMetalTransaction()
-        {
-            foreach (var omTrans in Header.OldMetalTransactions)
-            {
-                omTrans.EnrichHeaderDetails(Header);
-            }
-
-            await _oldMetalTransactionService.CreatOldMetalTransaction(Header.OldMetalTransactions);
-        }*/
-
-    /*    private async void ProcessOldMetalTransLine()  //need to work out to add old metal totals to header old gold and silver amount
-        {
-            //For each Receipts row - seperate Voucher has to be created
-            foreach (var oldMetalTrans in Header.OldMetalTransactions)
-            {
-
-                if (oldMetalTrans.Metal == "GOLD")
-                {
-                    Header.OldGoldAmount = Header.OldGoldAmount + oldMetalTrans.FinalPurchasePrice;
-
-                }
-                else if (oldMetalTrans.Metal == "SILVER")
-                {
-                    Header.OldSilverAmount = Header.OldSilverAmount + oldMetalTrans.FinalPurchasePrice;
-
-                }
-
-            }
-        }*/
-
-    /*    private InvoiceArReceipt CreateArReceipts(InvoiceArReceipt invoiceArReceipt, Voucher voucher)
-        {
-
-            InvoiceArReceipt arInvRct = new()
-            {
-                //VoucherDate = DateTime.Now
-            };
-
-            arInvRct.SeqNbr = invoiceArReceipt.SeqNbr;
-            arInvRct.CustGkey = invoiceArReceipt.CustGkey;
-            arInvRct.InvoiceGkey = (int?)Header.GKey;
-            arInvRct.InvoiceNbr = Header.InvNbr;
-            arInvRct.InvoiceReceivableAmount = invoiceArReceipt.InvoiceReceivableAmount;
-            arInvRct.BalanceAfterAdj = invoiceArReceipt.BalanceAfterAdj;
-            arInvRct.TransactionType = invoiceArReceipt.TransactionType;
-            arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
-            arInvRct.BalBeforeAdj = invoiceArReceipt.BalBeforeAdj;
-            arInvRct.AdjustedAmount = invoiceArReceipt.AdjustedAmount;
-            arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
-            arInvRct.InternalVoucherDate = voucher.VoucherDate;
-            arInvRct.Status = "Adj";
-
-            return arInvRct;
-
-        }*/
-
-    /*    private Voucher CreateVoucher(InvoiceArReceipt invoiceArReceipt)
-        {
-
-            Voucher Voucher = new()
-            {
-                VoucherDate = DateTime.Now
-            };
-
-            Voucher.SeqNbr = 1;
-            Voucher.CustomerGkey = Header.CustGkey;
-            Voucher.VoucherDate = Header.InvDate;
-            Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-            Voucher.VoucherType = "Sales";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-            Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
-            Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-            Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;
-            Voucher.VoucherNbr = "Sales-001";
-            Voucher.RefDocNbr = Header.InvNbr;
-            Voucher.RefDocDate = Header.InvDate;
-            Voucher.RefDocGkey = Header.GKey;
-            Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
-
-            return Voucher;
-
-        }*/
-
-
-
-    /*    private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
-        {
-            if (invoiceArReceipt.GKey == 0)
-            {
-                try
-                {
-                    var voucherResult = await _invoiceArReceiptService.CreatInvArReceipt(invoiceArReceipt);
-
-                    if (voucherResult != null)
-                    {
-                        invoiceArReceipt = voucherResult;
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-
-            }
-            else
-            {
-                await _invoiceArReceiptService.UpdateInvArReceipt(invoiceArReceipt);
-            }
-
-        }*/
-
-    /*    //[RelayCommand]
-        private async Task<Voucher> SaveVoucher(Voucher voucher)
-        {
-            if (voucher.GKey == 0)
-            {
-                var voucherResult = await _voucherService.CreatVoucher(voucher);
-
-                if (voucherResult != null)
-                {
-                    voucher = voucherResult;
-                    //  _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
-                    //      MessageButton.OK, MessageIcon.Exclamation);
-                }
-            }
-            else
-            {
-                await _voucherService.UpdateVoucher(voucher);
-            }
-
-            return voucher;
-
-        }*/
 
     [RelayCommand]
     private void Focus(TextEdit sender)
