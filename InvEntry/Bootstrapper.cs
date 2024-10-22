@@ -120,6 +120,7 @@ public sealed class Bootstrapper
                  .AddSingleton<VoucherListViewModel>()
                  .AddTransient<ReportDialogViewModel>()
                  .AddSingleton<SettingsPageViewModel>()
+                 .AddSingleton<EstimateViewModel>()
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddSingleton<ICustomerService, CustomerService>()
                  .AddSingleton<IProductService, ProductService>()

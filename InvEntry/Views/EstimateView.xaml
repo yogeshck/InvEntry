@@ -15,7 +15,7 @@
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
-             d:DataContext="{Binding viewmodels:EstimateViewModel}"
+             d:DataContext="{d:DesignInstance Type=viewmodels:EstimateViewModel}"
              DataContext="{ext:DISource Type=viewmodels:EstimateViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" HorizontalAlignment="Left" Width="1471">
