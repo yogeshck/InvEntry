@@ -421,7 +421,9 @@ public partial class InvoiceViewModel : ObservableObject
     private async Task CreateInvoice()
     {
         invBalanceChk = true;  //is this a right place to fix
-        ProcessInvBalance();
+        var isSuccess = ProcessInvBalance();
+
+        if (!isSuccess) return;
 
         if (!string.IsNullOrEmpty(Header.InvNbr))
         {
@@ -681,7 +683,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    private void ProcessInvBalance()
+    private bool ProcessInvBalance()
     {
         //Note if inv balance is greater than zero - we need to show message to get confirmation from user
         // and warn to check there is unpaid balance........ 
@@ -702,7 +704,7 @@ public partial class InvoiceViewModel : ObservableObject
                 }
                 else
                 {
-                    return;
+                    return false;
                 }
             }
             else if (Header.InvBalance == 0)
@@ -726,10 +728,12 @@ public partial class InvoiceViewModel : ObservableObject
                 }
                 else
                 {
-                    return;
+                    return false;
                 }
     //        }
         }
+
+        return true;
     }
 
     private void SetReceipts(String str)
