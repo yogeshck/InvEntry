@@ -47,7 +47,7 @@ public partial class VoucherEntryViewModel: ObservableObject
         
         PopulateReferenceList();
         ResetVoucher();
-        Voucher.TransType = "Payment";
+        //Voucher.TransType = "Payment";
     }
 
     private  void PopulateReferenceList()
@@ -63,12 +63,11 @@ public partial class VoucherEntryViewModel: ObservableObject
     private void SetVoucher(byte mode = 1)
     {
         Voucher.VoucherDate = DateTime.Now;
-        //Voucher.TransType = "Rect";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = "Sales";     // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        //Voucher.Mode = "Mode";           // Mode          1 = Cash,       2 = PettyCash,  3 = Bank,       4 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         SetVoucherMode();
         Voucher.Mode = VoucherMode;
+        SetTransType();
+        SetVoucherType();
     }
 
     private void SetVoucherMode()
@@ -93,21 +92,42 @@ public partial class VoucherEntryViewModel: ObservableObject
     {
         Voucher.Mode = "1";
         SetVoucherMode();
-        Voucher.TransType = "Payment";
-    }        
+        SetVoucherType();
+    }
 
+    private void SetTransType()
+    {
+        if (Voucher.TransType is null)
+        {
+            Voucher.TransType = "Payment";
+        }
+    }
+
+    private void SetVoucherType()
+    {
+
+        if (Voucher.TransType == "Payment")
+        {
+            Voucher.VoucherType = "Expense";
+        }
+        else
+        {
+            Voucher.VoucherType = "Receipt";
+        }
+    }
 
     [RelayCommand]
     private void CreatePettyCashVoucher()
     {
         Voucher.Mode = "2";
         SetVoucherMode();
-        Voucher.TransType = "Payment";
+        SetVoucherType();
     }
 
     [RelayCommand]
     private async Task SaveVoucher()
     {
+        SetVoucherType();
 
         if (Voucher.GKey == 0)
         {

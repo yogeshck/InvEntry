@@ -59,8 +59,8 @@
                         <dxe:TextEdit Height="42" IsReadOnly="True" ShowBorder="False" FontWeight="ExtraBold"
                                           EditValue="{Binding VoucherMode}"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Transacion Type">
-                        <dxe:ComboBoxEdit ItemsSource="{Binding TransactionTypeList}" 
+                    <dxlc:LayoutItem Label="Transacion Type" FontSize="14" Margin="5">
+                        <dxe:ComboBoxEdit Height="42" FontWeight="ExtraBold" ItemsSource="{Binding TransactionTypeList}" 
                                           EditValue="{Binding Voucher.TransType}">
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
@@ -69,7 +69,7 @@
                             CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Date  "  FontSize="14" Margin="5">
-                        <dxe:DateEdit Height="42" IsReadOnly="True" ShowBorder="False"
+                        <dxe:DateEdit Height="42" IsReadOnly="False" ShowBorder="False"
                                 EditValue="{Binding Voucher.VoucherDate}" >
                             <dxe:DateEdit.StyleSettings>
                                 <dxe:DateEditNavigatorWithTimePickerStyleSettings />
@@ -83,10 +83,10 @@
                     <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="5">
                         <dxe:TextEdit Height="80" FontSize="16" Text="Notes" 
                                 EditValue="{Binding Voucher.TransDesc}">
-                            <dxmvvm:Interaction.Behaviors>
-                                <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>
-                            </dxmvvm:Interaction.Behaviors>
                         </dxe:TextEdit>
+                        <!--       <dxmvvm:Interaction.Behaviors>
+                                <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>
+                            </dxmvvm:Interaction.Behaviors> -->
                     </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
