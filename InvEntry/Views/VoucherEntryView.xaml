@@ -72,20 +72,20 @@
                         <dxe:DateEdit Height="42" IsReadOnly="False" ShowBorder="False"
                                 EditValue="{Binding Voucher.VoucherDate}" >
                             <dxe:DateEdit.StyleSettings>
-                                <dxe:DateEditNavigatorWithTimePickerStyleSettings />
+                                <dxe:DateEditNavigatorStyleSettings />
                             </dxe:DateEdit.StyleSettings>
                         </dxe:DateEdit>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Amount" FontSize="14" Margin="5">
+                    <dxlc:LayoutItem Label="Amount" Margin="5">
                         <dxe:TextEdit Height="42" FontSize="16"
-                                EditValue="{Binding Voucher.TransAmount}"/>
+                                EditValue="{Binding Voucher.TransAmount}" MaskType="Numeric"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Notes" FontSize="14" Margin="5">
+                    <dxlc:LayoutItem Label="Notes" Margin="5">
                         <dxe:TextEdit Height="80" FontSize="16"
-                                EditValue="{Binding Voucher.TransDesc}">
-                            <dxmvvm:Interaction.Behaviors>
+                                EditValue="{Binding VoucherTransDesc}" AcceptsReturn="True" EditValuePostMode="Immediate">
+                            <!--<dxmvvm:Interaction.Behaviors>
                                 <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>
-                            </dxmvvm:Interaction.Behaviors> 
+                            </dxmvvm:Interaction.Behaviors>--> 
                         </dxe:TextEdit>
                     </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>

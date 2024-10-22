@@ -27,7 +27,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     private ObservableCollection<string> transactionTypeList;
 
     [ObservableProperty]
-    private string _voucherMode;
+    private string _voucherTransDesc;
 
     private bool createVoucher = false;
 
@@ -110,7 +110,13 @@ public partial class VoucherEntryViewModel: ObservableObject
         SetVoucherType();
     }
 
-    [RelayCommand]
+    partial void OnVoucherTransDescChanged(string value)
+    {
+        Voucher.TransDesc = value;
+        SaveVoucherCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSaveVoucher))]
     private async Task SaveVoucher()
     {
         SetVoucherType();
@@ -145,4 +151,8 @@ public partial class VoucherEntryViewModel: ObservableObject
         ResetVoucher();
     }
 
+    private bool CanSaveVoucher()
+    {
+        return !string.IsNullOrEmpty(Voucher.TransDesc);
+    }
 }
