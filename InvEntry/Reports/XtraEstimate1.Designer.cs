@@ -929,18 +929,18 @@
             customSqlQuery3,
             customSqlQuery4});
             masterDetailInfo1.DetailQueryName = "OrgCustInvHeader";
-            relationColumnInfo1.NestedKeyColumn = "INV_NBR";
-            relationColumnInfo1.ParentKeyColumn = "INVOICE_ID";
+            relationColumnInfo1.NestedKeyColumn = "EST_NBR";
+            relationColumnInfo1.ParentKeyColumn = "ESTIMATE_ID";
             masterDetailInfo1.KeyColumns.Add(relationColumnInfo1);
             masterDetailInfo1.MasterQueryName = "estimateLine";
             masterDetailInfo2.DetailQueryName = "GOLD_QRY";
-            relationColumnInfo2.NestedKeyColumn = "INVOICE_ID";
-            relationColumnInfo2.ParentKeyColumn = "INVOICE_ID";
+            relationColumnInfo2.NestedKeyColumn = "ESTIMATE_ID";
+            relationColumnInfo2.ParentKeyColumn = "ESTIMATE_ID";
             masterDetailInfo2.KeyColumns.Add(relationColumnInfo2);
             masterDetailInfo2.MasterQueryName = "estimateLine";
             masterDetailInfo3.DetailQueryName = "SILVER_QRY";
-            relationColumnInfo3.NestedKeyColumn = "INVOICE_ID";
-            relationColumnInfo3.ParentKeyColumn = "INVOICE_ID";
+            relationColumnInfo3.NestedKeyColumn = "ESTIMATE_ID";
+            relationColumnInfo3.ParentKeyColumn = "ESTIMATE_ID";
             masterDetailInfo3.KeyColumns.Add(relationColumnInfo3);
             masterDetailInfo3.MasterQueryName = "estimateLine";
             this.sqlDataSource1.Relations.AddRange(new DevExpress.DataAccess.Sql.MasterDetailInfo[] {
@@ -1735,8 +1735,8 @@
             // xrTableCell21
             // 
             this.xrTableCell21.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([invoiceLineSILVER_QRY].[LINETOTAL],0)+\nIsNull([invoiceLineGOLD_QRY].[LINE" +
-                    "TOTAL],0)")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([estimateLineSILVER_QRY].[LINETOTAL],0)+\nIsNull([estimateLineGOLD_QRY].[LI" +
+                    "NETOTAL],0)\n\n")});
             this.xrTableCell21.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrTableCell21.Multiline = true;
             this.xrTableCell21.Name = "xrTableCell21";
