@@ -12,7 +12,7 @@ namespace InvEntry.Services
     {
         Task<EstimateHeader> GetHeader(string estNbr);
 
-        Task<EstimateHeader> CreatHeader(EstimateHeader estHdr);
+        Task<EstimateHeader> CreateHeader(EstimateHeader estHdr);
 
         Task UpdateHeader(EstimateHeader estHdr);
 
@@ -37,7 +37,7 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<EstimateHeader>($"api/estimate/{estNbr}");
         }
 
-        public async Task<EstimateHeader> CreatHeader(EstimateHeader estHdr)
+        public async Task<EstimateHeader> CreateHeader(EstimateHeader estHdr)
         {
             return await _mijmsApiService.Post($"api/estimate/", estHdr);
         }

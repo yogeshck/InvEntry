@@ -39,7 +39,7 @@ public partial class EstimateLine
 
     public string? ProductDesc { get; set; }
 
-    public long? ProductGkey { get; set; }
+    public int? ProductGkey { get; set; }
 
     public string? ProductName { get; set; }
 
@@ -83,7 +83,7 @@ public partial class EstimateLine
 
     public string? EstNote { get; set; }
 
-    public long? EstimateHdrGkey { get; set; }
+    public int? EstimateHdrGkey { get; set; }
 
     public string? EstimateId { get; set; }
 

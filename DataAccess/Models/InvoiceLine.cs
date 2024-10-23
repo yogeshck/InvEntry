@@ -47,7 +47,7 @@ public partial class InvoiceLine
 
     public string? ProductDesc { get; set; }
 
-    public long? ProductGkey { get; set; }
+    public int? ProductGkey { get; set; }
 
     public string? ProductName { get; set; }
 
@@ -65,7 +65,7 @@ public partial class InvoiceLine
 
     public decimal? VaPercent { get; set; }
 
-    public long? InvoiceHdrGkey { get; set; }
+    public int? InvoiceHdrGkey { get; set; }
 
     public string? InvoiceId { get; set; }
 

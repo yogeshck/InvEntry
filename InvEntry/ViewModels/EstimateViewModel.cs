@@ -382,10 +382,11 @@ public partial class EstimateViewModel: ObservableObject
         Header.Lines.ForEach(x =>
         {
             x.EstLineNbr = Header.Lines.IndexOf(x) + 1;
-            x.EstId = Header.EstNbr;
+            x.EstimateId = Header.EstNbr;
+            x.EstimateHdrGkey = Header.GKey;
         });
 
-        var header = await _estimateService.CreatHeader(Header);
+        var header = await _estimateService.CreateHeader(Header);
 
         if (header is not null)
         {
@@ -393,8 +394,9 @@ public partial class EstimateViewModel: ObservableObject
             Header.EstNbr = header.EstNbr;
             Header.Lines.ForEach(x =>
             {
-                x.EstHdrGkey = header.GKey;
-                x.EstId = header.EstNbr;
+                x.EstimateHdrGkey = header.GKey;
+                x.EstimateId = header.EstNbr;
+                x.EstimateHdrGkey = Header.GKey;
             });
             // loop for validation check for customer
             await _estimateService.CreateEstimateLine(Header.Lines);
@@ -427,7 +429,7 @@ public partial class EstimateViewModel: ObservableObject
             var printed = PrintHelper.Print(_reportFactoryService.CreateEstimateReport(Header.EstNbr));
         
             if (printed.HasValue && printed.Value)
-                _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimatee print", MessageButton.OK, MessageIcon.None);
+                _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);
     }
 
     private bool CanPrintEstimate()
@@ -438,15 +440,15 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintEstimate))]
     private void PrintPreviewEstimate()
     {
-        _reportDialogService.PrintPreview(Header.EstNbr);
+        _reportDialogService.PrintPreviewEstimate(Header.EstNbr);
         ResetEstimate();
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintEstimate))]
     private void ExportToPdf()
     {
-        //after report creation uncomment this
-        //    _reportFactoryService.CreateEstimateReportPdf(Header.EstNbr, "C:\\Madrone\\Invoice\\");
+     
+            _reportFactoryService.CreateEstimateReportPdf(Header.EstNbr, "D:\\Madrone\\Invoice\\");
     }
 
     [RelayCommand]

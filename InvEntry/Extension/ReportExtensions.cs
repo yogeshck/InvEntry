@@ -18,5 +18,13 @@ namespace InvEntry.Extension
 
             reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
+
+        public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader)
+        {
+            var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+            dialogVM.EstInit(estimateHeader);
+
+            reportDialogService.ShowDialog(null, "Estimate Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        }
     }
 }

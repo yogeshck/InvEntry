@@ -60,14 +60,14 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XtraEstimate1();
+        return new XtraEstimate();
     }
 
     public XtraReport CreateEstimateReport(string pEstimateNbr)
     {
         var report = CreateEstimateReport();
 
-        report.Parameters["pEstimateNbr"].Value = pEstimateNbr;
+        report.Parameters["paramEstNbr"].Value = pEstimateNbr;
         report.CreateDocument();
         return report;
     }

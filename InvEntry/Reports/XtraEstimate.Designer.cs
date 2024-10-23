@@ -1,6 +1,6 @@
 ﻿namespace mijmsReports
 {
-    partial class XtraEstimate1
+    partial class XtraEstimate
     {
 		/// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XtraEstimate1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XtraEstimate));
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery1 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter1 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery2 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
@@ -1756,7 +1756,7 @@
             this.calculatedField2.Name = "calculatedField2";
             this.calculatedField2.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField2_GetValue);
             // 
-            // XtraEstimate1
+            // XtraEstimate
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
             this.Detail,

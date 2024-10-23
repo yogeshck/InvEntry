@@ -65,7 +65,7 @@ public partial class InvoiceLine : BaseEntity
     private string? _productDesc;
 
     [ObservableProperty]
-    private long? _productGkey;
+    private int? _productGkey;
 
     [ObservableProperty]
     private string? _productName;
@@ -92,7 +92,7 @@ public partial class InvoiceLine : BaseEntity
     private decimal? _vaPercent;
 
     [ObservableProperty]
-    private decimal? _invoiceHdrGkey;
+    private int? _invoiceHdrGkey;
 
     [ObservableProperty]
     private string? _invoiceId;

@@ -26,5 +26,10 @@ namespace InvEntry.ViewModels
         {
             Report = _reportFactoryService.CreateInvoiceReport(pInvoiceNbr);
         }
+
+        public void EstInit(string pEstimateNbr)
+        {
+            Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr);
+        }
     }
 }

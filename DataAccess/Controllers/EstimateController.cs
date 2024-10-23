@@ -10,7 +10,7 @@ namespace DataAccess.Controllers
     [ApiController]
     public class EstimateController : ControllerBase
     {
-        private string EstimatePrefixFormat = "B{0}";
+        private string EstimatePrefixFormat = "E{0}";
 
         private IRepositoryBase<EstimateHeader> _estimateHeaderRepository;
         private IRepositoryBase<OrgCompany> _orgCompanyRepository;
@@ -55,7 +55,7 @@ namespace DataAccess.Controllers
 
             _orgCompanyRepository.Update(company);
 
-            value.EstNbr = string.Format(EstimatePrefixFormat, company?.InvId?.ToString("D4"));
+            value.EstNbr = string.Format(EstimatePrefixFormat, company?.DraftId?.ToString("D4"));
 
             _estimateHeaderRepository.Add(value);
             return value;

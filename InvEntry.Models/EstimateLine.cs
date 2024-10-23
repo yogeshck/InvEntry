@@ -10,127 +10,140 @@ namespace InvEntry.Models
     public partial class EstimateLine : BaseEntity
     {
 
-    [ObservableProperty]
-    private string? _hsnCode;
+        [ObservableProperty]
+        public string? _hsnCode;
 
-    [ObservableProperty]
-    private int? _estLineNbr;
+        [ObservableProperty]
+        public int? _estLineNbr;
 
-    [ObservableProperty]
-    private string? _estNote;
+        [ObservableProperty]
+        public decimal? _estlBilledPrice;
 
-    [ObservableProperty]
-    private decimal? _estlBilledPrice;
+        [ObservableProperty]
+        public decimal? _estlGrossAmt;
 
-    [ObservableProperty]
-    private decimal? _estlGrossAmt;
+        [ObservableProperty]
+        public decimal? _estlMakingCharges;
 
-    [ObservableProperty]
-    private decimal? _estlMakingCharges;
+        [ObservableProperty]
+        public decimal? _estlOtherCharges;
 
-    [ObservableProperty]
-    private decimal? _estlOtherCharges;
+        [ObservableProperty]
+        public decimal? _estlPayableAmt;
 
-    [ObservableProperty]
-    private decimal? _estlPayableAmt;
+        [ObservableProperty]
+        public decimal? _estlStoneAmount;
 
-    [ObservableProperty]
-    private decimal? _estlStoneAmount;
+        [ObservableProperty]
+        public decimal? _estlTaxableAmount;
 
-    [ObservableProperty]
-    private decimal? _estlTaxableAmount;
+        [ObservableProperty]
+        public decimal? _estlWastageAmt;
 
-    [ObservableProperty]
-    private decimal? _estlWastageAmt;
+        [ObservableProperty]
+        public string? _prodCategory;
 
-    [ObservableProperty]
-    private bool? _isTaxable;
+        [ObservableProperty]
+        public decimal? _prodGrossWeight;
 
-    [ObservableProperty]
-    private string? _itemNotes;
+        [ObservableProperty]
+        public decimal? _prodNetWeight;
 
-    [ObservableProperty]
-    private int? _itemPacked;
+        [ObservableProperty]
+        public int _prodQty;
 
-    [ObservableProperty]
-    private string? _prodCategory;
+        [ObservableProperty]
+        public decimal? _prodStoneWeight;
 
-    [ObservableProperty]
-    private decimal? _prodGrossWeight;
+        [ObservableProperty]
+        public string? _productDesc;
 
-    [ObservableProperty]
-    private decimal? _prodNetWeight;
+        [ObservableProperty]
+        public int? _productGkey;
 
-    [ObservableProperty]
-    private int? _prodQty;
+        [ObservableProperty]
+        public string? _productName;
 
-    [ObservableProperty]
-    private decimal? _prodStoneWeight;
+        [ObservableProperty]
+        public string? _prodPackCode;
 
-    [ObservableProperty]
-    private string? _productDesc;
+        [ObservableProperty]
+        public string? _productPurity;
 
-    [ObservableProperty]
-    private long? _productGkey;
+        [ObservableProperty]
+        public bool? _isTaxable;
 
-    [ObservableProperty]
-    private string? _productName;
+        [ObservableProperty]
+        public string? _itemNotes;
 
-    [ObservableProperty]
-    private string? _prodPackCode;
+        [ObservableProperty]
+        public bool? _itemPacked;
 
-    [ObservableProperty]
-    private string? _productPurity;
+        [ObservableProperty]
+        public decimal? _estlCgstPercent;
 
-    [ObservableProperty]
-    private decimal? _taxAmount;
+        [ObservableProperty]
+        public decimal? _estlCgstAmount;
 
-    [ObservableProperty]
-    private decimal? _taxPercent;
+        [ObservableProperty]
+        public decimal? _estlIgstPercent;
 
-    [ObservableProperty]
-    private string? _taxType;
+        [ObservableProperty]
+        public decimal? _estlIgstAmount;
 
-    [ObservableProperty]
-    private decimal? _vaAmount;
+        [ObservableProperty]
+        public decimal? _estlTotal;
 
-    [ObservableProperty]
-    private decimal? _vaPercent;
+        [ObservableProperty]
+        public decimal? _estlSgstAmount;
 
-    [ObservableProperty]
-    private decimal? _estHdrGkey;
+        [ObservableProperty]
+        public decimal? _estlSgstPercent;
 
-    [ObservableProperty]
-    private string? _estId;
+        [ObservableProperty]
+        public string? _productId;
 
-    [ObservableProperty]
-    private string? _tenantGkey;
+        [ObservableProperty]
+        public string? _metal;
 
-    [ObservableProperty]
-    private decimal? _estlCgstPercent;
+        [ObservableProperty]
+        public decimal? _taxAmount;
 
-    [ObservableProperty]
-    private decimal? _estlCgstAmount;
+        [ObservableProperty]
+        public decimal? _taxPercent;
 
-    [ObservableProperty]
-    private decimal? _estlIgstPercent;
+        [ObservableProperty]
+        public string? _taxType;
 
-    [ObservableProperty]
-    private decimal? _estlIgstAmount;
+        [ObservableProperty]
+        public decimal? _vaAmount;
 
-    [ObservableProperty]
-    private decimal? _estlTotal;
+        [ObservableProperty]
+        public decimal? _vaPercent;
 
-    [ObservableProperty]
-    private decimal? _estlSgstAmount;
+        [ObservableProperty]
+        public string? _estNote;
 
-    [ObservableProperty]
-    private decimal? _estlSgstPercent;
+        [ObservableProperty]
+        public int? _estimateHdrGkey;
 
-    [ObservableProperty]
-    private string? _productId;
+        [ObservableProperty]
+        public string? _estimateId;
 
-    [ObservableProperty]
-    private string? _metal;
+        [ObservableProperty]
+        public string? _createdBy;
+
+        [ObservableProperty]
+        public DateTime? _createdOn;
+
+        [ObservableProperty]
+        public string? _modifiedBy;
+
+        [ObservableProperty]
+        public DateTime? _modifiedOn;
+
+        [ObservableProperty]
+        public int? _tenantGkey;
+
 }
 }

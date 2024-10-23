@@ -8,10 +8,10 @@ using System.Globalization;
 
 namespace mijmsReports
 {
-    public partial class XtraEstimate1 : DevExpress.XtraReports.UI.XtraReport
+    public partial class XtraEstimate : DevExpress.XtraReports.UI.XtraReport
     {
 		private string NumberToWordsFormat = "{0} ONLY";
-        public XtraEstimate1()
+        public XtraEstimate()
         {
             InitializeComponent();
         }
