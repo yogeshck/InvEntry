@@ -49,10 +49,10 @@
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintInvoiceCommand}"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="AddNew"
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="None"
                          MinHeight="500"
                          Height="700"
-                         MaxHeight="1000"
+                         MaxHeight="900"
                          MinWidth="700"
                          Width="1450" SelectedItem="{Binding SelectedInvoice}">
             <dxmvvm:Interaction.Behaviors>
@@ -60,12 +60,59 @@
                                        Command="{Binding SelectionChangedCommand}"/>
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
-                <dxg:TableView ShowGroupPanel="False"  x:Name="tableView" NavigationStyle="Row">
-                    <dxg:TableView.ColumnMenuCustomizations>
+                <dxg:TableView  x:Name="tableView" AllowBestFit="True" NavigationStyle="Row" AllowEditing="False"
+                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True" 
+                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor"  >
+                <!--     <dxg:TableView.ColumnMenuCustomizations>
                         <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}"/>
-                    </dxg:TableView.ColumnMenuCustomizations>
+                    </dxg:TableView.ColumnMenuCustomizations> -->
                 </dxg:TableView>
             </dxg:GridControl.View>
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="InvNbr" Header="Invoice #" ReadOnly="True" Width="150" />
+                <dxg:GridColumn FieldName="InvDate" Header="Invoice Date" ReadOnly="True" Width="150" />
+                <dxg:GridColumn FieldName="GrossRcbAmount" Header="Invoice Amount" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="DiscountAmount" Header="Discount" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="AdvanceAdj" Header="Advance" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="RdAmount" Header="RD" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="AmountPayable" Header="Receivable" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="RecdAmount" Header="Received" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="InvBalance" Header="Balance" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="InvRefund" Header="Refund" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="PaymentDueDate" Header="Due Date" ReadOnly="True" Width="150" />
+            </dxg:GridControl.Columns>
         </dxg:GridControl>
         <!--<dxg:ExtendedColumnChooserControl Grid.Column="1"
                                           Owner="{Binding ElementName=tableView}" 

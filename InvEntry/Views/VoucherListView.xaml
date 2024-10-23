@@ -52,7 +52,7 @@
         <dxg:GridControl>
             
         </dxg:GridControl>
-        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="AddNew" 
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="None" 
                          MinHeight="500"
                          Height="500"
                          MaxHeight="900"
@@ -60,21 +60,32 @@
                          Width="1450" SelectedItem="{Binding SelectedVoucher}">
 
             <dxg:GridControl.View>
-                <dxg:TableView x:Name="tableView" AllowBestFit="True"
+                <dxg:TableView ShowGroupPanel="False" x:Name="tableView" AllowBestFit="True"
             EditorButtonShowMode="ShowOnlyInEditor" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True" 
+                               AllowGrouping="False" ShowAutoFilterRow="True" 
                                AutoWidth="False" ShowTotalSummary="True"/>
             </dxg:GridControl.View>
 
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="VoucherNbr" Header="Voucher #" ReadOnly="True" Width="150" />
                 <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="150" />
-                <dxg:GridColumn FieldName="TransAmount" Header="Trans Amt" >
+                <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" >
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
+                <dxg:GridColumn FieldName="TransAmount" Header="Trans. Amt" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="CbAmount" Header="Closing Cash" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>                
                 <dxg:GridColumn FieldName="RefDocNbr" Header="Ref Doc Nbr" />
+                <dxg:GridColumn FieldName="RefDocDate" Header="Ref Doc Date" />                
             </dxg:GridControl.Columns>
             
         </dxg:GridControl>

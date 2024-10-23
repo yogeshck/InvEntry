@@ -13,5 +13,12 @@ public class VoucherMetadata : IMetadataProvider<Voucher>
     public void BuildMetadata(MetadataBuilder<Voucher> builder)
     {
         builder.Property(x => x.GKey).Hidden();
+        builder.Property(x => x.CustomerGkey).Hidden();
+        builder.Property(x => x.RefDocGkey).Hidden();
+        builder.Property(x => x.FromLedgerGkey).Hidden();
+        builder.Property(x => x.ToKedgerGkey).Hidden();
+        builder.Property(x => x.FundTransferMode).Hidden();
+        builder.Property(x => x.FundTransferRefGkey).Hidden();
+        builder.Property(x => x.FundTransferDate).Hidden();
     }
 }
