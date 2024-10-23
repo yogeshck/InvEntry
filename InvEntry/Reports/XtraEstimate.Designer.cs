@@ -174,6 +174,7 @@
             this.totalMetalWeight = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell21 = new DevExpress.XtraReports.UI.XRTableCell();
             this.calculatedField2 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.paramEstNbr = new DevExpress.XtraReports.Parameters.Parameter();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
@@ -895,7 +896,7 @@
             customSqlQuery1.Name = "estimateLine";
             queryParameter1.Name = "paramEstNbr";
             queryParameter1.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter1.Value = new DevExpress.DataAccess.Expression("?pInvoiceNbr", typeof(string));
+            queryParameter1.Value = new DevExpress.DataAccess.Expression("?paramEstNbr", typeof(string));
             customSqlQuery1.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter1});
             customSqlQuery1.Sql = resources.GetString("customSqlQuery1.Sql");
@@ -903,7 +904,7 @@
             customSqlQuery2.Name = "OrgCustInvHeader";
             queryParameter2.Name = "paramEstNbr";
             queryParameter2.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter2.Value = new DevExpress.DataAccess.Expression("?pInvoiceNbr", typeof(string));
+            queryParameter2.Value = new DevExpress.DataAccess.Expression("?paramEstNbr", typeof(string));
             customSqlQuery2.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter2});
             customSqlQuery2.Sql = resources.GetString("customSqlQuery2.Sql");
@@ -911,7 +912,7 @@
             customSqlQuery3.Name = "GOLD_QRY";
             queryParameter3.Name = "Parameter1";
             queryParameter3.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter3.Value = new DevExpress.DataAccess.Expression("?pInvoiceNbr", typeof(string));
+            queryParameter3.Value = new DevExpress.DataAccess.Expression("?paramEstNbr", typeof(string));
             customSqlQuery3.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter3});
             customSqlQuery3.Sql = resources.GetString("customSqlQuery3.Sql");
@@ -919,7 +920,7 @@
             customSqlQuery4.Name = "SILVER_QRY";
             queryParameter4.Name = "Parameter1";
             queryParameter4.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter4.Value = new DevExpress.DataAccess.Expression("?pInvoiceNbr", typeof(string));
+            queryParameter4.Value = new DevExpress.DataAccess.Expression("?paramEstNbr", typeof(string));
             customSqlQuery4.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter4});
             customSqlQuery4.Sql = resources.GetString("customSqlQuery4.Sql");
@@ -1756,6 +1757,10 @@
             this.calculatedField2.Name = "calculatedField2";
             this.calculatedField2.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField2_GetValue);
             // 
+            // paramEstNbr
+            // 
+            this.paramEstNbr.Name = "paramEstNbr";
+            // 
             // XtraEstimate
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -1776,7 +1781,8 @@
             this.ParameterPanelLayoutItems.AddRange(new DevExpress.XtraReports.Parameters.ParameterPanelLayoutItem[] {
             new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pInvoiceNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
-            this.pInvoiceNbr});
+            this.pInvoiceNbr,
+            this.paramEstNbr});
             this.StyleSheet.AddRange(new DevExpress.XtraReports.UI.XRControlStyle[] {
             this.baseControlStyle});
             this.Version = "24.1";
@@ -1925,5 +1931,6 @@
         private DevExpress.XtraReports.UI.XRPictureBox vendorLogo;
         private DevExpress.XtraReports.UI.XRLabel xrLabel15;
         private DevExpress.XtraReports.UI.CalculatedField calculatedField2;
+        private DevExpress.XtraReports.Parameters.Parameter paramEstNbr;
     }
 }
