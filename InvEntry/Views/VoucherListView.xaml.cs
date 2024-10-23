@@ -1,4 +1,5 @@
-﻿using DevExpress.Xpf.WindowsUI;
+﻿using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.WindowsUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace InvEntry.Views
         public VoucherListView()
         {
             InitializeComponent();
+            GridControl.AllowInfiniteGridSize = true;
         }
     }
 }
