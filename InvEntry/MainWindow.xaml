@@ -15,7 +15,7 @@
     xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
         xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
         xmlns:dxr="http://schemas.devexpress.com/winfx/2008/xaml/ribbon"
-    Title="InvEntry" Height="800" Width="1000"
+    Title="InvEntry" Height="700" Width="800"
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True"
         WindowState="Maximized"
