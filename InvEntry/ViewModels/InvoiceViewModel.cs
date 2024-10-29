@@ -645,8 +645,9 @@ public partial class InvoiceViewModel : ObservableObject
             Header.IgstAmount = 0;
         }
 
+        Header.InvlTaxableAmount = BeforeTax;
+
         // After Tax Gross Value
-        Header.GrossRcbAmount = 0;
         Header.GrossRcbAmount = BeforeTax +
                                 Header.CgstAmount.GetValueOrDefault() +
                                 Header.SgstAmount.GetValueOrDefault() +
@@ -668,7 +669,6 @@ public partial class InvoiceViewModel : ObservableObject
         payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
                         Header.DiscountAmount.GetValueOrDefault();
 
-        Header.AmountPayable = 0;
         Header.AmountPayable = MathUtils.Normalize(payableValue);
 
         Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
@@ -677,6 +677,7 @@ public partial class InvoiceViewModel : ObservableObject
                 Header.AdvanceAdj.GetValueOrDefault() +
                 Header.RdAmountAdj.GetValueOrDefault()
              );
+
 
         if (invBalanceChk)
         {

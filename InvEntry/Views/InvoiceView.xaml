@@ -35,7 +35,7 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         <dxb:BarContainerControl>
-            <dxb:MainMenuControl>
+            <dxb:MainMenuControl Width="1200" HorizontalAlignment="Left">
                 <dxb:BarButtonItem x:Name="btnReset" Content="Reset Invoice"
                    BarItemDisplayMode="ContentAndGlyph"
                    GlyphAlignment="Top"
@@ -70,6 +70,7 @@
                                     Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
                                     Alignment="Far" BarItemDisplayMode="ContentAndGlyph"
                                     Glyph=".\Images\diamond.svg" GlyphAlignment="Top" GlyphSize="Medium"/>
+                <dxb:BarStaticItem Alignment="Far" ItemWidth="10"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxlc:LayoutControl AllowItemSizing="True" 
@@ -83,6 +84,26 @@
                 <Style TargetType="dxlc:LayoutItem">
                     <Setter Property="LabelStyle" Value="{StaticResource labelStyle}"/>
                 </Style>
+                <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEdit">
+                    <Setter Property="MaskType" Value="Numeric" />
+                    <Setter Property="Mask" Value="#,##,##,##,###.00" />
+                    <Setter Property="MaskShowPlaceHolders" Value="False" />
+                    <Setter Property="MaskUseAsDisplayFormat" Value="True" />
+                    <Setter Property="Width" Value="150"/>
+                    <Setter Property="Height" Value="35"/>
+                </Style>
+                <DataTemplate x:Key="RsTemplate">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding}"/>
+                        <TextBlock Text="(Rs.)" 
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Right" 
+                                   FontSize="9"
+                                   Margin="5,0,0,0"
+                                   Width="20"/>
+                        <!-- Margin: Left,Top,Right,Bottom-->
+                    </StackPanel>
+                </DataTemplate>
             </dxlc:LayoutControl.Resources>
             <dxlc:LayoutGroup Orientation="Vertical" >
                 <dxlc:LayoutGroup Orientation="Horizontal">
@@ -126,185 +147,238 @@
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
-                            <!--<dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
+                            <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
                                 <dxg:LookUpEdit Width="450" EditValue="{Binding CustomerState}" 
                                                 ItemsSource="{Binding StateReferencesList}"
                                                 DisplayMember="RefValue" >
                                     <dxg:LookUpEdit.PopupContentTemplate>
                                         <ControlTemplate>
                                             <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
-                                            <dxg:GridControl.Columns>
+                                                <dxg:GridControl.Columns>
                                                     <dxg:GridColumn FieldName="RefCode"/>
                                                     <dxg:GridColumn FieldName="RefValue"/>
-                                            </dxg:GridControl.Columns>
-                                            <dxg:GridControl.View>
-                                                <dxg:TableView AutoWidth="True"/>
-                                            </dxg:GridControl.View>
-                                        </dxg:GridControl>
+                                                </dxg:GridControl.Columns>
+                                                <dxg:GridControl.View>
+                                                    <dxg:TableView AutoWidth="True"/>
+                                                </dxg:GridControl.View>
+                                            </dxg:GridControl>
                                         </ControlTemplate>
                                     </dxg:LookUpEdit.PopupContentTemplate>
-                                </dxg:LookUpEdit> 
-                            </dxlc:LayoutItem>-->
+                                </dxg:LookUpEdit>
+                            </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
                     <dxlc:LayoutGroup HorizontalAlignment="Left" 
-                                 VerticalAlignment="Top" 
+                                 VerticalAlignment="Center" 
                                 Orientation="Horizontal" View="GroupBox" Header="Invoice Amount"
-                                IsCollapsible="True">
-                        <dxlc:LayoutGroup Orientation="Vertical" Width="250" >
+                                IsCollapsible="True" Width="709">
+                        <dxlc:LayoutGroup Orientation="Vertical" Width="220" >
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Lines Total" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.InvlTaxTotal}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
+                                <dxlc:LayoutItem Label="Lines Total " Width="220"
+                                                 HorizontalAlignment="Left" 
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}" 
+                                                  EditValue="{Binding Header.InvlTaxTotal}" Width="120"
+                                                  HorizontalContentAlignment="Right"
+                                                  FontSize="12"
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Old Gold" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.OldGoldAmount}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
+                                <dxlc:LayoutItem Label="Old Gold    " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center" 
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.OldGoldAmount}" 
+                                                  Width="120"
+                                                  HorizontalContentAlignment="Right"
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Old Silver" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.OldSilverAmount}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
+                                <dxlc:LayoutItem Label="Old Silver   " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">                                                 
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.OldSilverAmount}" 
+                                                  Width="120"
+                                                  HorizontalContentAlignment="Right"
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Grand Total" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.GrossRcbAmount}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
+                                <dxlc:LayoutItem Label="Taxable      " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center" 
+                                                 LabelTemplate="{StaticResource RsTemplate}">                                                 
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.InvlTaxableAmount}" 
+                                                  Width="120"
+                                                  FontWeight="Bold"
+                                                  HorizontalContentAlignment="Right"
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Discount" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Width="120"
-                                      HorizontalContentAlignment="Right">
-                                    <dxmvvm:Interaction.Behaviors>
-                                    <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                            <!--<dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="Discount" HorizontalAlignment="Left" Width="200"
+                                                 VerticalAlignment="Center">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValuePostMode="Immediate"
+                                                  EditValue="{Binding Header.DiscountAmount}" Width="120"
+                                                  HorizontalContentAlignment="Right" >
+                                        <dxmvvm:Interaction.Behaviors>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged"
                                                                    Command="{Binding EvaluateHeaderCommand}"/>
-                                </dxmvvm:Interaction.Behaviors>
+                                        </dxmvvm:Interaction.Behaviors>
                                     </dxe:TextEdit>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>-->
+                            <dxlc:LayoutItem Label="Discount    " HorizontalAlignment="Left" Width="220"
+                                             LabelTemplate="{StaticResource RsTemplate}">
+                                <dxe:TextEdit EditValue="{Binding Header.DiscountAmount}" Width="120"
+                                              HorizontalContentAlignment="Right">
+                                    <dxmvvm:Interaction.Behaviors>
+                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                                   Command="{Binding EvaluateHeaderCommand}"/>
+                                    </dxmvvm:Interaction.Behaviors>
+                                </dxe:TextEdit>
+                            </dxlc:LayoutItem>
+                        </dxlc:LayoutGroup>
+                        <dxlc:LayoutGroup Orientation="Vertical" >
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="SGST           " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.SgstAmount}" Width="120"
+                                                  HorizontalContentAlignment="Right"
+                                                  FontSize="12"
+                                                  IsReadOnly="True" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="CGST           " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.CgstAmount}" Width="120"
+                                                  HorizontalContentAlignment="Right"
+                                                  IsReadOnly="True" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="IGST            " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit   Style="{StaticResource NumberFormatStyle}"
+                                                    EditValue="{Binding Header.IgstAmount}" Width="120"
+                                                HorizontalContentAlignment="Right"
+                                                IsReadOnly="True" />
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="Round Off  " HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.RoundOff}" Width="120"
+                                                  HorizontalContentAlignment="Right"
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="Grand Total" HorizontalAlignment="Left" Width="220"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.GrossRcbAmount}" 
+                                                  Width="120"
+                                                  FontWeight="Bold"
+                                                  HorizontalContentAlignment="Right" 
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup Orientation="Vertical">
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="SGST" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.SgstAmount}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="CGST" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.CgstAmount}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="IGST" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.IgstAmount}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Round Off" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.RoundOff}" Width="120"
-                                      IsReadOnly="True" HorizontalContentAlignment="Right"/>
-                            </dxlc:LayoutGroup>
-                        </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup Orientation="Vertical">
+                        <dxlc:LayoutGroup Orientation="Vertical" Width="220" Margin="15,0,-27,0">
                             <dxlc:LayoutGroup.Resources>
                                 <Style TargetType="dxe:TextEdit">
                                     <Setter Property="Width" Value="150"/>
                                     <Setter Property="Height" Value="35"/>
-                                    <Setter Property="FontSize" Value="14"/>                                    
+                                    <Setter Property="FontSize" Value="14"/>
                                 </Style>
                             </dxlc:LayoutGroup.Resources>
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Advance" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.AdvanceAdj}" Width="120"
-                                      HorizontalContentAlignment="Right">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="RD" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.RdAmountAdj}" Width="120"
-                                      HorizontalContentAlignment="Right">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Received" HorizontalAlignment="Left" Width="70"
-                                                 VerticalAlignment="Center"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.RecdAmount}" FontWeight="Bold" Width="120"
-                                      HorizontalContentAlignment="Right">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <dxmvvm:EventToCommand EventName="EditValueChanged" 
-                                                                   Command="{Binding EvaluateHeaderCommand}"/>
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Balance" HorizontalAlignment="Left" Width="70"
+                                <dxlc:LayoutItem Label="Advance  " HorizontalAlignment="Left" Width="210"
                                                  VerticalAlignment="Center"
-                                                 Visibility="{Binding IsBalance, 
-                                                            Converter={dxmvvm:BooleanToVisibilityConverter}}"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.InvBalance}" FontWeight="Bold" Width="120"
-                                      HorizontalContentAlignment="Right" IsReadOnly="True">
-                                </dxe:TextEdit>
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit
+                                                  EditValue="{Binding Header.AdvanceAdj}" Width="120"
+                                                  HorizontalContentAlignment="Right" >
+                                        <dxmvvm:Interaction.Behaviors>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                               Command="{Binding EvaluateHeaderCommand}"/>
+                                        </dxmvvm:Interaction.Behaviors>
+                                    </dxe:TextEdit>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="Refund" HorizontalAlignment="Left" Width="70"
+                                <dxlc:LayoutItem Label="RD           " HorizontalAlignment="Left" Width="210"
                                                  VerticalAlignment="Center"
-                                                 Visibility="{Binding IsBalance, 
-                                                            Converter={dxmvvm:BooleanToVisibilityConverter}}"/>
-                                <dxlc:LayoutItem Label="(Rs.)" VerticalAlignment="Center" 
-                                                 HorizontalAlignment="Left" FontSize="9"/>
-                                <dxe:TextEdit EditValue="{Binding Header.InvRefund}" FontWeight="Bold" Width="120"
-                                      HorizontalContentAlignment="Right" IsReadOnly="True">
-                                </dxe:TextEdit>
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit 
+                                                  EditValue="{Binding Header.RdAmountAdj}" Width="120"
+                                                  HorizontalContentAlignment="Right" >
+                                        <dxmvvm:Interaction.Behaviors>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" 
+                                                               Command="{Binding EvaluateHeaderCommand}"/>
+                                        </dxmvvm:Interaction.Behaviors>
+                                    </dxe:TextEdit>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
-                            <dxlc:LayoutItem Label="Due Date">
-                                <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"/>
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="Received " HorizontalAlignment="Left" Width="210"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit   Style="{StaticResource NumberFormatStyle}"
+                                                EditValue="{Binding Header.RecdAmount}" 
+                                                Width="120"
+                                                FontWeight="Bold"
+                                                HorizontalContentAlignment="Right" 
+                                                IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup Orientation="Horizontal" Visibility="{Binding IsBalance, 
+                                    Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                                <dxlc:LayoutItem LabelTemplate="{StaticResource RsTemplate}" 
+                                                 Label="Balance   " HorizontalAlignment="Left" Width="210"
+                                                 VerticalAlignment="Center" >
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.InvBalance}" 
+                                                  Width="120"
+                                                  FontWeight="Bold"
+                                                  HorizontalContentAlignment="Right"
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup Orientation="Horizontal" Visibility="{Binding IsRefund, 
+                                                Converter={dxmvvm:BooleanToVisibilityConverter}}">
+                                <dxlc:LayoutItem Label="Refund    " HorizontalAlignment="Left" Width="210"
+                                                 VerticalAlignment="Center"
+                                                 LabelTemplate="{StaticResource RsTemplate}">
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                                  EditValue="{Binding Header.InvRefund}" 
+                                                  Width="120"
+                                                  FontWeight="Bold"
+                                                  HorizontalContentAlignment="Right" 
+                                                  IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                            <dxlc:LayoutItem Label="Due Date" HorizontalAlignment="Left" Width="210"
+                                                 VerticalAlignment="Center">
+                                <dxe:DateEdit EditValue="{Binding Header.PaymentDueDate}" IsTabStop="False"
+                                              Height="35" Width="120" FontSize="14"/>
                             </dxlc:LayoutItem>
                             <!--       <dxlc:LayoutItem>
                                 <dx:SimpleButton Content="AddReceipts" Command="{Binding AddReceiptsCommand}"/>
@@ -312,7 +386,6 @@
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical"/>
-
                 </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup View="Tabs">
                     <dxlc:LayoutGroup Header="Invoice Line">
@@ -356,7 +429,7 @@
                                         <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="ProductName" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
-                                        <dxg:GridColumn FieldName="ProdQty" Header="Quantity" Width="60"/>
+                                        <dxg:GridColumn FieldName="ProdQty" Header="Qty" Width="60"/>
                                         <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
                                         <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
                                         <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight" ReadOnly="True"/>
@@ -538,7 +611,7 @@
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
-                    
+
 
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>

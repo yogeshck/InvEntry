@@ -43,10 +43,10 @@
                                                  Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
                                                  Content="Invoice List View"
-                                                 Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
+                                                 Glyph="{dx:DXImage 'Office2013/Reports/InsertHeader_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:VoucherListView}"
                                                  Content="Voucher List View"
-                                                 Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
+                                                 Glyph="{dx:DXImage 'Images/Business Objects/BOReport2_32x32.png'}"/>
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:EstimateEntryPage}"
                                                  Content="Estimate "
                                                  Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
