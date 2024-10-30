@@ -46,6 +46,4 @@ public partial class OrgCompany
     public string? GstNbr { get; set; }
 
     public bool? ThisCompany { get; set; }
-
-    public virtual OrgAddress? AddressGkeyNavigation { get; set; }
 }

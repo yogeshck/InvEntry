@@ -147,25 +147,45 @@
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
-                            <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                                <dxg:LookUpEdit Width="450" EditValue="{Binding CustomerState}" 
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
+                                    <dxg:LookUpEdit Width="225" EditValue="{Binding CustomerState}" 
                                                 ItemsSource="{Binding StateReferencesList}"
                                                 DisplayMember="RefValue" >
-                                    <dxg:LookUpEdit.PopupContentTemplate>
-                                        <ControlTemplate>
-                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
-                                                <dxg:GridControl.Columns>
-                                                    <dxg:GridColumn FieldName="RefCode"/>
-                                                    <dxg:GridColumn FieldName="RefValue"/>
-                                                </dxg:GridControl.Columns>
-                                                <dxg:GridControl.View>
-                                                    <dxg:TableView AutoWidth="True"/>
-                                                </dxg:GridControl.View>
-                                            </dxg:GridControl>
-                                        </ControlTemplate>
-                                    </dxg:LookUpEdit.PopupContentTemplate>
-                                </dxg:LookUpEdit>
-                            </dxlc:LayoutItem>
+                                        <dxg:LookUpEdit.PopupContentTemplate>
+                                            <ControlTemplate>
+                                                <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
+                                                    <dxg:GridControl.Columns>
+                                                        <dxg:GridColumn FieldName="RefCode"/>
+                                                        <dxg:GridColumn FieldName="RefValue"/>
+                                                    </dxg:GridControl.Columns>
+                                                    <dxg:GridControl.View>
+                                                        <dxg:TableView AutoWidth="True"/>
+                                                    </dxg:GridControl.View>
+                                                </dxg:GridControl>
+                                            </ControlTemplate>
+                                        </dxg:LookUpEdit.PopupContentTemplate>
+                                    </dxg:LookUpEdit>
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Sales Person" LabelPosition="Top" HorizontalAlignment="Left" >
+                                    <dxg:LookUpEdit Width="225" EditValue="{Binding SalesPerson}" 
+                                                ItemsSource="{Binding SalesPersonReferencesList}"
+                                                DisplayMember="RefValue" >
+                                        <dxg:LookUpEdit.PopupContentTemplate>
+                                            <ControlTemplate>
+                                                <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
+                                                    <dxg:GridControl.Columns>
+                                                        <dxg:GridColumn FieldName="RefValue"/>
+                                                    </dxg:GridControl.Columns>
+                                                    <dxg:GridControl.View>
+                                                        <dxg:TableView AutoWidth="True"/>
+                                                    </dxg:GridControl.View>
+                                                </dxg:GridControl>
+                                            </ControlTemplate>
+                                        </dxg:LookUpEdit.PopupContentTemplate>
+                                    </dxg:LookUpEdit>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>

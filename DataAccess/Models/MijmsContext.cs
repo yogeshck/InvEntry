@@ -17,8 +17,6 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<DailyRate> DailyRates { get; set; }
 
-    public virtual DbSet<DayBookView> DayBookViews { get; set; }
-
     public virtual DbSet<EstimateHeader> EstimateHeaders { get; set; }
 
     public virtual DbSet<EstimateLine> EstimateLines { get; set; }
@@ -28,6 +26,8 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
 
     public virtual DbSet<InvoiceLine> InvoiceLines { get; set; }
+
+    public virtual DbSet<LocalityVillagePincodeFinalMar2017> LocalityVillagePincodeFinalMar2017s { get; set; }
 
     public virtual DbSet<Metal> Metals { get; set; }
 
@@ -47,7 +47,11 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<OrgCustomer> OrgCustomers { get; set; }
 
+    public virtual DbSet<OrgCustomerAddressView> OrgCustomerAddressViews { get; set; }
+
     public virtual DbSet<OrgGeoLocation> OrgGeoLocations { get; set; }
+
+    public virtual DbSet<OrgPlace> OrgPlaces { get; set; }
 
     public virtual DbSet<OrgThisCompanyView> OrgThisCompanyViews { get; set; }
 
@@ -57,15 +61,15 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<ProductStock> ProductStocks { get; set; }
 
-    public virtual DbSet<ProductStockOldsystem> ProductStockOldsystems { get; set; }
-
     public virtual DbSet<ProductTransaction> ProductTransactions { get; set; }
+
+    public virtual DbSet<Rawplace> Rawplaces { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -98,63 +102,6 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Purity)
                 .HasMaxLength(20)
                 .HasColumnName("PURITY");
-        });
-
-        modelBuilder.Entity<DayBookView>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("day_book_view");
-
-            entity.Property(e => e.CbAmount)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("cb_amount");
-            entity.Property(e => e.CustomerGkey).HasColumnName("customer_gkey");
-            entity.Property(e => e.FromLedgerGkey).HasColumnName("from_ledger_gkey");
-            entity.Property(e => e.FundTransferDate)
-                .HasColumnType("datetime")
-                .HasColumnName("fund_transfer_date");
-            entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
-            entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("gkey");
-            entity.Property(e => e.Mode)
-                .HasMaxLength(50)
-                .HasColumnName("mode");
-            entity.Property(e => e.ObAmount)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("ob_amount");
-            entity.Property(e => e.RefDocDate)
-                .HasColumnType("datetime")
-                .HasColumnName("ref_doc_date");
-            entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
-            entity.Property(e => e.RefDocNbr)
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("ref_doc_nbr");
-            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
-            entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
-            entity.Property(e => e.TransAmount)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("trans_amount");
-            entity.Property(e => e.TransDate)
-                .HasColumnType("datetime")
-                .HasColumnName("trans_date");
-            entity.Property(e => e.TransDesc).HasColumnName("trans_desc");
-            entity.Property(e => e.Transtype)
-                .HasMaxLength(50)
-                .HasColumnName("TRANSTYPE");
-            entity.Property(e => e.VoucherDate)
-                .HasColumnType("datetime")
-                .HasColumnName("voucher_date");
-            entity.Property(e => e.VoucherNbr)
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("voucher_nbr");
-            entity.Property(e => e.VoucherType)
-                .HasMaxLength(50)
-                .HasColumnName("voucher_type");
         });
 
         modelBuilder.Entity<EstimateHeader>(entity =>
@@ -646,6 +593,9 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("ROUND_OFF");
+            entity.Property(e => e.SalesPerson)
+                .HasMaxLength(50)
+                .HasColumnName("SALES_PERSON");
             entity.Property(e => e.SgstAmount)
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
@@ -763,9 +713,7 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PROD_PACK_CODE");
-            entity.Property(e => e.ProdQty)
-                .HasDefaultValue(1)
-                .HasColumnName("PROD_QTY");
+            entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
             entity.Property(e => e.ProdStoneWeight)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("PROD_STONE_WEIGHT");
@@ -805,13 +753,38 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("VA_PERCENT");
         });
 
+        modelBuilder.Entity<LocalityVillagePincodeFinalMar2017>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("Locality_village_pincode_final_mar-2017");
+
+            entity.Property(e => e.Districtname)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Officename)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Pincode)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.StateName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.SubDistname)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("Sub-distname");
+            entity.Property(e => e.Villagename)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<Metal>(entity =>
         {
             entity.HasKey(e => e.Gkey).HasName("METALS_PK");
 
             entity.ToTable("METALS");
-
-            entity.HasIndex(e => e.Gkey, "METALS_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
@@ -858,8 +831,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("PK_old_metal_transaction");
 
             entity.ToTable("OLD_METAL_TRANSACTION");
-
-            entity.HasIndex(e => e.Gkey, "IX_old_metal_transaction");
 
             entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
@@ -935,15 +906,10 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<OrgAddress>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("ORG_ADDRESS_PK");
+            entity
+                .HasNoKey()
+                .ToTable("ORG_ADDRESS");
 
-            entity.ToTable("ORG_ADDRESS");
-
-            entity.HasIndex(e => e.Gkey, "ORG_ADDRESS_PK_2").IsUnique();
-
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedNever()
-                .HasColumnName("GKEY");
             entity.Property(e => e.AddressLine1)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -979,6 +945,7 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("DISTRICT");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GstStateCode)
                 .HasMaxLength(3)
                 .IsUnicode(false)
@@ -1004,8 +971,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("BANK_DETAILS_PK");
 
             entity.ToTable("ORG_BANK_DETAILS");
-
-            entity.HasIndex(e => e.Gkey, "BANK_DETAILS_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
@@ -1120,10 +1085,6 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("TIN_NBR");
-
-            entity.HasOne(d => d.AddressGkeyNavigation).WithMany(p => p.OrgCompanies)
-                .HasForeignKey(d => d.AddressGkey)
-                .HasConstraintName("FK_ORG_COMPANY_ORG_ADDRESS");
         });
 
         modelBuilder.Entity<OrgContact>(entity =>
@@ -1131,8 +1092,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("MOBILE_PK");
 
             entity.ToTable("ORG_CONTACT");
-
-            entity.HasIndex(e => e.Gkey, "MOBILE_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
@@ -1153,8 +1112,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("EMAIL_PK");
 
             entity.ToTable("ORG_CONTACT_EMAIL");
-
-            entity.HasIndex(e => e.Gkey, "EMAIL_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
@@ -1179,8 +1136,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("ORG_CUSTOMER_PK");
 
             entity.ToTable("ORG_CUSTOMER");
-
-            entity.HasIndex(e => e.Gkey, "ORG_CUSTOMER_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AddressGkey).HasColumnName("ADDRESS_GKEY");
@@ -1253,13 +1208,82 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
         });
 
+        modelBuilder.Entity<OrgCustomerAddressView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("ORG_CUSTOMER_ADDRESS_VIEW");
+
+            entity.Property(e => e.AddLine1)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("addLine1");
+            entity.Property(e => e.AddLine2)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("addLine2");
+            entity.Property(e => e.AddLine3)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("addLine3");
+            entity.Property(e => e.Area)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("area");
+            entity.Property(e => e.City)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("city");
+            entity.Property(e => e.Country)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("country");
+            entity.Property(e => e.CreditAvailed)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .HasColumnName("credit_availed");
+            entity.Property(e => e.CustGstCode)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .HasColumnName("cust_gst_code");
+            entity.Property(e => e.CustStatus)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("cust_status");
+            entity.Property(e => e.CustType)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("cust_type");
+            entity.Property(e => e.CustomerName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("customer_name");
+            entity.Property(e => e.CustomerSince)
+                .HasColumnType("datetime")
+                .HasColumnName("customer_since");
+            entity.Property(e => e.District)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("district");
+            entity.Property(e => e.PanNbr)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("panNbr");
+            entity.Property(e => e.Salutations)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("salutations");
+            entity.Property(e => e.State)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("state");
+        });
+
         modelBuilder.Entity<OrgGeoLocation>(entity =>
         {
             entity.HasKey(e => e.Gkey).HasName("PK__ORG_GEO___5F3369A044869AB7");
 
             entity.ToTable("ORG_GEO_LOCATIONS");
-
-            entity.HasIndex(e => e.Gkey, "SYS_C009033").IsUnique();
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
@@ -1284,6 +1308,31 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PINCODE");
+        });
+
+        modelBuilder.Entity<OrgPlace>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("ORG_PLACES");
+
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
+            entity.Property(e => e.DistrictName)
+                .HasMaxLength(100)
+                .HasColumnName("district_name");
+            entity.Property(e => e.LocalityVillageName)
+                .HasMaxLength(100)
+                .HasColumnName("locality_village_name");
+            entity.Property(e => e.Pincode).HasColumnName("pincode");
+            entity.Property(e => e.PostOfficeName)
+                .HasMaxLength(100)
+                .HasColumnName("post_office_name");
+            entity.Property(e => e.StateName)
+                .HasMaxLength(100)
+                .HasColumnName("state_name");
+            entity.Property(e => e.SubDistrictName)
+                .HasMaxLength(100)
+                .HasColumnName("sub_district_name");
         });
 
         modelBuilder.Entity<OrgThisCompanyView>(entity =>
@@ -1356,8 +1405,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("PRODUCT_GROUP_PK");
 
             entity.ToTable("PRODUCT_GROUP");
-
-            entity.HasIndex(e => e.Gkey, "PRODUCT_GROUP_PK_2").IsUnique();
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()
@@ -1516,40 +1563,6 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("WASTAGE_PERCENT");
         });
 
-        modelBuilder.Entity<ProductStockOldsystem>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("product_stock_oldsystem");
-
-            entity.Property(e => e.Categoryname).HasMaxLength(20);
-            entity.Property(e => e.Created).HasColumnType("datetime");
-            entity.Property(e => e.EstAmt).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.GrWtGram).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.GrossWt).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Mcharge).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.MilliGram).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.ProdName).HasMaxLength(20);
-            entity.Property(e => e.ProdcuctCode).HasMaxLength(20);
-            entity.Property(e => e.ProductType).HasMaxLength(20);
-            entity.Property(e => e.Purity)
-                .HasMaxLength(20)
-                .HasColumnName("purity");
-            entity.Property(e => e.Qty).HasColumnName("qty");
-            entity.Property(e => e.Rate).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.StoneAmt).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.StoneGrWtGram).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.StoneWtMilliGram).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.StoneWtNet).HasColumnType("decimal(9, 2)");
-            entity.Property(e => e.StoreId)
-                .HasMaxLength(20)
-                .HasColumnName("store_id");
-            entity.Property(e => e.Wastage)
-                .HasColumnType("decimal(9, 2)")
-                .HasColumnName("wastage");
-        });
-
         modelBuilder.Entity<ProductTransaction>(entity =>
         {
             entity
@@ -1589,6 +1602,33 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.UnitTransPrice)
                 .HasColumnType("decimal(19, 2)")
                 .HasColumnName("UNIT_TRANS_PRICE");
+        });
+
+        modelBuilder.Entity<Rawplace>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("rawplaces");
+
+            entity.Property(e => e.Districtname)
+                .HasMaxLength(100)
+                .HasColumnName("districtname");
+            entity.Property(e => e.Officename)
+                .HasMaxLength(100)
+                .HasColumnName("officename");
+            entity.Property(e => e.Pincode)
+                .HasMaxLength(10)
+                .IsFixedLength()
+                .HasColumnName("pincode");
+            entity.Property(e => e.StateName)
+                .HasMaxLength(100)
+                .HasColumnName("state_name");
+            entity.Property(e => e.SubDistname)
+                .HasMaxLength(100)
+                .HasColumnName("sub_distname");
+            entity.Property(e => e.Villagename)
+                .HasMaxLength(100)
+                .HasColumnName("villagename");
         });
 
         modelBuilder.Entity<Voucher>(entity =>

@@ -132,6 +132,9 @@ public partial class InvoiceHeader : BaseEntity
     private string? gstLocBuyer;
 
     [ObservableProperty]
+    public string? salesPerson;
+
+    [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<InvoiceLine>? lines;
 

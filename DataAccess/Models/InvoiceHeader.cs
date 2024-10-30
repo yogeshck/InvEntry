@@ -86,4 +86,6 @@ public partial class InvoiceHeader
     public decimal? GrossRcbAmount { get; set; }
 
     public decimal? InvlTaxTotal { get; set; }
+
+    public string? SalesPerson { get; set; }
 }

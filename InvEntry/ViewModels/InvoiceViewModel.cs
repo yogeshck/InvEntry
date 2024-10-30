@@ -33,6 +33,9 @@ public partial class InvoiceViewModel : ObservableObject
     private MtblReference _customerState;
 
     [ObservableProperty]
+    private MtblReference _salesPerson;
+
+    [ObservableProperty]
     private Customer _buyer;
 
     [ObservableProperty]
@@ -69,6 +72,9 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
+    private ObservableCollection<MtblReference> salesPersonReferencesList;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> stateReferencesList;
 
     public ICommand ShowWindowCommand { get; set; }
@@ -91,6 +97,7 @@ public partial class InvoiceViewModel : ObservableObject
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
+
     private decimal IGSTPercent = 0M;
     private decimal SCGSTPercent = 3M;
 
@@ -113,8 +120,6 @@ public partial class InvoiceViewModel : ObservableObject
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
     {
-
-        //MtblRefNameList = new();
 
         SetHeader();
         _customerService = customerService;
@@ -142,6 +147,7 @@ public partial class InvoiceViewModel : ObservableObject
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
+        PopulateSalesPersonList();
         //PopulateUnboundHeaderDataMap();
     }
 
@@ -149,6 +155,23 @@ public partial class InvoiceViewModel : ObservableObject
     {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
+    }
+
+    private async void PopulateSalesPersonList()
+    {
+        var salesPersonRefList = await _mtblReferencesService.GetReferenceList("SALES_PERSON");
+
+        if (salesPersonRefList is null)
+        {
+            SalesPersonReferencesList = new();
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
+            return;
+        }
+
+        SalesPersonReferencesList = new(salesPersonRefList);
+
     }
 
     private async void PopulateStateList()
@@ -213,6 +236,13 @@ public partial class InvoiceViewModel : ObservableObject
         Header.CgstPercent = GetGSTWithinState();
         Header.SgstPercent = GetGSTWithinState();
         Header.IgstPercent = IGSTPercent;
+    }
+
+    partial void OnSalesPersonChanged(MtblReference value)
+    {
+        if (Buyer is null) return;
+
+        Header.SalesPerson = value.RefValue;
     }
 
     [RelayCommand]
@@ -451,6 +481,7 @@ public partial class InvoiceViewModel : ObservableObject
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = (int?)Buyer.GKey;
 
+        // this loop required? - repetition???
         Header.Lines.ForEach(x =>
         {
             x.InvLineNbr = Header.Lines.IndexOf(x) + 1;
@@ -463,6 +494,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             Header.GKey = header.GKey;
             Header.InvNbr = header.InvNbr;
+
             Header.Lines.ForEach(x => 
             {
                 x.InvoiceHdrGkey = header.GKey; 
