@@ -1,21 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.Xpf.Grid;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
-using InvEntry.Utils;
 using InvEntry.Utils.Options;
-using InvEntry.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows; 
-using System.Windows.Forms;
 
 namespace InvEntry.ViewModels;
 
@@ -72,8 +66,4 @@ public partial class InvoiceListViewModel : ObservableObject
         PrintInvoiceCommand.NotifyCanExecuteChanged();
     }
 
-/*    private void Button_Click_Print(object sender, RoutedEventArgs e)
-    {
-
-    }*/
 }
