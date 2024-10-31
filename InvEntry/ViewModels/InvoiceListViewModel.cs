@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows; 
 using System.Windows.Forms;
 
 namespace InvEntry.ViewModels;
@@ -70,4 +71,9 @@ public partial class InvoiceListViewModel : ObservableObject
     {
         PrintInvoiceCommand.NotifyCanExecuteChanged();
     }
+
+/*    private void Button_Click_Print(object sender, RoutedEventArgs e)
+    {
+
+    }*/
 }

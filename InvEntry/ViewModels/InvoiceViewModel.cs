@@ -280,6 +280,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         Buyer = await _customerService.GetCustomer(phoneNumber);
 
+        //Buyer.Address.AddressLine1;
+
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
         if (Buyer is null)
@@ -287,8 +289,9 @@ public partial class InvoiceViewModel : ObservableObject
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
             Buyer = new();
             Buyer.MobileNbr = phoneNumber;
+            Buyer.Address.Area = "This";
+            Buyer.Address.GstStateCode = "??";
             createCustomer = true;
-
         
             Buyer.GstStateCode = "33";    //Need to fetch based on pincode - future change
             Header.GstLocBuyer = Buyer.GstStateCode;
@@ -416,14 +419,13 @@ public partial class InvoiceViewModel : ObservableObject
 
         InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
         {
-            //BalBeforeAdj = Header.GrossRcbAmount, 
-            CustGkey = Header.CustGkey,      
+            //BalBeforeAdj = Header.GrossRcbAmount,
+            CustGkey = Header.CustGkey,
             Status = "Open",    //Status Open - Before Adjustment
             SeqNbr = noOfLines + 1
         };
 
         Header.ReceiptLines.Add(arInvRctLine);
-  
     }
 
     private bool CanProcessArReceipts()

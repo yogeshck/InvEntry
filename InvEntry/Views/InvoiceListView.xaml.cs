@@ -1,4 +1,5 @@
 ﻿using DevExpress.Xpf.Docking;
+using DevExpress.Xpf.Printing;
 using DevExpress.Xpf.WindowsUI;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -25,6 +27,13 @@ namespace InvEntry.Views
         public InvoiceListView()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            PrintableControlLink link = new PrintableControlLink(tableView);
+            link.CreateDocument();
+            documentPreview1.DocumentSource = link;
         }
     }
 }

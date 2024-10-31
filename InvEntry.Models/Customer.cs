@@ -9,6 +9,10 @@ namespace InvEntry.Models
 {
     public partial class Customer : BaseEntity
     {
+
+        [ObservableProperty]
+        private OrgAddress address;
+
         [ObservableProperty]
         private string mobileNbr;
 
@@ -23,5 +27,7 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private string gstStateCode;
+
+        
     }
 }
