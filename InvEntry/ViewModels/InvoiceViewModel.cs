@@ -242,7 +242,10 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (Buyer is null) return;
 
-        Header.SalesPerson = value.RefValue;
+        if (value.RefValue is not null)
+        {
+            Header.SalesPerson = value.RefValue;
+        }
     }
 
     [RelayCommand]

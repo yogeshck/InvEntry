@@ -10,7 +10,7 @@ public partial class EstimateHeader : BaseEntity
     public EstimateHeader()
     {
         Lines = new();
-        PaymentMode = "CASH";
+        PaymentMode = "EST_ONLY";
         TaxType = "GST";
         RoundOff = 0M;
         EstlTaxTotal = 0M;
