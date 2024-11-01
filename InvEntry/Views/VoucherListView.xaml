@@ -43,21 +43,19 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshVoucherCommand}"/>
-         <!--       <dxb:BarButtonItem x:Name="btnPrint" 
+                <!--       <dxb:BarButtonItem x:Name="btnPrint" 
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                    GlyphSize="Large" Alignment="Far"
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintInvoiceCommand}"/> -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxg:GridControl>
-            
-        </dxg:GridControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="None" 
                          MinHeight="500"
                          Height="500"
                          MaxHeight="900"
                          MinWidth="700"
-                         Width="1450" SelectedItem="{Binding SelectedVoucher}">
+                         Width="900" SelectedItem="{Binding SelectedVoucher}"
+                         HorizontalAlignment="Left" VerticalAlignment="Top">
 
             <dxg:GridControl.View>
                 <dxg:TableView ShowGroupPanel="False" x:Name="tableView" AllowBestFit="True"
@@ -67,25 +65,25 @@
             </dxg:GridControl.View>
 
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="VoucherNbr" Header="Voucher #" ReadOnly="True" Width="150" />
-                <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="150" />
-                <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" >
+                <dxg:GridColumn FieldName="VoucherNbr" Header="Voucher #" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="TransAmount" Header="Trans. Amt" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="TransAmount" Header="Trans. Amt" >
+                <dxg:GridColumn FieldName="CbAmount" Header="Closing Cash" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="CbAmount" Header="Closing Cash" >
-                    <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
-                    </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>                
-                <dxg:GridColumn FieldName="RefDocNbr" Header="Ref Doc Nbr" />
-                <dxg:GridColumn FieldName="RefDocDate" Header="Ref Doc Date" />                
+                <dxg:GridColumn FieldName="RefDocNbr" Header="Ref Doc Nbr" Width="100"/>
+                <dxg:GridColumn FieldName="RefDocDate" Header="Ref Doc Date" Width="100"/>                
             </dxg:GridControl.Columns>
             
         </dxg:GridControl>

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,6 +10,7 @@ namespace InvEntry.Models
 {
     public class OrgCompany : BaseEntity
     {
+
         public string? AccountId { get; set; }
 
         public string? Name { get; set; }

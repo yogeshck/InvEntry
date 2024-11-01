@@ -18,8 +18,8 @@
              xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.1"
                       d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceListViewModel}"
-             d:DesignHeight="450" d:DesignWidth="1100">
-    <Grid>
+             d:DesignHeight="450" d:DesignWidth="1200">
+    <Grid Width="1100" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -55,10 +55,10 @@
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="None"
                          MinHeight="500"
-                         Height="600"
+                         Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="900" SelectedItem="{Binding SelectedInvoice}"
+                         Width="1000" SelectedItem="{Binding SelectedInvoice}"
                          HorizontalAlignment="Left">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"

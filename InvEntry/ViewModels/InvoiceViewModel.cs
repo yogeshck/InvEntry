@@ -4,11 +4,13 @@ using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
+using DevExpress.Xpf.Editors.Helpers;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
+using InvEntry.Models.Tally;
 using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Store;
@@ -37,6 +39,9 @@ public partial class InvoiceViewModel : ObservableObject
 
     [ObservableProperty]
     private Customer _buyer;
+
+    [ObservableProperty]
+    private OrgThisCompanyView _company;
 
     [ObservableProperty]
     private InvoiceHeader _header;
@@ -68,6 +73,8 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> metalList;
 
+    private List<MtblReference> gstTaxRefList;
+
     [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
 
@@ -91,6 +98,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IInvoiceService _invoiceService;
     private readonly IProductCategoryService _productCategoryService;
     private readonly IInvoiceArReceiptService _invoiceArReceiptService;
+    private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IOldMetalTransactionService _oldMetalTransactionService;
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IReportFactoryService _reportFactoryService;
@@ -114,6 +122,7 @@ public partial class InvoiceViewModel : ObservableObject
         IMessageBoxService messageBoxService,
         IVoucherService voucherService,
         IInvoiceArReceiptService invoiceArReceiptService,
+        IOrgThisCompanyViewService orgThisCompanyViewService,
         IOldMetalTransactionService oldMetalTransactionService,
         IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
@@ -121,7 +130,7 @@ public partial class InvoiceViewModel : ObservableObject
         [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
     {
 
-        SetHeader();
+        _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
         _productService = productService;
         _productCategoryService = productCategoryService;
@@ -142,11 +151,15 @@ public partial class InvoiceViewModel : ObservableObject
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
+        SetThisCompanyAsync();
+        SetHeader();
+
         PopulateProductCategoryList();
         PopulateStateList();
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
+        PopulateTaxList();
         PopulateSalesPersonList();
         //PopulateUnboundHeaderDataMap();
     }
@@ -176,20 +189,35 @@ public partial class InvoiceViewModel : ObservableObject
 
     private async void PopulateStateList()
     {
-        var stateRefList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
+        var stateRefList = new List<MtblReference>();
 
-        if(stateRefList is null)
+        var stateRefServiceList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
+        
+        if(stateRefServiceList is null)
         {
-            StateReferencesList = new();
-            StateReferencesList.Add(new MtblReference() { RefValue = "Tamil Nadu", RefCode = "33" });
-            StateReferencesList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
-            StateReferencesList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
-            return;
+            stateRefList.Add(new MtblReference() { RefValue = "Tamil Nadu", RefCode = "33" });
+            stateRefList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
+            stateRefList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
+        } else
+        {
+            stateRefList.AddRange(stateRefServiceList);
         }
 
         StateReferencesList = new(stateRefList);
 
+       // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
     }
+
+    private async void PopulateTaxList()
+    {
+        gstTaxRefList = (List<MtblReference>)await _mtblReferencesService.GetReferenceList("GST");
+
+    }
+
+/*    private decimal GetGstTaxRate()
+    {
+        var taxRate = GstTaxList.FirstOrDefault(x => x.RefCode.Equals("SGST"));
+    }*/
 
     private async void PopulateMetalList()
     {
@@ -231,11 +259,19 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (Buyer is null) return;
 
+        
         Buyer.GstStateCode = value.RefCode;    //Need to fetch based on pincode - future change
         Header.GstLocBuyer = value.RefCode;
-        Header.CgstPercent = GetGSTWithinState();
-        Header.SgstPercent = GetGSTWithinState();
-        Header.IgstPercent = IGSTPercent;
+
+        if (Header.GstLocSeller.Equals(value.RefCode))
+        {
+            Header.CgstPercent = GetGSTWithinState();
+            Header.SgstPercent = GetGSTWithinState();
+            Header.IgstPercent = IGSTPercent;
+        } else
+        {
+
+        }
     }
 
     partial void OnSalesPersonChanged(MtblReference value)
@@ -306,7 +342,7 @@ public partial class InvoiceViewModel : ObservableObject
             Header.GstLocBuyer = Buyer.GstStateCode;
             CustomerState = StateReferencesList.FirstOrDefault(x => x.RefValue==Buyer.GstStateCode);
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-            IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
+            IGSTPercent = Buyer.GstStateCode == Company.GstCode ? 0M : 3M;
 
             Header.CgstPercent = GetGSTWithinState();
             Header.SgstPercent = GetGSTWithinState();
@@ -349,7 +385,6 @@ public partial class InvoiceViewModel : ObservableObject
             InvlStoneAmount = 0M,
             TaxType = "GST"
         };
-
 
             invoiceLine.SetProductDetails(product);
 
@@ -480,6 +515,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (createCustomer)
         {
+
             Buyer = await _customerService.CreatCustomer(Buyer);
         }
 
@@ -881,8 +917,6 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
-
-
     private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
     {
         if (invoiceArReceipt.GKey == 0)
@@ -1006,15 +1040,25 @@ public partial class InvoiceViewModel : ObservableObject
         {
             InvDate = DateTime.Now,
             IsTaxApplicable = true,
-            GstLocSeller = "33"
+            GstLocSeller = Company.GstCode
         };
+    }
+
+    private async Task SetThisCompanyAsync()
+    {
+        Company = new();
+        Company = await _orgThisCompanyViewService.GetOrgThisCompany();
     }
 
     private decimal GetGSTWithinState()
     {
-        if (Buyer?.GstStateCode == "33")
+
+        var sgstPercent = gstTaxRefList.FirstOrDefault(x => x.RefCode.Equals("SGST"));
+        decimal.TryParse(sgstPercent.RefValue.ToString(), out SCGSTPercent);
+
+        if (Buyer?.GstStateCode == Company.GstCode)
         {
-            return Math.Round(SCGSTPercent / 2, 3);
+            return SCGSTPercent;//Math.Round(SCGSTPercent / 2, 3);
         }
         return 0M;
     }

@@ -37,7 +37,7 @@ public partial class InvoiceListViewModel : ObservableObject
         _reportDialogService = reportDialogService;
         _searchOption = new();
         SearchOption.To = Today;
-        SearchOption.From = Today.AddDays(-7);
+        SearchOption.From = Today.AddDays(-1);
         Task.Run(RefreshInvoicesAsync).Wait();
     }
 

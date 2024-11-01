@@ -29,11 +29,5 @@ namespace InvEntry.Views
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            PrintableControlLink link = new PrintableControlLink(tableView);
-            link.CreateDocument();
-            documentPreview1.DocumentSource = link;
-        }
     }
 }

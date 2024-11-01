@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class OrgAddress : BaseEntity
+
+    public partial class OrgThisCompanyView : BaseEntity
     {
+        [ObservableProperty]
+        private string? _companyName;
+
         [ObservableProperty]
         private string? _addressLine1;
 
@@ -16,27 +20,32 @@ namespace InvEntry.Models
         private string? _addressLine2;
 
         [ObservableProperty]
-        private string? _addressLine3;
-
-        [ObservableProperty]
-        private string? _city;
-
-        [ObservableProperty]
-        private string? _district;
+        private string? _area;
 
         [ObservableProperty]
         private string? _state;
 
         [ObservableProperty]
+        private string? _gstCode;
+
+        [ObservableProperty]
         private string? _country;
 
         [ObservableProperty]
-        private decimal? _tenantGkey;
+        private string? _district;
 
         [ObservableProperty]
-        private string? _area;
+        private string? _city;
 
         [ObservableProperty]
-        private string? _gstStateCode;
+        private string? _panNbr;
+
+        [ObservableProperty]
+        private string? _gtNbr;
+
+        [ObservableProperty]
+        private bool _thisCompany;
     }
+
+
 }
