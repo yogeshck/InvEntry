@@ -69,7 +69,7 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True");
+        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -906,10 +906,11 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<OrgAddress>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("ORG_ADDRESS");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("ORG_ADDRESS");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AddressLine1)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -945,7 +946,6 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("DISTRICT");
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GstStateCode)
                 .HasMaxLength(3)
                 .IsUnicode(false)

@@ -15,7 +15,8 @@ namespace DataAccess.Controllers
         private IRepositoryBase<EstimateHeader> _estimateHeaderRepository;
         private IRepositoryBase<OrgCompany> _orgCompanyRepository;
 
-        public EstimateController(IRepositoryBase<EstimateHeader> estimateHeaderRepository, IRepositoryBase<OrgCompany> orgCompanyRepository)
+        public EstimateController(IRepositoryBase<EstimateHeader> estimateHeaderRepository, 
+                                  IRepositoryBase<OrgCompany> orgCompanyRepository)
         {
             _estimateHeaderRepository = estimateHeaderRepository;
             _orgCompanyRepository = orgCompanyRepository;

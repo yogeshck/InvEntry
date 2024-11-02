@@ -149,7 +149,8 @@
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                                    <dxg:LookUpEdit Width="225" EditValue="{Binding CustomerState}" 
+                                    <dxg:LookUpEdit Width="225" 
+                                                    EditValue="{Binding CustomerState,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
                                                 ItemsSource="{Binding StateReferencesList}"
                                                 DisplayMember="RefValue" >
                                         <dxg:LookUpEdit.PopupContentTemplate>

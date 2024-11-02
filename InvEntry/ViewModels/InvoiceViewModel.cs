@@ -73,8 +73,6 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> metalList;
 
-    private List<MtblReference> gstTaxRefList;
-
     [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
 
@@ -84,7 +82,7 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<MtblReference> stateReferencesList;
 
-    public ICommand ShowWindowCommand { get; set; }
+    private List<MtblReference> _gstTaxRefList;
 
     private bool createCustomer = false;
     private bool invBalanceChk = false;
@@ -151,7 +149,7 @@ public partial class InvoiceViewModel : ObservableObject
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
-        SetThisCompanyAsync();
+        SetThisCompany();
         SetHeader();
 
         PopulateProductCategoryList();
@@ -210,8 +208,12 @@ public partial class InvoiceViewModel : ObservableObject
 
     private async void PopulateTaxList()
     {
-        gstTaxRefList = (List<MtblReference>)await _mtblReferencesService.GetReferenceList("GST");
 
+        var gstTaxRefList = await _mtblReferencesService.GetReferenceList("GST");
+        if (gstTaxRefList is not null)
+        {
+            _gstTaxRefList = new(gstTaxRefList);
+        }
     }
 
 /*    private decimal GetGstTaxRate()
@@ -259,19 +261,17 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (Buyer is null) return;
 
-        
-        Buyer.GstStateCode = value.RefCode;    //Need to fetch based on pincode - future change
+            Buyer.Address.GstStateCode = value.RefCode;
+
+            Header.CgstPercent = GetGSTPercent("CGST");
+            Header.SgstPercent = GetGSTPercent("SGST");
+            Header.IgstPercent = GetGSTPercent("IGST");
+
+    //Need to fetch based on pincode - future change
         Header.GstLocBuyer = value.RefCode;
 
-        if (Header.GstLocSeller.Equals(value.RefCode))
-        {
-            Header.CgstPercent = GetGSTWithinState();
-            Header.SgstPercent = GetGSTWithinState();
-            Header.IgstPercent = IGSTPercent;
-        } else
-        {
-
-        }
+        EvaluateForAllLines();
+        EvaluateHeader();
     }
 
     partial void OnSalesPersonChanged(MtblReference value)
@@ -304,6 +304,8 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (args.NewValue is not string phoneNumber) return;
 
+        phoneNumber = phoneNumber.Trim();
+
         if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
             return;
 
@@ -316,8 +318,6 @@ public partial class InvoiceViewModel : ObservableObject
 
         Buyer = await _customerService.GetCustomer(phoneNumber);
 
-        //Buyer.Address.AddressLine1;
-
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
         if (Buyer is null)
@@ -325,28 +325,29 @@ public partial class InvoiceViewModel : ObservableObject
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
             Buyer = new();
             Buyer.MobileNbr = phoneNumber;
-            Buyer.Address.Area = "This";
-            Buyer.Address.GstStateCode = "??";
+            Buyer.Address.GstStateCode = Company.GstCode;
+            Buyer.Address.State = "Tamilnadu";
+            Buyer.Address.District = "Chennai";
+            //yer.Address.State = Company.State;
             createCustomer = true;
-        
-            Buyer.GstStateCode = "33";    //Need to fetch based on pincode - future change
-            Header.GstLocBuyer = Buyer.GstStateCode;
-            Header.CgstPercent = GetGSTWithinState();
-            Header.SgstPercent = GetGSTWithinState();
-            Header.IgstPercent = IGSTPercent;
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
 
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
         else
         {
-            Header.GstLocBuyer = Buyer.GstStateCode;
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefValue==Buyer.GstStateCode);
-            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-            IGSTPercent = Buyer.GstStateCode == Company.GstCode ? 0M : 3M;
+            var gstCode = Buyer.Address is null ? Company.GstCode : Buyer.Address.GstStateCode;
 
-            Header.CgstPercent = GetGSTWithinState();
-            Header.SgstPercent = GetGSTWithinState();
-            Header.IgstPercent = IGSTPercent;
+            if (Buyer.Address is null)
+            {
+                Buyer.Address = new();
+                Buyer.Address.GstStateCode = Company.GstCode;
+            }
+
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode==gstCode);
+
+            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
+
         }
 
         Header.CustMobile = phoneNumber;
@@ -379,9 +380,9 @@ public partial class InvoiceViewModel : ObservableObject
         {
             ProdQty = 1,
             InvlBilledPrice = billedPrice,
-            InvlCgstPercent = GetGSTWithinState(),
-            InvlSgstPercent = GetGSTWithinState(),
-            InvlIgstPercent = IGSTPercent,
+            InvlCgstPercent = Header.CgstPercent,
+            InvlSgstPercent = Header.SgstPercent,
+            InvlIgstPercent = Header.CgstPercent,
             InvlStoneAmount = 0M,
             TaxType = "GST"
         };
@@ -516,7 +517,7 @@ public partial class InvoiceViewModel : ObservableObject
         if (createCustomer)
         {
 
-            Buyer = await _customerService.CreatCustomer(Buyer);
+            Buyer = await _customerService.CreateCustomer(Buyer);
         }
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
@@ -983,6 +984,7 @@ public partial class InvoiceViewModel : ObservableObject
         SetHeader();
         Buyer = null;
         CustomerPhoneNumber = null;
+        CustomerState = null;
         CreateInvoiceCommand.NotifyCanExecuteChanged();
         invBalanceChk = false;  //reset to false for next invoice
     }
@@ -1044,21 +1046,32 @@ public partial class InvoiceViewModel : ObservableObject
         };
     }
 
-    private async Task SetThisCompanyAsync()
+    private async void SetThisCompany()
     {
         Company = new();
         Company = await _orgThisCompanyViewService.GetOrgThisCompany();
     }
 
-    private decimal GetGSTWithinState()
+    private decimal GetGSTPercent(string taxType = "SGST")
     {
 
-        var sgstPercent = gstTaxRefList.FirstOrDefault(x => x.RefCode.Equals("SGST"));
-        decimal.TryParse(sgstPercent.RefValue.ToString(), out SCGSTPercent);
+        var gstPercent = _gstTaxRefList.FirstOrDefault
+            (x => x.RefCode.Equals(taxType, StringComparison.OrdinalIgnoreCase));
 
-        if (Buyer?.GstStateCode == Company.GstCode)
+        if (taxType.Equals("IGST",StringComparison.OrdinalIgnoreCase))
         {
-            return SCGSTPercent;//Math.Round(SCGSTPercent / 2, 3);
+            if (Buyer.Address.GstStateCode != Company.GstCode &&
+                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent))
+                {
+                return igstPercent;
+            }
+            return 0M;
+        }
+
+        if (Buyer.Address.GstStateCode == Company.GstCode && 
+            decimal.TryParse(gstPercent.RefValue.ToString(), out var result))
+        {
+            return result;
         }
         return 0M;
     }

@@ -11,7 +11,8 @@ namespace DataAccess.Controllers
     public class AddressController : BaseController<OrgAddress>
     {
         
-        public AddressController(IRepositoryBase<OrgAddress> repository) : base(repository)
+        public AddressController(IRepositoryBase<OrgAddress> orgAddressRepository) : 
+                                                base(orgAddressRepository)
         {
         }
 
@@ -29,6 +30,7 @@ namespace DataAccess.Controllers
             value.Gkey = id;
             _repository.Update(value);
         }
+
 
     }
 }

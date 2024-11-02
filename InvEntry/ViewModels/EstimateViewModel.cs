@@ -373,7 +373,7 @@ public partial class EstimateViewModel: ObservableObject
 
         if (createCustomer)
         {
-            Buyer = await _customerService.CreatCustomer(Buyer);
+            Buyer = await _customerService.CreateCustomer(Buyer);
         }
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();

@@ -12,9 +12,9 @@ namespace DataAccess.Controllers
     {
        private readonly IRepositoryBase<OrgCustomer> _customer;
 
-        public CustomerController(IRepositoryBase<OrgCustomer> productRepo)
+        public CustomerController(IRepositoryBase<OrgCustomer> customerRepo)
         {
-            _customer = productRepo;
+            _customer = customerRepo;
         }
 
         // GET: api/<ProductStockController>
