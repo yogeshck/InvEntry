@@ -11,18 +11,20 @@ namespace DataAccess.Controllers
     [ApiController]
     public class InvoiceController : ControllerBase
     {
-        private string InvoicePrefixFormat = "B{0}";
+        private string DocumentPrefixFormat = "B{0}";
 
         private IRepositoryBase<InvoiceHeader> _invoiceHeaderRepository;
-        private IRepositoryBase<OrgCompany> _orgCompanyRepository;
+        private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
+    //    private IRepositoryBase<OrgCompany> _orgCompanyRepository;
 
-        public InvoiceController(IRepositoryBase<InvoiceHeader> invoiceHeaderRepository, IRepositoryBase<OrgCompany> orgCompanyRepository)
+        public InvoiceController(   IRepositoryBase<InvoiceHeader> invoiceHeaderRepository,
+                                    IRepositoryBase<VoucherType> voucherTypeRepo )  
+                                   // IRepositoryBase<OrgCompany> orgCompanyRepository        )
         {
             _invoiceHeaderRepository = invoiceHeaderRepository;
-            _orgCompanyRepository = orgCompanyRepository;
+            _voucherTypeRepo = voucherTypeRepo;
+           // _orgCompanyRepository = orgCompanyRepository;
         }
-
-
 
         // GET: api/<InvoiceController>
         [HttpGet]
@@ -50,13 +52,21 @@ namespace DataAccess.Controllers
         [HttpPost]
         public InvoiceHeader Post([FromBody] InvoiceHeader value)
         {
-            var company = _orgCompanyRepository.Get(x => x.ThisCompany.HasValue && x.ThisCompany.Value);
 
-            company.InvId++;
+            //var company = _orgCompanyRepository.Get(x => x.ThisCompany.HasValue && x.ThisCompany.Value);
+            //company.InvId++;
+            //_orgCompanyRepository.Update(company);
+            //value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId?.ToString("D4"));
 
-            _orgCompanyRepository.Update(company);
+            var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "Sale Invoice"); // value.VoucherType);
 
-            value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId?.ToString("D4"));
+            voucherType.LastUsedNumber++;
+
+            _voucherTypeRepo.Update(voucherType);
+
+            DocumentPrefixFormat = voucherType.DocNbrPrefix;
+
+            value.InvNbr = string.Format("{0}{1}",DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
 
             _invoiceHeaderRepository.Add(value);
             return value;

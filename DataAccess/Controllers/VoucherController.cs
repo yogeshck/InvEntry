@@ -11,12 +11,16 @@ namespace DataAccess.Controllers
     [ApiController]
     public class VoucherController : ControllerBase
     {
+        private string DocumentPrefixFormat = ""; //"B{0}";
 
         private readonly IRepositoryBase<Voucher> _voucher;
+        private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
 
-        public VoucherController(IRepositoryBase<Voucher> voucherRepo)
+        public VoucherController(   IRepositoryBase<Voucher> voucherRepo,
+                                    IRepositoryBase<VoucherType> voucherTypeRepo )
         {
             _voucher = voucherRepo;
+            _voucherTypeRepo = voucherTypeRepo;
         }
 
         // GET: api/<VoucherController>
@@ -60,6 +64,17 @@ namespace DataAccess.Controllers
             {
                 value.SeqNbr = 1;
             }
+
+            var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == value.VoucherType);
+
+            voucherType.LastUsedNumber++;
+
+            _voucherTypeRepo.Update(voucherType);
+
+            DocumentPrefixFormat = voucherType.DocNbrPrefix;
+
+            value.VoucherNbr = string.Format(DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
+
             _voucher.Add(value);
             return value;
         }

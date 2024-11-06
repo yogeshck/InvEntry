@@ -827,6 +827,8 @@ public partial class InvoiceViewModel : ObservableObject
         //For each Receipts row - seperate Voucher has to be created
         foreach(var receipts in Header.ReceiptLines)
         {
+            if (receipts is null) return;
+
             var voucher = CreateVoucher(receipts);
             voucher = await SaveVoucher(voucher);
 
@@ -908,7 +910,7 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;
-        Voucher.VoucherNbr = "Sales-001";
+        Voucher.VoucherNbr = Header.InvNbr;
         Voucher.RefDocNbr = Header.InvNbr;
         Voucher.RefDocDate = Header.InvDate;
         Voucher.RefDocGkey = Header.GKey;

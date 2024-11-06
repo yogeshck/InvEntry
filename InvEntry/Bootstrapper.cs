@@ -129,6 +129,8 @@ public sealed class Bootstrapper
                  .AddSingleton<IEstimateService, EstimateService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .AddSingleton<IVoucherService, VoucherService>()
+                 .AddSingleton<IVoucherTypeService, VoucherTypeService>()
+      //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IOldMetalTransactionService, OldMetalTransactionService>()
                  .AddSingleton<IMtblReferencesService, MtblReferencesService>()
