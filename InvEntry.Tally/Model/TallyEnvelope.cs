@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace InvEntry.Models.Tally;
+namespace InvEntry.Tally;
 
 [XmlRoot(ElementName = "HEADER")]
 public class HEADER : IInvEntryXmlSerializable
@@ -35,7 +35,7 @@ public class REQUESTDESC : IInvEntryXmlSerializable
     public STATICVARIABLES STATICVARIABLES { get; set; }
 }
     
-[XmlRoot(ElementName = "OLDAUDITENTRYIDS.LIST")]
+[XmlRoot(ElementName = "OLDAUDITENTRYIDS.LIST")] 
 public class OLDAUDITENTRYIDSLIST : IInvEntryXmlSerializable
 {
 
