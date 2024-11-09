@@ -513,7 +513,6 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (createCustomer)
         {
-
             Buyer = await _customerService.CreateCustomer(Buyer);
         }
 
@@ -815,7 +814,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         InvoiceArReceipt arInvRct = new InvoiceArReceipt();
 
-        arInvRct.InternalVoucherNbr = "Test";
+        arInvRct.TransactionType = str;
+        arInvRct.ModeOfReceipt = str;
         arInvRct.AdjustedAmount = Header.InvBalance;
         Header.ReceiptLines.Add(arInvRct);
     }
@@ -886,7 +886,8 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.AdjustedAmount             = invoiceArReceipt.AdjustedAmount;
         arInvRct.InternalVoucherNbr         = voucher.VoucherNbr;
         arInvRct.InternalVoucherDate        = voucher.VoucherDate;
-        arInvRct.Status = "Adj"; 
+        arInvRct.InvoiceReceiptNbr          = Header.InvNbr.Replace("B", "R");  //hard coded - review 
+        arInvRct.Status                     = "Adj"; 
 
         return arInvRct;
 
