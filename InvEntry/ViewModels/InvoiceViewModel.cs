@@ -172,9 +172,9 @@ public partial class InvoiceViewModel : ObservableObject
         if (salesPersonRefList is null)
         {
             SalesPersonReferencesList = new();
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" });
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" }); //Yet To fix
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Vinnila", RefCode = "32" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Anju", RefCode = "30" });
             return;
         }
 
@@ -645,7 +645,8 @@ public partial class InvoiceViewModel : ObservableObject
         if ( !arInvRctLine.BalBeforeAdj.HasValue) 
             arInvRctLine.BalBeforeAdj = Header.InvBalance.GetValueOrDefault();
 
-        arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() - arInvRctLine.AdjustedAmount.GetValueOrDefault();
+        arInvRctLine.BalanceAfterAdj  = arInvRctLine.BalBeforeAdj.GetValueOrDefault() - 
+                                        arInvRctLine.AdjustedAmount.GetValueOrDefault();
 
 
            if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
@@ -903,7 +904,7 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.CustomerGkey = Header.CustGkey;
         Voucher.VoucherDate = Header.InvDate;
         Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = "Sales";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.VoucherType = invoiceArReceipt.TransactionType; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
         Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;

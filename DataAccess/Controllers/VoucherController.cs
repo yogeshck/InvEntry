@@ -73,7 +73,8 @@ namespace DataAccess.Controllers
 
             DocumentPrefixFormat = voucherType.DocNbrPrefix;
 
-            value.VoucherNbr = string.Format(DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
+            value.VoucherNbr = string.Format("{0}{1}",  DocumentPrefixFormat, 
+                                                        voucherType?.LastUsedNumber?.ToString("D4"));
 
             _voucher.Add(value);
             return value;
