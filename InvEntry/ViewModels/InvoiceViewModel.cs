@@ -122,7 +122,7 @@ public partial class InvoiceViewModel : ObservableObject
         IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
-        [FromKeyedServices("ReportDialogService")]IDialogService reportDialogService)
+        [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
 
         _orgThisCompanyViewService = orgThisCompanyViewService;
@@ -172,9 +172,9 @@ public partial class InvoiceViewModel : ObservableObject
         if (salesPersonRefList is null)
         {
             SalesPersonReferencesList = new();
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" });
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" }); //Yet To fix
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Vinnila", RefCode = "32" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Anju", RefCode = "30" });
             return;
         }
 
@@ -187,8 +187,8 @@ public partial class InvoiceViewModel : ObservableObject
         var stateRefList = new List<MtblReference>();
 
         var stateRefServiceList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
-        
-        if(stateRefServiceList is null)
+
+        if (stateRefServiceList is null)
         {
             stateRefList.Add(new MtblReference() { RefValue = "Tamil Nadu", RefCode = "33" });
             stateRefList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
@@ -200,7 +200,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         StateReferencesList = new(stateRefList);
 
-       // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
+        // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
     }
 
     private async void PopulateTaxList()
@@ -213,10 +213,10 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-/*    private decimal GetGstTaxRate()
-    {
-        var taxRate = GstTaxList.FirstOrDefault(x => x.RefCode.Equals("SGST"));
-    }*/
+    /*    private decimal GetGstTaxRate()
+        {
+            var taxRate = GstTaxList.FirstOrDefault(x => x.RefCode.Equals("SGST"));
+        }*/
 
     private async void PopulateMetalList()
     {
@@ -258,13 +258,13 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (Buyer is null) return;
 
-            Buyer.Address.GstStateCode = value.RefCode;
+        Buyer.Address.GstStateCode = value.RefCode;
 
-            Header.CgstPercent = GetGSTPercent("CGST");
-            Header.SgstPercent = GetGSTPercent("SGST");
-            Header.IgstPercent = GetGSTPercent("IGST");
+        Header.CgstPercent = GetGSTPercent("CGST");
+        Header.SgstPercent = GetGSTPercent("SGST");
+        Header.IgstPercent = GetGSTPercent("IGST");
 
-    //Need to fetch based on pincode - future change
+        //Need to fetch based on pincode - future change
         Header.GstLocBuyer = value.RefCode;
 
         EvaluateForAllLines();
@@ -286,7 +286,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         var vm = new InvoiceReceiptsViewModel();
         var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Receipts", "InvoiceReceiptsView", vm);
-    
+
         if (result == MessageResult.OK)
         {
 
@@ -341,7 +341,7 @@ public partial class InvoiceViewModel : ObservableObject
                 Buyer.Address.GstStateCode = Company.GstCode;
             }
 
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode==gstCode);
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
 
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
@@ -356,11 +356,11 @@ public partial class InvoiceViewModel : ObservableObject
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
         var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
-  
+
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
         var product = await _productService.GetProduct(ProductIdUI);
-       // await Task.Delay(30000);
+        // await Task.Delay(30000);
 
         SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
@@ -384,24 +384,24 @@ public partial class InvoiceViewModel : ObservableObject
             TaxType = "GST"
         };
 
-            invoiceLine.SetProductDetails(product);
+        invoiceLine.SetProductDetails(product);
 
-            EvaluateFormula(invoiceLine, isInit: true);
+        EvaluateFormula(invoiceLine, isInit: true);
 
-            Header.Lines.Add(invoiceLine);
+        Header.Lines.Add(invoiceLine);
 
-            ProductIdUI = string.Empty;
+        ProductIdUI = string.Empty;
 
-            EvaluateHeader();
+        EvaluateHeader();
 
-/*        if (invoiceLine.ProdGrossWeight > 0)
-        {
-        } else
-        {
-            _messageBoxService.ShowMessage("Gross Weight cannot be zero ....",
-                "Gross Weight", MessageButton.OK, MessageIcon.Error);
-            return;
-        }*/
+        /*        if (invoiceLine.ProdGrossWeight > 0)
+                {
+                } else
+                {
+                    _messageBoxService.ShowMessage("Gross Weight cannot be zero ....",
+                        "Gross Weight", MessageButton.OK, MessageIcon.Error);
+                    return;
+                }*/
     }
 
     [RelayCommand]
@@ -440,8 +440,8 @@ public partial class InvoiceViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    [RelayCommand (CanExecute = nameof(CanProcessArReceipts))]
-    private async Task ProcessArReceipts()    
+    [RelayCommand(CanExecute = nameof(CanProcessArReceipts))]
+    private async Task ProcessArReceipts()
     {
         //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
         // _productService.GetProduct(ProductIdUI);
@@ -494,11 +494,13 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (!isSuccess) return;
 
+        ProcessDiscRdAdvance();
+
         if (!string.IsNullOrEmpty(Header.InvNbr))
         {
             var result = _messageBoxService.ShowMessage("Invoice already created, Do you want to print preview the invoice ?", "Invoice", MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
 
-            if(result == MessageResult.OK)
+            if (result == MessageResult.OK)
             {
                 PrintPreviewInvoice();
             }
@@ -513,7 +515,6 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (createCustomer)
         {
-
             Buyer = await _customerService.CreateCustomer(Buyer);
         }
 
@@ -529,14 +530,14 @@ public partial class InvoiceViewModel : ObservableObject
 
         var header = await _invoiceService.CreatHeader(Header);
 
-        if(header is not null)
+        if (header is not null)
         {
             Header.GKey = header.GKey;
             Header.InvNbr = header.InvNbr;
 
-            Header.Lines.ForEach(x => 
+            Header.Lines.ForEach(x =>
             {
-                x.InvoiceHdrGkey = header.GKey; 
+                x.InvoiceHdrGkey = header.GKey;
                 x.InvoiceId = header.InvNbr;
             });
             // loop for validation check for customer
@@ -547,14 +548,14 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
-            _messageBoxService.ShowMessage("Invoice "+ Header.InvNbr + " Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
+            _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
- 
+
         }
     }
 
@@ -568,7 +569,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         var printed = PrintHelper.Print(_reportFactoryService.CreateInvoiceReport(Header.InvNbr));
 
-        if(printed.HasValue && printed.Value)
+        if (printed.HasValue && printed.Value)
             _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
     }
 
@@ -604,12 +605,12 @@ public partial class InvoiceViewModel : ObservableObject
         }
         else
         if (args.Row is OldMetalTransaction oldMetalTransaction &&
-            args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice) )
+            args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
         {
             EvaluateOldMetalTransactions(oldMetalTransaction);
         }
 
-            EvaluateHeader();
+        EvaluateHeader();
     }
 
     [RelayCommand]
@@ -621,13 +622,13 @@ public partial class InvoiceViewModel : ObservableObject
                     return;
                 }*/
 
-       oldMetalTransaction.NetWeight = (
-                                          oldMetalTransaction.GrossWeight.GetValueOrDefault() - 
-                                          oldMetalTransaction.StoneWeight.GetValueOrDefault() -
-                                          oldMetalTransaction.WastageWeight.GetValueOrDefault()
-                                       );
+        oldMetalTransaction.NetWeight = (
+                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                        );
 
-        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() * 
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
@@ -642,24 +643,25 @@ public partial class InvoiceViewModel : ObservableObject
             return;
         }
 
-        if ( !arInvRctLine.BalBeforeAdj.HasValue) 
+        if (!arInvRctLine.BalBeforeAdj.HasValue)
             arInvRctLine.BalBeforeAdj = Header.InvBalance.GetValueOrDefault();
 
-        arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() - arInvRctLine.AdjustedAmount.GetValueOrDefault();
+        arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() -
+                                        arInvRctLine.AdjustedAmount.GetValueOrDefault();
 
 
-           if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
-            {
-                arInvRctLine.ModeOfReceipt = "Cash";
-            }
-            else if (arInvRctLine.TransactionType == "Credit")
-            {
-                arInvRctLine.ModeOfReceipt = "Credit";
-            }
-            else
-            {
-                arInvRctLine.ModeOfReceipt = "Bank";
-            }
+        if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
+        {
+            arInvRctLine.ModeOfReceipt = "Cash";
+        }
+        else if (arInvRctLine.TransactionType == "Credit")
+        {
+            arInvRctLine.ModeOfReceipt = "Credit";
+        }
+        else
+        {
+            arInvRctLine.ModeOfReceipt = "Bank";
+        }
 
         EvaluateHeader();
 
@@ -761,52 +763,60 @@ public partial class InvoiceViewModel : ObservableObject
         //Note if inv balance is greater than zero - we need to show message to get confirmation from user
         // and warn to check there is unpaid balance........ 
 
-    //    if (Header.RecdAmount > 0)
-    //    {
-            if (Header.InvBalance > 0)
-            {
-                var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, " +
-                    "Do you want to make Credit for the balance Invoice Amount of Rs. "+ Header.InvBalance+" ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+        //    if (Header.RecdAmount > 0)
+        //    {
+        if (Header.InvBalance > 0)
+        {
+            var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, " +
+                "Do you want to make Credit for the balance Invoice Amount of Rs. " + Header.InvBalance + " ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
-                if (result == MessageResult.Yes)
-                {
-                    Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
-                    Header.InvRefund = 0M;
-                    BalanceVisible();
-                    SetReceipts("Credit");
-                }
-                else
-                {
-                    return false;
-                }
+            if (result == MessageResult.Yes)
+            {
+                Header.PaymentDueDate = Header.InvDate.Value.AddDays(7);
+                Header.InvRefund = 0M;
+                BalanceVisible();
+                SetReceipts("Credit");
             }
-            else if (Header.InvBalance == 0)
+            else
+            {
+                return false;
+            }
+        }
+        else if (Header.InvBalance == 0)
+        {
+            Header.PaymentDueDate = null;
+            BalanceVisible();
+
+        }
+        else if (Header.InvBalance < 0)
+        {
+            var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, " +
+                "Do you want to Refund excess Amount of Rs. " + Header.InvBalance + " ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+            if (result == MessageResult.Yes)
             {
                 Header.PaymentDueDate = null;
-                BalanceVisible();
-
+                Header.InvRefund = Header.InvBalance * -1;
+                Header.InvBalance = 0M;
+                RefundVisible();
+                SetReceipts("Refund");
             }
-            else if (Header.InvBalance < 0)
+            else
             {
-                var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, " +
-                    "Do you want to Refund excess Amount of Rs. "+ Header.InvBalance+" ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
-
-                if (result == MessageResult.Yes)
-                {
-                    Header.PaymentDueDate = null;
-                    Header.InvRefund = Header.InvBalance * -1;
-                    Header.InvBalance = 0M;
-                    RefundVisible();
-                    SetReceipts("Refund");
-                }
-                else
-                {
-                    return false;
-                }
-    //        }
+                return false;
+            }
+            //        }
         }
 
         return true;
+    }
+
+    private void ProcessDiscRdAdvance()
+    {
+        if (Header.DiscountAmount > 0)
+        {
+            SetReceipts
+        }
     }
 
     private void SetReceipts(String str)
@@ -814,7 +824,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         InvoiceArReceipt arInvRct = new InvoiceArReceipt();
 
-        arInvRct.InternalVoucherNbr = "Test";
+        arInvRct.TransactionType = str;
+        arInvRct.ModeOfReceipt = str;
         arInvRct.AdjustedAmount = Header.InvBalance;
         Header.ReceiptLines.Add(arInvRct);
     }
@@ -824,6 +835,8 @@ public partial class InvoiceViewModel : ObservableObject
         //For each Receipts row - seperate Voucher has to be created
         foreach(var receipts in Header.ReceiptLines)
         {
+            if (receipts is null) return;
+
             var voucher = CreateVoucher(receipts);
             voucher = await SaveVoucher(voucher);
 
@@ -880,10 +893,14 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.TransactionType            = invoiceArReceipt.TransactionType;
         arInvRct.ModeOfReceipt              = invoiceArReceipt.ModeOfReceipt;
         arInvRct.BalBeforeAdj               = invoiceArReceipt.BalBeforeAdj;
-        arInvRct.AdjustedAmount             = invoiceArReceipt.AdjustedAmount;
+        //arInvRct.AdjustedAmount             = invoiceArReceipt.AdjustedAmount;
         arInvRct.InternalVoucherNbr         = voucher.VoucherNbr;
         arInvRct.InternalVoucherDate        = voucher.VoucherDate;
-        arInvRct.Status = "Adj"; 
+        arInvRct.InvoiceReceiptNbr          = Header.InvNbr.Replace("B", "R");  //hard coded - future review 
+        arInvRct.Status                     = "Adj";
+
+        var adjustedAmount = IsRefundOrCredit(invoiceArReceipt.TransactionType);
+        arInvRct.AdjustedAmount = adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
 
         return arInvRct;
 
@@ -901,18 +918,39 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.CustomerGkey = Header.CustGkey;
         Voucher.VoucherDate = Header.InvDate;
         Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = "Sales";       // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.VoucherType = invoiceArReceipt.TransactionType; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
         Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-        Voucher.TransAmount = invoiceArReceipt.AdjustedAmount; // Header.RecdAmount;
-        Voucher.VoucherNbr = "Sales-001";
+        Voucher.VoucherNbr = Header.InvNbr;
         Voucher.RefDocNbr = Header.InvNbr;
         Voucher.RefDocDate = Header.InvDate;
         Voucher.RefDocGkey = Header.GKey;
         Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
 
+        var transAmount = IsRefundOrCredit(invoiceArReceipt.TransactionType);
+        Voucher.TransAmount = transAmount == 0 ? invoiceArReceipt.AdjustedAmount : transAmount;
+
         return Voucher;
 
+    }
+
+    private decimal? IsRefundOrCredit(string transType)
+    {
+        if (transType == "Refund")
+        {
+            return Header.InvRefund;
+        }
+            else if (transType == "Credit")
+            {
+                return Header.InvBalance;
+            } 
+
+        //Discount
+
+        //Rd
+
+        //Advance
+                else  return 0;
     }
 
     private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
@@ -982,6 +1020,7 @@ public partial class InvoiceViewModel : ObservableObject
         Buyer = null;
         CustomerPhoneNumber = null;
         CustomerState = null;
+        SalesPerson = null;
         CreateInvoiceCommand.NotifyCanExecuteChanged();
         invBalanceChk = false;  //reset to false for next invoice
     }
@@ -1058,18 +1097,18 @@ public partial class InvoiceViewModel : ObservableObject
         if (taxType.Equals("IGST",StringComparison.OrdinalIgnoreCase))
         {
             if (Buyer.Address.GstStateCode != Company.GstCode &&
-                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent))
+                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent)   )
                 {
-                return igstPercent;
-            }
+                    return igstPercent;
+                }
             return 0M;
         }
 
         if (Buyer.Address.GstStateCode == Company.GstCode && 
             decimal.TryParse(gstPercent.RefValue.ToString(), out var result))
-        {
-            return result;
-        }
+            {
+                return result;
+            }
         return 0M;
     }
 

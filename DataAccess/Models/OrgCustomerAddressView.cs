@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class OrgCustomerAddressView
 {
-    public string? CustomerName { get; set; }
+    public string? CustName { get; set; }
 
     public string? PanNbr { get; set; }
 
@@ -13,7 +13,7 @@ public partial class OrgCustomerAddressView
 
     public string? CustStatus { get; set; }
 
-    public DateTime? CustomerSince { get; set; }
+    public DateTime? CustSince { get; set; }
 
     public string? Salutations { get; set; }
 
@@ -36,4 +36,16 @@ public partial class OrgCustomerAddressView
     public string? State { get; set; }
 
     public string? Country { get; set; }
+
+    public string? MobileNbr { get; set; }
+
+    public int CustGkey { get; set; }
+
+    public string? ClientId { get; set; }
+
+    public string? GstinNbr { get; set; }
+
+    public int? LocationGkey { get; set; }
+
+    public int? AddressGkey { get; set; }
 }

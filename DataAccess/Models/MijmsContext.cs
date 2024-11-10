@@ -33,6 +33,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<MtblReference> MtblReferences { get; set; }
 
+    public virtual DbSet<MtblVoucherType> MtblVoucherTypes { get; set; }
+
     public virtual DbSet<OldMetalTransaction> OldMetalTransactions { get; set; }
 
     public virtual DbSet<OrgAddress> OrgAddresses { get; set; }
@@ -66,6 +68,8 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<Rawplace> Rawplaces { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
+
+    public virtual DbSet<VoucherType> VoucherTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -826,6 +830,21 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.SortSeq).HasColumnName("sort_seq");
         });
 
+        modelBuilder.Entity<MtblVoucherType>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("MTBL_VOUCHER_TYPES");
+
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("gkey");
+            entity.Property(e => e.VoucherType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("voucher_type");
+        });
+
         modelBuilder.Entity<OldMetalTransaction>(entity =>
         {
             entity.HasKey(e => e.Gkey).HasName("PK_old_metal_transaction");
@@ -1217,66 +1236,81 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.AddLine1)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("addLine1");
+                .HasColumnName("ADD_LINE1");
             entity.Property(e => e.AddLine2)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("addLine2");
+                .HasColumnName("ADD_LINE2");
             entity.Property(e => e.AddLine3)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("addLine3");
+                .HasColumnName("ADD_LINE3");
+            entity.Property(e => e.AddressGkey).HasColumnName("ADDRESS_GKEY");
             entity.Property(e => e.Area)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("area");
+                .HasColumnName("AREA");
             entity.Property(e => e.City)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("city");
+                .HasColumnName("CITY");
+            entity.Property(e => e.ClientId)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("CLIENT_ID");
             entity.Property(e => e.Country)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("country");
+                .HasColumnName("COUNTRY");
             entity.Property(e => e.CreditAvailed)
                 .HasMaxLength(3)
                 .IsUnicode(false)
-                .HasColumnName("credit_availed");
+                .HasColumnName("CREDIT_AVAILED");
+            entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
             entity.Property(e => e.CustGstCode)
                 .HasMaxLength(3)
                 .IsUnicode(false)
-                .HasColumnName("cust_gst_code");
+                .HasColumnName("CUST_GST_CODE");
+            entity.Property(e => e.CustName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("CUST_NAME");
+            entity.Property(e => e.CustSince)
+                .HasColumnType("datetime")
+                .HasColumnName("CUST_SINCE");
             entity.Property(e => e.CustStatus)
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("cust_status");
+                .HasColumnName("CUST_STATUS");
             entity.Property(e => e.CustType)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("cust_type");
-            entity.Property(e => e.CustomerName)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("customer_name");
-            entity.Property(e => e.CustomerSince)
-                .HasColumnType("datetime")
-                .HasColumnName("customer_since");
+                .HasColumnName("CUST_TYPE");
             entity.Property(e => e.District)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("district");
+                .HasColumnName("DISTRICT");
+            entity.Property(e => e.GstinNbr)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("GSTIN_NBR");
+            entity.Property(e => e.LocationGkey).HasColumnName("LOCATION_GKEY");
+            entity.Property(e => e.MobileNbr)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("MOBILE_NBR");
             entity.Property(e => e.PanNbr)
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("panNbr");
+                .HasColumnName("PAN_NBR");
             entity.Property(e => e.Salutations)
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasColumnName("salutations");
+                .HasColumnName("SALUTATIONS");
             entity.Property(e => e.State)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("state");
+                .HasColumnName("STATE");
         });
 
         modelBuilder.Entity<OrgGeoLocation>(entity =>
@@ -1682,6 +1716,54 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("voucher_type");
+        });
+
+        modelBuilder.Entity<VoucherType>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("VOUCHER_TYPES");
+
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedNever()
+                .HasColumnName("GKEY");
+            entity.Property(e => e.Abbreviation)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ABBREVIATION");
+            entity.Property(e => e.DocNbrLength).HasColumnName("DOC_NBR_LENGTH");
+            entity.Property(e => e.DocNbrMethod)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_METHOD");
+            entity.Property(e => e.DocNbrPrefill)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_PREFILL");
+            entity.Property(e => e.DocNbrPrefix)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_PREFIX");
+            entity.Property(e => e.DocNbrSuffix)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_SUFFIX");
+            entity.Property(e => e.DocumentType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_TYPE");
+            entity.Property(e => e.IsActive).HasColumnName("IS_ACTIVE");
+            entity.Property(e => e.IsTaxable).HasColumnName("IS_TAXABLE");
+            entity.Property(e => e.LastUsedNumber).HasColumnName("LAST_USED_NUMBER");
+            entity.Property(e => e.MtblVoucherTypeGkey).HasColumnName("MTBL_VOUCHER_TYPE_GKEY");
+            entity.Property(e => e.Narration)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NARRATION");
+            entity.Property(e => e.UsedFor)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("USED_FOR");
         });
 
         OnModelCreatingPartial(modelBuilder);
