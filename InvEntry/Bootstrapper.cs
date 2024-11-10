@@ -10,6 +10,7 @@ using InvEntry.Metadata;
 using InvEntry.Models;
 using InvEntry.Reports;
 using InvEntry.Services;
+using InvEntry.Tally;
 using InvEntry.ViewModels;
 using InvEntry.Views;
 using Microsoft.Extensions.Configuration;
@@ -136,6 +137,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .ConfigureFormulas()
+                 .AddTallyService()
                  .AddHttpClient("mijms", httpClient => 
                  {
 #if DEBUG

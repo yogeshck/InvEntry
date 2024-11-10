@@ -4,6 +4,7 @@ using DevExpress.Mvvm;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
+using InvEntry.Tally;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,6 +17,7 @@ public partial class VoucherListViewModel: ObservableObject
 {
     private readonly IVoucherService _voucherService;
     private readonly IDialogService _reportDialogService;
+    private readonly ITallyXMLService _xmlService;
 
     [ObservableProperty]
     private ObservableCollection<Voucher> _vouchers;
@@ -30,10 +32,12 @@ public partial class VoucherListViewModel: ObservableObject
     private DateTime _Today = DateTime.Today;
 
     public VoucherListViewModel(IVoucherService voucherService,
+        ITallyXMLService xmlService,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
         _voucherService = voucherService;
         _reportDialogService = reportDialogService;
+        _xmlService = xmlService;
         _searchOption = new();
         SearchOption.To = Today;
         SearchOption.From = Today.AddDays(-7);
@@ -59,4 +63,20 @@ public partial class VoucherListViewModel: ObservableObject
             return SelectedVoucher is not null;
         }*/
 
+    [RelayCommand]
+    private async Task SendToTally()
+    {
+        if (_SelectedVoucher is null)
+            return;
+
+        TallyMessageBuilder tallyMessageBuilder = new TallyMessageBuilder(TallyXMLMessageType.SendVoucherToTally);
+
+        TallyVoucher tallyVoucer = new TallyVoucher();
+
+        tallyVoucer.VOUCHERNUMBER = _SelectedVoucher?.VoucherNbr;
+
+        tallyMessageBuilder.AddVoucher(tallyVoucer);
+
+        await _xmlService.SendToTally(tallyMessageBuilder.Build());
+    }
 }

@@ -218,7 +218,7 @@ public class ALLLEDGERENTRIESLIST : IInvEntryXmlSerializable
 }
 
 [XmlRoot(ElementName = "VOUCHER")]
-public class VOUCHER : IInvEntryXmlSerializable
+public class TallyVoucher : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "OLDAUDITENTRYIDS.LIST")]
@@ -242,7 +242,7 @@ public class VOUCHER : IInvEntryXmlSerializable
     // Payment - datatype is int
     // Receipt - datatype is string
     [XmlElement(ElementName = "NARRATION")]
-    public int NARRATION { get; set; }
+    public string NARRATION { get; set; }
 
     [XmlElement(ElementName = "COUNTRYOFRESIDENCE")]
     public string COUNTRYOFRESIDENCE { get; set; }
@@ -268,7 +268,7 @@ public class VOUCHER : IInvEntryXmlSerializable
     public string PARTYLEDGERNAME { get; set; }
 
     [XmlElement(ElementName = "VOUCHERNUMBER")]
-    public int VOUCHERNUMBER { get; set; }
+    public string VOUCHERNUMBER { get; set; }
 
     [XmlElement(ElementName = "CMPGSTREGISTRATIONTYPE")]
     public string CMPGSTREGISTRATIONTYPE { get; set; }
@@ -795,7 +795,7 @@ public class TALLYMESSAGE : IInvEntryXmlSerializable
 {
 
     [XmlElement(ElementName = "VOUCHER")]
-    public VOUCHER VOUCHER { get; set; }
+    public TallyVoucher VOUCHER { get; set; }
 
     [XmlAttribute(AttributeName = "UDF")]
     public string UDF { get; set; }
