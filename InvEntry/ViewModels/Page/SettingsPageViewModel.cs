@@ -84,22 +84,31 @@ namespace InvEntry.ViewModels
                 HistoryDailyMetalRate = new();
 
             }
-            else { 
-            DailyMetalRate = new(dailyRates);
+            else {
+                DailyMetalRate = new(dailyRates);
 
-            TodayDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date == DateTime.Now.Date));
-            HistoryDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date != DateTime.Now.Date));
+                TodayDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date == DateTime.Now.Date));
+                HistoryDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date != DateTime.Now.Date));
 
-        }
+            }
             GenerateTodayRate();
 
             Messenger.Default.Send(MessageType.WaitIndicator, vm);
         }
 
+        private async Task DailyRateUpdate()
+        {
+            foreach( var dailyRate in TodayDailyMetalRate )
+            {
+                await SaveDailyRate(dailyRate);
+            }
+        }
+
         [RelayCommand]
         private async Task SaveAllDailyRate()
         {
-            if (!TodayDailyMetalRate.Where(x => x.GKey == 0).Any()) return;
+            if (!TodayDailyMetalRate.Where(x => x.GKey == 0).Any())
+                 await DailyRateUpdate(); // return;
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Saving..."));
 
@@ -119,7 +128,9 @@ namespace InvEntry.ViewModels
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
-            DXMessageBox.Show("Sucessfully saved all rates", "Sucess", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+            DXMessageBox.Show("Sucessfully saved...", "Success", 
+                                MessageBoxButton.OK, MessageBoxImage.Information, 
+                                MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
         [RelayCommand]
@@ -143,7 +154,7 @@ namespace InvEntry.ViewModels
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
-            DXMessageBox.Show("Sucessfully saved rates", "Sucess", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+           // DXMessageBox.Show("Sucessfully saved rates", "Sucess", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
         }
 
         private void GenerateTodayRate()
