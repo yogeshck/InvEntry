@@ -16,5 +16,14 @@ public static class OldMetalTransactionExtension
         oldMetalTransaction.DocRefDate = invoiceHeader.InvDate;
         oldMetalTransaction.CustGkey = invoiceHeader.CustGkey;
         oldMetalTransaction.CustMobile = invoiceHeader.CustMobile;
+
+        if ( oldMetalTransaction.Metal == "OLD GOLD" )
+            {
+                oldMetalTransaction.TransType = "OG Purchase";
+            } else
+                    if (oldMetalTransaction.Metal == "OLD SILVER")
+                    {
+                       oldMetalTransaction.TransType = "OS Purchase";
+                    }
     }
 }

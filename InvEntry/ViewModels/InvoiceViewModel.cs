@@ -861,12 +861,13 @@ public partial class InvoiceViewModel : ObservableObject
 
     private async Task ProcessOldMetalTransaction()
     {
+
         foreach(var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichHeaderDetails(Header);
         }
 
-        await _oldMetalTransactionService.CreatOldMetalTransaction(Header.OldMetalTransactions);
+        await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
     }
 
     private InvoiceArReceipt CreateArReceipts(InvoiceArReceipt invoiceArReceipt, Voucher voucher)
