@@ -40,7 +40,7 @@ public partial class VoucherListViewModel: ObservableObject
         _xmlService = xmlService;
         _searchOption = new();
         SearchOption.To = Today;
-        SearchOption.From = Today.AddDays(-7);
+        SearchOption.From = Today.AddDays(-2);
         Task.Run(RefreshVoucherAsync).Wait();
     }
 

@@ -452,7 +452,6 @@ public partial class InvoiceViewModel : ObservableObject
 
         InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
         {
-            //BalBeforeAdj = Header.GrossRcbAmount,
             CustGkey = Header.CustGkey,
             Status = "Open",    //Status Open - Before Adjustment
             SeqNbr = noOfLines + 1
@@ -494,11 +493,12 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (!isSuccess) return;
 
-        ProcessDiscRdAdvance();
-
         if (!string.IsNullOrEmpty(Header.InvNbr))
         {
-            var result = _messageBoxService.ShowMessage("Invoice already created, Do you want to print preview the invoice ?", "Invoice", MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
+            var result = _messageBoxService.ShowMessage("Invoice already created, Do you want to print preview the invoice ?", "Invoice", 
+                                                            MessageButton.OKCancel, 
+                                                            MessageIcon.Question, 
+                                                            MessageResult.Cancel);
 
             if (result == MessageResult.OK)
             {
@@ -509,7 +509,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
-            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
+            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", 
+                                                MessageButton.OK, MessageIcon.Hand);
             return;
         }
 
@@ -548,7 +549,8 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
-            _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created", MessageButton.OK, MessageIcon.Exclamation);
+            _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created", 
+                                                MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
@@ -570,7 +572,8 @@ public partial class InvoiceViewModel : ObservableObject
         var printed = PrintHelper.Print(_reportFactoryService.CreateInvoiceReport(Header.InvNbr));
 
         if (printed.HasValue && printed.Value)
-            _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", MessageButton.OK, MessageIcon.None);
+            _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", 
+                                                MessageButton.OK, MessageIcon.None);
     }
 
     private bool CanPrintInvoice()
@@ -730,13 +733,9 @@ public partial class InvoiceViewModel : ObservableObject
         roundOff = Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
                         Header.GrossRcbAmount.GetValueOrDefault();
 
-        Header.RoundOff = roundOff; // Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0);
+        Header.RoundOff = roundOff; 
 
         Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
-
-        //Header.AdvanceAdj.GetValueOrDefault() + Header.RdAmountAdj.GetValueOrDefault();
-        //decimal AmountTobeDeducted = 0;
-        //AmountTobeDeducted = Header.DiscountAmount.GetValueOrDefault() + Header.RoundOff.GetValueOrDefault();
 
         decimal payableValue = 0;
         payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
@@ -760,11 +759,12 @@ public partial class InvoiceViewModel : ObservableObject
 
     private bool ProcessInvBalance()
     {
+
+        ProcessSettlements();
+
         //Note if inv balance is greater than zero - we need to show message to get confirmation from user
         // and warn to check there is unpaid balance........ 
 
-        //    if (Header.RecdAmount > 0)
-        //    {
         if (Header.InvBalance > 0)
         {
             var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, " +
@@ -805,28 +805,41 @@ public partial class InvoiceViewModel : ObservableObject
             {
                 return false;
             }
-            //        }
+
         }
 
         return true;
     }
 
-    private void ProcessDiscRdAdvance()
+    private void ProcessSettlements()
     {
         if (Header.DiscountAmount > 0)
         {
-            SetReceipts
+            SetReceipts("Discount");
+        }
+        if (Header.AdvanceAdj > 0)
+        {
+            SetReceipts("Advance");
+        }
+        if (Header.RdAmountAdj > 0)
+        {
+            SetReceipts("RD");
         }
     }
 
     private void SetReceipts(String str)
     {
 
+        var noOfLines = Header.ReceiptLines.Count;
+
         InvoiceArReceipt arInvRct = new InvoiceArReceipt();
 
         arInvRct.TransactionType = str;
         arInvRct.ModeOfReceipt = str;
-        arInvRct.AdjustedAmount = Header.InvBalance;
+        arInvRct.SeqNbr = noOfLines + 1;
+        var adjustedAmount = getTransAmount(str);
+        arInvRct.AdjustedAmount = adjustedAmount; 
+
         Header.ReceiptLines.Add(arInvRct);
     }
 
@@ -848,33 +861,14 @@ public partial class InvoiceViewModel : ObservableObject
 
     private async Task ProcessOldMetalTransaction()
     {
+
         foreach(var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichHeaderDetails(Header);
         }
 
-        await _oldMetalTransactionService.CreatOldMetalTransaction(Header.OldMetalTransactions);
+        await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
     }
-
-/*    private async void ProcessOldMetalTransLine()  //need to work out to add old metal totals to header old gold and silver amount
-    {
-        //For each Receipts row - seperate Voucher has to be created
-        foreach (var oldMetalTrans in Header.OldMetalTransactions)
-        {
-
-            if (oldMetalTrans.Metal == "GOLD")
-            {
-                Header.OldGoldAmount = Header.OldGoldAmount + oldMetalTrans.FinalPurchasePrice;
-
-            }
-            else if (oldMetalTrans.Metal == "SILVER")
-            {
-                Header.OldSilverAmount = Header.OldSilverAmount + oldMetalTrans.FinalPurchasePrice;
-
-            }
-
-        }
-    }*/
 
     private InvoiceArReceipt CreateArReceipts(InvoiceArReceipt invoiceArReceipt, Voucher voucher)
     {
@@ -893,13 +887,12 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.TransactionType            = invoiceArReceipt.TransactionType;
         arInvRct.ModeOfReceipt              = invoiceArReceipt.ModeOfReceipt;
         arInvRct.BalBeforeAdj               = invoiceArReceipt.BalBeforeAdj;
-        //arInvRct.AdjustedAmount             = invoiceArReceipt.AdjustedAmount;
         arInvRct.InternalVoucherNbr         = voucher.VoucherNbr;
         arInvRct.InternalVoucherDate        = voucher.VoucherDate;
         arInvRct.InvoiceReceiptNbr          = Header.InvNbr.Replace("B", "R");  //hard coded - future review 
         arInvRct.Status                     = "Adj";
 
-        var adjustedAmount = IsRefundOrCredit(invoiceArReceipt.TransactionType);
+        var adjustedAmount = getTransAmount(invoiceArReceipt.TransactionType);
         arInvRct.AdjustedAmount = adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
 
         return arInvRct;
@@ -927,30 +920,25 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.RefDocGkey = Header.GKey;
         Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
 
-        var transAmount = IsRefundOrCredit(invoiceArReceipt.TransactionType);
+        var transAmount = getTransAmount(invoiceArReceipt.TransactionType);
         Voucher.TransAmount = transAmount == 0 ? invoiceArReceipt.AdjustedAmount : transAmount;
 
         return Voucher;
 
     }
 
-    private decimal? IsRefundOrCredit(string transType)
+    private decimal? getTransAmount(string transType)
     {
-        if (transType == "Refund")
-        {
-            return Header.InvRefund;
-        }
-            else if (transType == "Credit")
-            {
-                return Header.InvBalance;
-            } 
+       return transType switch
+       {
+           var s when s.Equals("RD", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
+           var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
+           var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
+           var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
+           var s when s.Equals("Advance", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+           _ => 0M
+       };
 
-        //Discount
-
-        //Rd
-
-        //Advance
-                else  return 0;
     }
 
     private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
@@ -1011,10 +999,6 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void ResetInvoice()
     {
-       // var result = _messageBoxService.ShowMessage("Reset all values", "Reset Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
-
-       // if (result == MessageResult.No)
-       //     return;
 
         SetHeader();
         Buyer = null;

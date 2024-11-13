@@ -12,11 +12,11 @@ namespace InvEntry.Services
     {
         Task<OldMetalTransaction> GetOldMetalTransaction(string voucherId);
 
-        Task<OldMetalTransaction> CreatOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
+        Task<OldMetalTransaction> CreateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
 
         Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
 
-        Task CreatOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
+        Task CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
     }
 
     public class OldMetalTransactionService : IOldMetalTransactionService
@@ -29,17 +29,17 @@ namespace InvEntry.Services
             _mijmsApiService = mijmsApiService;
         }
 
-        public async Task<OldMetalTransaction> CreatOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
+        public async Task<OldMetalTransaction> CreateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
         {
             return await _mijmsApiService.Post($"api/OldMetalTransaction/", oldMetalTransaction);
         }
 
-        public async Task CreatOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
+        public async Task CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
         {
             var list = new List<Task>();
 
             foreach (var line in lines)
-                list.Add(CreatOldMetalTransaction(line));
+                list.Add(CreateOldMetalTransaction(line));
 
             await Task.WhenAll(list);
         }

@@ -10,12 +10,16 @@ namespace DataAccess.Controllers
     [ApiController]
     public class OldMetalTransactionController : ControllerBase
     {
+        private string DocumentPrefixFormat = "";  
 
         private readonly IRepositoryBase<OldMetalTransaction> _oldMetalTransaction;
+        private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
 
-        public OldMetalTransactionController(IRepositoryBase<OldMetalTransaction> oldMetalTransactionRepo)
+        public OldMetalTransactionController(   IRepositoryBase<OldMetalTransaction> oldMetalTransactionRepo,
+                                                IRepositoryBase<VoucherType> voucherTypeRepo)
         {
             _oldMetalTransaction = oldMetalTransactionRepo;
+            _voucherTypeRepo = voucherTypeRepo;
         }
 
         // GET: api/<OldMetalTransactionController>
@@ -36,7 +40,17 @@ namespace DataAccess.Controllers
         [HttpPost]
         public OldMetalTransaction Post([FromBody] OldMetalTransaction value)
         {
-            value.TransNbr = "T001";
+
+            var docType = _voucherTypeRepo.Get(x => x.DocumentType == value.TransType);
+
+            docType.LastUsedNumber++;
+
+            _voucherTypeRepo.Update(docType);
+
+            DocumentPrefixFormat = docType.DocNbrPrefix;
+
+            value.TransNbr = string.Format("{0}{1}", DocumentPrefixFormat,
+                                                        docType?.LastUsedNumber?.ToString("D4"));
 
             _oldMetalTransaction.Add(value);
             return value;
