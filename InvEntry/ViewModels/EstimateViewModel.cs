@@ -303,7 +303,7 @@ public partial class EstimateViewModel: ObservableObject
         };
 
 
-        estimateLine.SetProductDetails(product);
+    //    estimateLine.SetProductDetails(product);    **** to check
 
         EvaluateFormula(estimateLine, isInit: true);
 

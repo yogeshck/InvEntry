@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class ProductTransaction
 {
-    public int? Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public double? RefGkey { get; set; }
 

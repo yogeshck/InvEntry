@@ -3,15 +3,11 @@ using System.Collections.Generic;
 
 namespace DataAccess.Models;
 
-public partial class ProductStock
+public partial class ProductStockSummary
 {
     public int Gkey { get; set; }
 
-    public int? StockSummaryGkey { get; set; }
-
     public int? ProductGkey { get; set; }
-
-    public string? ProductSku { get; set; }
 
     public decimal? GrossWeight { get; set; }
 
@@ -35,13 +31,15 @@ public partial class ProductStock
 
     public string? Status { get; set; }
 
-    public string? SupplierId { get; set; }
-
     public decimal? VaPercent { get; set; }
 
     public decimal? WastagePercent { get; set; }
 
     public decimal? WastageAmount { get; set; }
+
+    public decimal? SupplierRate { get; set; }
+
+    public decimal? MakingCharges { get; set; }
 
     public int? SizeId { get; set; }
 
@@ -50,6 +48,16 @@ public partial class ProductStock
     public string? SizeUom { get; set; }
 
     public bool? IsProductSold { get; set; }
+
+    public string? SupplierId { get; set; }
+
+    public string? PurchaseOrderNbr { get; set; }
+
+    public string? CustomerOrderNbr { get; set; }
+
+    public string? DocumentRef { get; set; }
+
+    public DateTime? DocumentDate { get; set; }
 
     public string? CreatedBy { get; set; }
 

@@ -18,7 +18,7 @@ public static class IoCService
             {
                 var clientConfig = serviceProvider.GetRequiredService<ITallyConfig>();
                 configureClient.BaseAddress = new (clientConfig?.BaseAddress ?? "http://localhost:9000/");
-                configureClient.DefaultRequestHeaders.Add("Content-Type", "text/xml");
+            //    configureClient.DefaultRequestHeaders.Add("Content-Type", "text/xml");
             });
 
         serviceCollection.AddSingleton<ITallyXMLService, TallyXMLService>();

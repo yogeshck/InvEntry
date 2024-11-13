@@ -8,19 +8,20 @@ namespace InvEntry.Models.Extensions
 {
     public static class EstimateLineExtension
     {
-        public static void SetProductDetails(this EstimateLine line, Product product)
+        public static void SetProductDetails(this EstimateLine line, ProductStock product)
         {
             line.ProdGrossWeight = product.GrossWeight;
-            line.ProdStoneWeight = product.OtherWeight;
-            line.ProductDesc = product.ProductDesc;
-            line.ProductName = product.ProductName;
-            line.ProductPurity = product.ProductPurity;
+            line.ProdStoneWeight = product.StoneWeight;
+            line.ProductDesc = "Desc"; // product.ProductDesc;
+            line.ProductName = "Name"; // product.ProductName;
+            line.ProductPurity = "916"; // product.ProductPurity;
             line.VaPercent = product.VaPercent;
-            line.ProductId = product.ProductId;
-            line.Metal = product.Metal;
-            line.IsTaxable = product.Taxable;
-            line.ProdCategory = product.ProductCategory;
-            line.HsnCode = product.HsnCode;
+            line.ProductId = "Id"; // product.ProductId;
+            line.Metal = "GOLD"; // product.Metal;
+            line.IsTaxable = true;  // True;  //product.Taxable;
+            line.ProdCategory = ""; // product.ProductCategory;
+            line.HsnCode = "HSN"; // product.HsnCode;
+
         }
     }
 }

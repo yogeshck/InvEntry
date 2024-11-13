@@ -125,6 +125,7 @@ public sealed class Bootstrapper
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddSingleton<ICustomerService, CustomerService>()
                  .AddSingleton<IProductService, ProductService>()
+                 .AddSingleton<IProductStockService, ProductStockService>()
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IEstimateService, EstimateService>()
@@ -138,6 +139,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IOrgThisCompanyViewService, OrgThisCompanyViewService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
+                 .AddSingleton<IServiceCollection, ServiceCollection>()
                  .ConfigureFormulas()
                  .AddTallyService()
                  .AddHttpClient("mijms", httpClient => 

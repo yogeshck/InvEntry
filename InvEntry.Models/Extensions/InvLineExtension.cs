@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InvEntry.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -9,18 +10,18 @@ namespace InvEntry.Models.Extensions
 {
     public static class InvLineExtension
     {
-        public static void SetProductDetails(this InvoiceLine line, Product product)
+        public static void SetProductDetails(this InvoiceLine line, ProductView product)
         {
             line.ProdGrossWeight = product.GrossWeight;
-            line.ProdStoneWeight = product.OtherWeight;
-            line.ProductDesc = product.ProductDesc;
-            line.ProductName = product.ProductName;
-            line.ProductPurity = product.ProductPurity;
+            line.ProdStoneWeight = product.StoneWeight;
+            line.ProductDesc = product.Description;
+            line.ProductName = product.Name;
+            line.ProductPurity = product.Purity;
             line.VaPercent = product.VaPercent;
-            line.ProductId = product.ProductId;
+            line.ProductId = product.Id;
             line.Metal = product.Metal;
-            line.IsTaxable = product.Taxable;
-            line.ProdCategory = product.ProductCategory;
+            line.IsTaxable = product.IsTaxable;
+            line.ProdCategory = product.Category;
             line.HsnCode = product.HsnCode;
         }
 

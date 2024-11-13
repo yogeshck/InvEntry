@@ -85,7 +85,8 @@ public partial class InvoiceViewModel : ObservableObject
     private bool invBalanceChk = false;
 
     private readonly ICustomerService _customerService;
-    private readonly IProductService _productService;
+    private readonly IProductViewService _productViewService;
+    private readonly IProductStockService _productStockService;
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
@@ -110,7 +111,8 @@ public partial class InvoiceViewModel : ObservableObject
     };
 
     public InvoiceViewModel(ICustomerService customerService,
-        IProductService productService,
+        IProductViewService productViewService,
+        IProductStockService productStockService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
         IProductCategoryService productCategoryService,
@@ -127,7 +129,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
-        _productService = productService;
+        _productViewService = productViewService;
+        _productStockService = productStockService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
@@ -359,7 +362,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-        var product = await _productService.GetProduct(ProductIdUI);
+        var product = await _productViewService.GetProduct(ProductIdUI);
         // await Task.Delay(30000);
 
         SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
@@ -384,7 +387,7 @@ public partial class InvoiceViewModel : ObservableObject
             TaxType = "GST"
         };
 
-        invoiceLine.SetProductDetails(product);
+        invoiceLine.SetProductDetails(product);    
 
         EvaluateFormula(invoiceLine, isInit: true);
 

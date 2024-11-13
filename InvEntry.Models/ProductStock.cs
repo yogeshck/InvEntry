@@ -1,72 +1,79 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class Product : BaseEntity
+    public partial class ProductStock : BaseEntity
     {
+        [ObservableProperty]
+        public int? _stockSummaryGkey;
 
         [ObservableProperty]
-        public string? _id;
+        public int? _productGkey;
 
         [ObservableProperty]
-        public string? _name;
+        public string? _productSku;
 
         [ObservableProperty]
-        public string? _description;
+        public decimal? _grossWeight;
 
         [ObservableProperty]
-        public string? _category;
+        public decimal? _stoneWeight;
 
         [ObservableProperty]
-        public string? _purity;
+        public decimal? _netWeight;
 
         [ObservableProperty]
-        public decimal? _purityPercent;
+        public decimal? _suppliedGrossWeight;
 
         [ObservableProperty]
-        public string? _imageRef;
+        public decimal? _adjustedWeight;
 
         [ObservableProperty]
-        public int? _setGkey;
+        public decimal? _soldWeight;
 
         [ObservableProperty]
-        public string? _stockGroup;
+        public decimal? _balanceWeight;
 
         [ObservableProperty]
-        public string? _brand;
+        public int? _suppliedQty;
 
         [ObservableProperty]
-        public string? _metal;
+        public int? _soldQty;
 
         [ObservableProperty]
-        public string? _hsnCode;
+        public int? _stockQty;
 
         [ObservableProperty]
-        public string? _model;
+        public string? _status;
 
         [ObservableProperty]
-        public string? _uom;
+        public string? _supplierId;
 
         [ObservableProperty]
-        public string? _taxRule;
+        public decimal? _vaPercent;
 
         [ObservableProperty]
-        public string? _baseUnit;
+        public decimal? _wastagePercent;
 
         [ObservableProperty]
-        public bool? _isTaxable;
+        public decimal? _wastageAmount;
 
         [ObservableProperty]
-        public bool? _isActive;
+        public int? _sizeId;
 
         [ObservableProperty]
-        public int? _productAttributeGkey;
+        public string? _size;
+
+        [ObservableProperty]
+        public string? _sizeUom;
+
+        [ObservableProperty]
+        public bool? _isProductSold;
 
         [ObservableProperty]
         public string? _createdBy;
@@ -79,6 +86,5 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         public DateTime? _modifiedOn;
-
     }
 }

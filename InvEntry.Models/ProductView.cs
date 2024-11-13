@@ -1,16 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class Product : BaseEntity
+    public partial class ProductView : BaseEntity
     {
-
         [ObservableProperty]
         public string? _id;
 
@@ -27,58 +25,60 @@ namespace InvEntry.Models
         public string? _purity;
 
         [ObservableProperty]
-        public decimal? _purityPercent;
-
-        [ObservableProperty]
-        public string? _imageRef;
-
-        [ObservableProperty]
-        public int? _setGkey;
-
-        [ObservableProperty]
-        public string? _stockGroup;
-
-        [ObservableProperty]
-        public string? _brand;
-
-        [ObservableProperty]
         public string? _metal;
 
         [ObservableProperty]
         public string? _hsnCode;
 
         [ObservableProperty]
-        public string? _model;
-
-        [ObservableProperty]
         public string? _uom;
-
-        [ObservableProperty]
-        public string? _taxRule;
-
-        [ObservableProperty]
-        public string? _baseUnit;
 
         [ObservableProperty]
         public bool? _isTaxable;
 
         [ObservableProperty]
-        public bool? _isActive;
+        public string? _productSku;
 
         [ObservableProperty]
-        public int? _productAttributeGkey;
+        public decimal? _grossWeight;
 
         [ObservableProperty]
-        public string? _createdBy;
+        public decimal? _stoneWeight;
 
         [ObservableProperty]
-        public DateTime? _createdOn;
+        public decimal? _netWeight;
 
         [ObservableProperty]
-        public string? _modifiedBy;
+        public decimal? _vaPercent;
 
         [ObservableProperty]
-        public DateTime? _modifiedOn;
+        public decimal? _wastagePercent;
 
+        [ObservableProperty]
+        public decimal? _wastageAmount;
+
+        [ObservableProperty]
+        public decimal? _soldWeight;
+
+        [ObservableProperty]
+        public decimal? _balanceWeight;
+
+        [ObservableProperty]
+        public int? _soldQty;
+
+        [ObservableProperty]
+        public int? _stockQty;
+
+        [ObservableProperty]
+        public string? _size;
+
+        [ObservableProperty]
+        public int? _sizeId;
+
+        [ObservableProperty]
+        public string? _sizeUom;
+
+        [ObservableProperty]
+        public bool? _isProductSold;
     }
 }
