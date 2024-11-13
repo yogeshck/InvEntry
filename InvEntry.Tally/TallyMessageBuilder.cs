@@ -44,7 +44,7 @@ public class TallyMessageBuilder
 
     public TallyMessageBuilder AddVoucher(TallyVoucher voucher)
     {
-        (_env.BODY.Data as TallyVoucherMessage).Vouchers.Add(voucher);
+        (_env.BODY.Data).Vouchers.Add(voucher);
         return this;
     }
 

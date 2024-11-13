@@ -43,7 +43,7 @@ public class TallyBody : IInvEntryXmlSerializable
     public TallyBodyDesc BodyDesc { get; set; }
 
     [XmlElement(ElementName = "DATA")]
-    public object Data { get; set; }  
+    public TallyVoucherMessage Data { get; set; }  
 }
 
 [XmlRoot(ElementName = "TALLYMESSAGE")]
