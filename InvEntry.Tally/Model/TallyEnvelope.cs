@@ -220,15 +220,20 @@ public class ALLLEDGERENTRIESLIST : IInvEntryXmlSerializable
 [XmlRoot(ElementName = "VOUCHER")]
 public class TallyVoucher : IInvEntryXmlSerializable
 {
+    [XmlAttribute(AttributeName = "ACTION")]
+    public string Action { get; set; } = "Create";
+
+    [XmlAttribute(AttributeName = "OBJVIEW")]
+    public string ObjView { get; set; } = "Accounting Voucher View";
 
     [XmlElement(ElementName = "OLDAUDITENTRYIDS.LIST")]
     public OLDAUDITENTRYIDSLIST OLDAUDITENTRYIDSLIST { get; set; }
 
     [XmlElement(ElementName = "DATE")]
-    public int DATE { get; set; }
+    public string DATE { get; set; }
 
     [XmlElement(ElementName = "VCHSTATUSDATE")]
-    public int VCHSTATUSDATE { get; set; }
+    public string VCHSTATUSDATE { get; set; }
 
     [XmlElement(ElementName = "GUID")]
     public string GUID { get; set; }
@@ -239,8 +244,6 @@ public class TallyVoucher : IInvEntryXmlSerializable
     [XmlElement(ElementName = "STATENAME")]
     public string STATENAME { get; set; }
 
-    // Payment - datatype is int
-    // Receipt - datatype is string
     [XmlElement(ElementName = "NARRATION")]
     public string NARRATION { get; set; }
 

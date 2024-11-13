@@ -73,7 +73,11 @@ public partial class VoucherListViewModel: ObservableObject
 
         TallyVoucher tallyVoucer = new TallyVoucher();
 
+        /*
+         * SET more values as needed to send to tally
+         */
         tallyVoucer.VOUCHERNUMBER = _SelectedVoucher?.VoucherNbr;
+        tallyVoucer.DATE = _SelectedVoucher?.VoucherDate?.ToString("yyyyMMdd");
 
         tallyMessageBuilder.AddVoucher(tallyVoucer);
 
