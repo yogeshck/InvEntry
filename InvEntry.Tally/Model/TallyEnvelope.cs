@@ -46,7 +46,7 @@ public class OLDAUDITENTRYIDSLIST : IInvEntryXmlSerializable
     public string TYPE { get; set; }
 
     [XmlText]
-    public int Text { get; set; }
+    public string Text { get; set; }
 }
 
 [XmlRoot(ElementName = "GSTREGISTRATION")]
