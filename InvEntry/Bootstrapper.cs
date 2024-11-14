@@ -26,9 +26,9 @@ using System.Windows.Markup;
 using System.Windows.Threading;
 
 namespace InvEntry;
+
 public sealed class Bootstrapper
 {
-
     private static IHost _host;
 
     private Bootstrapper()
@@ -39,7 +39,6 @@ public sealed class Bootstrapper
                     .AddMetadata<ProductCategory, ProductCategoryMetadata>()
                     .AddMetadata<MtblReference, MtblRefrencesMetadata>()
                     .AddMetadata<Voucher, VoucherMetadata>();
-
     }
 
     public static Bootstrapper Default { get; private set; }
@@ -63,7 +62,7 @@ public sealed class Bootstrapper
     {
         var argSet = args.Args.Select(d => d.ToLower()).ToHashSet();
         string[] arguments = args.Args;
-        if(argSet.Count == 0 || !argSet.Any(d => d.Contains("environment")))
+        if (argSet.Count == 0 || !argSet.Any(d => d.Contains("environment")))
         {
 #if DEBUG
             arguments = ["--environment", "Development"];
@@ -74,7 +73,7 @@ public sealed class Bootstrapper
 
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
-            .WriteTo.File(@"C:\\Madrone\\InvEntry-.log", rollingInterval: RollingInterval.Day, 
+            .WriteTo.File(@"C:\\Madrone\\InvEntry-.log", rollingInterval: RollingInterval.Day,
             outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
 
@@ -104,7 +103,7 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
-                 .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) => 
+                 .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) =>
                  {
                      if (Application.Current.TryFindResource("ReportDialogService") is DialogService dialogService)
                      {
@@ -113,15 +112,7 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
-                 .AddTransient<VoucherEntryViewModel>()
-                 .AddTransient<InvoiceListViewModel>()
-                 .AddTransient<InvoiceViewModel>()
-                 .AddTransient<ProductStockViewModel>()
-                 .AddSingleton<MainWindowViewModel>()
-                 .AddSingleton<VoucherListViewModel>()
-                 .AddTransient<ReportDialogViewModel>()
-                 .AddSingleton<SettingsPageViewModel>()
-                 .AddSingleton<EstimateViewModel>()
+                 .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddSingleton<ICustomerService, CustomerService>()
                  .AddSingleton<IProductService, ProductService>()
@@ -130,20 +121,28 @@ public sealed class Bootstrapper
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IGrnService, GrnService>()
                  .AddSingleton<IEstimateService, EstimateService>()
-                 .AddSingleton<IMijmsApiService, MijmsApiService>()
                  .AddSingleton<IVoucherService, VoucherService>()
                  .AddSingleton<IVoucherTypeService, VoucherTypeService>()
-      //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
+                 //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IOldMetalTransactionService, OldMetalTransactionService>()
                  .AddSingleton<IMtblReferencesService, MtblReferencesService>()
                  .AddSingleton<IOrgThisCompanyViewService, OrgThisCompanyViewService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
-                 .AddSingleton<IServiceCollection, ServiceCollection>()
+                 .AddSingleton<IProductViewService, ProductViewService>()
                  .ConfigureFormulas()
                  .AddTallyService()
-                 .AddHttpClient("mijms", httpClient => 
+                 .AddSingleton<VoucherEntryViewModel>()
+                 .AddSingleton<InvoiceListViewModel>()
+                 .AddSingleton<InvoiceViewModel>()
+                 .AddSingleton<ProductStockViewModel>()
+                 .AddSingleton<MainWindowViewModel>()
+                 .AddSingleton<VoucherListViewModel>()
+                 .AddTransient<ReportDialogViewModel>()
+                 .AddSingleton<SettingsPageViewModel>()
+                 .AddSingleton<EstimateViewModel>()
+                 .AddHttpClient("mijms", httpClient =>
                  {
 #if DEBUG
                      httpClient.BaseAddress = new Uri("https://localhost:7001/");
@@ -155,7 +154,7 @@ public sealed class Bootstrapper
              {
                  logging.AddSerilog(dispose: true);
              })
-             .ConfigureHostConfiguration(config => 
+             .ConfigureHostConfiguration(config =>
              {
                  config
                  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
