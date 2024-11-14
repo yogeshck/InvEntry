@@ -14,6 +14,6 @@ public class TallyXmlMesage : IInvEntryXmlSerializable
     [XmlElement(ElementName = "HEADER")]
     public TallyHeader HEADER;
 
-    [XmlElement(ElementName = "BODY")]
+    [XmlElement(ElementName = "BODY")] 
     public TallyBody BODY;
 }

@@ -62,7 +62,7 @@
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutItem>
-                        <dxe:ImageEdit Height="180" Width="400"/>
+                        <dxe:ImageEdit Height="162"/>
                     </dxlc:LayoutItem>
                 </dxlc:LayoutGroup>
                 <dxlc:LayoutGroup Header="Stock Details">

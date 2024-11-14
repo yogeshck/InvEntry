@@ -21,6 +21,10 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<EstimateLine> EstimateLines { get; set; }
 
+    public virtual DbSet<GrnHeader> GrnHeaders { get; set; }
+
+    public virtual DbSet<GrnLine> GrnLines { get; set; }
+
     public virtual DbSet<InvoiceArReceipt> InvoiceArReceipts { get; set; }
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
@@ -64,8 +68,6 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<ProductGroup> ProductGroups { get; set; }
 
     public virtual DbSet<ProductStock> ProductStocks { get; set; }
-
-    public virtual DbSet<ProductStockSummary> ProductStockSummaries { get; set; }
 
     public virtual DbSet<ProductTransaction> ProductTransactions { get; set; }
 
@@ -339,10 +341,10 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PROD_CATEGORY");
             entity.Property(e => e.ProdGrossWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("PROD_GROSS_WEIGHT");
             entity.Property(e => e.ProdNetWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("PROD_NET_WEIGHT");
             entity.Property(e => e.ProdPackCode)
                 .HasMaxLength(255)
@@ -350,7 +352,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("PROD_PACK_CODE");
             entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
             entity.Property(e => e.ProdStoneWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("PROD_STONE_WEIGHT");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)
@@ -386,6 +388,149 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.VaPercent)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("VA_PERCENT");
+        });
+
+        modelBuilder.Entity<GrnHeader>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("GRN_HEADER");
+
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn)
+                .HasPrecision(6)
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.CustomerOrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CUSTOMER_ORDER_NBR");
+            entity.Property(e => e.DocumentDate)
+                .HasPrecision(6)
+                .HasColumnName("DOCUMENT_DATE");
+            entity.Property(e => e.DocumentRef)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_REF");
+            entity.Property(e => e.DocumentType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_TYPE");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.GrnDate)
+                .HasPrecision(6)
+                .HasColumnName("GRN_DATE");
+            entity.Property(e => e.GrnNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("GRN_NBR");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn)
+                .HasPrecision(6)
+                .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.OrderDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DATE");
+            entity.Property(e => e.OrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.SupplierId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("SUPPLIER_ID");
+            entity.Property(e => e.SupplierRefNbr)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("SUPPLIER_ref_nbr");
+        });
+
+        modelBuilder.Entity<GrnLine>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("GRN_LINE");
+
+            entity.Property(e => e.AcceptedQty).HasColumnName("ACCEPTED_QTY");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.GrnHdrGkey).HasColumnName("GRN_HDR_GKEY");
+            entity.Property(e => e.GrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("GROSS_WEIGHT");
+            entity.Property(e => e.LineNbr).HasColumnName("LINE_NBR");
+            entity.Property(e => e.NetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("NET_WEIGHT");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("NOTES");
+            entity.Property(e => e.OrderedQty).HasColumnName("ORDERED_QTY");
+            entity.Property(e => e.ProductDesc)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("product_desc");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("product_ID");
+            entity.Property(e => e.ProductPurity)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_PURITY");
+            entity.Property(e => e.ReceivedQty).HasColumnName("RECEIVED_QTY");
+            entity.Property(e => e.RejectedQty).HasColumnName("REJECTED_QTY");
+            entity.Property(e => e.ReturnedQty).HasColumnName("RETURNED_QTY");
+            entity.Property(e => e.Size)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("SIZE");
+            entity.Property(e => e.SizeId).HasColumnName("SIZE_ID");
+            entity.Property(e => e.SizeUom)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("SIZE_UOM");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("STATUS");
+            entity.Property(e => e.StoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STONE_WEIGHT");
+            entity.Property(e => e.SuppMakingCharges)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("SUPP_MAKING_CHARGES");
+            entity.Property(e => e.SuppProductDesc)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("supp_product_desc");
+            entity.Property(e => e.SuppProductNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("supp_product_nbr");
+            entity.Property(e => e.SuppRate)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("SUPP_RATE");
+            entity.Property(e => e.SuppVaPercent)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("SUPP_VA_PERCENT");
+            entity.Property(e => e.SuppWastageAmount)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("SUPP_WASTAGE_AMOUNT");
+            entity.Property(e => e.SuppWastagePercent)
+                .HasColumnType("decimal(4, 2)")
+                .HasColumnName("SUPP_WASTAGE_PERCENT");
+            entity.Property(e => e.SuppliedQty).HasColumnName("SUPPLIED_QTY");
+            entity.Property(e => e.Uom)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("UOM");
         });
 
         modelBuilder.Entity<InvoiceArReceipt>(entity =>
@@ -714,10 +859,10 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PROD_CATEGORY");
             entity.Property(e => e.ProdGrossWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("PROD_GROSS_WEIGHT");
             entity.Property(e => e.ProdNetWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("PROD_NET_WEIGHT");
             entity.Property(e => e.ProdPackCode)
                 .HasMaxLength(255)
@@ -725,7 +870,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("PROD_PACK_CODE");
             entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
             entity.Property(e => e.ProdStoneWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("PROD_STONE_WEIGHT");
             entity.Property(e => e.ProductDesc)
                 .HasMaxLength(255)
@@ -873,14 +1018,14 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("final_purchase_price");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("gross_weight");
             entity.Property(e => e.Metal)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("metal");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("net_weight");
             entity.Property(e => e.ProductCategory)
                 .HasMaxLength(50)
@@ -900,7 +1045,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("remarks");
             entity.Property(e => e.StoneWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("stone_weight");
             entity.Property(e => e.TotalProposedPrice)
                 .HasColumnType("decimal(18, 2)")
@@ -925,7 +1070,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("wastage_percent");
             entity.Property(e => e.WastageWeight)
-                .HasColumnType("decimal(18, 2)")
+                .HasColumnType("decimal(18, 3)")
                 .HasColumnName("wastage_weight");
         });
 
@@ -1557,10 +1702,10 @@ public partial class MijmsContext : DbContext
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AdjustedWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("ADJUSTED_WEIGHT");
             entity.Property(e => e.BalanceWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("BALANCE_WEIGHT");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(30)
@@ -1570,7 +1715,7 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("GROSS_WEIGHT");
             entity.Property(e => e.IsProductSold).HasColumnName("IS_PRODUCT_SOLD");
             entity.Property(e => e.ModifiedBy)
@@ -1581,7 +1726,7 @@ public partial class MijmsContext : DbContext
                 .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("NET_WEIGHT");
             entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
             entity.Property(e => e.ProductSku)
@@ -1599,7 +1744,7 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("SIZE_UOM");
             entity.Property(e => e.SoldQty).HasColumnName("SOLD_QTY");
             entity.Property(e => e.SoldWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("SOLD_WEIGHT");
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
@@ -1608,112 +1753,16 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.StockQty).HasColumnName("STOCK_QTY");
             entity.Property(e => e.StockSummaryGkey).HasColumnName("STOCK_SUMMARY_GKEY");
             entity.Property(e => e.StoneWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("STONE_WEIGHT");
             entity.Property(e => e.SuppliedGrossWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("SUPPLIED_GROSS_WEIGHT");
             entity.Property(e => e.SuppliedQty).HasColumnName("SUPPLIED_QTY");
             entity.Property(e => e.SupplierId)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("SUPPLIER_ID");
-            entity.Property(e => e.VaPercent)
-                .HasColumnType("decimal(4, 2)")
-                .HasColumnName("VA_PERCENT");
-            entity.Property(e => e.WastageAmount)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("WASTAGE_AMOUNT");
-            entity.Property(e => e.WastagePercent)
-                .HasColumnType("decimal(4, 2)")
-                .HasColumnName("WASTAGE_PERCENT");
-        });
-
-        modelBuilder.Entity<ProductStockSummary>(entity =>
-        {
-            entity.HasKey(e => e.Gkey);
-
-            entity.ToTable("PRODUCT_STOCK_SUMMARY");
-
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
-            entity.Property(e => e.AdjustedWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("ADJUSTED_WEIGHT");
-            entity.Property(e => e.BalanceWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("BALANCE_WEIGHT");
-            entity.Property(e => e.CreatedBy)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("CREATED_BY");
-            entity.Property(e => e.CreatedOn)
-                .HasPrecision(6)
-                .HasColumnName("CREATED_ON");
-            entity.Property(e => e.CustomerOrderNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("CUSTOMER_ORDER_NBR");
-            entity.Property(e => e.DocumentDate)
-                .HasPrecision(6)
-                .HasColumnName("DOCUMENT_DATE");
-            entity.Property(e => e.DocumentRef)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("DOCUMENT_REF");
-            entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("GROSS_WEIGHT");
-            entity.Property(e => e.IsProductSold).HasColumnName("IS_PRODUCT_SOLD");
-            entity.Property(e => e.MakingCharges)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("MAKING_CHARGES");
-            entity.Property(e => e.ModifiedBy)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("MODIFIED_BY");
-            entity.Property(e => e.ModifiedOn)
-                .HasPrecision(6)
-                .HasColumnName("MODIFIED_ON");
-            entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("NET_WEIGHT");
-            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
-            entity.Property(e => e.PurchaseOrderNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("PURCHASE_ORDER_NBR");
-            entity.Property(e => e.Size)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("SIZE");
-            entity.Property(e => e.SizeId).HasColumnName("SIZE_ID");
-            entity.Property(e => e.SizeUom)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("SIZE-UOM");
-            entity.Property(e => e.SoldQty).HasColumnName("SOLD_QTY");
-            entity.Property(e => e.SoldWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("SOLD_WEIGHT");
-            entity.Property(e => e.Status)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("STATUS");
-            entity.Property(e => e.StockQty).HasColumnName("STOCK_QTY");
-            entity.Property(e => e.StoneWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("STONE_WEIGHT");
-            entity.Property(e => e.SuppliedGrossWeight)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("SUPPLIED_GROSS_WEIGHT");
-            entity.Property(e => e.SuppliedQty).HasColumnName("SUPPLIED_QTY");
-            entity.Property(e => e.SupplierId)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("SUPPLIER_ID");
-            entity.Property(e => e.SupplierRate)
-                .HasColumnType("decimal(10, 2)")
-                .HasColumnName("SUPPLIER_RATE");
             entity.Property(e => e.VaPercent)
                 .HasColumnType("decimal(4, 2)")
                 .HasColumnName("VA_PERCENT");
