@@ -1822,7 +1822,7 @@ public partial class MijmsContext : DbContext
                 .ToView("PRODUCT_VIEW");
 
             entity.Property(e => e.BalanceWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("BALANCE_WEIGHT");
             entity.Property(e => e.Category)
                 .HasMaxLength(50)
@@ -1833,7 +1833,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("DESCRIPTION");
             entity.Property(e => e.GrossWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("GROSS_WEIGHT");
             entity.Property(e => e.HsnCode)
                 .HasMaxLength(50)
@@ -1854,7 +1854,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("NAME");
             entity.Property(e => e.NetWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("NET_WEIGHT");
             entity.Property(e => e.ProductSku)
                 .HasMaxLength(50)
@@ -1875,11 +1875,11 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("SIZE_UOM");
             entity.Property(e => e.SoldQty).HasColumnName("SOLD_QTY");
             entity.Property(e => e.SoldWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("SOLD_WEIGHT");
             entity.Property(e => e.StockQty).HasColumnName("STOCK_QTY");
             entity.Property(e => e.StoneWeight)
-                .HasColumnType("decimal(10, 2)")
+                .HasColumnType("decimal(10, 3)")
                 .HasColumnName("STONE_WEIGHT");
             entity.Property(e => e.Uom)
                 .HasMaxLength(50)

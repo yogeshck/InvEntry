@@ -135,6 +135,7 @@ public sealed class Bootstrapper
                  .AddTallyService()
                  .AddSingleton<VoucherEntryViewModel>()
                  .AddSingleton<InvoiceListViewModel>()
+                 .AddSingleton<InvoiceProductSelectionViewModel>()   
                  .AddSingleton<InvoiceViewModel>()
                  .AddSingleton<ProductStockViewModel>()
                  .AddSingleton<MainWindowViewModel>()

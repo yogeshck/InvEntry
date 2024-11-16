@@ -5,6 +5,7 @@ using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Tally;
+using InvEntry.Tally.Model;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -69,7 +70,11 @@ public partial class VoucherListViewModel: ObservableObject
         if (_SelectedVoucher is null)
             return;
 
-        TallyMessageBuilder tallyMessageBuilder = new TallyMessageBuilder(TallyXMLMessageType.SendVoucherToTally);
+        TallyMessageBuilder tallyMessageBuilder = new TallyMessageBuilder(TallyXMLMessageType.SendVoucherToTally, "MATHA THANGA MALIGAI");
+
+       // TallyXmlMesage tallyXmlMsg = new TallyXmlMesage();
+       // tallyXmlMsg.HEADER = new TallyHeader();
+       // tallyXmlMsg.HEADER.TallyRequest = TallyRequestEnum.Import;
 
         TallyVoucher tallyVoucer = new TallyVoucher();
 
@@ -78,9 +83,13 @@ public partial class VoucherListViewModel: ObservableObject
          */
         tallyVoucer.VOUCHERNUMBER = _SelectedVoucher?.VoucherNbr;
         tallyVoucer.DATE = _SelectedVoucher?.VoucherDate?.ToString("yyyyMMdd");
+        //tallyVoucer.VCHTYPE = //asdlkfjlksadjf;
 
-        tallyMessageBuilder.AddVoucher(tallyVoucer);
+      //  tallyXmlMsg.BODY = new TallyBody();
+
+         tallyMessageBuilder.AddVoucher(tallyVoucer);
 
         await _xmlService.SendToTally(tallyMessageBuilder.Build());
+        //await _xmlService.SendToTally(tallyXmlMsg);
     }
 }

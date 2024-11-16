@@ -50,6 +50,9 @@ public partial class InvoiceViewModel : ObservableObject
     private string _productIdUI;
 
     [ObservableProperty]
+    private string _productSku;
+
+    [ObservableProperty]
     private string _oldMetalIdUI;
 
     [ObservableProperty]
@@ -63,6 +66,9 @@ public partial class InvoiceViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<InvoiceLine> selectedRows;
+
+/*    [ObservableProperty]
+    private ObservableCollection<ProductView> productStockList;*/
 
     [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
@@ -143,6 +149,8 @@ public partial class InvoiceViewModel : ObservableObject
         _mtblReferencesService = mtblReferencesService;
 
         selectedRows = new();
+        //productStockList = new();
+
         _customerReadOnly = false;
 
         _isBalance = true;
@@ -284,19 +292,20 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void AddReceipts()
+    private ProductView? ProductStockSelection()
     {
-        var vm = new InvoiceReceiptsViewModel();
-        var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Receipts", "InvoiceReceiptsView", vm);
+     
+        var vm = DISource.Resolve<InvoiceProductSelectionViewModel>();
+        vm.Category = ProductIdUI;
+
+        var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product", 
+                                                        "InvoiceProductSelectionView", vm);
 
         if (result == MessageResult.OK)
         {
-
-        } else
-        {
-
-        }
+            return vm.SelectedProduct; 
+        } 
+        return null;
     }
 
     [RelayCommand]
@@ -358,14 +367,17 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
+        //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
 
-        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+        //SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-        var product = await _productViewService.GetProduct(ProductIdUI);
+        //var product = await _productViewService.GetProduct(ProductIdUI);
+
         // await Task.Delay(30000);
 
-        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+        //SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+
+        var product = ProductStockSelection();
 
         if (product is null)
         {
@@ -373,6 +385,8 @@ public partial class InvoiceViewModel : ObservableObject
                 "Product not found", MessageButton.OK, MessageIcon.Error);
             return;
         }
+
+        var productStk = await _productViewService.GetByProductSku(product.ProductSku);
 
         var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
 
@@ -382,12 +396,12 @@ public partial class InvoiceViewModel : ObservableObject
             InvlBilledPrice = billedPrice,
             InvlCgstPercent = Header.CgstPercent,
             InvlSgstPercent = Header.SgstPercent,
-            InvlIgstPercent = Header.CgstPercent,
+            InvlIgstPercent = Header.IgstPercent,
             InvlStoneAmount = 0M,
             TaxType = "GST"
         };
 
-        invoiceLine.SetProductDetails(product);    
+        invoiceLine.SetProductDetails(productStk);    
 
         EvaluateFormula(invoiceLine, isInit: true);
 

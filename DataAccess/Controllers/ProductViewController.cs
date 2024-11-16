@@ -27,8 +27,22 @@ namespace DataAccess.Controllers
         }
 
         // GET api/<ProductViewController>/5
-        [HttpGet("{productSku}")]
-        public async Task<IActionResult> Get(string productSku)
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> Get(string productId)
+        {
+            return Ok(_productStkViewRepo.Get(x => x.Id == productId));
+        }
+
+        // GET api/<ProductViewController>/5
+        [HttpGet("category/{category}")]
+        public async Task<IActionResult> GetCategory(string category)
+        {
+            return Ok(_productStkViewRepo.GetList(x => x.Category == category));
+        }
+
+        // GET api/<ProductViewController>/5
+        [HttpGet("productSku/{productSku}")]
+        public async Task<IActionResult> GetByProductSku(string productSku)
         {
             return Ok(_productStkViewRepo.Get(x => x.ProductSku == productSku));
         }

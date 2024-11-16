@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="InvEntry.Views.InvoiceProductSelectionView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:InvEntry.Views" 
+        xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid" xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars" xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+             mc:Ignorable="d"
+        Height="450" Width="800">
+    <Grid Width="1100" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <dxb:BarContainerControl>
+            <dxb:MainMenuControl>
+                <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh"
+                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                    GlyphSize="Large"
+                    Command="{Binding RefreshProductStockCommand}" />
+            </dxb:MainMenuControl>
+        </dxb:BarContainerControl>
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding ProductStockView}" 
+                        AutoGenerateColumns="None"
+                         MinHeight="500"
+                         Height="620"
+                         MaxHeight="1100"
+                         MinWidth="700"
+                         Width="1000" 
+                         HorizontalAlignment="Left" SelectedItem="{Binding SelectedProduct}">
+            <!-- SelectedItem="{Binding SelectedInvoice}" -->
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="productSku" Header="Product Ref" ReadOnly="True" Width="70" />                
+                <dxg:GridColumn FieldName="Id" Header="Product" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="Name" Header="Name" ReadOnly="True" Width="90" />
+                <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" Width="90" />                
+                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" Width="100"/>
+                <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight" Width="100"/>
+                <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" Width="100"/>                
+            </dxg:GridControl.Columns>
+            <dxg:GridControl.View>
+                <dxg:TableView AllowEditing="False" NavigationStyle="Row" />
+            </dxg:GridControl.View>
+        </dxg:GridControl>
+    </Grid>
+</UserControl>

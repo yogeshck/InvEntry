@@ -783,12 +783,6 @@ public class TallyVoucher : IInvEntryXmlSerializable
     [XmlAttribute(AttributeName = "VCHTYPE")]
     public string VCHTYPE { get; set; }
 
-    [XmlAttribute(AttributeName = "ACTION")]
-    public string ACTION { get; set; }
-
-    [XmlAttribute(AttributeName = "OBJVIEW")]
-    public string OBJVIEW { get; set; }
-
     [XmlText]
     public string Text { get; set; }
 }

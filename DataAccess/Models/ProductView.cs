@@ -27,7 +27,7 @@ public partial class ProductView
 
     public decimal? GrossWeight { get; set; }
 
-    public decimal? StoneWeight { get; set; }
+    public decimal StoneWeight { get; set; }
 
     public decimal? NetWeight { get; set; }
 

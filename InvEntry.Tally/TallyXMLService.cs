@@ -32,8 +32,9 @@ public class TallyXMLService : ITallyXMLService
         using var httpClient = _httpClientFactory.CreateClient("Tally");
 
         var xmlrequest = XMLUtil.SerializeToString(tallyXmlMesage);
+        _logger.LogDebug("Tally Request \n*******\n\t{0}\n*******\n", xmlrequest);
 
-        HttpContent content = new StringContent(xmlrequest, Encoding.UTF8, "text / xml");
+        HttpContent content = new StringContent(xmlrequest, Encoding.UTF8, "text/xml");
 
         var response = await httpClient.PostAsync(httpClient.BaseAddress, content);
 

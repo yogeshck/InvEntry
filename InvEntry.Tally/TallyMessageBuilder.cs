@@ -12,8 +12,11 @@ public class TallyMessageBuilder
 {
     TallyXmlMesage _env;
 
-    public TallyMessageBuilder(TallyXMLMessageType messageType) 
+    private string _currentCompany;
+
+    public TallyMessageBuilder(TallyXMLMessageType messageType, string currentCompany) 
     {
+        _currentCompany = currentCompany;
         Initialize(messageType);
     }
 
@@ -31,6 +34,10 @@ public class TallyMessageBuilder
                     ID = "VOUCHERS"
                 };
                 _env.BODY = new TallyBody();
+                _env.BODY.BodyDesc = new TallyBodyDesc();
+                _env.BODY.BodyDesc.Variables = new TallyStaticVariables();
+                _env.BODY.BodyDesc.Variables.SVCURRENTCOMPANY = _currentCompany;
+
                 _env.BODY.Data = new TallyVoucherMessage()
                 {
                     Vouchers = new List<TallyVoucher>()

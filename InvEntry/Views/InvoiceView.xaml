@@ -402,7 +402,7 @@
                                               Height="35" Width="120" FontSize="14"/>
                             </dxlc:LayoutItem>
                             <!--       <dxlc:LayoutItem>
-                                <dx:SimpleButton Content="AddReceipts" Command="{Binding AddReceiptsCommand}"/>
+                                <dx:SimpleButton Content="SelectStockItem" Command="{Binding ProductStockSelectionCommand}"/>
                             </dxlc:LayoutItem>  -->
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
