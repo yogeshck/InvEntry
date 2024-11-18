@@ -546,7 +546,7 @@ public partial class InvoiceViewModel : ObservableObject
             x.InvoiceId = Header.InvNbr;
         });
 
-        var header = await _invoiceService.CreatHeader(Header);
+        var header = await _invoiceService.CreateHeader(Header);
 
         if (header is not null)
         {
@@ -559,7 +559,7 @@ public partial class InvoiceViewModel : ObservableObject
                 x.InvoiceId = header.InvNbr;
             });
             // loop for validation check for customer
-            await _invoiceService.CreatInvoiceLine(Header.Lines);
+            await _invoiceService.CreateInvoiceLine(Header.Lines);
 
             await ProcessOldMetalTransaction();
 
@@ -964,7 +964,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             try
             {
-                var voucherResult = await _invoiceArReceiptService.CreatInvArReceipt(invoiceArReceipt);
+                var voucherResult = await _invoiceArReceiptService.CreateInvArReceipt(invoiceArReceipt);
 
                 if (voucherResult != null)
                 {

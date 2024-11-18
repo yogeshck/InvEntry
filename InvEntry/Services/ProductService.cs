@@ -11,7 +11,9 @@ namespace InvEntry.Services
     {
         Task<Product> GetProduct(string productId);
 
-        Task CreatProduct(Product product);
+        Task<Product> GetByCategory(string category);
+
+        Task CreateProduct(Product product);
 
         Task UpdateProduct(Product product);
     }
@@ -30,14 +32,19 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<Product>($"api/productstock/{productId}");
         }
 
-        public async Task CreatProduct(Product product)
+        public async Task<Product> GetByCategory(string category)
         {
-            await _mijmsApiService.Post($"api/productstock/", product);
+            return await _mijmsApiService.Get<Product>($"api/product/{category}");
+        }
+
+        public async Task CreateProduct(Product product)
+        {
+            await _mijmsApiService.Post($"api/product/", product);
         }
 
         public async Task UpdateProduct(Product product)
         {
-            await _mijmsApiService.Put($"api/productstock/{product.Id}", product);
+            await _mijmsApiService.Put($"api/product/{product.Id}", product);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class GrnLine
 {
-    public int? Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public int? GrnHdrGkey { get; set; }
 

@@ -392,10 +392,11 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<GrnHeader>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("GRN_HEADER");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("GRN_HEADER");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -418,7 +419,6 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("DOCUMENT_TYPE");
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GrnDate)
                 .HasPrecision(6)
                 .HasColumnName("GRN_DATE");
@@ -452,12 +452,12 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<GrnLine>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("GRN_LINE");
+            entity.HasKey(e => e.Gkey);
 
-            entity.Property(e => e.AcceptedQty).HasColumnName("ACCEPTED_QTY");
+            entity.ToTable("GRN_LINE");
+
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.AcceptedQty).HasColumnName("ACCEPTED_QTY");
             entity.Property(e => e.GrnHdrGkey).HasColumnName("GRN_HDR_GKEY");
             entity.Property(e => e.GrossWeight)
                 .HasColumnType("decimal(10, 3)")

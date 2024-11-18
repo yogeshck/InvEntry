@@ -12,15 +12,15 @@ namespace InvEntry.Services
     {
         Task<InvoiceHeader> GetHeader(string invNbr);
 
-        Task<InvoiceHeader> CreatHeader(InvoiceHeader invHdr);
+        Task<InvoiceHeader> CreateHeader(InvoiceHeader invHdr);
 
         Task UpdateHeader(InvoiceHeader invHdr);
 
         Task<IEnumerable<InvoiceHeader>>  GetAll(InvoiceSearchOption options);
 
-        Task CreatInvoiceLine(InvoiceLine line);
+        Task CreateInvoiceLine(InvoiceLine line);
 
-        Task CreatInvoiceLine(IEnumerable<InvoiceLine> line);
+        Task CreateInvoiceLine(IEnumerable<InvoiceLine> line);
     }
 
     public class InvoiceService : IInvoiceService
@@ -37,7 +37,7 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<InvoiceHeader>($"api/invoice/{invNbr}");
         }
 
-        public async Task<InvoiceHeader> CreatHeader(InvoiceHeader invHdr)
+        public async Task<InvoiceHeader> CreateHeader(InvoiceHeader invHdr)
         {
             return await _mijmsApiService.Post($"api/invoice/", invHdr);
         }
@@ -47,17 +47,17 @@ namespace InvEntry.Services
             await _mijmsApiService.Put($"api/invoice/{invHdr.InvNbr}", invHdr);
         }
 
-        public async Task CreatInvoiceLine(InvoiceLine line)
+        public async Task CreateInvoiceLine(InvoiceLine line)
         {
             await _mijmsApiService.Post($"api/invoiceline/", line);
         }
 
-        public async Task CreatInvoiceLine(IEnumerable<InvoiceLine> lines)
+        public async Task CreateInvoiceLine(IEnumerable<InvoiceLine> lines)
         {
             var list = new List<Task>();
 
             foreach(var line in lines)
-                list.Add(CreatInvoiceLine(line));
+                list.Add(CreateInvoiceLine(line));
 
             await Task.WhenAll(list);
         }

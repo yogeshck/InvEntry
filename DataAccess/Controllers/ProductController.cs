@@ -19,36 +19,36 @@ namespace DataAccess.Controllers
             _logger = stkLogger;
         }
 
-        // GET: api/<ProductStockController>
+        // GET: api/<ProductController>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            _logger.LogInformation("All Product Stock");
+            _logger.LogInformation("All Product Info");
             return Ok(_product.GetAll());
         }
 
-        // GET api/<ProductStockController>/5
+        // GET api/<ProductController>/5
         [HttpGet("{productId}")]
         public async Task<IActionResult> Get(string productId)
         {
             return Ok(_product.Get(x => x.Id == productId));
         }
 
-        // POST api/<ProductStockController>
+        // POST api/<ProductController>
         [HttpPost]
         public void Post([FromBody] Product value)
         {
             _product.Add(value);
         }
 
-        // PUT api/<ProductStockController>/5
+        // PUT api/<ProductController>/5
         [HttpPut("{productGkey}")]
         public void Put(decimal productGkey, [FromBody] Product value)
         {
             _product.Update(value);
         }
 
-        // DELETE api/<ProductStockController>/5
+        // DELETE api/<ProductController>/5
         [HttpDelete("{productGkey}")]
         public async Task<IActionResult> Delete(decimal productGkey)
         {

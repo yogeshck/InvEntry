@@ -25,7 +25,7 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task Submit()
         {
-            await _productService.CreatProduct(Product);
+            await _productService.CreateProduct(Product);
         }
     }
 }

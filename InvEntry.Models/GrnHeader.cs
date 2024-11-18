@@ -5,40 +5,51 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using InvEntry.Models;
+using System.Collections.ObjectModel;
+
 
 namespace InvEntry.Models;
 
 public partial class GrnHeader : BaseEntity
+{
+
+    public GrnHeader()
     {
-        [ObservableProperty]
-        public string? _grnNbr;
+        grnLines = new();
+    }
 
-        [ObservableProperty]
-        public DateTime? _grnDate;
+    [ObservableProperty]
+    public string? _grnNbr;
 
-        [ObservableProperty]
-        public string? _documentType;
+    [ObservableProperty]
+    public DateTime? _grnDate;
 
-        [ObservableProperty]
-        public string? _orderNbr;
+    [ObservableProperty]
+    public string? _documentType;
 
-        [ObservableProperty]
-        public DateTime? _orderDate;
+    [ObservableProperty]
+    public string? _orderNbr;
 
-        [ObservableProperty]
-        public string? _supplierId;
+    [ObservableProperty]
+    public DateTime? _orderDate;
 
-        [ObservableProperty]
-        public string? _supplierRefNbr;
-
-        [ObservableProperty]
-        public string? _customerOrderNbr;
-
-        [ObservableProperty]
-        public string? _documentRef;
-
-        [ObservableProperty]
-        public DateTime? _documentDate;
-
+    [ObservableProperty]
+    public string? _supplierId;
     
+    [ObservableProperty]
+    public string? _supplierRefNbr;
+
+    [ObservableProperty]
+    public string? _customerOrderNbr;
+
+    [ObservableProperty]
+    public string? _documentRef;
+
+    [ObservableProperty]
+    public DateTime? _documentDate;
+
+    [ObservableProperty]
+   // [property: JsonIgnore]
+    private ObservableCollection<GrnLine>? grnLines;
+
 }

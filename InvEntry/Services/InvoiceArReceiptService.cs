@@ -12,7 +12,7 @@ namespace InvEntry.Services
     {
         Task<InvoiceArReceipt> GetInvArReceipt(string voucherId);
 
-        Task<InvoiceArReceipt> CreatInvArReceipt(InvoiceArReceipt invoiceArReceipt);
+        Task<InvoiceArReceipt> CreateInvArReceipt(InvoiceArReceipt invoiceArReceipt);
 
         Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt);
     }
@@ -27,7 +27,7 @@ namespace InvEntry.Services
             _mijmsApiService = mijmsApiService;
         }
 
-        public async Task<InvoiceArReceipt> CreatInvArReceipt(InvoiceArReceipt invoiceArReceipt)
+        public async Task<InvoiceArReceipt> CreateInvArReceipt(InvoiceArReceipt invoiceArReceipt)
         {
              return await _mijmsApiService.Post($"api/InvoiceArReceipt/", invoiceArReceipt);
         }

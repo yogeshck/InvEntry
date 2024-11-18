@@ -140,6 +140,7 @@ public sealed class Bootstrapper
                  .AddSingleton<ProductStockViewModel>()
                  .AddSingleton<MainWindowViewModel>()
                  .AddSingleton<VoucherListViewModel>()
+                 .AddSingleton<GRNViewModel>()
                  .AddTransient<ReportDialogViewModel>()
                  .AddSingleton<SettingsPageViewModel>()
                  .AddSingleton<EstimateViewModel>()

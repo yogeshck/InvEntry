@@ -5,7 +5,7 @@ namespace DataAccess.Models;
 
 public partial class GrnHeader
 {
-    public int? Gkey { get; set; }
+    public int Gkey { get; set; }
 
     public string? GrnNbr { get; set; }
 
