@@ -18,7 +18,7 @@
              DataContext="{ext:DISource Type=viewmodels:ProductStockEntryViewModel}"
              mc:Ignorable="d"  HorizontalAlignment="Left"
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid HorizontalAlignment="Left" Width="1000">
+    <Grid HorizontalAlignment="Left" Width="1200">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
@@ -60,8 +60,8 @@
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnHdrList}" AutoGenerateColumns="None"
-                          SelectedItem="{Binding SelectedGrn}"
-                         HorizontalAlignment="Left" >
+                          SelectedItem="{Binding SelectedGrn}" VerticalAlignment="Top"
+                         HorizontalAlignment="Left" Height="200">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                        Command="{Binding SelectionGRNChangedCommand}" />
@@ -77,27 +77,33 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="SupplierId" Header="Supp" ReadOnly="True" Width="70" />
                 <dxg:GridColumn FieldName="GrnNbr" Header="Grn #" ReadOnly="True" Width="70" />
                 <dxg:GridColumn FieldName="GrnDate" Header="Grn Date" ReadOnly="True" Width="90" />
-                <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="100">
-                    <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
-                    </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="DocumentRef" Header="Doc #" Width="70" />
+                <dxg:GridColumn FieldName="DocumentDate" Header="Doc Date" ReadOnly="True" Width="90" />
+                <dxg:GridColumn FieldName="OrderNbr" Header="Order #" Width="70" />
+                <dxg:GridColumn FieldName="OrderDate" Header="Order Date" ReadOnly="True" Width="90" />                
+                <!--<dxg:GridColumn.EditSettings>
+                    <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
+                </dxg:GridColumn.EditSettings>-->
             </dxg:GridControl.Columns>
         </dxg:GridControl>
         <dxg:GridControl Grid.Row="2" ItemsSource="{Binding GrnLineSumryList}" AutoGenerateColumns="None" 
-                         SelectedItem="{Binding SelectedGrnLineSumry}"
-                         HorizontalAlignment="Left" MaxHeight="300">
+                         SelectedItem="{Binding SelectedGrnLineSumry}" VerticalAlignment="Top"
+                         HorizontalAlignment="Left" Height="200">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                        Command="{Binding SelectionGrnSumryListChangedCommand}" />
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="70" />
-                <dxg:GridColumn FieldName="Product" Header="Sku" ReadOnly="True" Width="90" />
-                <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="100">
-                    <dxg:GridColumn.EditSettings>
+                <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
+                <dxg:GridColumn FieldName="ProductCategory" Header="Category" ReadOnly="True" Width="90" />
+                <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="100" />
+                <dxg:GridColumn FieldName="GrossWight" Header="Gross Wt" Width="100" />
+                <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="100" />
+                <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="100">
+                            <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
@@ -108,14 +114,14 @@
                          HorizontalAlignment="Left" Height="700" >
                 <dxg:GridControl.Columns>
                     <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="70" />
-                    <dxg:GridColumn FieldName="ProductSku" Header="Sku" ReadOnly="True" Width="90" />
+                    <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="90" />
+                    <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="100" />
                     <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="100" />
                     <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="100" />
                     <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="100" />
-
                 </dxg:GridControl.Columns>
             </dxg:GridControl>
-            <dx:SimpleButton Content="Poda dai" />
+            <dx:SimpleButton Content="Submit" />
         </StackPanel>
     </Grid>
 </UserControl>
