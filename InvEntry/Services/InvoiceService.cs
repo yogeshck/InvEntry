@@ -16,7 +16,7 @@ namespace InvEntry.Services
 
         Task UpdateHeader(InvoiceHeader invHdr);
 
-        Task<IEnumerable<InvoiceHeader>>  GetAll(InvoiceSearchOption options);
+        Task<IEnumerable<InvoiceHeader>>  GetAll(DateSearchOption options);
 
         Task CreateInvoiceLine(InvoiceLine line);
 
@@ -62,10 +62,10 @@ namespace InvEntry.Services
             await Task.WhenAll(list);
         }
 
-        public async Task<IEnumerable<InvoiceHeader>> GetAll(InvoiceSearchOption options)
+        public async Task<IEnumerable<InvoiceHeader>> GetAll(DateSearchOption options)
         {
 
-            return await _mijmsApiService.PostEnumerable<InvoiceHeader, InvoiceSearchOption>($"api/invoice/filter", options);
+            return await _mijmsApiService.PostEnumerable<InvoiceHeader, DateSearchOption>($"api/invoice/filter", options);
 
 
         }

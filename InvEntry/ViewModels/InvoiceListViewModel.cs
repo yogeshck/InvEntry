@@ -22,7 +22,7 @@ public partial class InvoiceListViewModel : ObservableObject
     private ObservableCollection<InvoiceHeader> _invoices;
 
     [ObservableProperty]
-    private InvoiceSearchOption _searchOption;
+    private DateSearchOption _searchOption;
 
     [ObservableProperty]
     private InvoiceHeader _SelectedInvoice;

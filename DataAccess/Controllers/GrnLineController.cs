@@ -29,6 +29,14 @@ namespace DataAccess.Controllers
         //    return _grnLineRepository.Get(x => x.gr == grnNbr);
         //}
 
+        // GET api/<GrnController>/5
+        [HttpGet("{grnHdrGkey}")]
+        public async Task<IActionResult> GetByHdrGKey(int grnHdrGkey)
+        {
+            return Ok(_grnLineRepository.GetList(x => x.GrnHdrGkey == grnHdrGkey));
+            
+        }
+
         // POST api/<GrnController>
         [HttpPost]
         public GrnLine Post([FromBody] GrnLine value)

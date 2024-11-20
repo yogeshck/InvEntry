@@ -16,11 +16,23 @@ namespace InvEntry.Services
 
         Task UpdateHeader(GrnHeader grnHdr);
 
+        Task<IEnumerable<GrnHeader>> GetBySupplier(string supplier);
+
         Task<IEnumerable<GrnHeader>> GetAll(DateSearchOption options);
 
         Task CreateGrnLine(GrnLine line);
 
         Task CreateGrnLine(IEnumerable<GrnLine> line);
+
+        Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey);
+
+        Task CreateGrnLineSummary(GrnLineSummary lineSumry);
+
+        Task CreateGrnLineSummary(IEnumerable<GrnLineSummary> lineSumry);
+
+        Task<IEnumerable<GrnLine>> GetByHdrGkey(int hdrGkey);
+
+        Task<IEnumerable<GrnLineSummary>> GetBySumryHdrGkey(int hdrGkey);
     }
 
     public class GrnService : IGrnService
@@ -64,10 +76,43 @@ namespace InvEntry.Services
 
         public async Task<IEnumerable<GrnHeader>> GetAll(DateSearchOption options)
         {
-
             return await _mijmsApiService.PostEnumerable<GrnHeader, DateSearchOption>($"api/grn/filter", options);
 
+        }
 
+        public async Task<IEnumerable<GrnHeader>> GetBySupplier(string supplier)
+        {
+            return await _mijmsApiService.GetEnumerable<GrnHeader>($"api/grn/supplierId/{supplier}");
+        }
+
+        public async Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey)
+        {
+            return await _mijmsApiService.GetEnumerable<GrnLine>($"api/grnline/GrnLineSummary/{lineSumryGkey}");
+        }
+
+        public async Task<IEnumerable<GrnLine>> GetByHdrGkey(int hdrGkey)
+        {
+            return await _mijmsApiService.GetEnumerable<GrnLine>($"api/grnline/hdrGkey/{hdrGkey}");
+        }
+
+        public async Task CreateGrnLineSummary(GrnLineSummary lineSumry)
+        {
+            await _mijmsApiService.Post($"api/GrnLineSummary/", lineSumry);
+        }
+
+        public async Task CreateGrnLineSummary(IEnumerable<GrnLineSummary> lineSumry)
+        {
+            var list = new List<Task>();
+
+            foreach (var line in lineSumry)
+                list.Add(CreateGrnLineSummary(line));
+
+            await Task.WhenAll(list);
+        }
+
+        public async Task<IEnumerable<GrnLineSummary>> GetBySumryHdrGkey(int hdrGkey)
+        {
+            return await _mijmsApiService.GetEnumerable<GrnLineSummary>($"api/GrnLineSummary/{hdrGkey}");
         }
     }
 }

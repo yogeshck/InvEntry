@@ -35,16 +35,22 @@ namespace InvEntry.ViewModels
         private ObservableCollection<string> productCategoryList;
 
         [ObservableProperty]
-        private ObservableCollection<GrnLine> selectedRows;
+        private ObservableCollection<GrnLineSummary> selectedRows;
+
+/*        [ObservableProperty]
+        private ObservableCollection<GrnLine> selectedRows;*/
 
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
-        //private readonly ICustomerService _customerService;
         private readonly IProductService _productService;
-        //private readonly IProductStockService _productStockService;
-        private readonly IDialogService _dialogService;
-        //private readonly IDialogService _reportDialogService;
         private readonly IMessageBoxService _messageBoxService;
+        private readonly IDialogService _dialogService;
+
+        private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineExpression;
+
+        //private readonly IProductStockService _productStockService;
+        //private readonly IDialogService _reportDialogService;
+        //private readonly ICustomerService _customerService;
 
         public GRNViewModel(IGrnService             grnService,
                             IProductService         productService ,
@@ -59,6 +65,7 @@ namespace InvEntry.ViewModels
             _messageBoxService = messageBoxService;
 
             PopulateProductCategoryList();
+            PopulateUnboundLineDataMap();
 
             SetHeader();
 
@@ -82,29 +89,30 @@ namespace InvEntry.ViewModels
         private async Task FetchSupplier(EditValueChangedEventArgs args)
         {
 
-         //   if (string.IsNullOrEmpty(productIdUI)) return;
+            if (string.IsNullOrEmpty(CategoryUI)) return;
 
             var product = await _productService.GetByCategory(CategoryUI);
 
-            GrnLine grnLine = new GrnLine()
+            GrnLineSummary grnLineSumry = new GrnLineSummary()
             {
-                ProductGkey    = product.GKey,
-                ProductDesc    = product.Description,
-                ProductPurity  = product.Purity
+                ProductGkey = product.GKey,
+                ProductCategory = CategoryUI
             };
 
             //grnLine.SetProductDetails(productStk);
 
-            Header.GrnLines.Add(grnLine);
+            grnLineSumry.NetWeight = grnLineSumry.GrossWeight - grnLineSumry.StoneWeight;
+
+            Header.GrnLineSumry.Add(grnLineSumry);
 
         }
 
         [RelayCommand]
         private void CellUpdate(CellValueChangedEventArgs args)
         {
-            if (args.Row is GrnLine line)
+            if (args.Row is GrnLineSummary line)
             {
-               // EvaluateFormula(line);
+               EvaluateFormula(line);
             }
         }
 
@@ -117,16 +125,14 @@ namespace InvEntry.ViewModels
             {
                 Header.GKey = header.GKey;
                 Header.GrnNbr = header.GrnNbr;
-
-                Header.GrnLines.ForEach(x =>
+                
+                Header.GrnLineSumry.ForEach(x =>
                 {
                     x.GrnHdrGkey    = header.GKey;
-                    x.LineNbr       = Header.GrnLines.IndexOf(x) + 1;
-                 //   x.OrderedQty    = grnLine;
+                    x.LineNbr       = Header.GrnLineSumry.IndexOf(x) + 1;
                 });
 
-                // loop for validation check for customer
-                await _grnService.CreateGrnLine(Header.GrnLines);
+                await _grnService.CreateGrnLineSummary(Header.GrnLineSumry);
 
                 _messageBoxService.ShowMessage( "GRN " + Header.GrnNbr + " Created Successfully",
                                                 "GRN Creation", 
@@ -145,5 +151,41 @@ namespace InvEntry.ViewModels
 
         }
 
-    }
+        private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
+        {
+            var formulas = FormulaStore.Instance.GetFormulas<T>();
+
+            foreach (var formula in formulas)
+            {
+                //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
+
+                var val = formula.Evaluate<T, decimal>(item, 0M);
+
+                if (item is GrnLineSummary grnLineSumry)
+                    copyGRNLineExpression[formula.FieldName].Invoke(grnLineSumry, val);
+            }
+        }
+
+        private void PopulateUnboundLineDataMap()
+        {
+            if (copyGRNLineExpression is null) copyGRNLineExpression = new();
+
+            //copyGRNLineExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}", (item, val) => item.InvlTaxableAmount = val);
+            copyGRNLineExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val);
+        }
+
+            //private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class
+            //{
+            //    //if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
+
+            //    var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
+
+            //    var val = formula.Evaluate<T, decimal>(item, 0M);
+
+            //    if (item is InvoiceLine invLine)
+            //        copyGRNExpression[fieldName].Invoke(invLine, val);
+            //    else if (item is InvoiceHeader head)
+            //        copyHeaderExpression[fieldName].Invoke(head, val);
+            //}
+        }
 }

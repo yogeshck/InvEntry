@@ -1,0 +1,121 @@
+﻿<UserControl x:Class="InvEntry.Views.ProductStockEntryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:InvEntry.Views"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors" 
+             xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars" 
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core" 
+             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid" 
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:behavior="clr-namespace:InvEntry.Behavior"
+             xmlns:viewmodels="clr-namespace:InvEntry.ViewModels" 
+             xmlns:ext="clr-namespace:InvEntry.Extension"
+             d:DataContext="{d:DesignInstance Type=viewmodels:ProductStockEntryViewModel}"
+             DataContext="{ext:DISource Type=viewmodels:ProductStockEntryViewModel}"
+             mc:Ignorable="d"  HorizontalAlignment="Left"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid HorizontalAlignment="Left" Width="1000">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <dxb:BarContainerControl Grid.ColumnSpan="2">
+            <dxb:MainMenuControl>
+                <dxb:BarEditItem EditValue="{Binding SupplierReferencesList}" EditWidth="120" Content="Supplier ID:">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding SupplierID}" />
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
+                <dxb:BarButtonItem x:Name="btnPrintGrid"
+                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
+                <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:DateEditSettings AllowDefaultButton="True" />
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
+                <dxb:BarEditItem EditValue="{Binding SearchOption.To}" EditWidth="120" Content="To Date">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}" />
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
+                <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh"
+                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                    GlyphSize="Large"
+                    Command="{Binding RefreshGRNCommand}" />
+                <dxb:BarButtonItem x:Name="btnPrintGRN"
+                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
+                   GlyphSize="Large" Alignment="Far"
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintGrnCommand}" />
+            </dxb:MainMenuControl>
+        </dxb:BarContainerControl>
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnHdrList}" AutoGenerateColumns="None"
+                          SelectedItem="{Binding SelectedGrn}"
+                         HorizontalAlignment="Left" >
+            <dxmvvm:Interaction.Behaviors>
+                <dxmvvm:EventToCommand EventName="SelectedItemChanged"
+                                       Command="{Binding SelectionGRNChangedCommand}" />
+                <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}"/>
+            </dxmvvm:Interaction.Behaviors>
+            <dxg:GridControl.View>
+                <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
+                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
+                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
+                    <!--     <dxg:TableView.ColumnMenuCustomizations>
+                        <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}" />
+                    </dxg:TableView.ColumnMenuCustomizations> -->
+                </dxg:TableView>
+            </dxg:GridControl.View>
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="GrnNbr" Header="Grn #" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="GrnDate" Header="Grn Date" ReadOnly="True" Width="90" />
+                <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+            </dxg:GridControl.Columns>
+        </dxg:GridControl>
+        <dxg:GridControl Grid.Row="2" ItemsSource="{Binding GrnLineSumryList}" AutoGenerateColumns="None" 
+                         SelectedItem="{Binding SelectedGrnLineSumry}"
+                         HorizontalAlignment="Left" MaxHeight="300">
+            <dxmvvm:Interaction.Behaviors>
+                <dxmvvm:EventToCommand EventName="SelectedItemChanged"
+                                       Command="{Binding SelectionGrnSumryListChangedCommand}" />
+            </dxmvvm:Interaction.Behaviors>
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="Product" Header="Sku" ReadOnly="True" Width="90" />
+                <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+            </dxg:GridControl.Columns>
+        </dxg:GridControl>
+        <StackPanel Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" >
+            <dxg:GridControl ItemsSource="{Binding GrnLineList}" AutoGenerateColumns="None"
+                         HorizontalAlignment="Left" Height="700" >
+                <dxg:GridControl.Columns>
+                    <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="70" />
+                    <dxg:GridColumn FieldName="ProductSku" Header="Sku" ReadOnly="True" Width="90" />
+                    <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="100" />
+                    <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="100" />
+                    <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="100" />
+
+                </dxg:GridControl.Columns>
+            </dxg:GridControl>
+            <dx:SimpleButton Content="Poda dai" />
+        </StackPanel>
+    </Grid>
+</UserControl>

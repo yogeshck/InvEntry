@@ -62,4 +62,6 @@ public partial class GrnLine
     public string? Size { get; set; }
 
     public string? SizeUom { get; set; }
+
+    public int? GrnLineSumryGkey { get; set; }
 }

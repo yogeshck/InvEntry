@@ -25,6 +25,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<GrnLine> GrnLines { get; set; }
 
+    public virtual DbSet<GrnLineSummary> GrnLineSummaries { get; set; }
+
     public virtual DbSet<InvoiceArReceipt> InvoiceArReceipts { get; set; }
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
@@ -459,6 +461,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AcceptedQty).HasColumnName("ACCEPTED_QTY");
             entity.Property(e => e.GrnHdrGkey).HasColumnName("GRN_HDR_GKEY");
+            entity.Property(e => e.GrnLineSumryGkey).HasColumnName("GRN_LINE_SUMRY_GKEY");
             entity.Property(e => e.GrossWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("GROSS_WEIGHT");
@@ -531,6 +534,32 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("UOM");
+        });
+
+        modelBuilder.Entity<GrnLineSummary>(entity =>
+        {
+            entity.HasKey(e => e.Gkey).HasName("PK_grn_line_summary");
+
+            entity.ToTable("GRN_LINE_SUMMARY");
+
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
+            entity.Property(e => e.GrnHdrGkey).HasColumnName("grn_hdr_gkey");
+            entity.Property(e => e.GrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("gross_weight");
+            entity.Property(e => e.LineNbr).HasColumnName("line_nbr");
+            entity.Property(e => e.NetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("net_weight");
+            entity.Property(e => e.ProductCategory)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("product_category");
+            entity.Property(e => e.ProductGkey).HasColumnName("product_gkey");
+            entity.Property(e => e.StoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("stone_weight");
+            entity.Property(e => e.SuppliedQty).HasColumnName("supplied_qty");
         });
 
         modelBuilder.Entity<InvoiceArReceipt>(entity =>

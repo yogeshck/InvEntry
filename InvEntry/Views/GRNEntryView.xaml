@@ -15,9 +15,13 @@
              xmlns:ext="clr-namespace:InvEntry.Extension"
              d:DataContext="{d:DesignInstance Type=viewmodels:GRNViewModel}"
              DataContext="{ext:DISource Type=viewmodels:GRNViewModel}"
-             mc:Ignorable="d" Height="574" Width="746" HorizontalAlignment="Left">
+             mc:Ignorable="d" Height="644" Width="754" HorizontalAlignment="Left" VerticalAlignment="Top">
     <Grid>
-        <dxlc:LayoutControl Margin="0,0,0,7" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="375*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <dxlc:LayoutControl Margin="0,0,-62,7" Grid.ColumnSpan="2" >
             <dxlc:LayoutGroup View="GroupBox" Orientation="Vertical" Margin="0,0,5,3">
                 <dxlc:LayoutItem Label="Goods Receipt Note (GRN)" FontWeight="Bold" FontSize="16"/>
                 <dxlc:LayoutGroup Orientation="Vertical">
@@ -59,9 +63,9 @@
                                             <dxb:BarItemSeparator/>
                                         </dxb:Bar>
                                     </dxb:BarManager.Bars>
-                                    <dxg:GridControl ItemsSource="{Binding Header.GrnLines}" 
+                                    <dxg:GridControl ItemsSource="{Binding Header.GrnLineSumry}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="250" MinHeight="400" HorizontalAlignment="Left" Width="700">
+                                         MaxHeight="250" MinHeight="400" HorizontalAlignment="Center" Width="733" Margin="0,0,0,-60">
                                         <dxg:GridControl.Resources>
                                             <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
                                                 <Setter Property="FontWeight" Value="Bold"/>
@@ -75,7 +79,10 @@
                                             </Style>
                                         </dxg:GridControl.Resources>
                                         <dxg:GridControl.Columns>
-                                            <dxg:GridColumn FieldName="ProductId" Header="Category" >
+                                            <dxg:GridColumn  FieldName="ProductId" Header="Category" >
+                                                <!--           <dxg:GridColumn.EditSettings>
+                                                    <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
+                                                </dxg:GridColumn.EditSettings>  -->
                                             </dxg:GridColumn>
                                             <dxg:GridColumn FieldName="ProductDesc" ReadOnly="True"/>
                                             <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
@@ -86,7 +93,7 @@
                                             <dxg:GridColumn FieldName="SuppVaPercent" Header="VA (%)" Width="50"/>
                                         </dxg:GridControl.Columns>
                                         <dxg:GridControl.View>
-                                            <dxg:TableView AllowGrouping="False"
+                                            <dxg:TableView NewItemRowPosition="Top" AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
                                                        TotalSummaryPosition="Bottom">
                                                 <dxmvvm:Interaction.Behaviors>

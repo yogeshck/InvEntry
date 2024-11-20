@@ -43,6 +43,13 @@ namespace DataAccess.Controllers
             return _grnHeaderRepository.Get(x => x.GrnNbr == grnNbr);
         }
 
+        // GET api/<GrnController>/5
+        [HttpGet("supplierId/{supplierId}")]
+        public async Task<IActionResult> GetBySupplierId(string supplierId)
+        {
+            return Ok(_grnHeaderRepository.GetList(x => x.SupplierId == supplierId));
+        }
+
         // POST api/<GrnController>
         [HttpPost]
         public GrnHeader Post([FromBody] GrnHeader value)

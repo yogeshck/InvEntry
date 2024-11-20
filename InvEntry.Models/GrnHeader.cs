@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using InvEntry.Models;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 
 namespace InvEntry.Models;
@@ -15,6 +16,7 @@ public partial class GrnHeader : BaseEntity
 
     public GrnHeader()
     {
+        grnLineSumry = new();
         grnLines = new();
     }
 
@@ -49,7 +51,11 @@ public partial class GrnHeader : BaseEntity
     public DateTime? _documentDate;
 
     [ObservableProperty]
-   // [property: JsonIgnore]
+    [property: JsonIgnore]
     private ObservableCollection<GrnLine>? grnLines;
+
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<GrnLineSummary>? grnLineSumry;
 
 }
