@@ -100,7 +100,7 @@
                 <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
                 <dxg:GridColumn FieldName="ProductCategory" Header="Category" ReadOnly="True" Width="90" />
                 <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="100" />
-                <dxg:GridColumn FieldName="GrossWight" Header="Gross Wt" Width="100" />
+                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="100" />
                 <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="100" />
                 <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="100">
                             <dxg:GridColumn.EditSettings>
@@ -109,19 +109,23 @@
                 </dxg:GridColumn>
             </dxg:GridControl.Columns>
         </dxg:GridControl>
-        <StackPanel Grid.Row="1" Grid.RowSpan="3" Grid.Column="1" >
+        <StackPanel Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" HorizontalAlignment="Left">
             <dxg:GridControl ItemsSource="{Binding GrnLineList}" AutoGenerateColumns="None"
-                         HorizontalAlignment="Left" Height="700" >
+                         HorizontalAlignment="Left" Height="400" VerticalAlignment="Top">
                 <dxg:GridControl.Columns>
-                    <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="70" />
+                    <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
                     <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="90" />
-                    <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="100" />
-                    <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="100" />
-                    <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="100" />
-                    <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="100" />
+                    <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="60" />
+                    <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="50" />
+                    <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="50" />
+                    <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="30" />
+                    <dxg:GridColumn FieldName="OrderedQty" Header="Ord Qty" Width="30" />
+                    <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="30" />
+                    <dxg:GridColumn FieldName="AcceptedQty" Header="Acc Qty" Width="30" />
+                    <dxg:GridColumn FieldName="RejectedQty" Header="Rej Qty" Width="30" />
                 </dxg:GridControl.Columns>
             </dxg:GridControl>
-            <dx:SimpleButton Content="Submit" />
+            <dx:SimpleButton Content="Submit" Command="{Binding SubmitCommand}"/>
         </StackPanel>
     </Grid>
 </UserControl>

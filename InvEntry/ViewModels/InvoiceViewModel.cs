@@ -512,7 +512,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (!string.IsNullOrEmpty(Header.InvNbr))
         {
-            var result = _messageBoxService.ShowMessage("Invoice already created, Do you want to print preview the invoice ?", "Invoice", 
+            var result = _messageBoxService.ShowMessage("Invoice already exists, Do you want to print preview the invoice ?", "Invoice", 
                                                             MessageButton.OKCancel, 
                                                             MessageIcon.Question, 
                                                             MessageResult.Cancel);

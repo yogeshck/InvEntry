@@ -22,7 +22,7 @@ namespace InvEntry.Models
         public string? _productDesc;
 
         [ObservableProperty]
-        public int _productGkey;
+        public int? _productGkey;
 
         [ObservableProperty]
         public string? _productPurity;

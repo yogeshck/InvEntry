@@ -61,6 +61,12 @@ namespace InvEntry.ViewModels
         private ObservableCollection<GrnLine> _grnLineList;
 
         [ObservableProperty]
+        private GrnHeader _grnHeader;
+
+        [ObservableProperty]
+        private Product _product;
+
+        [ObservableProperty]
         private ObservableCollection<GrnLineSummary> _grnLineSumryList;
 
         [ObservableProperty]
@@ -129,7 +135,9 @@ namespace InvEntry.ViewModels
         private async Task SelectedGRN()
         {
             var grnLineList = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
-        //TBD    GrnLineList = new(grnLineList);
+
+            var grnHeader = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
+
         }
 
         [RelayCommand]
@@ -145,7 +153,7 @@ namespace InvEntry.ViewModels
                 return;
             }
 
-            GrnLineList = new ();
+            GrnLineList = new();
 
             var count = SelectedGrnLineSumry.SuppliedQty;
             for (int i = 1; i <= count; i++)
@@ -153,6 +161,7 @@ namespace InvEntry.ViewModels
                 GrnLine grnLine = new();
 
                 grnLine.ProductId = SelectedGrnLineSumry.ProductCategory;
+                grnLine.ProductGkey = SelectedGrnLineSumry.ProductGkey;
                 grnLine.LineNbr = i;
 
                 GrnLineList.Add(grnLine);
@@ -177,8 +186,6 @@ namespace InvEntry.ViewModels
                 _lineGrnLookup.Add(SelectedGrnLineSumry.GKey, GrnLineList);
             }
         }
- 
-
 
         [RelayCommand]
         private async Task SelectionGRNChanged()
@@ -214,20 +221,65 @@ namespace InvEntry.ViewModels
             }
         }
 
-        private void ProcessStockLines()
+
+        [RelayCommand]
+        private async Task Submit()
         {
-            var n = 10;
-            for (int i = 1; i <= n; i++)
+
+            if (Header is not null)
             {
-                ProductStock productStock = new ProductStock();
 
-                //productStock.ProductGkey = grnLineList.ProductGkey;
-                //productStock.GrossWeight = grnLineList.GrossWeight / n;
+                GrnLineList.ForEach(x =>
+                {
+                    x.GrnHdrGkey = Header.GKey;
+                    //x.ProductDesc = 
+                    //x.ProductPurity =
+                    x.Status = "Closed";
 
-                ProductStockList.Add(productStock);
+                    ProcessStockLines(x);
+                });
+                // loop for validation check for customer
+
+                if (GrnLineList is not null)
+                    await _grnService.CreateGrnLine(GrnLineList);
+
+                if (ProductStockList is not null)
+                {
+                    ProductStockList.ForEach(async x =>
+                    {
+                        await _productStockService.CreateProductStock(x);
+
+                    });
+                }
+                _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
+                                    MessageButton.OK, MessageIcon.Exclamation);
+
+                ResetGrn();
+                //.CreateInvoiceLine(Header.Lines);
+
+                // await ProcessOldMetalTransaction();
+
             }
+        }
 
+        private void ProcessStockLines(GrnLine grnLineStock)
+        {
+
+           ProductStock productStock = new ProductStock();
+
+           productStock.ProductGkey = grnLineStock.ProductGkey;
+           productStock.GrossWeight = grnLineStock.GrossWeight;
+
+           ProductStockList.Add(productStock);
+            
+        }
+
+        private void ResetGrn()
+        {
+
+            SetHeader();
 
         }
+
     }
 }
