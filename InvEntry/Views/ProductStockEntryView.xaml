@@ -19,13 +19,12 @@
              mc:Ignorable="d"  HorizontalAlignment="Left" >
     <Grid HorizontalAlignment="Left" Width="1200" Margin="10">
         <Grid.Resources>
-            <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEdit">
+            <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEditSettings">
                 <Setter Property="MaskType" Value="Numeric" />
                 <Setter Property="Mask" Value="#,##,##,##,###.00" />
                 <Setter Property="MaskShowPlaceHolders" Value="False" />
                 <Setter Property="MaskUseAsDisplayFormat" Value="True" />
-                <Setter Property="Width" Value="150"/>
-                <Setter Property="Height" Value="35"/>
+                <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator" Value="False"/>
             </Style>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
@@ -131,9 +130,13 @@
             <dxg:GridControl.Columns>
                     <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
                     <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="120" />
-                    <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" />
-                
-                    <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="90" />
+                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" >
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+
+                <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="90" />
                     <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="90" />
                     <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="60" />
                     <dxg:GridColumn FieldName="OrderedQty" Header="Ord Qty" Width="60" />
