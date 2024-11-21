@@ -628,7 +628,6 @@
                                     </dxg:GridControl.View>
                                 </dxg:GridControl>
                             </dxb:BarManager>
-
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
