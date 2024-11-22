@@ -139,7 +139,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .AddSingleton<IProductViewService, ProductViewService>()
-                 //.AddMockService()
+                 .AddMockService()
                  .ConfigureFormulas()
                  .AddTallyService()
                  .AddSingleton<VoucherEntryViewModel>()
