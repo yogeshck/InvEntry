@@ -53,9 +53,17 @@ public sealed class Bootstrapper
 
     private object Resolve(Type type)
     {
-        if (type is null) return null;
+        try
+        {
+            if (type is null) return null;
 
-        return _host.Services.GetService(type);
+            return _host.Services.GetService(type);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error While resolving {0}", type.Name);
+            return null;
+        }
     }
 
     private void BuildHost(StartupEventArgs args)
@@ -131,6 +139,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .AddSingleton<IProductViewService, ProductViewService>()
+                 //.AddMockService()
                  .ConfigureFormulas()
                  .AddTallyService()
                  .AddSingleton<VoucherEntryViewModel>()

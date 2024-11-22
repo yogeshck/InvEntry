@@ -62,7 +62,7 @@
                 <dxb:BarButtonItem x:Name="btnPrintGRN"
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                    GlyphSize="Large" Alignment="Far"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintGrnCommand}" />
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnHdrList}" AutoGenerateColumns="None"
@@ -71,7 +71,6 @@
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                        Command="{Binding SelectionGRNChangedCommand}" />
-                <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}"/>
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
@@ -119,18 +118,18 @@
             </dxg:GridControl.Columns>
         </dxg:GridControl>
         <dxg:GridControl Grid.Row="2" Grid.ColumnSpan="2" ItemsSource="{Binding GrnLineList}" AutoGenerateColumns="None"
-                         Margin="0,5,0,0" HorizontalAlignment="Left" Width="1200" VerticalAlignment="Top">
+                         Margin="0,10,0,0" HorizontalAlignment="Left" Width="1200" VerticalAlignment="Top">
             <dxg:GridControl.View>
-                <dxg:TableView  x:Name="tableView3" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
-                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor"
-                                VerticalScrollbarVisibility="Auto">
+                <dxg:TableView  x:Name="tableView3" AllowGrouping="False"
+                                ShowGroupPanel="False" ShowAutoFilterRow="True" 
+                                AutoWidth="False" TotalSummaryPosition="Bottom"
+                                VerticalScrollbarVisibility="Auto" AllowEditing="True" EditorShowMode="MouseDown">
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
                     <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
                     <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="120" />
-                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" >
+                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" AllowedTotalSummaries="Sum">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
                     </dxg:GridColumn.EditSettings>

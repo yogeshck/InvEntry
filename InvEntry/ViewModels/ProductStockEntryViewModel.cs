@@ -170,12 +170,13 @@ namespace InvEntry.ViewModels
 
         partial void OnSelectedGrnLineSumryChanged(GrnLineSummary oldValue, GrnLineSummary newValue)
         {
-            _lineGrnLookup.Add(oldValue.GKey, GrnLineList);
+            if(oldValue is not null)
+                _lineGrnLookup[oldValue.GKey] = GrnLineList;
         }
 
         partial void OnSelectedGrnChanged(GrnHeader oldValue, GrnHeader newValue)
         {
-             if (oldValue.GKey == newValue.GKey)
+             if (oldValue is not null && newValue is not null && oldValue.GKey == newValue.GKey)
                 return;
 
              if (GrnLineList is not null && GrnLineList.Any() && SelectedGrnLineSumry is not null)
@@ -183,7 +184,7 @@ namespace InvEntry.ViewModels
                 //"Do you want discard?"
 
 
-                _lineGrnLookup.Add(SelectedGrnLineSumry.GKey, GrnLineList);
+                _lineGrnLookup[SelectedGrnLineSumry.GKey] = GrnLineList;
             }
         }
 
@@ -204,7 +205,7 @@ namespace InvEntry.ViewModels
 
         [RelayCommand]
         private async Task RefreshGRN()
-        { 
+        {
 
             var grnResult = await _grnService.GetBySupplier("JP"); // SupplierID);
             if (grnResult is not null)
