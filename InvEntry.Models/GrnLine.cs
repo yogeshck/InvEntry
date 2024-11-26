@@ -92,5 +92,8 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         public string? _sizeUom;
+
+        [ObservableProperty]
+        public string? _productSku;
     }
 }

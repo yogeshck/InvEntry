@@ -47,7 +47,7 @@ namespace InvEntry.Services
 
         public async Task<MtblReference> GetReference(string refName, string refCode)
         {
-            return await _mijmsApiService.Get<MtblReference>($"api/MtblReference/{refName},{refCode}");
+            return await _mijmsApiService.Get<MtblReference>($"api/MtblReference/{refName}/{refCode}");
         }
 
         public async Task UpdateReference(MtblReference mtblReference)

@@ -78,6 +78,8 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private GrnHeader _SelectedGrn;
 
+        private MtblReference mtblReference;
+
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
 
         public ProductStockEntryViewModel(  IGrnService grnService,
@@ -230,15 +232,31 @@ namespace InvEntry.ViewModels
             if (Header is not null)
             {
 
-                GrnLineList.ForEach(x =>
+                GrnLineList.ForEach(async x =>
                 {
+
+                    if (mtblReference is null)
+                        mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", x.ProductId);
+
+                    var sku = int.Parse(mtblReference.RefValue);
+                    sku++;
+
                     x.GrnHdrGkey = Header.GKey;
-                    //x.ProductDesc = 
-                    //x.ProductPurity =
                     x.Status = "Closed";
 
-                    ProcessStockLinesAsync(x);
+                    if (mtblReference != null)
+                    {
+                        x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
+                    }
+
+                    ProcessStockLines(x);
+
+                    mtblReference.RefValue = sku.ToString();
+                    await _mtblReferencesService.UpdateReference(mtblReference);
+
                 });
+
+
 
                 if (GrnLineList is not null)
                     await _grnService.CreateGrnLine(GrnLineList);
@@ -246,55 +264,31 @@ namespace InvEntry.ViewModels
                 if (ProductStockList is not null)
                 {
 
-                    var skuNumber = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", GrnLineList[0].ProductId);
-
                     ProductStockList.ForEach(async x =>
                     {
                         await _productStockService.CreateProductStock(x);
-                      //  skuNumber = skuNumber + 1;
                     });
                 }
+
                 _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
                                     MessageButton.OK, MessageIcon.Exclamation);
 
                 ResetGrn();
-                //.CreateInvoiceLine(Header.Lines);
-
-                // await ProcessOldMetalTransaction();
 
             }
         }
 
-/*        private async Task<int> GetSKUNumberAsync(string productCategory)
-        {
-            var skuNumber = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", productCategory);
-            return skuNumber;
-        }*/
-
-        private async Task ProcessStockLinesAsync(GrnLine grnLineStock)
+        private void ProcessStockLines(GrnLine grnLineStock)
         {
 
-           ProductStock productStock = new ProductStock();
+            ProductStock productStock = new ProductStock();
 
-           productStock.ProductGkey = grnLineStock.ProductGkey;
-           productStock.GrossWeight = grnLineStock.GrossWeight;
-            //  productStock.ProductSku = 
-
-            var mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", grnLineStock.ProductId);
-            var sku = int.Parse(mtblReference.RefValue) + 1;
-
-            //value.InvNbr = string.Format("{0}{1}", DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
-
-
-            if (mtblReference != null)
-            {
-                productStock.ProductSku = string.Format("{0}{1}", "C", sku);
-            }
+            productStock.ProductGkey = grnLineStock.ProductGkey;
+            productStock.GrossWeight = grnLineStock.GrossWeight;
+            productStock.ProductSku = grnLineStock.ProductSku;
 
             ProductStockList.Add(productStock);
 
-            mtblReference.RefValue = sku.ToString();
-            await _mtblReferencesService.UpdateReference(mtblReference);
         }
 
         private void ResetGrn()
