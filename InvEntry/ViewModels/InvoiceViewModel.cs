@@ -332,12 +332,13 @@ public partial class InvoiceViewModel : ObservableObject
         if (Buyer is null)
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
+
             Buyer = new();
             Buyer.MobileNbr = phoneNumber;
             Buyer.Address.GstStateCode = Company.GstCode;
-            Buyer.Address.State = "Tamilnadu";
-            Buyer.Address.District = "Chennai";
-            //yer.Address.State = Company.State;
+            Buyer.Address.State = Company.State;
+            Buyer.Address.District = Company.District;
+
             createCustomer = true;
             CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
 
@@ -390,7 +391,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (productStk is null)
         {
-
+            //No stock to be handled
         }
 
         var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
