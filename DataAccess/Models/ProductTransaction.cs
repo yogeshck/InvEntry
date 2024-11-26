@@ -7,25 +7,37 @@ public partial class ProductTransaction
 {
     public int Gkey { get; set; }
 
-    public double? RefGkey { get; set; }
+    public int? RefGkey { get; set; }
 
-    public DateTime? TransDate { get; set; }
+    public DateTime? TransactionDate { get; set; }
 
-    public string? DocRefNbr { get; set; }
+    public string? ProductCategory { get; set; }
 
-    public string? DocType { get; set; }
+    public string? ProductSku { get; set; }
 
-    public int ProductRefGkey { get; set; }
+    public string? TransactionType { get; set; }
 
-    public decimal? Column1 { get; set; }
+    public string? DocumentNbr { get; set; }
 
-    public decimal? TransQty { get; set; }
+    public string? DocumentType { get; set; }
 
-    public decimal? CbQty { get; set; }
+    public string? VoucherType { get; set; }
 
-    public decimal? UnitTransPrice { get; set; }
+    public int? ObQty { get; set; }
+
+    public int? TransactionQty { get; set; }
+
+    public int? CbQty { get; set; }
+
+    public decimal? ObWeight { get; set; }
+
+    public decimal? TransactionWeight { get; set; }
+
+    public decimal? CbWeight { get; set; }
+
+    public decimal? UnitPrice { get; set; }
 
     public decimal? TransactionValue { get; set; }
 
-    public string? TransNote { get; set; }
+    public string? Notes { get; set; }
 }

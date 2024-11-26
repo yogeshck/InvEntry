@@ -141,7 +141,7 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
-        private void SelectionGrnSumryListChanged()
+        private async Task SelectionGrnSumryListChangedAsync()
         {
 
             if (SelectedGrnLineSumry is null) return;
@@ -207,7 +207,7 @@ namespace InvEntry.ViewModels
         private async Task RefreshGRN()
         {
 
-            var grnResult = await _grnService.GetBySupplier("JP"); // SupplierID);
+            var grnResult = await _grnService.GetBySupplier(SupplierID);
             if (grnResult is not null)
                 GrnHdrList = new(grnResult);
         }
@@ -237,19 +237,21 @@ namespace InvEntry.ViewModels
                     //x.ProductPurity =
                     x.Status = "Closed";
 
-                    ProcessStockLines(x);
+                    ProcessStockLinesAsync(x);
                 });
-                // loop for validation check for customer
 
                 if (GrnLineList is not null)
                     await _grnService.CreateGrnLine(GrnLineList);
 
                 if (ProductStockList is not null)
                 {
+
+                    var skuNumber = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", GrnLineList[0].ProductId);
+
                     ProductStockList.ForEach(async x =>
                     {
                         await _productStockService.CreateProductStock(x);
-
+                      //  skuNumber = skuNumber + 1;
                     });
                 }
                 _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
@@ -263,23 +265,43 @@ namespace InvEntry.ViewModels
             }
         }
 
-        private void ProcessStockLines(GrnLine grnLineStock)
+/*        private async Task<int> GetSKUNumberAsync(string productCategory)
+        {
+            var skuNumber = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", productCategory);
+            return skuNumber;
+        }*/
+
+        private async Task ProcessStockLinesAsync(GrnLine grnLineStock)
         {
 
            ProductStock productStock = new ProductStock();
 
            productStock.ProductGkey = grnLineStock.ProductGkey;
            productStock.GrossWeight = grnLineStock.GrossWeight;
+            //  productStock.ProductSku = 
 
-           ProductStockList.Add(productStock);
-            
+            var mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", grnLineStock.ProductId);
+            var sku = int.Parse(mtblReference.RefValue) + 1;
+
+            //value.InvNbr = string.Format("{0}{1}", DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
+
+
+            if (mtblReference != null)
+            {
+                productStock.ProductSku = string.Format("{0}{1}", "C", sku);
+            }
+
+            ProductStockList.Add(productStock);
+
+            mtblReference.RefValue = sku.ToString();
+            await _mtblReferencesService.UpdateReference(mtblReference);
         }
 
         private void ResetGrn()
         {
 
             SetHeader();
-
+           
         }
 
     }

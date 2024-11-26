@@ -58,4 +58,6 @@ public partial class ProductStock
     public string? ModifiedBy { get; set; }
 
     public DateTime? ModifiedOn { get; set; }
+
+    public string? Category { get; set; }
 }

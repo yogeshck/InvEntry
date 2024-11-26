@@ -388,6 +388,11 @@ public partial class InvoiceViewModel : ObservableObject
 
         var productStk = await _productViewService.GetByProductSku(product.ProductSku);
 
+        if (productStk is null)
+        {
+
+        }
+
         var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
 
         InvoiceLine invoiceLine = new InvoiceLine()

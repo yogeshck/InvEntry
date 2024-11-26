@@ -75,8 +75,6 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<ProductView> ProductViews { get; set; }
 
-    public virtual DbSet<Rawplace> Rawplaces { get; set; }
-
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
@@ -1736,6 +1734,10 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.BalanceWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("BALANCE_WEIGHT");
+            entity.Property(e => e.Category)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CATEGORY");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(30)
                 .IsUnicode(false)
@@ -1810,38 +1812,54 @@ public partial class MijmsContext : DbContext
             entity.ToTable("PRODUCT_TRANSACTION");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
-            entity.Property(e => e.CbQty)
+            entity.Property(e => e.CbQty).HasColumnName("CB_QTY");
+            entity.Property(e => e.CbWeight)
                 .HasColumnType("decimal(10, 3)")
-                .HasColumnName("CB_QTY");
-            entity.Property(e => e.Column1)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("COLUMN1");
-            entity.Property(e => e.DocRefNbr)
-                .HasMaxLength(20)
+                .HasColumnName("CB_WEIGHT");
+            entity.Property(e => e.DocumentNbr)
+                .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("DOC_REF_NBR");
-            entity.Property(e => e.DocType)
-                .HasMaxLength(20)
+                .HasColumnName("DOCUMENT_NBR");
+            entity.Property(e => e.DocumentType)
+                .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("DOC_TYPE");
-            entity.Property(e => e.ProductRefGkey).HasColumnName("PRODUCT_REF_GKEY");
-            entity.Property(e => e.RefGkey).HasColumnName("REF_GKEY");
-            entity.Property(e => e.TransDate)
-                .HasColumnType("datetime")
-                .HasColumnName("TRANS_DATE");
-            entity.Property(e => e.TransNote)
+                .HasColumnName("DOCUMENT_TYPE");
+            entity.Property(e => e.Notes)
                 .HasMaxLength(250)
                 .IsUnicode(false)
-                .HasColumnName("TRANS_NOTE");
-            entity.Property(e => e.TransQty)
+                .HasColumnName("NOTES");
+            entity.Property(e => e.ObQty).HasColumnName("OB_QTY");
+            entity.Property(e => e.ObWeight)
                 .HasColumnType("decimal(10, 3)")
-                .HasColumnName("TRANS_QTY");
+                .HasColumnName("OB_WEIGHT");
+            entity.Property(e => e.ProductCategory)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_CATEGORY");
+            entity.Property(e => e.ProductSku)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_SKU");
+            entity.Property(e => e.RefGkey).HasColumnName("REF_GKEY");
+            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+            entity.Property(e => e.TransactionQty).HasColumnName("TRANSACTION_QTY");
+            entity.Property(e => e.TransactionType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("TRANSACTION_TYPE");
             entity.Property(e => e.TransactionValue)
-                .HasColumnType("decimal(19, 2)")
+                .HasColumnType("decimal(12, 2)")
                 .HasColumnName("TRANSACTION_VALUE");
-            entity.Property(e => e.UnitTransPrice)
-                .HasColumnType("decimal(19, 2)")
-                .HasColumnName("UNIT_TRANS_PRICE");
+            entity.Property(e => e.TransactionWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("TRANSACTION_WEIGHT");
+            entity.Property(e => e.UnitPrice)
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("UNIT_PRICE");
+            entity.Property(e => e.VoucherType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("VOUCHER_TYPE");
         });
 
         modelBuilder.Entity<ProductView>(entity =>
@@ -1923,33 +1941,6 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.WastagePercent)
                 .HasColumnType("decimal(4, 2)")
                 .HasColumnName("WASTAGE_PERCENT");
-        });
-
-        modelBuilder.Entity<Rawplace>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("rawplaces");
-
-            entity.Property(e => e.Districtname)
-                .HasMaxLength(100)
-                .HasColumnName("districtname");
-            entity.Property(e => e.Officename)
-                .HasMaxLength(100)
-                .HasColumnName("officename");
-            entity.Property(e => e.Pincode)
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("pincode");
-            entity.Property(e => e.StateName)
-                .HasMaxLength(100)
-                .HasColumnName("state_name");
-            entity.Property(e => e.SubDistname)
-                .HasMaxLength(100)
-                .HasColumnName("sub_distname");
-            entity.Property(e => e.Villagename)
-                .HasMaxLength(100)
-                .HasColumnName("villagename");
         });
 
         modelBuilder.Entity<Voucher>(entity =>

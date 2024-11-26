@@ -9,37 +9,58 @@ namespace InvEntry.Models
 {
     public partial class ProductTransaction : BaseEntity
     {
-        [ObservableProperty]
-        public double? _refGkey;
+
 
         [ObservableProperty]
-        public DateTime? _transDate;
+        public int? _refGkey;
 
         [ObservableProperty]
-        public string? _docRefNbr;
+        public DateTime? _transactionDate;
 
         [ObservableProperty]
-        public string? _docType;
+        public string? _productCategory;
 
         [ObservableProperty]
-        public int _productRefGkey;
+        public string? _productSku;
 
         [ObservableProperty]
-        public decimal? _column1;
+        public string? _transactionType;
 
         [ObservableProperty]
-        public decimal? _transQty;
+        public string? _documentNbr;
 
         [ObservableProperty]
-        public decimal? _cbQty;
+        public string? _documentType;
 
         [ObservableProperty]
-        public decimal? _unitTransPrice;
+        public string? _voucherType;
+
+        [ObservableProperty]
+        public int? _obQty;
+
+        [ObservableProperty]
+        public int? _transactionQty;
+
+        [ObservableProperty]
+        public int? _cbQty;
+
+        [ObservableProperty]
+        public decimal? _obWeight;
+
+        [ObservableProperty]
+        public decimal? _transactionWeight;
+
+        [ObservableProperty]
+        public decimal? _cbWeight;
+
+        [ObservableProperty]
+        public decimal? _unitPrice;
 
         [ObservableProperty]
         public decimal? _transactionValue;
 
         [ObservableProperty]
-        public string? _transNote;
+        public string? _notes;
+
     }
 }

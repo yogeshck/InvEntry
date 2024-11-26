@@ -32,6 +32,7 @@ namespace InvEntry.Services
 
         public async Task CreateProductStock(ProductStock productStock)
         {
+
             await _mijmsApiService.Post($"api/productstock/", productStock);
         }
 
