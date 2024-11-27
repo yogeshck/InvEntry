@@ -81,6 +81,8 @@ namespace InvEntry.ViewModels
         private MtblReference mtblReference;
 
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
+        private Dictionary<string, Action<GrnLine, decimal?>> copyGRNLineExpression;
+        private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
 
         public ProductStockEntryViewModel(  IGrnService grnService,
                                             IProductService productService,
@@ -104,6 +106,8 @@ namespace InvEntry.ViewModels
             PopulateMtblSupplierListAsync();
             PopulateOpenGRN();
             PopulateProductCategoryList();
+            PopulateUnboundLineDataMap();
+            PopulateUnboundLineSummaryDataMap();
 
             SetHeader();
 
@@ -143,13 +147,13 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
-        private async Task SelectionGrnSumryListChangedAsync()
+        private void SelectionGrnSumryListChanged()
         {
 
             if (SelectedGrnLineSumry is null) return;
 
 
-            if ( _lineGrnLookup.TryGetValue(SelectedGrnLineSumry.GKey, out var grnLines) )
+            if (_lineGrnLookup.TryGetValue(SelectedGrnLineSumry.GKey, out var grnLines))
             {
                 GrnLineList = new(grnLines);
                 return;
@@ -256,8 +260,6 @@ namespace InvEntry.ViewModels
 
                 });
 
-
-
                 if (GrnLineList is not null)
                     await _grnService.CreateGrnLine(GrnLineList);
 
@@ -298,5 +300,51 @@ namespace InvEntry.ViewModels
            
         }
 
+        [RelayCommand]
+        private void CellUpdate(CellValueChangedEventArgs args)
+        {
+            if (args.Row is GrnLine line)
+            {
+                EvaluateFormula(line);
+            }
+        }
+
+        private void PopulateUnboundLineDataMap()
+        {
+            if (copyGRNLineExpression is null) copyGRNLineExpression = new();
+
+            copyGRNLineExpression.Add($"{nameof(GrnLine.NetWeight)}", (item, val) => item.NetWeight = val);
+            copyGRNLineExpression.Add($"{nameof(GrnLine.SuppliedQty)}", (item, val) => item.SuppliedQty = (int?)val);
+            copyGRNLineExpression.Add($"{nameof(GrnLine.ReceivedQty)}", (item, val) => item.ReceivedQty = (int?)val);
+            copyGRNLineExpression.Add($"{nameof(GrnLine.OrderedQty)}", (item, val) => item.OrderedQty = (int?)val);
+            copyGRNLineExpression.Add($"{nameof(GrnLine.AcceptedQty)}", (item, val) => item.AcceptedQty = (int?)val);
+            copyGRNLineExpression.Add($"{nameof(GrnLine.RejectedQty)}", (item, val) => item.RejectedQty = (int?)val);
+
+        }
+
+        private void PopulateUnboundLineSummaryDataMap()
+        {
+            if (copyGRNLineSumryExpression is null) copyGRNLineSumryExpression = new();
+
+            copyGRNLineSumryExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val); 
+        }
+
+        private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
+        {
+            var formulas = FormulaStore.Instance.GetFormulas<T>();
+
+            foreach (var formula in formulas)
+            {
+                //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
+
+                var val = formula.Evaluate<T, decimal>(item, 0M);
+
+                if (item is GrnLine grnLine)
+                    copyGRNLineExpression[formula.FieldName].Invoke(grnLine, val);
+                else if (item is GrnLineSummary grnLineSumry)
+                    copyGRNLineSumryExpression[formula.FieldName].Invoke(grnLineSumry, val);
+
+            }
+        }
     }
 }

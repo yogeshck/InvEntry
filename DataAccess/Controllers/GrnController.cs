@@ -47,8 +47,9 @@ namespace DataAccess.Controllers
         [HttpGet("supplierId/{supplierId}")]
         public async Task<IActionResult> GetBySupplierId(string supplierId)
         {
-            return Ok(_grnHeaderRepository.GetList(x => x.SupplierId == supplierId));
+            return Ok(_grnHeaderRepository.GetList(x => x.SupplierId == supplierId && x.Status == "Open"));
         }
+
 
         // POST api/<GrnController>
         [HttpPost]

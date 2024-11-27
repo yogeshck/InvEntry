@@ -50,7 +50,7 @@ namespace InvEntry.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IMtblReferencesService _mtblReferencesService;
 
-        private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineExpression;
+        private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
 
         //private readonly IProductStockService _productStockService;
         //private readonly IDialogService _reportDialogService;
@@ -188,16 +188,15 @@ namespace InvEntry.ViewModels
                 var val = formula.Evaluate<T, decimal>(item, 0M);
 
                 if (item is GrnLineSummary grnLineSumry)
-                    copyGRNLineExpression[formula.FieldName].Invoke(grnLineSumry, val);
+                    copyGRNLineSumryExpression[formula.FieldName].Invoke(grnLineSumry, val);
             }
         }
 
         private void PopulateUnboundLineDataMap()
         {
-            if (copyGRNLineExpression is null) copyGRNLineExpression = new();
+            if (copyGRNLineSumryExpression is null) copyGRNLineSumryExpression = new();
 
-            //copyGRNLineExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}", (item, val) => item.InvlTaxableAmount = val);
-            copyGRNLineExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val);
+            copyGRNLineSumryExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val);
         }
 
             //private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class

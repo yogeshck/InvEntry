@@ -124,12 +124,17 @@
                                 ShowGroupPanel="False" ShowAutoFilterRow="True" 
                                 AutoWidth="False" TotalSummaryPosition="Bottom"
                                 VerticalScrollbarVisibility="Auto" AllowEditing="True" EditorShowMode="MouseDown">
+                    <dxmvvm:Interaction.Behaviors>
+                        <dxmvvm:EventToCommand EventName="CellValueChanged" 
+                                                           Command="{Binding CellUpdateCommand}"
+                                                           PassEventArgsToCommand="True"/>
+                    </dxmvvm:Interaction.Behaviors>
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="Ref" Header="Ref #" ReadOnly="True" Width="40" />
                 <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
-                    <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="120" />
+                <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="120" />
                 <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" AllowedTotalSummaries="Sum">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
@@ -146,12 +151,12 @@
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
                 <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="60" />
-                    <dxg:GridColumn FieldName="OrderedQty" Header="Ord Qty" Width="60" />
-                    <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="60" />
-                    <dxg:GridColumn FieldName="AcceptedQty" Header="Acc Qty" Width="60" />
-                    <dxg:GridColumn FieldName="RejectedQty" Header="Rej Qty" Width="60" />
-                </dxg:GridControl.Columns>
-            </dxg:GridControl>
+                <dxg:GridColumn FieldName="OrderedQty"  Header="Ord Qty"  Width="60" ReadOnly="True" />
+                <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="60" />
+                <dxg:GridColumn FieldName="AcceptedQty" Header="Acc Qty"  Width="60" />
+                <dxg:GridColumn FieldName="RejectedQty" Header="Rej Qty"  Width="60" ReadOnly="True" />
+            </dxg:GridControl.Columns>
+        </dxg:GridControl>
         <dx:SimpleButton Grid.Row="4" Grid.ColumnSpan="2" Content="Submit" Width="150" Height="25" 
                          Background="#FFE9EBEC" Command="{Binding SubmitCommand}"/>
         

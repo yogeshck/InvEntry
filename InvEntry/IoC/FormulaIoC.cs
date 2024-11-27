@@ -17,6 +17,7 @@ namespace InvEntry.IoC
             FormulaStore.Instance.ConfigureInvoiceHeaderFormulas();
             FormulaStore.Instance.ConfigureEstimateLineFormulas();
             FormulaStore.Instance.ConfigureGRNLineSumryFormulas();
+            FormulaStore.Instance.ConfigureGRNLineFormulas();
 
             if (action is not null)
                 action.Invoke(FormulaStore.Instance);
@@ -104,5 +105,31 @@ namespace InvEntry.IoC
             store.AddFormula<GrnLineSummary>(x => x.NetWeight,
                 $" [{nameof(GrnLineSummary.GrossWeight)}] - [{nameof(GrnLineSummary.StoneWeight)}]");
         }
+
+        private static void ConfigureGRNLineFormulas(this FormulaStore store)
+        {
+            // net weight = gross weight - stone weight 
+            // [NW]=[GW]-[SW] -> DevExpress Formula
+            // String interpolation - $"{5-2}"
+            // nameof()
+
+            store.AddFormula<GrnLine>(x => x.NetWeight,
+                $" [{nameof(GrnLine.GrossWeight)}] - [{nameof(GrnLine.StoneWeight)}]");
+
+            //rej qty = recd qty - accp qty
+            store.AddFormula<GrnLine>(x => x.OrderedQty,
+                $" [{nameof(GrnLine.SuppliedQty)}] - 0 ");
+
+            //store.AddFormula<GrnLine>(x => x.ReceivedQty,
+            //    $" [{nameof(GrnLine.SuppliedQty)}] - 0 ");
+
+            //store.AddFormula<GrnLine>(x => x.AcceptedQty,
+            //    $" [{nameof(GrnLine.SuppliedQty)}] - 0 ");
+
+            store.AddFormula<GrnLine>(x => x.RejectedQty,
+                $" [{nameof(GrnLine.ReceivedQty)}] - [{nameof(GrnLine.AcceptedQty)}]");
+
+        }
+
     }
 }
