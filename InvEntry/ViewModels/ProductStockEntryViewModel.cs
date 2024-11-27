@@ -32,9 +32,6 @@ namespace InvEntry.ViewModels
         private string _supplierID;
 
         [ObservableProperty]
-        private GrnHeader _header;
-
-        [ObservableProperty]
         private DateSearchOption _searchOption;
 
         [ObservableProperty]
@@ -59,9 +56,6 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<GrnLine> _grnLineList;
-
-        [ObservableProperty]
-        private GrnHeader _grnHeader;
 
         [ObservableProperty]
         private Product _product;
@@ -105,19 +99,11 @@ namespace InvEntry.ViewModels
 
             PopulateMtblSupplierListAsync();
             PopulateOpenGRN();
-            PopulateProductCategoryList();
             PopulateUnboundLineDataMap();
             PopulateUnboundLineSummaryDataMap();
 
-            SetHeader();
-
         }
 
-        private void SetHeader()
-        {
-            Header = new();
-            ProductStockList = new();
-        }
 
         private async void PopulateMtblSupplierListAsync()
         {
@@ -133,9 +119,6 @@ namespace InvEntry.ViewModels
             var grnHdrList = await _grnService.GetBySupplier(SupplierID);
         }
 
-        private void PopulateProductCategoryList()
-        {
-        }
 
         [RelayCommand]
         private async Task SelectedGRN()
@@ -171,7 +154,10 @@ namespace InvEntry.ViewModels
                 grnLine.LineNbr = i;
 
                 GrnLineList.Add(grnLine);
+
             }
+
+            _lineGrnLookup[SelectedGrnLineSumry.GKey] = GrnLineList;
         }
 
         partial void OnSelectedGrnLineSumryChanged(GrnLineSummary oldValue, GrnLineSummary newValue)
@@ -226,6 +212,55 @@ namespace InvEntry.ViewModels
             {
 
             }
+
+        }
+
+        private async Task SavingGrnLinesList()
+        {
+
+            foreach(var keyValue in _lineGrnLookup)
+            {
+                await SavingGrnLine(keyValue.Value);
+            }
+
+            _lineGrnLookup.Clear();
+        }
+
+        private async Task SavingGrnLine(ObservableCollection<GrnLine> grnLines)
+        {
+
+            if (grnLines is null || !grnLines.Any() ) return;
+
+            var category = grnLines.First().ProductId;
+                
+            var mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", category);
+
+            if (mtblReference is null)
+            {
+                return;
+            }
+
+            grnLines.ForEach(x =>
+            {
+
+                var sku = int.Parse(mtblReference.RefValue);
+                sku++;
+
+                x.GrnHdrGkey = SelectedGrn.GKey;
+                x.Status = "Closed";
+
+                x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
+ 
+                ProcessStockLines(x);
+
+                mtblReference.RefValue = sku.ToString();
+
+            });
+
+            await _mtblReferencesService.UpdateReference(mtblReference);
+
+            await _grnService.CreateGrnLine(grnLines);
+
         }
 
 
@@ -233,55 +268,45 @@ namespace InvEntry.ViewModels
         private async Task Submit()
         {
 
-            if (Header is not null)
+            if (SelectedGrn is null )
+            {
+                return;
+            }
+
+            await SavingGrnLinesList();
+
+
+            if (ProductStockList is not null)
             {
 
-                GrnLineList.ForEach(async x =>
+                ProductStockList.ForEach(async x =>
                 {
-
-                    if (mtblReference is null)
-                        mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", x.ProductId);
-
-                    var sku = int.Parse(mtblReference.RefValue);
-                    sku++;
-
-                    x.GrnHdrGkey = Header.GKey;
-                    x.Status = "Closed";
-
-                    if (mtblReference != null)
-                    {
-                        x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
-                    }
-
-                    ProcessStockLines(x);
-
-                    mtblReference.RefValue = sku.ToString();
-                    await _mtblReferencesService.UpdateReference(mtblReference);
-
+                    await _productStockService.CreateProductStock(x);
                 });
-
-                if (GrnLineList is not null)
-                    await _grnService.CreateGrnLine(GrnLineList);
-
-                if (ProductStockList is not null)
-                {
-
-                    ProductStockList.ForEach(async x =>
-                    {
-                        await _productStockService.CreateProductStock(x);
-                    });
-                }
-
-                _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
-                                    MessageButton.OK, MessageIcon.Exclamation);
-
-                ResetGrn();
-
             }
+
+            SelectedGrn.Status = "Closed";
+            await _grnService.UpdateHeader(SelectedGrn);
+
+            if (GrnHdrList.Contains(SelectedGrn) )
+            {
+                GrnHdrList.Remove(SelectedGrn);
+            }
+
+            GrnLineList.Clear();
+            GrnLineSumryList.Clear();
+            ProductStockList.Clear();
+
+            _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
+                                MessageButton.OK, MessageIcon.Exclamation);
+
         }
 
         private void ProcessStockLines(GrnLine grnLineStock)
         {
+
+            if (ProductStockList is null)
+                ProductStockList = new();
 
             ProductStock productStock = new ProductStock();
 
@@ -296,7 +321,7 @@ namespace InvEntry.ViewModels
         private void ResetGrn()
         {
 
-            SetHeader();
+//
            
         }
 

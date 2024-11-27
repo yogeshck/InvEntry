@@ -115,7 +115,7 @@
                                             <dxg:GridColumn FieldName="SuppVaPercent" Header="VA (%)" Width="50"/>
                                         </dxg:GridControl.Columns>
                                         <dxg:GridControl.View>
-                                            <dxg:TableView NewItemRowPosition="Top" AllowGrouping="False"
+                                            <dxg:TableView NewItemRowPosition="None" AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
                                                        TotalSummaryPosition="Bottom">
                                                 <dxmvvm:Interaction.Behaviors>
