@@ -34,5 +34,12 @@ namespace InvEntry.Models
         [ObservableProperty]
         public string? _productCategory;
 
+        [ObservableProperty]
+        public string? _productPurity;
+
+        [ObservableProperty]
+        public string? _uom;
+
+
     }
 }

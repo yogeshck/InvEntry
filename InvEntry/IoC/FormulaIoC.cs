@@ -16,7 +16,7 @@ namespace InvEntry.IoC
             FormulaStore.Instance.ConfigureInvoiceLineFormulas();
             FormulaStore.Instance.ConfigureInvoiceHeaderFormulas();
             FormulaStore.Instance.ConfigureEstimateLineFormulas();
-            FormulaStore.Instance.ConfigureGRNFormulas();
+            FormulaStore.Instance.ConfigureGRNLineSumryFormulas();
 
             if (action is not null)
                 action.Invoke(FormulaStore.Instance);
@@ -94,15 +94,15 @@ namespace InvEntry.IoC
                 $"[{nameof(InvoiceHeader.AmountPayable)}] - [{nameof(InvoiceHeader.AdvanceAdj)}] - [{nameof(InvoiceHeader.RdAmountAdj)}] - [{nameof(InvoiceHeader.RecdAmount)}]");
         }
 
-        private static void ConfigureGRNFormulas(this FormulaStore store)
+        private static void ConfigureGRNLineSumryFormulas(this FormulaStore store)
         {
             // net weight = gross weight - stone weight 
             // [NW]=[GW]-[SW] -> DevExpress Formula
             // String interpolation - $"{5-2}"
             // nameof()
 
-            store.AddFormula<GrnLine>(x => x.NetWeight,
-                $" [{nameof(GrnLine.GrossWeight)}] - [{nameof(GrnLine.StoneWeight)}]");
+            store.AddFormula<GrnLineSummary>(x => x.NetWeight,
+                $" [{nameof(GrnLineSummary.GrossWeight)}] - [{nameof(GrnLineSummary.StoneWeight)}]");
         }
     }
 }

@@ -20,14 +20,5 @@ namespace InvEntry.Models.Extensions
             line.ProductId = product.Id;
         }
 
-        //public static void SetLineSummary(this GrnLineSummary line, ProductView product)
-        //{
-        //    line.GrossWeight = product.GrossWeight;
-        //    line.StoneWeight = product.StoneWeight;
-        //    line.ProductDesc = product.Description;
-        //    line.ProductPurity = product.Purity;
-        //    line.SuppVaPercent = product.VaPercent;
-        //    line.ProductId = product.Id;
-        //}
     }
 }

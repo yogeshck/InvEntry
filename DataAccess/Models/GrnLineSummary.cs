@@ -22,4 +22,8 @@ public partial class GrnLineSummary
     public int? SuppliedQty { get; set; }
 
     public string? ProductCategory { get; set; }
+
+    public string? ProductPurity { get; set; }
+
+    public string? Uom { get; set; }
 }

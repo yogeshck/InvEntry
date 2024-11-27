@@ -9,6 +9,7 @@ namespace InvEntry.Models
 {
     public partial class ProductView : BaseEntity
     {
+
         [ObservableProperty]
         public string? _id;
 

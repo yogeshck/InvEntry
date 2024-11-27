@@ -440,6 +440,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("STATUS");
             entity.Property(e => e.SupplierId)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -558,10 +562,18 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("product_category");
             entity.Property(e => e.ProductGkey).HasColumnName("product_gkey");
+            entity.Property(e => e.ProductPurity)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("product_purity");
             entity.Property(e => e.StoneWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("stone_weight");
             entity.Property(e => e.SuppliedQty).HasColumnName("supplied_qty");
+            entity.Property(e => e.Uom)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("uom");
         });
 
         modelBuilder.Entity<InvoiceArReceipt>(entity =>

@@ -49,7 +49,7 @@ namespace InvEntry.ViewModels
         private readonly IMtblReferencesService _mtblReferencesService;
 
         [ObservableProperty]
-        private ObservableCollection<string> supplierReferencesList;
+        private ObservableCollection<string> _supplierReferencesList;
 
         [ObservableProperty]
         private ObservableCollection<GrnHeader> _grnHdrList;
@@ -126,7 +126,7 @@ namespace InvEntry.ViewModels
 
         private async void PopulateOpenGRN()
         {
-            var grnHdrList = await _grnService.GetBySupplier("JP");
+            var grnHdrList = await _grnService.GetBySupplier(SupplierID);
         }
 
         private void PopulateProductCategoryList()

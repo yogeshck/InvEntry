@@ -32,19 +32,23 @@ namespace InvEntry.ViewModels
         private string _categoryUI;
 
         [ObservableProperty]
-        private ObservableCollection<string> productCategoryList;
+        private ObservableCollection<string> _productCategoryList;
 
         [ObservableProperty]
-        private ObservableCollection<GrnLineSummary> selectedRows;
+        private ObservableCollection<GrnLineSummary> _selectedRows;
 
-/*        [ObservableProperty]
-        private ObservableCollection<GrnLine> selectedRows;*/
+        [ObservableProperty]
+        private ObservableCollection<string> _supplierReferencesList;
+
+        /*        [ObservableProperty]
+                private ObservableCollection<GrnLine> selectedRows;*/
 
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
         private readonly IProductService _productService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
+        private readonly IMtblReferencesService _mtblReferencesService;
 
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineExpression;
 
@@ -56,14 +60,17 @@ namespace InvEntry.ViewModels
                             IProductService         productService ,
                             IDialogService          dialogService,
                             IProductCategoryService productCategoryService,
-                            IMessageBoxService      messageBoxService   )
+                            IMessageBoxService      messageBoxService ,
+                            IMtblReferencesService  mtblReferencesService)
         {
             _grnService = grnService;
             _productService = productService;
             _dialogService = dialogService;
             _productCategoryService = productCategoryService;
             _messageBoxService = messageBoxService;
+            _mtblReferencesService = mtblReferencesService;
 
+            PopulateMtblSupplierListAsync();
             PopulateProductCategoryList();
             PopulateUnboundLineDataMap();
 
@@ -75,7 +82,8 @@ namespace InvEntry.ViewModels
         {
             Header = new()
             {
-                GrnDate = DateTime.Now
+                GrnDate = DateTime.Now,
+                Status = "Open"
             };
         }
 
@@ -85,8 +93,15 @@ namespace InvEntry.ViewModels
             ProductCategoryList = new(list.Select(x => x.Name));
         }
 
+        private async void PopulateMtblSupplierListAsync()
+        {
+            var suppRefServiceList = await _mtblReferencesService.GetReferenceList("SUPPLIERS");
+            SupplierReferencesList = new(suppRefServiceList.Select(x => x.RefValue));
+        }
+
+
         [RelayCommand]
-        private async Task FetchSupplier(EditValueChangedEventArgs args)
+        private async Task FetchProduct(EditValueChangedEventArgs args)
         {
 
             if (string.IsNullOrEmpty(CategoryUI)) return;
@@ -99,12 +114,23 @@ namespace InvEntry.ViewModels
                 ProductCategory = CategoryUI
             };
 
-            //grnLine.SetProductDetails(productStk);
+            SetLineSummary(grnLineSumry,product);
 
             grnLineSumry.NetWeight = grnLineSumry.GrossWeight - grnLineSumry.StoneWeight;
 
             Header.GrnLineSumry.Add(grnLineSumry);
 
+        }
+
+        public void SetLineSummary(GrnLineSummary line, Product product)
+        {
+            line.ProductCategory = product.Category;
+            line.Uom = product.Uom;
+            line.ProductPurity = product.Purity;
+
+           // line.GrossWeight = product.GrossWeight;
+           // line.StoneWeight = product.StoneWeight;
+           // line.NetWeight = product.GrossWeight - product.StoneWeight;
         }
 
         [RelayCommand]

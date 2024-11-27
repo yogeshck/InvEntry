@@ -17,6 +17,15 @@
              DataContext="{ext:DISource Type=viewmodels:GRNViewModel}"
              mc:Ignorable="d" Height="644" Width="754" HorizontalAlignment="Left" VerticalAlignment="Top">
     <Grid>
+        <Grid.Resources>
+            <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEditSettings">
+                <Setter Property="MaskType" Value="Numeric" />
+                <Setter Property="Mask" Value="######.000" />
+                <Setter Property="MaskShowPlaceHolders" Value="False" />
+                <Setter Property="MaskUseAsDisplayFormat" Value="True" />
+                <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator" Value="False"/>
+            </Style>
+        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="375*"/>
             <ColumnDefinition Width="2*"/>
@@ -27,13 +36,13 @@
                 <dxlc:LayoutGroup Orientation="Vertical">
                     <dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Basic" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Supplier">
-                                <dxe:TextEdit EditValue="{Binding Header.SupplierId}" />
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Supp Doc#">
-                                <dxe:TextEdit EditValue="{Binding Header.DocumentRef}"/>
-                            </dxlc:LayoutItem>
-                        </dxlc:LayoutGroup>
+                            <dxlc:LayoutItem Label="Supplier" >
+                                    <dxe:ComboBoxEdit ItemsSource="{Binding SupplierReferencesList}"  EditValue="{Binding Header.SupplierId}"/>
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Supp Doc#">
+                                    <dxe:TextEdit EditValue="{Binding Header.DocumentRef}"/>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
                         <dxlc:LayoutGroup View="GroupBox" Header="Details" Orientation="Vertical">
                             <dxlc:LayoutItem Label="Doc Nbr">
                                 <dxe:TextEdit EditValue="{Binding Header.GrnNbr}" />
@@ -57,7 +66,7 @@
                                                 </dxb:BarEditItem.EditSettings>
                                             </dxb:BarEditItem>
                                             <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
-                                                 Command="{Binding FetchSupplierCommand}" GlyphSize="Large" 
+                                                 Command="{Binding FetchProductCommand}" GlyphSize="Large" 
                                                  GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
                                             <dxb:BarItemSeparator/>
@@ -79,7 +88,7 @@
                                             </Style>
                                         </dxg:GridControl.Resources>
                                         <dxg:GridControl.Columns>
-                                            <dxg:GridColumn  FieldName="ProductId" Header="Category" >
+                                            <dxg:GridColumn  FieldName="ProductCategory" Header="Category" >
                                                 <!--           <dxg:GridColumn.EditSettings>
                                                     <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
                                                 </dxg:GridColumn.EditSettings>  -->
@@ -87,9 +96,22 @@
                                             <dxg:GridColumn FieldName="ProductDesc" ReadOnly="True"/>
                                             <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
                                             <dxg:GridColumn FieldName="SuppliedQty" Header="Qty" Width="50"/>
-                                            <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" Width="60"/>
-                                            <dxg:GridColumn FieldName="UOM" Header="UOM" Width="50"/>
-                                            <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True" Width="80"/>
+                                            <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" Width="100" AllowedTotalSummaries="Sum">
+                                                <dxg:GridColumn.EditSettings>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
+                                                </dxg:GridColumn.EditSettings>
+                                            </dxg:GridColumn>
+                                            <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight" Width="100">
+                                                <dxg:GridColumn.EditSettings>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
+                                                </dxg:GridColumn.EditSettings>
+                                            </dxg:GridColumn>
+                                            <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True" Width="100">
+                                                <dxg:GridColumn.EditSettings>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
+                                                </dxg:GridColumn.EditSettings>
+                                            </dxg:GridColumn>
+                                            <dxg:GridColumn FieldName="Uom" Header="UOM" Width="50"/>
                                             <dxg:GridColumn FieldName="SuppVaPercent" Header="VA (%)" Width="50"/>
                                         </dxg:GridControl.Columns>
                                         <dxg:GridControl.View>

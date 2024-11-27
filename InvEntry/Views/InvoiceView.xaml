@@ -479,7 +479,8 @@
                                             </dxmvvm:Interaction.Behaviors>
                                             <dxg:TableView.RowCellMenuCustomizations>
                                                 <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
-                                                           Command="{Binding DataContext.DeleteSingleRowCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                                           Command="{Binding DataContext.DeleteSingleRowCommand, 
+                                                            RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
                                                            Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
                                             </dxg:TableView.RowCellMenuCustomizations>
                                         </dxg:TableView>
