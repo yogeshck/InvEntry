@@ -29,15 +29,29 @@ public partial class ProductTransaction
 
     public int? CbQty { get; set; }
 
-    public decimal? ObWeight { get; set; }
-
-    public decimal? TransactionWeight { get; set; }
-
-    public decimal? CbWeight { get; set; }
-
     public decimal? UnitPrice { get; set; }
 
     public decimal? TransactionValue { get; set; }
 
     public string? Notes { get; set; }
+
+    public DateTime? DocumentDate { get; set; }
+
+    public decimal? OpeningGrossWeight { get; set; }
+
+    public decimal? OpeningStoneWeight { get; set; }
+
+    public decimal? OpeningNetWeight { get; set; }
+
+    public decimal? TransactionGrossWeight { get; set; }
+
+    public decimal? TransactionStoneWeight { get; set; }
+
+    public decimal? TransactionNetWeight { get; set; }
+
+    public decimal? ClosingGrossWeight { get; set; }
+
+    public decimal? ClosingStoneWeight { get; set; }
+
+    public decimal? ClosingNetWeight { get; set; }
 }

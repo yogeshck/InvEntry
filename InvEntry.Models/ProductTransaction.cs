@@ -45,15 +45,6 @@ namespace InvEntry.Models
         public int? _cbQty;
 
         [ObservableProperty]
-        public decimal? _obWeight;
-
-        [ObservableProperty]
-        public decimal? _transactionWeight;
-
-        [ObservableProperty]
-        public decimal? _cbWeight;
-
-        [ObservableProperty]
         public decimal? _unitPrice;
 
         [ObservableProperty]
@@ -61,6 +52,36 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         public string? _notes;
+
+        [ObservableProperty]
+        public DateTime? _documentDate;
+
+        [ObservableProperty]
+        public decimal? _openingGrossWeight;
+
+        [ObservableProperty]
+        public decimal? _openingStoneWeight;
+
+        [ObservableProperty]
+        public decimal? _openingNetWeight;
+
+        [ObservableProperty]
+        public decimal? _transactionGrossWeight;
+
+        [ObservableProperty]
+        public decimal? _transactionStoneWeight;
+
+        [ObservableProperty]
+        public decimal? _transactionNetWeight;
+
+        [ObservableProperty]
+        public decimal? _closingGrossWeight;
+
+        [ObservableProperty]
+        public decimal? _closingStoneWeight;
+
+        [ObservableProperty]
+        public decimal? _closingNetWeight;
 
     }
 }

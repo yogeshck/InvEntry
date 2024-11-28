@@ -1,6 +1,8 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Numerics;
 
 namespace DataAccess.Controllers
 {
@@ -18,8 +20,8 @@ namespace DataAccess.Controllers
                 _logger = logger;
             }
 
-        // GET: api/<ProductTransactionController>
-        [HttpGet]
+            // GET: api/<ProductTransactionController>
+            [HttpGet]
             public async Task<IActionResult> GetAll()
             {
                 _logger.LogInformation("All Product Transaction");
@@ -28,13 +30,22 @@ namespace DataAccess.Controllers
 
             // GET api/<ProductTransactionController>/5
             [HttpGet("{productSku}")]
-            public async Task<IActionResult> GetByProductSku(string productSku)
+            public async Task<IActionResult> GetByProductSku(string productSku)  //this will return list - needs to change
             {
                 return Ok(_productTransaction.Get(x => x.ProductSku == productSku));
             }
 
-            // POST api/<ProductTransactionController>
-            [HttpPost]
+            // GET api/<ProductTransactionController>/5
+            [HttpGet("lastTransaction/{productSku}")]
+            public async Task<IActionResult> GetLastByProductSku(string productSku)
+            {
+                var productTrans = _productTransaction.Get(x => x.ProductSku == productSku && x.Gkey > x.Gkey);  //get max of gkey how ???
+
+                return Ok(productTrans);                                    // tried  && MathF.Max(x.Gkey)));
+            }
+
+        // POST api/<ProductTransactionController>
+        [HttpPost]
             public void Post([FromBody] ProductTransaction value)
             {
                 _productTransaction.Add(value);

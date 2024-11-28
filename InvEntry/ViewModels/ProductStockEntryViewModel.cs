@@ -40,6 +40,7 @@ namespace InvEntry.ViewModels
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
         private readonly IProductService _productService;
+        private readonly IProductTransactionService _productTransactionService;
         private readonly IProductStockService _productStockService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
@@ -80,6 +81,7 @@ namespace InvEntry.ViewModels
 
         public ProductStockEntryViewModel(  IGrnService grnService,
                                             IProductService productService,
+                                            IProductTransactionService productTransactionService,
                                             IProductStockService productStockService,
                                             IDialogService dialogService,
                                             IProductCategoryService productCategoryService,
@@ -87,13 +89,14 @@ namespace InvEntry.ViewModels
                                             IMtblReferencesService mtblReferencesService
                                             )
         {
-            _grnService             = grnService;
-            _productService         = productService;
-            _productStockService    = productStockService;
-            _dialogService          = dialogService;
-            _productCategoryService = productCategoryService;
-            _messageBoxService      = messageBoxService;
-            _mtblReferencesService  = mtblReferencesService;
+            _grnService                 = grnService;
+            _productService             = productService;
+            _productStockService        = productStockService;
+            _productTransactionService  = productTransactionService;
+            _dialogService              = dialogService;
+            _productCategoryService     = productCategoryService;
+            _messageBoxService          = messageBoxService;
+            _mtblReferencesService      = mtblReferencesService;
 
             _lineGrnLookup = new();
 
@@ -282,6 +285,8 @@ namespace InvEntry.ViewModels
                 ProductStockList.ForEach(async x =>
                 {
                     await _productStockService.CreateProductStock(x);
+
+                    CreateProductTransaction(x);
                 });
             }
 
@@ -302,6 +307,51 @@ namespace InvEntry.ViewModels
 
         }
 
+        private async void CreateProductTransaction(ProductStock productStock)
+        {
+            ProductTransaction productTransaction = new();
+            
+            //Get previous record closing balance to set this record opening - if not found set opening to zero
+            var productTrans = await _productTransactionService.GetLastProductTransactionBySku(productStock.ProductSku);
+            if (productTrans != null)
+            {
+                productTransaction.OpeningGrossWeight = productTrans.ClosingGrossWeight;
+                productTransaction.OpeningStoneWeight = productTrans.ClosingStoneWeight;
+                productTransaction.OpeningNetWeight = productTrans.ClosingNetWeight;
+
+            } else
+            {
+                productTransaction.OpeningGrossWeight = 0;
+                productTransaction.OpeningStoneWeight = 0;
+                productTransaction.OpeningNetWeight = 0;
+            }
+
+            productTransaction.ProductSku = productStock.ProductSku;
+            productTransaction.RefGkey = productStock.GKey;
+            productTransaction.TransactionDate = DateTime.Now;
+            productTransaction.ProductCategory = productStock.Category;
+
+            productTransaction.TransactionType = "Receipt";
+            productTransaction.DocumentNbr = SelectedGrn.GrnNbr;
+            productTransaction.DocumentDate = SelectedGrn.GrnDate;
+            productTransaction.DocumentType = "GRN";
+            productTransaction.VoucherType = "Stock Receipt";
+
+            productTransaction.ObQty = 0;
+            productTransaction.TransactionQty = productStock.SuppliedQty;
+            productTransaction.CbQty = productStock.SuppliedQty;
+
+            productTransaction.TransactionGrossWeight = productStock.GrossWeight;
+            productTransaction.TransactionStoneWeight = productStock.StoneWeight;
+            productTransaction.TransactionNetWeight = productStock.NetWeight;
+
+            productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight + productStock.GrossWeight;
+            productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight + productStock.StoneWeight;
+            productTransaction.ClosingNetWeight   = productTransaction.OpeningNetWeight + productStock.NetWeight;
+
+            await _productTransactionService.CreateProductTransaction(productTransaction);
+        }
+
         private void ProcessStockLines(GrnLine grnLineStock)
         {
 
@@ -312,18 +362,26 @@ namespace InvEntry.ViewModels
 
             productStock.ProductGkey = grnLineStock.ProductGkey;
             productStock.GrossWeight = grnLineStock.GrossWeight;
+            productStock.StoneWeight = grnLineStock.StoneWeight;
+            productStock.NetWeight = grnLineStock.NetWeight;
+            productStock.SuppliedGrossWeight = grnLineStock.GrossWeight;
+            productStock.AdjustedWeight = 0;
+            productStock.SoldWeight = 0;
+            productStock.BalanceWeight = grnLineStock.NetWeight;
+            productStock.SuppliedQty = grnLineStock.SuppliedQty;
+            productStock.SoldQty = 0;
+            productStock.StockQty = grnLineStock.AcceptedQty;
+            productStock.Status = "In-Stock";
+            productStock.SupplierId = SelectedGrn.SupplierId;
+            productStock.IsProductSold = false;
+            productStock.Category = grnLineStock.ProductId;
             productStock.ProductSku = grnLineStock.ProductSku;
 
             ProductStockList.Add(productStock);
 
         }
 
-        private void ResetGrn()
-        {
 
-//
-           
-        }
 
         [RelayCommand]
         private void CellUpdate(CellValueChangedEventArgs args)
@@ -339,10 +397,7 @@ namespace InvEntry.ViewModels
             if (copyGRNLineExpression is null) copyGRNLineExpression = new();
 
             copyGRNLineExpression.Add($"{nameof(GrnLine.NetWeight)}", (item, val) => item.NetWeight = val);
-            copyGRNLineExpression.Add($"{nameof(GrnLine.SuppliedQty)}", (item, val) => item.SuppliedQty = (int?)val);
-            copyGRNLineExpression.Add($"{nameof(GrnLine.ReceivedQty)}", (item, val) => item.ReceivedQty = (int?)val);
-            copyGRNLineExpression.Add($"{nameof(GrnLine.OrderedQty)}", (item, val) => item.OrderedQty = (int?)val);
-            copyGRNLineExpression.Add($"{nameof(GrnLine.AcceptedQty)}", (item, val) => item.AcceptedQty = (int?)val);
+            copyGRNLineExpression.Add($"{nameof(GrnLine.OrderedQty)}", (item, val) => item.SuppliedQty = (int?)val);
             copyGRNLineExpression.Add($"{nameof(GrnLine.RejectedQty)}", (item, val) => item.RejectedQty = (int?)val);
 
         }
