@@ -2,6 +2,7 @@
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Numerics;
 
 namespace DataAccess.Controllers
@@ -39,9 +40,12 @@ namespace DataAccess.Controllers
             [HttpGet("lastTransaction/{productSku}")]
             public async Task<IActionResult> GetLastByProductSku(string productSku)
             {
-                var productTrans = _productTransaction.Get(x => x.ProductSku == productSku && x.Gkey > x.Gkey);  //get max of gkey how ???
 
-                return Ok(productTrans);                                    // tried  && MathF.Max(x.Gkey)));
+                var productTrans = _productTransaction.GetList(x => x.ProductSku == productSku)
+                                                                    .OrderByDescending(x => x.Gkey)
+                                                                    .First();
+
+                return Ok(productTrans);                                   
             }
 
         // POST api/<ProductTransactionController>

@@ -338,7 +338,7 @@ namespace InvEntry.ViewModels
             productTransaction.VoucherType = "Stock Receipt";
 
             productTransaction.ObQty = 0;
-            productTransaction.TransactionQty = productStock.SuppliedQty;
+            productTransaction.TransactionQty = productStock.StockQty;
             productTransaction.CbQty = productStock.SuppliedQty;
 
             productTransaction.TransactionGrossWeight = productStock.GrossWeight;
