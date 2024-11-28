@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using IDialogService = DevExpress.Mvvm.IDialogService;
@@ -93,6 +94,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
     private readonly IProductStockService _productStockService;
+    private readonly IProductTransactionService _productTransactionService;
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
@@ -119,6 +121,7 @@ public partial class InvoiceViewModel : ObservableObject
     public InvoiceViewModel(ICustomerService customerService,
         IProductViewService productViewService,
         IProductStockService productStockService,
+        IProductTransactionService productTransactionService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
         IProductCategoryService productCategoryService,
@@ -137,6 +140,7 @@ public partial class InvoiceViewModel : ObservableObject
         _customerService = customerService;
         _productViewService = productViewService;
         _productStockService = productStockService;
+        _productTransactionService = productTransactionService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
@@ -391,7 +395,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (productStk is null)
         {
-            //No stock to be handled
+            //No stock to be handled - let the user enter manually all the details of billing item
         }
 
         var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
@@ -564,8 +568,11 @@ public partial class InvoiceViewModel : ObservableObject
                 x.InvoiceHdrGkey = header.GKey;
                 x.InvoiceId = header.InvNbr;
             });
+
             // loop for validation check for customer
             await _invoiceService.CreateInvoiceLine(Header.Lines);
+
+            await ProcessProductTransaction(Header.Lines);
 
             await ProcessOldMetalTransaction();
 
@@ -582,6 +589,79 @@ public partial class InvoiceViewModel : ObservableObject
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
         }
+    }
+
+    private async Task ProcessProductTransaction(IEnumerable<InvoiceLine> invLines)
+    {
+        foreach (var line in invLines)
+        {
+            await ProductStockUpdate(line);
+
+            await CreateProductTransaction(line);
+        }
+    }
+
+    private async Task ProductStockUpdate(InvoiceLine line)
+    {
+
+        var productStk = await _productStockService.GetProductStock(line.ProductSku);
+
+        productStk.SoldWeight = line.ProdGrossWeight;
+        productStk.BalanceWeight = 0;
+        productStk.SoldQty = line.ProdQty;
+        productStk.StockQty = 0;
+        productStk.Status = "Sold";
+        productStk.IsProductSold = true;
+
+        await _productStockService.UpdateProductStock(productStk);
+
+    }
+
+    private async Task CreateProductTransaction(InvoiceLine line)
+    {
+
+        ProductTransaction productTransaction = new();
+
+        //Get previous record closing balance to set this record opening - if not found set opening to zero
+        var productTrans = await _productTransactionService.GetLastProductTransactionBySku(line.ProductSku);
+        if (productTrans != null)
+        {
+            productTransaction.OpeningGrossWeight = productTrans.ClosingGrossWeight;
+            productTransaction.OpeningStoneWeight = productTrans.ClosingStoneWeight;
+            productTransaction.OpeningNetWeight = productTrans.ClosingNetWeight;
+
+        }
+        else
+        {
+            productTransaction.OpeningGrossWeight = 0;
+            productTransaction.OpeningStoneWeight = 0;
+            productTransaction.OpeningNetWeight = 0;
+        }
+
+        productTransaction.ProductSku = line.ProductSku;
+        productTransaction.RefGkey = line.GKey;
+        productTransaction.TransactionDate = DateTime.Now;
+        productTransaction.ProductCategory = line.ProdCategory;
+
+        productTransaction.TransactionType = "Issue";
+        productTransaction.DocumentNbr = line.InvoiceId;
+        productTransaction.DocumentDate = DateTime.Now;
+        productTransaction.DocumentType = "Sales Invoice";
+        productTransaction.VoucherType = "Sales";
+
+        productTransaction.ObQty = 0;
+        productTransaction.TransactionQty = line.ProdQty;
+        productTransaction.CbQty = productTransaction.ObQty - line.ProdQty;
+
+        productTransaction.TransactionGrossWeight = line.ProdGrossWeight;
+        productTransaction.TransactionStoneWeight = line.ProdStoneWeight;
+        productTransaction.TransactionNetWeight   = line.ProdNetWeight;
+
+        productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight - line.ProdGrossWeight;
+        productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight - line.ProdStoneWeight;
+        productTransaction.ClosingNetWeight   = productTransaction.OpeningNetWeight   - line.ProdNetWeight;
+
+        await _productTransactionService.CreateProductTransaction(productTransaction);
     }
 
     private bool CanCreateInvoice()

@@ -932,6 +932,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_PURITY");
+            entity.Property(e => e.ProductSku)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_SKU");
             entity.Property(e => e.TaxAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("TAX_AMOUNT");

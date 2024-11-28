@@ -37,7 +37,7 @@ namespace DataAccess.Controllers
         [HttpGet("category/{category}")]
         public async Task<IActionResult> GetCategory(string category)
         {
-            return Ok(_productStkViewRepo.GetList(x => x.Category == category));
+            return Ok(_productStkViewRepo.GetList(x => x.Category == category && x.BalanceWeight > 0));
         }
 
         // GET api/<ProductViewController>/5

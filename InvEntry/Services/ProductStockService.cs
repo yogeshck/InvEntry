@@ -38,7 +38,7 @@ namespace InvEntry.Services
 
         public async Task UpdateProductStock(ProductStock productStock)
         {
-            await _mijmsApiService.Put($"api/productstock/{productStock.ProductSku}", productStock);
+            await _mijmsApiService.Put($"api/productstock/{productStock.ProductGkey}", productStock);
         }
     }
 }

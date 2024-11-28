@@ -44,7 +44,7 @@ namespace DataAccess.Controllers
 
         // PUT api/<ProductStockController>/5
         [HttpPut("{productGkey}")]
-        public void Put(decimal productGkey, [FromBody] ProductStock value)
+        public void Put(int productGkey, [FromBody] ProductStock value)
         {
             _productStock.Update(value);
         }

@@ -96,4 +96,6 @@ public partial class InvoiceLine
     public string? ProductId { get; set; }
 
     public string? Metal { get; set; }
+
+    public string? ProductSku { get; set; }
 }

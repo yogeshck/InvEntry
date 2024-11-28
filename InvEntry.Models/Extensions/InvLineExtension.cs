@@ -14,6 +14,7 @@ namespace InvEntry.Models.Extensions
         {
             line.ProdGrossWeight = product.GrossWeight;
             line.ProdStoneWeight = product.StoneWeight;
+            line.ProductSku = product.ProductSku;
             line.ProductDesc = product.Description;
             line.ProductName = product.Name;
             line.ProductPurity = product.Purity;
@@ -23,6 +24,7 @@ namespace InvEntry.Models.Extensions
             line.IsTaxable = product.IsTaxable;
             line.ProdCategory = product.Category;
             line.HsnCode = product.HsnCode;
+
         }
 
     }
