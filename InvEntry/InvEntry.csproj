@@ -20,11 +20,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="DevExpress.Images" Version="24.1.5" />
-	<PackageReference Include="DevExpress.Wpf" Version="24.1.5" />
-    <PackageReference Include="DevExpress.Wpf.Core" Version="24.1.5" />
-    <PackageReference Include="DevExpress.Wpf.Printing" Version="24.1.5" />
-	<PackageReference Include="DevExpress.Wpf.Themes.All" Version="24.1.5" />
+    <PackageReference Include="DevExpress.Images" Version="24.1.7" />
+	<PackageReference Include="DevExpress.Wpf" Version="24.1.7" />
+    <PackageReference Include="DevExpress.Wpf.Core" Version="24.1.7" />
+    <PackageReference Include="DevExpress.Wpf.Printing" Version="24.1.7" />
+	<PackageReference Include="DevExpress.Wpf.Themes.All" Version="24.1.7" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />

@@ -39,77 +39,85 @@
 name: .NET Core Desktop
 
 on:
-  #push:
-    #branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  # push:
+  #   branches:
+  #     - master
+  workflow_dispatch:
 
 jobs:
-
   build:
-
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
-
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-
-    env:
-      Solution_Name: InvEntry.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: InvEntry.Test.csproj                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      Wap_Project_Directory: InvEntry.Packaging   # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
-      Wap_Project_Path: InvEntry.Packaging\InvEntry.Packaging.wapproj  # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout
+    # Step 1: Checkout Code
+    - name: Checkout code
       uses: actions/checkout@v4
+
+    # Step 2: Set up .NET SDK
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
       with:
-        fetch-depth: 0
+        dotnet-version: '8.0' # Adjust based on your target framework version
+        include-prerelease: true
 
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v2
-
-    # Execute all unit tests in the solution
-    # - name: Execute unit tests
-    #   run: dotnet test
-
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Restore the application
-      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
-      env:
-        Configuration: ${{ matrix.configuration }}
-
-    # Decode the base 64 encoded pfx and save the Signing_Certificate
-    - name: Decode the pfx
+    # Step 3: Generate Semantic Version
+    - name: Generate version
+      id: versioning
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath InvEntry.Packaging_TemporaryKey.pfx
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        echo "::set-output name=version::v1.0.$GITHUB_RUN_NUMBER"
+      shell: bash
 
-    # Create the app package by building and packaging the Windows Application Packaging project
-    - name: Create the app package
-      run: msbuild $env:Wap_Project_Path /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=InvEntry.Packaging_TemporaryKey.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
+    # Step 4: Update All AssemblyInfo.cs Files
+    - name: Update AssemblyInfo.cs files
+      run: |
+       Get-ChildItem -Recurse -Filter "AssemblyInfo.cs" | ForEach-Object {
+       (Get-Content $_.FullName) -replace 'AssemblyVersion\(".*"\)', 'AssemblyVersion("${{ steps.versioning.outputs.version }}")' |
+       Set-Content $_.FullName
+       (Get-Content $_.FullName) -replace 'AssemblyFileVersion\(".*"\)', 'AssemblyFileVersion("${{ steps.versioning.outputs.version }}")' |
+       Set-Content $_.FullName}
+
+    # Step 5: Restore NuGet dependencies
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # Step 6: Build the application
+    - name: Build the app
+      run: dotnet build --configuration Release
+
+    # Step 7: Publish the app
+    - name: Publish the app
+      run: dotnet publish -c Release -o ./output
+
+    # Step 8: Archive build artifacts
+    - name: Create ZIP of artifacts
+      run: |
+        Compress-Archive -Path ./output/* -DestinationPath WPF-Executable.zip
+
+    # Step 9: Generate Release Notes
+    - name: Generate release notes
+      id: notes
+      run: echo "Release Notes for ${{ steps.versioning.outputs.version }}" > release_notes.txt
+
+    # Step 10: Create GitHub Release
+    - name: Create GitHub Release
+      id: create_release # Add an ID to capture the output
+      uses: actions/create-release@v1
       env:
-        Appx_Bundle: Always
-        Appx_Bundle_Platforms: Any CPU
-        Appx_Package_Build_Mode: StoreUpload
-        Configuration: ${{ matrix.configuration }}
-
-    # Remove the pfx
-    - name: Remove the pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\InvEntry.Packaging_TemporaryKey.pfx
-
-    # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: MSIX Package
-        path: ${{ env.Wap_Project_Directory }}\AppPackages
+        tag_name: ${{ steps.versioning.outputs.version }}
+        release_name: Release ${{ steps.versioning.outputs.version }}
+        body_path: release_notes.txt
+        draft: false
+        prerelease: false
+
+    # Step 11: Upload Artifacts to GitHub Release
+    - name: Upload Build Artifacts to Release
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # Pass the upload_url from the previous step
+        asset_path: ./WPF-Executable.zip
+        asset_name: WPF-Executable.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
