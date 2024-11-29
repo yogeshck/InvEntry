@@ -105,6 +105,13 @@ public partial class VoucherEntryViewModel: ObservableObject
     }
 
     [RelayCommand]
+    private void VoucherPrint()
+    {
+
+    }
+
+
+    [RelayCommand]
     private void CreatePettyCashVoucher()
     {
         Voucher.Mode = "Petty Cash";

@@ -26,6 +26,13 @@ public interface IReportFactoryService
     XtraReport CreateEstimateReport(string pEstimateNbr);
 
     Task CreateEstimateReportPdf(string pEstimateNbr, string filePath);
+
+    XtraReport CreateFinStatementReport();
+
+    XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate);
+
+    Task CreateFinStatementReportPdf(DateTime pFromDate, DateTime pToDate, string filePath);
+
 }
 
 public class ReportFactoryService : IReportFactoryService
@@ -75,6 +82,28 @@ public class ReportFactoryService : IReportFactoryService
     public async Task CreateEstimateReportPdf(string pEstimateNbr, string filePath)
     {
         var report = CreateEstimateReport(pEstimateNbr);
+
+        await report.ExportToPdfAsync(filePath);
+    }
+
+    public XtraReport CreateFinStatementReport()
+    {
+        return new PettyCashReport();
+    }
+
+    public XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate)
+    {
+        var report = CreateFinStatementReport();
+
+        report.Parameters["FromDate"].Value = pFromDate;
+        report.Parameters["ToDate"].Value = pToDate;
+        report.CreateDocument();
+        return report;
+    }
+
+    public async Task CreateFinStatementReportPdf(DateTime pFromDate, DateTime pToDate, string filePath)
+    {
+        var report = CreateFinStatementReport(pFromDate, pToDate);
 
         await report.ExportToPdfAsync(filePath);
     }

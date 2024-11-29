@@ -50,6 +50,11 @@
                    GlyphAlignment="Top"
                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
                     GlyphSize="Large" Command="{Binding SaveVoucherCommand}"/>
+                <dxb:BarButtonItem x:Name="btnPrint" 
+                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                   GlyphSize="Large" Alignment="Far"
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
+                                   Command="{Binding VoucherPrintCommand}" />
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxlc:LayoutControl Grid.Row="1" Width="400">
