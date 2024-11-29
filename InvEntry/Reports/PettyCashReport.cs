@@ -6,9 +6,9 @@ using DevExpress.XtraReports.UI;
 
 namespace InvEntry.Reports
 {
-	public partial class DailyFinTransactionReport : DevExpress.XtraReports.UI.XtraReport
+	public partial class PettyCashReport : DevExpress.XtraReports.UI.XtraReport
 	{	
-		public DailyFinTransactionReport()
+		public PettyCashReport()
 		{
 			InitializeComponent();
 		}

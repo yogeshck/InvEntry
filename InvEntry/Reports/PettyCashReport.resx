@@ -126,7 +126,7 @@
 	  ,CASE trans_type WHEN 'Payment' THEN CAST(trans_amount AS Money) ELSE ' ' END as 'Payment'  
 from "dbo"."VOUCHER" "VOUCHER"
  where (("VOUCHER"."mode" = N'Petty Cash')
-       and ((@FromDtParam &lt;= "VOUCHER"."voucher_date")
+       and (("VOUCHER"."voucher_date" &gt;= @FromDtParam)
        and ("VOUCHER"."voucher_date" &lt;= @ToDtParam)))
 order by "VOUCHER"."voucher_date","VOUCHER"."seq_nbr"</value>
   </data>
