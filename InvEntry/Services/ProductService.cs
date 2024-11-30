@@ -29,7 +29,7 @@ namespace InvEntry.Services
 
         public async Task<Product> GetProduct(string productId)
         {
-            return await _mijmsApiService.Get<Product>($"api/productstock/{productId}");
+            return await _mijmsApiService.Get<Product>($"api/product/{productId}");
         }
 
         public async Task<Product> GetByCategory(string category)

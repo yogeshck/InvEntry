@@ -13,13 +13,16 @@ namespace DataAccess.Controllers
         private string EstimatePrefixFormat = "E{0}";
 
         private IRepositoryBase<EstimateHeader> _estimateHeaderRepository;
-        private IRepositoryBase<OrgCompany> _orgCompanyRepository;
+        //private IRepositoryBase<OrgCompany> _orgCompanyRepository;
+        private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
 
-        public EstimateController(IRepositoryBase<EstimateHeader> estimateHeaderRepository, 
-                                  IRepositoryBase<OrgCompany> orgCompanyRepository)
+        public EstimateController(IRepositoryBase<EstimateHeader> estimateHeaderRepository,
+                                                IRepositoryBase<VoucherType> voucherTypeRepo)
+                                 // IRepositoryBase<OrgCompany> orgCompanyRepository)
         {
             _estimateHeaderRepository = estimateHeaderRepository;
-            _orgCompanyRepository = orgCompanyRepository;
+            _voucherTypeRepo = voucherTypeRepo;
+           // _orgCompanyRepository = orgCompanyRepository;
         }
 
 
@@ -50,15 +53,19 @@ namespace DataAccess.Controllers
         [HttpPost]
         public EstimateHeader Post([FromBody] EstimateHeader value)
         {
-            var company = _orgCompanyRepository.Get(x => x.ThisCompany.HasValue && x.ThisCompany.Value);
 
-            company.DraftId++;
+            var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "Estimate"); // value.VoucherType);
 
-            _orgCompanyRepository.Update(company);
+            voucherType.LastUsedNumber++;
 
-            value.EstNbr = string.Format(EstimatePrefixFormat, company?.DraftId?.ToString("D4"));
+            _voucherTypeRepo.Update(voucherType);
+
+            EstimatePrefixFormat = voucherType.DocNbrPrefix;
+
+            value.EstNbr = string.Format("{0}{1}", EstimatePrefixFormat, voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
 
             _estimateHeaderRepository.Add(value);
+
             return value;
         }
 
