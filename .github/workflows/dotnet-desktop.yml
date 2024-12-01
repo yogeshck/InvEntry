@@ -45,62 +45,48 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Job 1: Build and Publish Both Projects
   build:
     runs-on: windows-latest
-
     steps:
-    # Step 1: Checkout Code
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    # Step 2: Set up .NET SDK
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0' # Adjust based on your target framework version
-        include-prerelease: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
 
-    # Step 3: Generate Semantic Version
-    - name: Generate version
-      id: versioning
-      run: |
-        echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
+      # Generate a semantic version for this build
+      - name: Generate Version
+        id: versioning
+        run: echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
 
-    # Step 4: Update All AssemblyInfo.cs Files
-    - name: Update AssemblyInfo.cs files
-      run: |
-       Get-ChildItem -Recurse -Filter "AssemblyInfo.cs" | ForEach-Object {
-       (Get-Content $_.FullName) -replace 'AssemblyVersion\(".*"\)', 'AssemblyVersion("${{ env.VERSION }}")' |
-       Set-Content $_.FullName
-       (Get-Content $_.FullName) -replace 'AssemblyFileVersion\(".*"\)', 'AssemblyFileVersion("${{ env.VERSION }}")' |
-       Set-Content $_.FullName}
+      # Build and publish InvEntry (WPF app)
+      - name: Publish InvEntry (WPF App)
+        run: |
+          mkdir -p ./publish/InvEntry-${{ env.VERSION }}
+          dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }}
 
-    # Step 5: Restore NuGet dependencies
-    - name: Restore dependencies
-      run: dotnet restore
-
-    # Step 6: Build the application
-    - name: Build the app
-      run: dotnet build --configuration Release
-
-    # Build and publish InvEntry (WPF app)
-    - name: Publish InvEntry (WPF App)
-      run: |
-       mkdir -p ./publish/InvEntry-${{ env.VERSION }}
-       dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }}
-
-    # Build and publish DataAccess (Web API)
-    - name: Publish DataAccess (Web API)
-      run: |
-        mkdir -p ./publish/DataAccess-${{ env.VERSION }}
-        dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
+      # Build and publish DataAccess (Web API)
+      - name: Publish DataAccess (Web API)
+        run: |
+          mkdir -p ./publish/DataAccess-${{ env.VERSION }}
+          dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
 
       # Zip both publish folders into a single artifact
-    - name: Package Published Outputs
-      run: |
+      - name: Package Published Outputs
+        run: |
           Compress-Archive -Path ./publish/InvEntry-${{ env.VERSION }}/* -DestinationPath ./InvEntry-${{ env.VERSION }}.zip
           Compress-Archive -Path ./publish/DataAccess-${{ env.VERSION }}/* -DestinationPath ./DataAccess-${{ env.VERSION }}.zip
           Compress-Archive -Path ./InvEntry-${{ env.VERSION }}.zip,./DataAccess-${{ env.VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.VERSION }}.zip
+
+      # Upload Zipped Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PublishedProjects
+          path: ./PublishedProjects-${{ env.VERSION }}.zip
 
   # Job 2: Create GitHub Release
   create_release:
