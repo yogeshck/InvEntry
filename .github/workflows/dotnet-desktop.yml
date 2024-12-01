@@ -48,6 +48,8 @@ jobs:
   # Job 1: Build and Publish Both Projects
   build:
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.VERSION }} # Pass the version to other jobs
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -59,20 +61,26 @@ jobs:
 
       # Generate a semantic version for this build
       - name: Generate Version
-        id: versioning
-        run: echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
+        id: set_version
+        run: |
+          echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "::set-output name=VERSION::v1.0.${{ github.run_number }}"
 
       # Build and publish InvEntry (WPF app)
       - name: Publish InvEntry (WPF App)
         run: |
           mkdir -p ./publish/InvEntry-${{ env.VERSION }}
           dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }} /p:PublishProfile=FolderProfile
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
       # Build and publish DataAccess (Web API)
       - name: Publish DataAccess (Web API)
         run: |
           mkdir -p ./publish/DataAccess-${{ env.VERSION }}
           dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:PublishProfile=FolderProfile
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
       # Zip both publish folders into a single artifact
       - name: Package Published Outputs
@@ -80,6 +88,8 @@ jobs:
           Compress-Archive -Path ./publish/InvEntry-${{ env.VERSION }}/* -DestinationPath ./InvEntry-${{ env.VERSION }}.zip
           Compress-Archive -Path ./publish/DataAccess-${{ env.VERSION }}/* -DestinationPath ./DataAccess-${{ env.VERSION }}.zip
           Compress-Archive -Path ./InvEntry-${{ env.VERSION }}.zip,./DataAccess-${{ env.VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.VERSION }}.zip
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
       # Upload Zipped Artifact
       - name: Upload Artifact
@@ -87,6 +97,8 @@ jobs:
         with:
           name: PublishedProjects
           path: ./PublishedProjects-${{ env.VERSION }}.zip
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
   # Job 2: Create GitHub Release
   create_release:
@@ -97,8 +109,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ env.VERSION }}
+          tag_name: ${{ needs.build.outputs.version }}
+          release_name: Release ${{ needs.build.outputs.version }}
           body_path: release_notes.txt
           draft: false
           prerelease: false
@@ -119,8 +131,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./PublishedProjects-${{ env.VERSION }}.zip
-          asset_name: PublishedProjects-${{ env.VERSION }}.zip
+          asset_path: ./PublishedProjects-${{ needs.build.outputs.version }}.zip
+          asset_name: PublishedProjects-${{ needs.build.outputs.version }}.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
