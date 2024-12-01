@@ -45,79 +45,94 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Job 1: Build and Publish Both Projects
   build:
     runs-on: windows-latest
-
+    outputs:
+      version: ${{ steps.set_version.outputs.VERSION }} # Pass the version to other jobs
     steps:
-    # Step 1: Checkout Code
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    # Step 2: Set up .NET SDK
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0' # Adjust based on your target framework version
-        include-prerelease: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
 
-    # Step 3: Generate Semantic Version
-    - name: Generate version
-      id: versioning
-      run: |
-        echo "::set-output name=version::v1.0.$GITHUB_RUN_NUMBER"
-      shell: bash
+      # Generate a semantic version for this build
+      - name: Generate Version
+        id: set_version
+        run: |
+          echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "::set-output name=VERSION::v1.0.${{ github.run_number }}"
 
-    # Step 4: Update All AssemblyInfo.cs Files
-    - name: Update AssemblyInfo.cs files
-      run: |
-       Get-ChildItem -Recurse -Filter "AssemblyInfo.cs" | ForEach-Object {
-       (Get-Content $_.FullName) -replace 'AssemblyVersion\(".*"\)', 'AssemblyVersion("${{ steps.versioning.outputs.version }}")' |
-       Set-Content $_.FullName
-       (Get-Content $_.FullName) -replace 'AssemblyFileVersion\(".*"\)', 'AssemblyFileVersion("${{ steps.versioning.outputs.version }}")' |
-       Set-Content $_.FullName}
+      # Build and publish InvEntry (WPF app)
+      - name: Publish InvEntry (WPF App)
+        run: |
+          mkdir -p ./publish/InvEntry-${{ env.VERSION }}
+          dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }} /p:PublishProfile=FolderProfile
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
-    # Step 5: Restore NuGet dependencies
-    - name: Restore dependencies
-      run: dotnet restore
+      # Build and publish DataAccess (Web API)
+      - name: Publish DataAccess (Web API)
+        run: |
+          mkdir -p ./publish/DataAccess-${{ env.VERSION }}
+          dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:PublishProfile=FolderProfile
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
-    # Step 6: Build the application
-    - name: Build the app
-      run: dotnet build --configuration Release
+      # Zip both publish folders into a single artifact
+      - name: Package Published Outputs
+        run: |
+          Compress-Archive -Path ./publish/InvEntry-${{ env.VERSION }}/* -DestinationPath ./InvEntry-${{ env.VERSION }}.zip
+          Compress-Archive -Path ./publish/DataAccess-${{ env.VERSION }}/* -DestinationPath ./DataAccess-${{ env.VERSION }}.zip
+          Compress-Archive -Path ./InvEntry-${{ env.VERSION }}.zip,./DataAccess-${{ env.VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.VERSION }}.zip
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
-    # Step 7: Publish the app
-    - name: Publish the app
-      run: dotnet publish -c Release -o ./output
+      # Upload Zipped Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: PublishedProjects
+          path: ./PublishedProjects-${{ env.VERSION }}.zip
+        env:
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
 
-    # Step 8: Archive build artifacts
-    - name: Create ZIP of artifacts
-      run: |
-        Compress-Archive -Path ./output/* -DestinationPath WPF-Executable.zip
+  # Job 2: Create GitHub Release
+  create_release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ needs.build.outputs.version }}
+          release_name: Release ${{ needs.build.outputs.version }}
+          body_path: release_notes.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Step 9: Generate Release Notes
-    - name: Generate release notes
-      id: notes
-      run: echo "Release Notes for ${{ steps.versioning.outputs.version }}" > release_notes.txt
+  # Job 3: Upload Release Assets
+  upload_assets:
+    runs-on: ubuntu-latest
+    needs: create_release
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: PublishedProjects
 
-    # Step 10: Create GitHub Release
-    - name: Create GitHub Release
-      id: create_release # Add an ID to capture the output
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.versioning.outputs.version }}
-        release_name: Release ${{ steps.versioning.outputs.version }}
-        body_path: release_notes.txt
-        draft: false
-        prerelease: false
-
-    # Step 11: Upload Artifacts to GitHub Release
-    - name: Upload Build Artifacts to Release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # Pass the upload_url from the previous step
-        asset_path: ./WPF-Executable.zip
-        asset_name: WPF-Executable.zip
-        asset_content_type: application/zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./PublishedProjects-${{ needs.build.outputs.version }}.zip
+          asset_name: PublishedProjects-${{ needs.build.outputs.version }}.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
