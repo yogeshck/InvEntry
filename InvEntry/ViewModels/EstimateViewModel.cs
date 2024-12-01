@@ -278,6 +278,7 @@ public partial class EstimateViewModel: ObservableObject
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
         var product = await _productService.GetProduct(ProductIdUI);
+
         // await Task.Delay(30000);
 
         SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
@@ -303,7 +304,7 @@ public partial class EstimateViewModel: ObservableObject
         };
 
 
-    //    estimateLine.SetProductDetails(product);    **** to check
+        estimateLine.SetProductDetails(product);   
 
         EvaluateFormula(estimateLine, isInit: true);
 

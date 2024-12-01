@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using DevExpress.Xpf.Printing;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 using InvEntry.Reports;
+using System.Windows;
 
 namespace InvEntry.ViewModels;
 
@@ -63,7 +64,11 @@ public partial class VoucherListViewModel: ObservableObject
     [RelayCommand] //CanExecute = nameof(CanPrintStatement))]
     private void StatementPrint()
     {
-        var printed = PrintHelper.Print(_reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To));
+        //var printed = PrintHelper.Print(_reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To));
+
+        var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To);
+
+        PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
 
         //if (printed.HasValue && printed.Value)
         //    _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);

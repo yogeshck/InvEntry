@@ -53,11 +53,6 @@ namespace DataAccess.Controllers
         public InvoiceHeader Post([FromBody] InvoiceHeader value)
         {
 
-            //var company = _orgCompanyRepository.Get(x => x.ThisCompany.HasValue && x.ThisCompany.Value);
-            //company.InvId++;
-            //_orgCompanyRepository.Update(company);
-            //value.InvNbr = string.Format(InvoicePrefixFormat, company?.InvId?.ToString("D4"));
-
             var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "Sale Invoice"); // value.VoucherType);
 
             voucherType.LastUsedNumber++;
@@ -66,7 +61,7 @@ namespace DataAccess.Controllers
 
             DocumentPrefixFormat = voucherType.DocNbrPrefix;
 
-            value.InvNbr = string.Format("{0}{1}",DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
+            value.InvNbr = string.Format("{0}{1}",DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
 
             _invoiceHeaderRepository.Add(value);
             return value;
