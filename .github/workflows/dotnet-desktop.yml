@@ -89,9 +89,9 @@ jobs:
       # Zip both publish folders into a single artifact
       - name: Package Published Outputs
         run: |
-          Compress-Archive -Path ./publish/InvEntry-${{ env.VERSION }}/* -DestinationPath ./InvEntry-${{ env.VERSION }}.zip
-          Compress-Archive -Path ./publish/DataAccess-${{ env.VERSION }}/* -DestinationPath ./DataAccess-${{ env.VERSION }}.zip
-          Compress-Archive -Path ./InvEntry-${{ env.VERSION }}.zip,./DataAccess-${{ env.VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.VERSION }}.zip
+          Compress-Archive -Path ./publish/InvEntry-${{ env.TAG_VERSION }}/* -DestinationPath ./InvEntry-${{ env.TAG_VERSION }}.zip
+          Compress-Archive -Path ./publish/DataAccess-${{ env.TAG_VERSION }}/* -DestinationPath ./DataAccess-${{ env.TAG_VERSION }}.zip
+          Compress-Archive -Path ./InvEntry-${{ env.TAG_VERSION }}.zip,./DataAccess-${{ env.TAG_VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.TAG_VERSION }}.zip
         env:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
 
