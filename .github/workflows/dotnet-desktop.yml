@@ -64,16 +64,15 @@ jobs:
     - name: Generate version
       id: versioning
       run: |
-        echo "::set-output name=version::v1.0.$GITHUB_RUN_NUMBER"
-      shell: bash
+        echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
 
     # Step 4: Update All AssemblyInfo.cs Files
     - name: Update AssemblyInfo.cs files
       run: |
        Get-ChildItem -Recurse -Filter "AssemblyInfo.cs" | ForEach-Object {
-       (Get-Content $_.FullName) -replace 'AssemblyVersion\(".*"\)', 'AssemblyVersion("${{ steps.versioning.outputs.version }}")' |
+       (Get-Content $_.FullName) -replace 'AssemblyVersion\(".*"\)', 'AssemblyVersion("${{ env.VERSION }}")' |
        Set-Content $_.FullName
-       (Get-Content $_.FullName) -replace 'AssemblyFileVersion\(".*"\)', 'AssemblyFileVersion("${{ steps.versioning.outputs.version }}")' |
+       (Get-Content $_.FullName) -replace 'AssemblyFileVersion\(".*"\)', 'AssemblyFileVersion("${{ env.VERSION }}")' |
        Set-Content $_.FullName}
 
     # Step 5: Restore NuGet dependencies
@@ -84,40 +83,58 @@ jobs:
     - name: Build the app
       run: dotnet build --configuration Release
 
-    # Step 7: Publish the app
-    - name: Publish the app
-      run: dotnet publish -c Release -o ./output
-
-    # Step 8: Archive build artifacts
-    - name: Create ZIP of artifacts
+    # Build and publish InvEntry (WPF app)
+    - name: Publish InvEntry (WPF App)
       run: |
-        Compress-Archive -Path ./output/* -DestinationPath WPF-Executable.zip
+       mkdir -p ./publish/InvEntry-${{ env.VERSION }}
+       dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }}
 
-    # Step 9: Generate Release Notes
-    - name: Generate release notes
-      id: notes
-      run: echo "Release Notes for ${{ steps.versioning.outputs.version }}" > release_notes.txt
+    # Build and publish DataAccess (Web API)
+    - name: Publish DataAccess (Web API)
+      run: |
+        mkdir -p ./publish/DataAccess-${{ env.VERSION }}
+        dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
 
-    # Step 10: Create GitHub Release
-    - name: Create GitHub Release
-      id: create_release # Add an ID to capture the output
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.versioning.outputs.version }}
-        release_name: Release ${{ steps.versioning.outputs.version }}
-        body_path: release_notes.txt
-        draft: false
-        prerelease: false
+      # Zip both publish folders into a single artifact
+    - name: Package Published Outputs
+      run: |
+          Compress-Archive -Path ./publish/InvEntry-${{ env.VERSION }}/* -DestinationPath ./InvEntry-${{ env.VERSION }}.zip
+          Compress-Archive -Path ./publish/DataAccess-${{ env.VERSION }}/* -DestinationPath ./DataAccess-${{ env.VERSION }}.zip
+          Compress-Archive -Path ./InvEntry-${{ env.VERSION }}.zip,./DataAccess-${{ env.VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.VERSION }}.zip
 
-    # Step 11: Upload Artifacts to GitHub Release
-    - name: Upload Build Artifacts to Release
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # Pass the upload_url from the previous step
-        asset_path: ./WPF-Executable.zip
-        asset_name: WPF-Executable.zip
-        asset_content_type: application/zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Job 2: Create GitHub Release
+  create_release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body_path: release_notes.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Job 3: Upload Release Assets
+  upload_assets:
+    runs-on: ubuntu-latest
+    needs: create_release
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: PublishedProjects
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./PublishedProjects-${{ env.VERSION }}.zip
+          asset_name: PublishedProjects-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
