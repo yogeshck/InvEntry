@@ -94,15 +94,17 @@ jobs:
           Compress-Archive -Path ./InvEntry-${{ env.TAG_VERSION }}.zip,./DataAccess-${{ env.TAG_VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.TAG_VERSION }}.zip
         env:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
       # Upload Zipped Artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: PublishedProjects
-          path: ./PublishedProjects-${{ env.VERSION }}.zip
+          path: ./PublishedProjects-${{ env.TAG_VERSION }}.zip
         env:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
   # Job 2: Create GitHub Release
   create_release:
