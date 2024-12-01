@@ -15,6 +15,10 @@ using DevExpress.Xpf.Printing;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 using InvEntry.Reports;
 using System.Windows;
+using System.Collections.Generic;
+using DevExpress.XtraPivotGrid.Data;
+using System.Windows.Documents;
+using DevExpress.Mvvm.Native;
 
 namespace InvEntry.ViewModels;
 
@@ -33,7 +37,13 @@ public partial class VoucherListViewModel: ObservableObject
     private VoucherSearchOption _searchOption;
 
     [ObservableProperty]
-    private Voucher _SelectedVoucher;
+    private ObservableCollection<string> _statementTypeOptionList;
+
+    [ObservableProperty]
+    private string _statementType;
+
+    [ObservableProperty]
+    private Voucher _selectedVoucher;
 
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
@@ -47,18 +57,44 @@ public partial class VoucherListViewModel: ObservableObject
         _reportDialogService = reportDialogService;
         _xmlService = xmlService;
         _reportFactoryService = reportFactoryService;
+
+        PopulateStatmentTypeOpionList();
+
         _searchOption = new();
         SearchOption.To = Today;
         SearchOption.From = Today.AddDays(-2);
+
         Task.Run(RefreshVoucherAsync).Wait();
     }
+
+    private void PopulateStatmentTypeOpionList()
+    {
+
+        StatementTypeOptionList = new();
+
+        StatementTypeOptionList.Add("Cash");
+        StatementTypeOptionList.Add("Petty Cash");
+
+    }
+
 
     [RelayCommand]
     private async Task RefreshVoucherAsync()
     {
+
+        StatementType ??= "Cash";
+
         var vouchersResult = await _voucherService.GetAll(SearchOption);
         if (vouchersResult is not null)
-            Vouchers = new(vouchersResult);
+
+            foreach (var vcher in vouchersResult)
+            {
+               if (vcher.Mode == StatementType)
+                {
+                    Vouchers = new(vouchersResult);
+                }
+            }
+            
     }
 
     [RelayCommand] //CanExecute = nameof(CanPrintStatement))]
@@ -66,7 +102,7 @@ public partial class VoucherListViewModel: ObservableObject
     {
         //var printed = PrintHelper.Print(_reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To));
 
-        var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To);
+        var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To, StatementType);
 
         PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
 

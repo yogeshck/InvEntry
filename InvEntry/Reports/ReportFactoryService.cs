@@ -29,9 +29,9 @@ public interface IReportFactoryService
 
     XtraReport CreateFinStatementReport();
 
-    XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate);
+    XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate, string statementType);
 
-    Task CreateFinStatementReportPdf(DateTime pFromDate, DateTime pToDate, string filePath);
+    Task CreateFinStatementReportPdf(DateTime pFromDate, DateTime pToDate, string statementType, string filePath);
 
 }
 
@@ -91,19 +91,21 @@ public class ReportFactoryService : IReportFactoryService
         return new PettyCashReport();
     }
 
-    public XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate)
+    public XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate, string statementType)
     {
         var report = CreateFinStatementReport();
 
         report.Parameters["FromDate"].Value = pFromDate;
         report.Parameters["ToDate"].Value = pToDate;
+        report.Parameters["StatementType"].Value = statementType;
         report.CreateDocument();
         return report;
     }
 
-    public async Task CreateFinStatementReportPdf(DateTime pFromDate, DateTime pToDate, string filePath)
+    public async Task CreateFinStatementReportPdf(DateTime pFromDate, DateTime pToDate,
+                                                    string statementType, string filePath)
     {
-        var report = CreateFinStatementReport(pFromDate, pToDate);
+        var report = CreateFinStatementReport(pFromDate, pToDate, statementType);
 
         await report.ExportToPdfAsync(filePath);
     }

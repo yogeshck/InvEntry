@@ -46,6 +46,8 @@
             this.pageInfo1 = new DevExpress.XtraReports.UI.XRPageInfo();
             this.pageInfo2 = new DevExpress.XtraReports.UI.XRPageInfo();
             this.ReportHeader = new DevExpress.XtraReports.UI.ReportHeaderBand();
+            this.xrLabel7 = new DevExpress.XtraReports.UI.XRLabel();
+            this.xrLabel6 = new DevExpress.XtraReports.UI.XRLabel();
             this.GroupHeader1 = new DevExpress.XtraReports.UI.GroupHeaderBand();
             this.table1 = new DevExpress.XtraReports.UI.XRTable();
             this.tableRow1 = new DevExpress.XtraReports.UI.XRTableRow();
@@ -72,6 +74,7 @@
             this.PageInfo = new DevExpress.XtraReports.UI.XRControlStyle();
             this.FromDate = new DevExpress.XtraReports.Parameters.Parameter();
             this.ToDate = new DevExpress.XtraReports.Parameters.Parameter();
+            this.StatementType = new DevExpress.XtraReports.Parameters.Parameter();
             ((System.ComponentModel.ISupportInitialize)(this.table1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.table2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
@@ -120,6 +123,8 @@
             // 
             // xrLabel1
             // 
+            this.xrLabel1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "?StatementType + \' Statement\'")});
             this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(5.086263E-05F, 34.19434F);
             this.xrLabel1.Name = "xrLabel1";
             this.xrLabel1.SizeF = new System.Drawing.SizeF(650F, 24.19433F);
@@ -156,25 +161,49 @@
             // 
             // pageInfo1
             // 
+            this.pageInfo1.Font = new DevExpress.Drawing.DXFont("Arial", 7F);
             this.pageInfo1.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
             this.pageInfo1.Name = "pageInfo1";
             this.pageInfo1.PageInfo = DevExpress.XtraPrinting.PageInfo.DateTime;
             this.pageInfo1.SizeF = new System.Drawing.SizeF(325F, 23F);
             this.pageInfo1.StyleName = "PageInfo";
+            this.pageInfo1.StylePriority.UseFont = false;
             // 
             // pageInfo2
             // 
+            this.pageInfo2.Font = new DevExpress.Drawing.DXFont("Arial", 7F);
             this.pageInfo2.LocationFloat = new DevExpress.Utils.PointFloat(325F, 0F);
             this.pageInfo2.Name = "pageInfo2";
             this.pageInfo2.SizeF = new System.Drawing.SizeF(325F, 23F);
             this.pageInfo2.StyleName = "PageInfo";
+            this.pageInfo2.StylePriority.UseFont = false;
             this.pageInfo2.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopRight;
             this.pageInfo2.TextFormatString = "Page {0} of {1}";
             // 
             // ReportHeader
             // 
+            this.ReportHeader.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.xrLabel7,
+            this.xrLabel6});
             this.ReportHeader.HeightF = 60F;
             this.ReportHeader.Name = "ReportHeader";
+            // 
+            // xrLabel7
+            // 
+            this.xrLabel7.LocationFloat = new DevExpress.Utils.PointFloat(496.9466F, 26.99999F);
+            this.xrLabel7.Multiline = true;
+            this.xrLabel7.Name = "xrLabel7";
+            this.xrLabel7.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel7.SizeF = new System.Drawing.SizeF(132.5F, 23F);
+            // 
+            // xrLabel6
+            // 
+            this.xrLabel6.LocationFloat = new DevExpress.Utils.PointFloat(375.2799F, 26.99999F);
+            this.xrLabel6.Multiline = true;
+            this.xrLabel6.Name = "xrLabel6";
+            this.xrLabel6.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel6.SizeF = new System.Drawing.SizeF(121.6667F, 23F);
+            this.xrLabel6.Text = "Opening Balance";
             // 
             // GroupHeader1
             // 
@@ -217,7 +246,7 @@
             this.tableCell5.StylePriority.UseBackColor = false;
             this.tableCell5.StylePriority.UseForeColor = false;
             this.tableCell5.Text = "Voucher#";
-            this.tableCell5.Weight = 0.10769232652423667D;
+            this.tableCell5.Weight = 0.11627220376986169D;
             // 
             // tableCell6
             // 
@@ -230,7 +259,7 @@
             this.tableCell6.StylePriority.UseTextAlignment = false;
             this.tableCell6.Text = "Date";
             this.tableCell6.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
-            this.tableCell6.Weight = 0.12307694288478066D;
+            this.tableCell6.Weight = 0.130946772417551D;
             // 
             // tableCell7
             // 
@@ -241,7 +270,7 @@
             this.tableCell7.StylePriority.UseBackColor = false;
             this.tableCell7.StylePriority.UseForeColor = false;
             this.tableCell7.Text = "Particulars";
-            this.tableCell7.Weight = 0.38461544694350153D;
+            this.tableCell7.Weight = 0.36816574016510617D;
             // 
             // tableCell8
             // 
@@ -318,7 +347,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[voucher_nbr]")});
             this.tableCell13.Name = "tableCell13";
             this.tableCell13.StyleName = "DetailData1";
-            this.tableCell13.Weight = 0.10769232640978614D;
+            this.tableCell13.Weight = 0.11627220377928757D;
             // 
             // tableCell14
             // 
@@ -326,7 +355,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[Column2]")});
             this.tableCell14.Name = "tableCell14";
             this.tableCell14.StyleName = "DetailData1";
-            this.tableCell14.Weight = 0.12307694279440795D;
+            this.tableCell14.Weight = 0.13094677244080305D;
             // 
             // tableCell15
             // 
@@ -334,7 +363,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[trans_desc]")});
             this.tableCell15.Name = "tableCell15";
             this.tableCell15.StyleName = "DetailData1";
-            this.tableCell15.Weight = 0.384615437430176D;
+            this.tableCell15.Weight = 0.36816573041427952D;
             // 
             // tableCell16
             // 
@@ -386,9 +415,9 @@
             queryParameter2.Name = "ToDtParam";
             queryParameter2.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter2.Value = new DevExpress.DataAccess.Expression("?ToDate", typeof(System.DateTime));
-            queryParameter3.Name = "VoucherBookParam";
-            queryParameter3.Type = typeof(string);
-            queryParameter3.ValueInfo = "Petty Cash";
+            queryParameter3.Name = "StmtTypeParam";
+            queryParameter3.Type = typeof(global::DevExpress.DataAccess.Expression);
+            queryParameter3.Value = new DevExpress.DataAccess.Expression("?StatementType", typeof(string));
             customSqlQuery1.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter1,
             queryParameter2,
@@ -465,6 +494,11 @@
             this.ToDate.Type = typeof(global::System.DateTime);
             this.ToDate.ValueInfo = "2024-11-29";
             // 
+            // StatementType
+            // 
+            this.StatementType.Description = "Type of Statement";
+            this.StatementType.Name = "StatementType";
+            // 
             // PettyCashReport
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -480,7 +514,8 @@
             this.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F);
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
             this.FromDate,
-            this.ToDate});
+            this.ToDate,
+            this.StatementType});
             this.StyleSheet.AddRange(new DevExpress.XtraReports.UI.XRControlStyle[] {
             this.Title,
             this.DetailCaption1,
@@ -533,5 +568,8 @@
         private DevExpress.XtraReports.UI.XRLabel xrLabel2;
         private DevExpress.XtraReports.UI.XRLabel xrLabel5;
         private DevExpress.XtraReports.UI.XRLabel xrLabel4;
+        private DevExpress.XtraReports.Parameters.Parameter StatementType;
+        private DevExpress.XtraReports.UI.XRLabel xrLabel7;
+        private DevExpress.XtraReports.UI.XRLabel xrLabel6;
     }
 }
