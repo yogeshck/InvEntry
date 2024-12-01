@@ -39,6 +39,12 @@
                         <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}"/>
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
+                <dxb:BarEditItem EditValue="{Binding StatementType}"
+                                                 Content="Options" EditWidth="150" EditHeight="30">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:ComboBoxEditSettings ItemsSource="{Binding StatementTypeOptionList}"/>
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh" 
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"

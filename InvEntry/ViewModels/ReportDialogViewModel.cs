@@ -32,9 +32,9 @@ namespace InvEntry.ViewModels
             Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr);
         }
 
-        public void FinStmtPCInit(DateTime pFromDate, DateTime pToDate)
+        public void FinStmtPCInit(DateTime pFromDate, DateTime pToDate, string statementType)
         {
-            Report = _reportFactoryService.CreateFinStatementReport(pFromDate, pToDate);
+            Report = _reportFactoryService.CreateFinStatementReport(pFromDate, pToDate, statementType);
         }
 
 
