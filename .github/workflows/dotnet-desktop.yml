@@ -117,7 +117,10 @@ jobs:
         with:
           tag_name: ${{ needs.build.outputs.version }}
           release_name: Release ${{ needs.build.outputs.version }}
-          body_path: release_notes.txt
+          body: |
+            ## Release Notes
+            - Published InvEntry and DataAccess projects
+            - Version: ${{ needs.build.outputs.version }}
           draft: false
           prerelease: false
         env:
