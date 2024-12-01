@@ -66,13 +66,13 @@ jobs:
       - name: Publish InvEntry (WPF App)
         run: |
           mkdir -p ./publish/InvEntry-${{ env.VERSION }}
-          dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }}
+          dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }} /p:PublishProfile=FolderProfile
 
       # Build and publish DataAccess (Web API)
       - name: Publish DataAccess (Web API)
         run: |
           mkdir -p ./publish/DataAccess-${{ env.VERSION }}
-          dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:DeployOnBuild=true /p:PublishProfile=FolderProfile
+          dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:PublishProfile=FolderProfile
 
       # Zip both publish folders into a single artifact
       - name: Package Published Outputs
