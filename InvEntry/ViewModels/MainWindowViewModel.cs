@@ -7,6 +7,7 @@ using InvEntry.Extension;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -48,7 +49,7 @@ namespace InvEntry.ViewModels
             _settingsPageViewModel = settingsPageViewModel;
             Messenger.Default.Register<WaitIndicatorVM>(this, MessageType.WaitIndicator, SetWaitIndicator);
 
-            Version = "Version : 1.0.0.0";
+            Version = $"Version : {Assembly.GetEntryAssembly()!.GetName().Version}";
             Dispatcher = dispatcher;
         }
 
