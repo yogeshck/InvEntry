@@ -75,14 +75,14 @@ public partial class VoucherListViewModel: ObservableObject
         StatementTypeOptionList.Add("Cash");
         StatementTypeOptionList.Add("Petty Cash");
 
+        StatementType ??= "Cash";
     }
 
 
     [RelayCommand]
     private async Task RefreshVoucherAsync()
     {
-
-        StatementType ??= "Cash";
+        Vouchers = new();
 
         var vouchersResult = await _voucherService.GetAll(SearchOption);
         if (vouchersResult is not null)
