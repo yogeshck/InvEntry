@@ -34,8 +34,17 @@ namespace DataAccess.Controllers
         [HttpPost("filter")]
         public IEnumerable<Voucher> FilterVoucher([FromBody] VoucherSearchOption criteria)
         {
-            return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
+            if (criteria.BookType is not null)
+            {
+                return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
+                                                        x.TransDate.Value.Date <= criteria.To.Date
+                                                        && x.Mode == criteria.BookType);
+            } else
+            {
+                return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
                                                         x.TransDate.Value.Date <= criteria.To.Date);
+            }
+
         }
 
 

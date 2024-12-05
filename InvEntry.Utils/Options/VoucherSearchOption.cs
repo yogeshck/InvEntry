@@ -14,4 +14,7 @@ public partial class VoucherSearchOption : ObservableObject
 
     [ObservableProperty]
     private DateTime _To;
+
+    [ObservableProperty]
+    private string? _BookType;
 }
