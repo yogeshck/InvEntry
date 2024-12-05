@@ -57,71 +57,72 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0'
+          dotnet-version: '9.x'
 
       # Generate a semantic version for this build
       - name: Generate Version
         id: set_version
         run: |
-          echo "VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
-          echo "::set-output name=VERSION::v1.0.${{ github.run_number }}"
+           echo "VERSION=1.0.${{ github.run_number }}" >> $GITHUB_ENV
+           echo "TAG_VERSION=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
+           echo "::set-output name=VERSION::1.0.${{ github.run_number }}"
+           echo "::set-output name=TAG_VERSION::v1.0.${{ github.run_number }}"
 
-      # Build and publish InvEntry (WPF app)
+      # Build and publish InvEntry (WPF App)
       - name: Publish InvEntry (WPF App)
         run: |
-          mkdir -p ./publish/InvEntry-${{ env.VERSION }}
-          dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.VERSION }} /p:PublishProfile=FolderProfile
+            mkdir -p ./publish/InvEntry-${{ env.TAG_VERSION }}
+            dotnet publish InvEntry/InvEntry.csproj -c Release -o ./publish/InvEntry-${{ env.TAG_VERSION }} /p:PublishProfile=FolderProfile /p:Version=${{ env.VERSION }}
         env:
-          VERSION: ${{ steps.set_version.outputs.VERSION }}
+           VERSION: ${{ steps.set_version.outputs.VERSION }}
+           TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
       # Build and publish DataAccess (Web API)
       - name: Publish DataAccess (Web API)
         run: |
-          mkdir -p ./publish/DataAccess-${{ env.VERSION }}
-          dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.VERSION }} /p:PublishProfile=FolderProfile
+          mkdir -p ./publish/DataAccess-${{ env.TAG_VERSION }}
+          dotnet publish DataAccess/DataAccess.csproj -c Release -o ./publish/DataAccess-${{ env.TAG_VERSION }} /p:PublishProfile=FolderProfile /p:Version=${{ env.VERSION }}
         env:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
       # Zip both publish folders into a single artifact
       - name: Package Published Outputs
         run: |
-          Compress-Archive -Path ./publish/InvEntry-${{ env.VERSION }}/* -DestinationPath ./InvEntry-${{ env.VERSION }}.zip
-          Compress-Archive -Path ./publish/DataAccess-${{ env.VERSION }}/* -DestinationPath ./DataAccess-${{ env.VERSION }}.zip
-          Compress-Archive -Path ./InvEntry-${{ env.VERSION }}.zip,./DataAccess-${{ env.VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.VERSION }}.zip
+          Compress-Archive -Path ./publish/InvEntry-${{ env.TAG_VERSION }}/* -DestinationPath ./InvEntry-${{ env.TAG_VERSION }}.zip
+          Compress-Archive -Path ./publish/DataAccess-${{ env.TAG_VERSION }}/* -DestinationPath ./DataAccess-${{ env.TAG_VERSION }}.zip
+          Compress-Archive -Path ./InvEntry-${{ env.TAG_VERSION }}.zip,./DataAccess-${{ env.TAG_VERSION }}.zip -DestinationPath ./PublishedProjects-${{ env.TAG_VERSION }}.zip
         env:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
       # Upload Zipped Artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: PublishedProjects
-          path: ./PublishedProjects-${{ env.VERSION }}.zip
+          path: ./PublishedProjects-${{ env.TAG_VERSION }}.zip
         env:
           VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
-  # Job 2: Create GitHub Release
-  create_release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ needs.build.outputs.version }}
-          release_name: Release ${{ needs.build.outputs.version }}
-          body_path: release_notes.txt
+          tag_name: ${{ env.TAG_VERSION }}
+          release_name: Release ${{ env.TAG_VERSION }}
+          body: |
+            ## Release Notes
+            - Published InvEntry and DataAccess projects
+            - Version: ${{ env.TAG_VERSION }}
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
-  # Job 3: Upload Release Assets
-  upload_assets:
-    runs-on: ubuntu-latest
-    needs: create_release
-    steps:
       - name: Download Build Artifact
         uses: actions/download-artifact@v3
         with:
@@ -131,8 +132,10 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./PublishedProjects-${{ needs.build.outputs.version }}.zip
-          asset_name: PublishedProjects-${{ needs.build.outputs.version }}.zip
+          asset_path: ./PublishedProjects-${{ env.TAG_VERSION }}.zip
+          asset_name: PublishedProjects-${{ env.TAG_VERSION }}.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.set_version.outputs.VERSION }}
+          TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
