@@ -23,6 +23,8 @@ public partial class ProductView
 
     public bool? IsTaxable { get; set; }
 
+    public int Gkey { get; set; }
+
     public string? ProductSku { get; set; }
 
     public decimal? GrossWeight { get; set; }
@@ -44,12 +46,4 @@ public partial class ProductView
     public int? SoldQty { get; set; }
 
     public int? StockQty { get; set; }
-
-    public string? Size { get; set; }
-
-    public int? SizeId { get; set; }
-
-    public string? SizeUom { get; set; }
-
-    public bool? IsProductSold { get; set; }
 }

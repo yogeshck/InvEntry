@@ -7,35 +7,14 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Models
 {
-    public partial class ProductView : BaseEntity
+    public partial class ProductStockSummary : BaseEntity
     {
-
-        [ObservableProperty]
-        public string? _id;
-
-        [ObservableProperty]
-        public string? _name;
-
-        [ObservableProperty]
-        public string? _description;
 
         [ObservableProperty]
         public string? _category;
 
         [ObservableProperty]
-        public string? _purity;
-
-        [ObservableProperty]
-        public string? _metal;
-
-        [ObservableProperty]
-        public string? _hsnCode;
-
-        [ObservableProperty]
-        public string? _uom;
-
-        [ObservableProperty]
-        public bool? _isTaxable;
+        public int? _productGkey;
 
         [ObservableProperty]
         public string? _productSku;
@@ -50,6 +29,33 @@ namespace InvEntry.Models
         public decimal? _netWeight;
 
         [ObservableProperty]
+        public decimal? _suppliedGrossWeight;
+
+        [ObservableProperty]
+        public decimal? _adjustedWeight;
+
+        [ObservableProperty]
+        public decimal? _soldWeight;
+
+        [ObservableProperty]
+        public decimal? _balanceWeight;
+
+        [ObservableProperty]
+        public int? _suppliedQty;
+
+        [ObservableProperty]
+        public int? _adjustedQty;
+
+        [ObservableProperty]
+        public int? _soldQty;
+
+        [ObservableProperty]
+        public int? _stockQty;
+
+        [ObservableProperty]
+        public string? _status;
+
+        [ObservableProperty]
         public decimal? _vaPercent;
 
         [ObservableProperty]
@@ -59,16 +65,19 @@ namespace InvEntry.Models
         public decimal? _wastageAmount;
 
         [ObservableProperty]
-        public decimal? _soldWeight;
+        public string? _uom;
 
         [ObservableProperty]
-        public decimal? _balanceWeight;
+        public string? _createdBy;
 
         [ObservableProperty]
-        public int? _soldQty;
+        public DateTime? _createdOn;
 
         [ObservableProperty]
-        public int? _stockQty;
+        public string? _modifiedBy;
+
+        [ObservableProperty]
+        public DateTime? _modifiedOn;
 
     }
 }

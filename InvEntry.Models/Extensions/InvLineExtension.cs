@@ -12,9 +12,11 @@ namespace InvEntry.Models.Extensions
     {
         public static void SetProductDetails(this InvoiceLine line, ProductView product)
         {
-            line.ProdGrossWeight = product.GrossWeight;
-            line.ProdStoneWeight = product.StoneWeight;
+            //will be introduced when we use barcode
+            line.ProdGrossWeight = 0;                           // product.GrossWeight;
+            line.ProdStoneWeight = 0;                           // product.StoneWeight;
             line.ProductSku = product.ProductSku;
+            line.ProductGkey = product.GKey;
             line.ProductDesc = product.Description;
             line.ProductName = product.Name;
             line.ProductPurity = product.Purity;

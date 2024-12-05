@@ -253,7 +253,7 @@ namespace InvEntry.ViewModels
                 x.Status = "Closed";
 
                 x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
- 
+
                 ProcessStockLines(x);
 
                 mtblReference.RefValue = sku.ToString();

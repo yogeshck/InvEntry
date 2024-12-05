@@ -46,6 +46,8 @@ namespace InvEntry.ViewModels
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
         private readonly IProductService _productService;
+        private readonly IProductTransactionService _productTransactionService;
+        private readonly IProductStockSummaryService _productStockSummaryService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
         private readonly IMtblReferencesService _mtblReferencesService;
@@ -56,15 +58,19 @@ namespace InvEntry.ViewModels
         //private readonly IDialogService _reportDialogService;
         //private readonly ICustomerService _customerService;
 
-        public GRNViewModel(IGrnService             grnService,
-                            IProductService         productService ,
-                            IDialogService          dialogService,
-                            IProductCategoryService productCategoryService,
-                            IMessageBoxService      messageBoxService ,
-                            IMtblReferencesService  mtblReferencesService)
+        public GRNViewModel(IGrnService                 grnService,
+                            IProductService             productService ,
+                            IProductStockSummaryService productStockSummaryService,
+                            IProductTransactionService  productTransactionService,
+                            IDialogService              dialogService,
+                            IProductCategoryService     productCategoryService,
+                            IMessageBoxService          messageBoxService ,
+                            IMtblReferencesService      mtblReferencesService)
         {
             _grnService = grnService;
             _productService = productService;
+            _productStockSummaryService = productStockSummaryService;
+            _productTransactionService = productTransactionService;
             _dialogService = dialogService;
             _productCategoryService = productCategoryService;
             _messageBoxService = messageBoxService;
@@ -160,6 +166,8 @@ namespace InvEntry.ViewModels
 
                 await _grnService.CreateGrnLineSummary(Header.GrnLineSumry);
 
+                ProcessStockSummary(Header.GrnLineSumry);
+
                 _messageBoxService.ShowMessage( "GRN " + Header.GrnNbr + " Created Successfully",
                                                 "GRN Creation", 
                                                 MessageButton.OK, 
@@ -168,6 +176,100 @@ namespace InvEntry.ViewModels
                 ResetGRN();
 
             }
+        }
+
+        private async void CreateProductTransaction(ProductStockSummary productStockSummary)
+        {
+            ProductTransaction productTransaction = new();
+
+            //Get previous record closing balance to set this record opening - if not found set opening to zero
+            var productTrans = await _productTransactionService.GetByCategory(productStockSummary.Category);
+
+            if (productTrans != null)
+            {
+                productTransaction.OpeningGrossWeight = productTrans.ClosingGrossWeight;
+                productTransaction.OpeningStoneWeight = productTrans.ClosingStoneWeight;
+                productTransaction.OpeningNetWeight = productTrans.ClosingNetWeight;
+
+            }
+            else
+            {
+                productTransaction.OpeningGrossWeight = 0;
+                productTransaction.OpeningStoneWeight = 0;
+                productTransaction.OpeningNetWeight = 0;
+            }
+
+            productTransaction.ProductSku = productStockSummary.ProductSku;
+            productTransaction.RefGkey = productStockSummary.ProductGkey;
+            productTransaction.TransactionDate = DateTime.Now;
+            productTransaction.ProductCategory = productStockSummary.Category;
+
+            productTransaction.TransactionType = "Receipt";
+            productTransaction.DocumentNbr = Header.GrnNbr;
+            productTransaction.DocumentDate = Header.GrnDate;
+            productTransaction.DocumentType = "GRN";
+            productTransaction.VoucherType = "Stock Receipt";
+
+            productTransaction.ObQty = 0;
+            productTransaction.TransactionQty = productStockSummary.StockQty;
+            productTransaction.CbQty = productStockSummary.SuppliedQty;
+
+            productTransaction.TransactionGrossWeight = productStockSummary.GrossWeight;
+            productTransaction.TransactionStoneWeight = productStockSummary.StoneWeight;
+            productTransaction.TransactionNetWeight = productStockSummary.NetWeight;
+
+            productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight + productStockSummary.GrossWeight;
+            productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight + productStockSummary.StoneWeight;
+            productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight + productStockSummary.NetWeight;
+
+            await _productTransactionService.CreateProductTransaction(productTransaction);
+        }
+
+        private async void ProcessStockSummary(IEnumerable<GrnLineSummary> grnLineSummary)
+        {
+
+            Header.GrnLineSumry.ForEach(async x =>
+            {
+                var createProductStockSummary = false;
+
+                var productStockSummary = await _productStockSummaryService.GetProductStockSummaryByCategory(x.ProductCategory);
+
+                if (productStockSummary is null)
+                {
+                    productStockSummary = new();
+                    createProductStockSummary = true;
+
+                }
+
+                productStockSummary.Category            = x.ProductCategory;
+                productStockSummary.ProductGkey         = x.ProductGkey;
+                //productStockSummary.ProductSku          = productStockSummary.ProductSku;
+                productStockSummary.GrossWeight         = (productStockSummary.GrossWeight ?? 0 ) + x.GrossWeight;
+                productStockSummary.StoneWeight         = (productStockSummary.StoneWeight ?? 0 ) + x.StoneWeight;
+                productStockSummary.NetWeight           = (productStockSummary.NetWeight   ?? 0 ) + x.NetWeight;
+                productStockSummary.SuppliedGrossWeight = (productStockSummary.SuppliedGrossWeight ?? 0) + x.GrossWeight;
+                productStockSummary.AdjustedWeight      = (productStockSummary.AdjustedWeight ?? 0);
+                productStockSummary.SoldWeight          = (productStockSummary.SoldWeight ?? 0 );
+                productStockSummary.BalanceWeight       = (productStockSummary.BalanceWeight ?? 0) + x.NetWeight;
+                productStockSummary.SuppliedQty         = (productStockSummary.SuppliedQty ?? 0 ) + x.SuppliedQty;
+                productStockSummary.SoldQty             = (productStockSummary.SoldQty ?? 0);
+                productStockSummary.StockQty            = (productStockSummary.StockQty ?? 0 ) + x.SuppliedQty;
+                productStockSummary.AdjustedQty         = (productStockSummary.AdjustedQty ?? 0);
+                productStockSummary.Status              = "In-Stock";
+
+                if (createProductStockSummary)
+                {
+                    await _productStockSummaryService.CreateProductStockSummary(productStockSummary);
+                }
+                else
+                {
+                    await _productStockSummaryService.UpdateProductStockSummary(productStockSummary);
+                }
+
+                CreateProductTransaction(productStockSummary);
+
+            });
+
         }
 
         private void ResetGRN()

@@ -94,6 +94,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
     private readonly IProductStockService _productStockService;
+    private readonly IProductStockSummaryService _productStockSummaryService;
     private readonly IProductTransactionService _productTransactionService;
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
@@ -121,6 +122,7 @@ public partial class InvoiceViewModel : ObservableObject
     public InvoiceViewModel(ICustomerService customerService,
         IProductViewService productViewService,
         IProductStockService productStockService,
+        IProductStockSummaryService productStockSummaryService,
         IProductTransactionService productTransactionService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
@@ -140,6 +142,7 @@ public partial class InvoiceViewModel : ObservableObject
         _customerService = customerService;
         _productViewService = productViewService;
         _productStockService = productStockService;
+        _productStockSummaryService = productStockSummaryService;
         _productTransactionService = productTransactionService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
@@ -382,23 +385,26 @@ public partial class InvoiceViewModel : ObservableObject
 
         //SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
-        var product = ProductStockSelection();
+        //this code will be re-introduce once SKU/Barcode is implmeneted
+        //var product = ProductStockSelection();
 
-        if (product is null)
+        var productStk = await _productViewService.GetProduct(ProductIdUI);
+
+        if (productStk is null)
         {
             _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
                 "Product not found", MessageButton.OK, MessageIcon.Error);
             return;
         }
 
-        var productStk = await _productViewService.GetByProductSku(product.ProductSku);
 
-        if (productStk is null)
-        {
-            //No stock to be handled - let the user enter manually all the details of billing item
-        }
+        //might introduce agains when barcode implemented
+        //if (productStk is null)
+        //{
+        //    //No stock to be handled - let the user enter manually all the details of billing item
+        //}
 
-        var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
+        var billedPrice = _settingsPageViewModel.GetPrice(productStk.Metal);
 
         InvoiceLine invoiceLine = new InvoiceLine()
         {
@@ -595,7 +601,10 @@ public partial class InvoiceViewModel : ObservableObject
     {
         foreach (var line in invLines)
         {
-            await ProductStockUpdate(line);
+
+            await ProductStockSummaryUpdate(line);
+
+            //await ProductStockUpdate(line);  //Put in on-hold for time being - till we introduce barcode
 
             await CreateProductTransaction(line);
         }
@@ -612,8 +621,39 @@ public partial class InvoiceViewModel : ObservableObject
         productStk.StockQty = 0;
         productStk.Status = "Sold";
         productStk.IsProductSold = true;
-
+         
         await _productStockService.UpdateProductStock(productStk);
+
+    }
+
+    //Consolidated stock line in product stock summary - stock qty / weight has to be reduced based on invoiced qty
+    private async Task ProductStockSummaryUpdate(InvoiceLine line)
+    {
+
+        var productSumryStk = await _productStockSummaryService.GetByProductGkey(line.ProductGkey);
+
+        //if (productSumryStk is null)
+        //{
+        //    await _productStockSummaryService.CreateProductStockSummary(productStockSummary);
+        //}
+        //else
+        //{
+        //    await _productStockSummaryService.UpdateProductStockSummary(productStockSummary);
+        //}
+
+        productSumryStk.GrossWeight = (productSumryStk.GrossWeight ?? 0) - line.ProdGrossWeight;
+        productSumryStk.StoneWeight = (productSumryStk.StoneWeight ?? 0) - line.ProdStoneWeight;
+        productSumryStk.NetWeight = (productSumryStk.NetWeight ?? 0) - line.ProdNetWeight;
+        productSumryStk.SuppliedGrossWeight = (productSumryStk.SuppliedGrossWeight ?? 0) - line.ProdGrossWeight;
+        //productSumryStk.AdjustedWeight = (productSumryStk.AdjustedWeight ?? 0);
+        productSumryStk.SoldWeight = (productSumryStk.SoldWeight ?? 0) + line.ProdNetWeight;
+        productSumryStk.BalanceWeight = (productSumryStk.BalanceWeight ?? 0) - line.ProdNetWeight;
+        //productSumryStk.SuppliedQty = (productSumryStk.SuppliedQty ?? 0) + x.SuppliedQty;
+        productSumryStk.SoldQty = (productSumryStk.SoldQty ?? 0) + line.ProdQty;
+        productSumryStk.StockQty = (productSumryStk.StockQty ?? 0) - line.ProdQty;
+        //productSumryStk.AdjustedQty = (productSumryStk.AdjustedQty ?? 0);
+
+        await _productStockSummaryService.UpdateProductStockSummary(productSumryStk);
 
     }
 
