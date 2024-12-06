@@ -36,4 +36,6 @@ public partial class GrnHeader
     public DateTime? ModifiedOn { get; set; }
 
     public string? Status { get; set; }
+
+    public DateTime? ItemReceivedDate { get; set; }
 }

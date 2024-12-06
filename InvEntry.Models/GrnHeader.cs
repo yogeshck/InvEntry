@@ -54,6 +54,9 @@ public partial class GrnHeader : BaseEntity
     public string? _status;
 
     [ObservableProperty]
+    public DateTime? _itemReceivedDate;
+
+    [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<GrnLine>? grnLines;
 

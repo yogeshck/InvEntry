@@ -426,6 +426,7 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("GRN_NBR");
+            entity.Property(e => e.ItemReceivedDate).HasColumnName("ITEM_RECEIVED_DATE");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -451,7 +452,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.SupplierRefNbr)
                 .HasMaxLength(150)
                 .IsUnicode(false)
-                .HasColumnName("SUPPLIER_ref_nbr");
+                .HasColumnName("SUPPLIER_REF_NBR");
         });
 
         modelBuilder.Entity<GrnLine>(entity =>

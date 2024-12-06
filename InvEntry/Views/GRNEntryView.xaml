@@ -15,7 +15,7 @@
              xmlns:ext="clr-namespace:InvEntry.Extension"
              d:DataContext="{d:DesignInstance Type=viewmodels:GRNViewModel}"
              DataContext="{ext:DISource Type=viewmodels:GRNViewModel}"
-             mc:Ignorable="d" Height="644" Width="754" HorizontalAlignment="Left" VerticalAlignment="Top">
+             mc:Ignorable="d" Height="644" Width="900" HorizontalAlignment="Left" VerticalAlignment="Top">
     <Grid>
         <Grid.Resources>
             <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEditSettings">
@@ -26,41 +26,90 @@
                 <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator" Value="False"/>
             </Style>
         </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="375*"/>
+            <ColumnDefinition Width="105*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <dxlc:LayoutControl Margin="0,0,-62,7" Grid.ColumnSpan="2" >
-            <dxlc:LayoutGroup View="GroupBox" Orientation="Vertical" Margin="0,0,5,3">
+        <dxb:BarContainerControl>
+            <dxb:MainMenuControl Width="1000" HorizontalAlignment="Left"  >
+                <dxb:BarButtonItem x:Name="btnReset" Content="Reset GRN" 
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                    GlyphSize="Medium"
+                    Command="{Binding ResetGRNCommand}"/>
+                <dxb:BarItemSeparator/>
+                <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
+                                    BarItemDisplayMode="ContentAndGlyph"
+                                    GlyphAlignment="Top"
+                                    Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
+                                    GlyphSize="Medium" Command="{Binding SubmitCommand}"/>
+                <!--    <dxb:BarButtonItem x:Name="btnPrint" 
+                                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                                   GlyphSize="Medium"
+                                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintGRNCommand}"/>
+                <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
+                                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
+                                   GlyphSize="Medium" Command="{Binding PrintPreviewGRNCommand}"/> -->
+                <dxb:BarItemSeparator/>
+            </dxb:MainMenuControl>
+        </dxb:BarContainerControl>
+        <dxlc:LayoutControl  Grid.ColumnSpan="2" Width="850"  Margin="0,50,-62,7" HorizontalAlignment="Left">
+            <dxlc:LayoutGroup View="GroupBox" Orientation="Vertical" >
                 <dxlc:LayoutItem Label="Goods Receipt Note (GRN)" FontWeight="Bold" FontSize="16"/>
-                <dxlc:LayoutGroup Orientation="Vertical">
-                    <dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Basic" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Supplier" >
+                    <dxlc:LayoutGroup Orientation="Vertical">
+                        <dxlc:LayoutGroup>
+                            <dxlc:LayoutGroup View="GroupBox" Header="Supplier" Orientation="Vertical">
+                            <dxlc:LayoutItem Label="Name" Height="35" >
                                     <dxe:ComboBoxEdit ItemsSource="{Binding SupplierReferencesList}"  EditValue="{Binding Header.SupplierId}"/>
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Supp Doc#">
+                                <dxlc:LayoutItem Label="Supp Doc#" Height="35">
                                     <dxe:TextEdit EditValue="{Binding Header.DocumentRef}"/>
                                 </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Supp Doc Date">
+                                <dxe:DateEdit Height="35" IsReadOnly="False" 
+                                    EditValue="{Binding Header.DocumentDate}" >
+                                    <dxe:DateEdit.StyleSettings>
+                                        <dxe:DateEditNavigatorStyleSettings />
+                                        </dxe:DateEdit.StyleSettings>
+                                    </dxe:DateEdit>
+                                </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
-                        <dxlc:LayoutGroup View="GroupBox" Header="Details" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Doc Nbr">
-                                <dxe:TextEdit EditValue="{Binding Header.GrnNbr}" />
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Doc Date">
-                                <dxe:TextEdit EditValue="{Binding Header.GrnDate}" />
-                            </dxlc:LayoutItem>
+                            <dxlc:LayoutGroup View="GroupBox" Header="Document" Orientation="Vertical">
+                            <dxlc:LayoutItem Label="Doc Nbr" Height="35">
+                                    <dxe:TextEdit EditValue="{Binding Header.GrnNbr}" />
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Doc Date">
+                                    <dxe:DateEdit Height="35" IsReadOnly="False" ShowBorder="False"
+                                        EditValue="{Binding Header.GrnDate}" >
+                                        <dxe:DateEdit.StyleSettings>
+                                            <dxe:DateEditNavigatorStyleSettings />
+                                        </dxe:DateEdit.StyleSettings>
+                                    </dxe:DateEdit>
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Recd Date">
+                                    <dxe:DateEdit Height="35" IsReadOnly="False" 
+                                            EditValue="{Binding Header.ItemReceivedDate}" >
+                                        <dxe:DateEdit.StyleSettings>
+                                            <dxe:DateEditNavigatorStyleSettings />
+                                        </dxe:DateEdit.StyleSettings>
+                                    </dxe:DateEdit>
+                                </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
-                    </dxlc:LayoutGroup>
+                        </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="Tabs">
-                        <dxlc:LayoutGroup Header="GRN Line">
+                        <dxlc:LayoutGroup Header="GRN Item Details" >
                             <dxlc:LayoutItem>
-                                <dxb:BarManager AllowCustomization="False" Height="242" >
+                                <dxb:BarManager AllowCustomization="False" Height="300" >
                                     <dxb:BarManager.Bars>
                                         <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
                                              AllowCustomizationMenu="False" ShowDragWidget="False">
                                             <dxb:BarEditItem EditValue="{Binding CategoryUI}"
-                                                             Content="Product" EditWidth="150" EditHeight="30">
+                                                             Content="Product" EditWidth="150" EditHeight="42">
                                                 <dxb:BarEditItem.EditSettings >
                                                     <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
                                                 </dxb:BarEditItem.EditSettings>
@@ -69,12 +118,16 @@
                                                  Command="{Binding FetchProductCommand}" GlyphSize="Large" 
                                                  GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
-                                            <dxb:BarItemSeparator/>
+                                     <!--       <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
+                                                 Command="{Binding DeleteRowsCommand}" GlyphSize="Large" 
+                                                 Content="Delete" GlyphAlignment="Right"/>
+                                            <dxb:BarItemSeparator/>  -->
                                         </dxb:Bar>
                                     </dxb:BarManager.Bars>
                                     <dxg:GridControl ItemsSource="{Binding Header.GrnLineSumry}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="250" MinHeight="400" HorizontalAlignment="Center" Width="733" Margin="0,0,0,-60">
+                                         MaxHeight="250" MinHeight="250" SelectedItems="{Binding SelectedRows}" HorizontalAlignment="Left" 
+                                                     VerticalAlignment="Top" Width="800" >
                                         <dxg:GridControl.Resources>
                                             <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
                                                 <Setter Property="FontWeight" Value="Bold"/>
@@ -87,15 +140,14 @@
                                                 <Setter Property="EditValuePostMode" Value="Immediate"/>
                                             </Style>
                                         </dxg:GridControl.Resources>
-                                        <dxg:GridControl.Columns>
+                                        <dxg:GridControl.Columns >
                                             <dxg:GridColumn  FieldName="ProductCategory" Header="Category" >
                                                 <!--           <dxg:GridColumn.EditSettings>
                                                     <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
                                                 </dxg:GridColumn.EditSettings>  -->
                                             </dxg:GridColumn>
-                                            <dxg:GridColumn FieldName="ProductDesc" ReadOnly="True"/>
                                             <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
-                                            <dxg:GridColumn FieldName="SuppliedQty" Header="Qty" Width="50"/>
+                                            <dxg:GridColumn FieldName="SuppliedQty" Header="Qty" Width="50" />
                                             <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" Width="100" AllowedTotalSummaries="Sum">
                                                 <dxg:GridColumn.EditSettings>
                                                     <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
@@ -111,8 +163,8 @@
                                                     <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
                                                 </dxg:GridColumn.EditSettings>
                                             </dxg:GridColumn>
-                                            <dxg:GridColumn FieldName="Uom" Header="UOM" Width="50"/>
-                                            <dxg:GridColumn FieldName="SuppVaPercent" Header="VA (%)" Width="50"/>
+                                            <dxg:GridColumn FieldName="Uom" Header="UOM" Width="50" ReadOnly="True"/>
+                                            <dxg:GridColumn FieldName="SuppVaPercent" Header="VA (%)" Width="80"/>
                                         </dxg:GridControl.Columns>
                                         <dxg:GridControl.View>
                                             <dxg:TableView NewItemRowPosition="None" AllowGrouping="False"
@@ -123,12 +175,12 @@
                                                            Command="{Binding CellUpdateCommand}"
                                                            PassEventArgsToCommand="True"/>
                                                 </dxmvvm:Interaction.Behaviors>
-                                                <!--<dxg:TableView.RowCellMenuCustomizations>
+                                                <dxg:TableView.RowCellMenuCustomizations>
                                                     <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
                                                            Command="{Binding DataContext.DeleteSingleRowCommand, 
                                                             RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
                                                            Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
-                                                </dxg:TableView.RowCellMenuCustomizations>-->
+                                                </dxg:TableView.RowCellMenuCustomizations>
                                             </dxg:TableView>
                                         </dxg:GridControl.View>
                                     </dxg:GridControl>
@@ -137,10 +189,10 @@
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
-                <dxlc:LayoutGroup>
+                <!-- <dxlc:LayoutGroup>
                     <dx:SimpleButton Content="Submit" Background="Wheat" Height="50" Width="100" HorizontalAlignment="Right"
                                      Command="{Binding SubmitCommand}"/>
-                </dxlc:LayoutGroup>
+                </dxlc:LayoutGroup> -->
             </dxlc:LayoutGroup>
         </dxlc:LayoutControl>
     </Grid>

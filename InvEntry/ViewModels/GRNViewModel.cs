@@ -35,7 +35,7 @@ namespace InvEntry.ViewModels
         private ObservableCollection<string> _productCategoryList;
 
         [ObservableProperty]
-        private ObservableCollection<GrnLineSummary> _selectedRows;
+        private ObservableCollection<GrnLineSummary> selectedRows;
 
         [ObservableProperty]
         private ObservableCollection<string> _supplierReferencesList;
@@ -76,6 +76,8 @@ namespace InvEntry.ViewModels
             _messageBoxService = messageBoxService;
             _mtblReferencesService = mtblReferencesService;
 
+            selectedRows = new();
+
             PopulateMtblSupplierListAsync();
             PopulateProductCategoryList();
             PopulateUnboundLineDataMap();
@@ -89,6 +91,8 @@ namespace InvEntry.ViewModels
             Header = new()
             {
                 GrnDate = DateTime.Now,
+                DocumentDate = DateTime.Now,
+                ItemReceivedDate = DateTime.Now,
                 Status = "Open"
             };
         }
@@ -117,7 +121,8 @@ namespace InvEntry.ViewModels
             GrnLineSummary grnLineSumry = new GrnLineSummary()
             {
                 ProductGkey = product.GKey,
-                ProductCategory = CategoryUI
+                ProductCategory = CategoryUI,
+                StoneWeight = 0
             };
 
             SetLineSummary(grnLineSumry,product);
@@ -162,6 +167,7 @@ namespace InvEntry.ViewModels
                 {
                     x.GrnHdrGkey    = header.GKey;
                     x.LineNbr       = Header.GrnLineSumry.IndexOf(x) + 1;
+                    x.StoneWeight   = 0;
                 });
 
                 await _grnService.CreateGrnLineSummary(Header.GrnLineSumry);
@@ -177,6 +183,63 @@ namespace InvEntry.ViewModels
 
             }
         }
+
+        private bool CanDeleteRows()
+        {
+            return SelectedRows?.Any() ?? false;
+        }
+
+        [RelayCommand(CanExecute = nameof(CanDeleteRows))]
+        private void DeleteRows()
+        {
+            var result = _messageBoxService.ShowMessage("Delete all selected rows", "Delete Rows", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+            if (result == MessageResult.No)
+                return;
+
+            List<int> indexs = new List<int>();
+            foreach (var row in SelectedRows)
+            {
+                indexs.Add(Header.GrnLineSumry.IndexOf(row));
+            }
+
+            indexs.ForEach(x =>
+            {
+                if (x >= 0)
+                {
+                    Header.GrnLineSumry.RemoveAt(x);
+                }
+            });
+
+           // EvaluateForAllLines();
+           // EvaluateHeader();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanDeleteSingleRow))]
+        private void DeleteSingleRow(GrnLineSummary grnline)
+        {
+            var result = _messageBoxService.ShowMessage("Delete current row", "Delete Row", MessageButton.YesNo, 
+                                                        MessageIcon.Question, MessageResult.No);
+
+            if (result == MessageResult.No)
+                   return;
+
+            var index = Header.GrnLineSumry.Remove(grnline);
+        }
+
+        private bool CanDeleteSingleRow(GrnLineSummary grnline)
+        {
+            return grnline is not null && Header.GrnLineSumry.IndexOf(grnline) > -1;
+        }
+
+
+        [RelayCommand]
+        private void ResetGRN()
+        {
+            SetHeader();
+            
+        }
+
 
         private async void CreateProductTransaction(ProductStockSummary productStockSummary)
         {
@@ -269,13 +332,6 @@ namespace InvEntry.ViewModels
                 CreateProductTransaction(productStockSummary);
 
             });
-
-        }
-
-        private void ResetGRN()
-        {
-
-            SetHeader();
 
         }
 
