@@ -450,6 +450,7 @@
                                         <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="ProductName" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
+                                        <dxg:GridColumn FieldName="InvlBilledPrice" Header="Rate" />
                                         <dxg:GridColumn FieldName="ProdQty" Header="Qty" Width="60"/>
                                         <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
                                         <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
