@@ -39,12 +39,12 @@
                         <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}"/>
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-                <dxb:BarEditItem EditValue="{Binding StatementType}"
+             <!--   <dxb:BarEditItem   EditValue="{Binding SearchOption.BookType}"
                                                  Content="Options" EditWidth="150" EditHeight="30">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:ComboBoxEditSettings ItemsSource="{Binding StatementTypeOptionList}"/>
-                    </dxb:BarEditItem.EditSettings>
-                </dxb:BarEditItem>
+                    </dxb:BarEditItem.EditSettings> 
+                </dxb:BarEditItem> -->
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh" 
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
@@ -75,6 +75,7 @@
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="VoucherNbr" Header="Voucher #" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="Mode" Header="Voucher Mode" ReadOnly="True" Width="100" />                
                 <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />

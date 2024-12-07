@@ -426,9 +426,9 @@
                                                  GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
                                         <dxb:BarItemSeparator/>
-                                        <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
+                                 <!--       <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
                                                  Command="{Binding DeleteRowsCommand}" GlyphSize="Large" 
-                                                 Content="Delete" GlyphAlignment="Right"/>
+                                                 Content="Delete" GlyphAlignment="Right"/> -->
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
                                 <dxg:GridControl ItemsSource="{Binding Header.Lines}" 
@@ -533,6 +533,7 @@
                                         <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight"/>
                                         <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" />
                                         <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="Uom" Header="Uom" ReadOnly="True"/>                                        
                                         <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />
                                     </dxg:GridControl.Columns>

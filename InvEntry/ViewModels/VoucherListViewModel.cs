@@ -40,9 +40,6 @@ public partial class VoucherListViewModel: ObservableObject
     private ObservableCollection<string> _statementTypeOptionList;
 
     [ObservableProperty]
-    private string _statementType;
-
-    [ObservableProperty]
     private Voucher _selectedVoucher;
 
     [ObservableProperty]
@@ -58,11 +55,12 @@ public partial class VoucherListViewModel: ObservableObject
         _xmlService = xmlService;
         _reportFactoryService = reportFactoryService;
 
-        PopulateStatmentTypeOpionList();
-
         _searchOption = new();
         SearchOption.To = Today;
         SearchOption.From = Today.AddDays(-2);
+        SearchOption.BookType ??= "Cash";
+
+        PopulateStatmentTypeOpionList();
 
         Task.Run(RefreshVoucherAsync).Wait();
     }
@@ -75,7 +73,6 @@ public partial class VoucherListViewModel: ObservableObject
         StatementTypeOptionList.Add("Cash");
         StatementTypeOptionList.Add("Petty Cash");
 
-        StatementType ??= "Cash";
     }
 
 
@@ -84,16 +81,11 @@ public partial class VoucherListViewModel: ObservableObject
     {
         Vouchers = new();
 
+        SearchOption.BookType = null;
+
         var vouchersResult = await _voucherService.GetAll(SearchOption);
         if (vouchersResult is not null)
-
-            foreach (var vcher in vouchersResult)
-            {
-               if (vcher.Mode == StatementType)
-                {
-                    Vouchers = new(vouchersResult);
-                }
-            }
+            Vouchers = new(vouchersResult);
             
     }
 
@@ -102,7 +94,7 @@ public partial class VoucherListViewModel: ObservableObject
     {
         //var printed = PrintHelper.Print(_reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To));
 
-        var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To, StatementType);
+        var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To, SearchOption.BookType);
 
         PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
 

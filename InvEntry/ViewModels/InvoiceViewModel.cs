@@ -467,6 +467,7 @@ public partial class InvoiceViewModel : ObservableObject
             CustMobile = Header.CustMobile,
             TransType = "Purchase",
             TransDate = DateTime.Now,
+            Uom = "Grams"
         };
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);

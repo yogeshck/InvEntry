@@ -38,11 +38,11 @@ namespace DataAccess.Controllers
             {
                 return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
                                                         x.TransDate.Value.Date <= criteria.To.Date
-                                                        && x.Mode == criteria.BookType);
+                                                        && x.Mode == criteria.BookType).OrderBy(x => x.VoucherDate);
             } else
             {
                 return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
-                                                        x.TransDate.Value.Date <= criteria.To.Date);
+                                                        x.TransDate.Value.Date <= criteria.To.Date).OrderBy(x => x.VoucherDate);
             }
 
         }
