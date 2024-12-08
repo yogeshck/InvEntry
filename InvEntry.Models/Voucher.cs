@@ -15,7 +15,7 @@ namespace InvEntry.Models
         private int? _SeqNbr ;
 
         [ObservableProperty]
-        private long? _CustomerGkey;
+        private int? _CustomerGkey;
 
         [ObservableProperty]
         private string? _TransType;

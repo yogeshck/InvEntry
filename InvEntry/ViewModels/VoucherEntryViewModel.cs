@@ -38,7 +38,6 @@ public partial class VoucherEntryViewModel: ObservableObject
     public VoucherEntryViewModel(
             IVoucherService voucherService,
             IMessageBoxService messageBoxService)
-
     {
         CashVoucherTypeList = new();
         transactionTypeList = new();
