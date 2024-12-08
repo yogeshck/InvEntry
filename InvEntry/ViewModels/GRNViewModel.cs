@@ -50,7 +50,7 @@ namespace InvEntry.ViewModels
         private readonly IProductStockSummaryService _productStockSummaryService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
-        private readonly IMtblReferencesService _mtblReferencesService;
+        private readonly MtblReferencesService _mtblReferencesService;
 
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
 
@@ -65,7 +65,7 @@ namespace InvEntry.ViewModels
                             IDialogService              dialogService,
                             IProductCategoryService     productCategoryService,
                             IMessageBoxService          messageBoxService ,
-                            IMtblReferencesService      mtblReferencesService)
+                            MtblReferencesService      mtblReferencesService)
         {
             _grnService = grnService;
             _productService = productService;

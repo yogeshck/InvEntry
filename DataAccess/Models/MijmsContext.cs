@@ -33,7 +33,13 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<InvoiceLine> InvoiceLines { get; set; }
 
+    public virtual DbSet<LedgersHeader> LedgersHeaders { get; set; }
+
+    public virtual DbSet<LedgersTransaction> LedgersTransactions { get; set; }
+
     public virtual DbSet<Metal> Metals { get; set; }
+
+    public virtual DbSet<MtblLedger> MtblLedgers { get; set; }
 
     public virtual DbSet<MtblReference> MtblReferences { get; set; }
 
@@ -956,6 +962,45 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("VA_PERCENT");
         });
 
+        modelBuilder.Entity<LedgersHeader>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("LEDGERS_HEADER");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.BalanceAsOn).HasColumnName("BALANCE_AS_ON");
+            entity.Property(e => e.CurrentBalance)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("CURRENT_BALANCE");
+            entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
+            entity.Property(e => e.MtblLedgersGkey).HasColumnName("MTBL_LEDGERS_GKEY");
+        });
+
+        modelBuilder.Entity<LedgersTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("LEDGERS_TRANSACTIONS");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.DocumentDate).HasColumnName("DOCUMENT_DATE");
+            entity.Property(e => e.DocumentNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_NBR");
+            entity.Property(e => e.DrCr)
+                .HasMaxLength(25)
+                .IsUnicode(false)
+                .HasColumnName("DR_CR");
+            entity.Property(e => e.LedgerHdrGkey).HasColumnName("LEDGER_HDR_GKEY");
+            entity.Property(e => e.Status).HasColumnName("STATUS");
+            entity.Property(e => e.TransactionAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TRANSACTION_AMOUNT");
+            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+        });
+
         modelBuilder.Entity<Metal>(entity =>
         {
             entity.HasKey(e => e.Gkey).HasName("METALS_PK");
@@ -969,6 +1014,29 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("METAL_NAME");
+        });
+
+        modelBuilder.Entity<MtblLedger>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("MTBL_LEDGERS");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.AccountGroupName)
+                .IsUnicode(false)
+                .HasColumnName("ACCOUNT_GROUP_NAME");
+            entity.Property(e => e.Description)
+                .IsUnicode(false)
+                .HasColumnName("DESCRIPTION");
+            entity.Property(e => e.LedgerAccountCode).HasColumnName("LEDGER_ACCOUNT_CODE");
+            entity.Property(e => e.LedgerName).HasColumnName("LEDGER_NAME");
+            entity.Property(e => e.MemberGkey).HasColumnName("MEMBER_GKEY");
+            entity.Property(e => e.MemberType).HasColumnName("MEMBER_TYPE");
+            entity.Property(e => e.PrimaryGroup).HasColumnName("PRIMARY_GROUP");
+            entity.Property(e => e.Status).HasColumnName("STATUS");
+            entity.Property(e => e.SubGroup).HasColumnName("SUB_GROUP");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
         });
 
         modelBuilder.Entity<MtblReference>(entity =>

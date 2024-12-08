@@ -101,11 +101,12 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IMessageBoxService _messageBoxService;
     private readonly IVoucherService _voucherService;
     private readonly IInvoiceService _invoiceService;
+    private readonly ILedgerService _ledgerService;
     private readonly IProductCategoryService _productCategoryService;
     private readonly IInvoiceArReceiptService _invoiceArReceiptService;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IOldMetalTransactionService _oldMetalTransactionService;
-    private readonly IMtblReferencesService _mtblReferencesService;
+    private readonly MtblReferencesService _mtblReferencesService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
@@ -126,13 +127,14 @@ public partial class InvoiceViewModel : ObservableObject
         IProductTransactionService productTransactionService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
+        ILedgerService ledgerService,
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
         IVoucherService voucherService,
         IInvoiceArReceiptService invoiceArReceiptService,
         IOrgThisCompanyViewService orgThisCompanyViewService,
         IOldMetalTransactionService oldMetalTransactionService,
-        IMtblReferencesService mtblReferencesService,
+        MtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
@@ -147,6 +149,7 @@ public partial class InvoiceViewModel : ObservableObject
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
+        _ledgerService = ledgerService;
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
@@ -586,6 +589,9 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
+            if (Header.AdvanceAdj > 0)
+                ProcessAdvance();
+        
             _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created", 
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
@@ -964,11 +970,52 @@ public partial class InvoiceViewModel : ObservableObject
         if (Header.AdvanceAdj > 0)
         {
             SetReceipts("Advance");
+
         }
         if (Header.RdAmountAdj > 0)
         {
             SetReceipts("RD");
         }
+    }
+
+    private async void ProcessAdvance()
+    {
+        //check customer has already ledger entry
+        var ledgerHeader = await _ledgerService.GetHeader(Buyer.GKey);
+
+        if (ledgerHeader is null)
+        {
+            return;
+        }
+
+        if (ledgerHeader.CurrentBalance < 1) return;
+
+        //{
+        //    _messageBoxService.ShowMessage($"Available Advance Balance is  {ProductIdUI}, Please make sure it exists",
+        //        "Product not found", MessageButton.OK, MessageIcon.Error);
+        //    return;
+        //}
+
+        //create ledger transaction
+
+        ledgerHeader.CurrentBalance = ledgerHeader.CurrentBalance - Header.AdvanceAdj;
+        ledgerHeader.BalanceAsOn    =  DateTime.Now;
+
+        LedgersTransactions ledgerTrans = new()
+        {
+            LedgerHdrGkey = ledgerHeader.GKey,
+            TransactionDate = DateTime.Now,
+        };
+
+        ledgerTrans.DrCr = "Cr";
+        ledgerTrans.TransactionAmount = Header.AdvanceAdj;
+
+        ledgerHeader.Transactions.Add(ledgerTrans);
+
+        await _ledgerService.CreateLedgersTransactions(ledgerHeader.Transactions);
+
+        await _ledgerService.UpdateHeader(ledgerHeader);
+
     }
 
     private void SetReceipts(String str)

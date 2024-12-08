@@ -29,4 +29,12 @@
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="D:\Repo_Git\WPF\DataAccess\Controllers\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="D:\Repo_Git\WPF\DataAccess\Controllers\.editorconfig" />
+  </ItemGroup>
+
 </Project>
