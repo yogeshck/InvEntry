@@ -1009,6 +1009,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         ledgerTrans.DrCr = "Cr";
         ledgerTrans.TransactionAmount = Header.AdvanceAdj;
+        ledgerTrans.DocumentNbr = Header.InvNbr;
+        ledgerTrans.DocumentDate = Header.InvDate;
 
         ledgerHeader.Transactions.Add(ledgerTrans);
 
