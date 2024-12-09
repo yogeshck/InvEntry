@@ -10,7 +10,7 @@ namespace InvEntry.Services
 {
     public interface ILedgerService
     {
-        Task<LedgersHeader> GetHeader(int? custGkey);
+        Task<LedgersHeader> GetHeader(int? ledgerGkey, int? custGkey);
 
         Task<LedgersHeader> CreateHeader(LedgersHeader ledgersHeader);
         
@@ -53,9 +53,9 @@ namespace InvEntry.Services
             await Task.WhenAll(list);
         }
 
-        public async Task<LedgersHeader> GetHeader(int? custGkey)
+        public async Task<LedgersHeader> GetHeader(int? ledgerGkey, int? custGkey)
         {
-            return await _mijmsApiService.Get<LedgersHeader>($"api/LedgersHeader/{custGkey}");
+            return await _mijmsApiService.Get<LedgersHeader>($"api/LedgersHeader/{ledgerGkey}/{custGkey}");
         }
 
         public async Task UpdateHeader(LedgersHeader ledgersHeader)

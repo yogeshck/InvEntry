@@ -981,7 +981,7 @@ public partial class InvoiceViewModel : ObservableObject
     private async void ProcessAdvance()
     {
         //check customer has already ledger entry
-        var ledgerHeader = await _ledgerService.GetHeader(Buyer.GKey);
+        var ledgerHeader = await _ledgerService.GetHeader(1000, Buyer.GKey);   //hard coded to be fixed
 
         if (ledgerHeader is null)
         {

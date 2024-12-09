@@ -24,7 +24,7 @@ namespace InvEntry.Services
 
         public async Task<MtblLedger> GetLedger(int lAccountCode)
         {
-            return await _mijmsApiService.Get<MtblLedger>($"api/MtblLedger/{lAccountCode}");
+            return await _mijmsApiService.Get<MtblLedger>($"api/MtblLedgers/{lAccountCode}");
         }
     }
 }

@@ -39,10 +39,22 @@ public partial class CashReceiptViewModel : ObservableObject
     private MtblReference _customerState;
 
     [ObservableProperty]
+    private string _voucherTransDesc;
+
+    [ObservableProperty]
     private Customer _payer;
 
     [ObservableProperty]
     private OrgThisCompanyView _company;
+
+    [ObservableProperty]
+    private LedgersHeader _ledgerHdr;
+
+    [ObservableProperty]
+    private MtblLedger _mtblLedger;
+
+    [ObservableProperty]
+    public bool _customerReadOnly;
 
     [ObservableProperty]
     private ObservableCollection<MtblReference> _stateReferencesList;
@@ -60,6 +72,7 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly MtblReferencesService _mtblReferencesService;
     private readonly IVoucherService _voucherService;
     private readonly ILedgerService _ledgerService;
+    private readonly IMtblLedgersService _mtblLedgersService;
 
 
     public CashReceiptViewModel(ICustomerService customerService,
@@ -67,6 +80,7 @@ public partial class CashReceiptViewModel : ObservableObject
                 IMessageBoxService messageBoxService,
                 IVoucherService voucherService,
                 ILedgerService ledgerService,
+                IMtblLedgersService mtblLedgersService,
                 MtblReferencesService mtblReferencesService
                 )
     {
@@ -74,11 +88,13 @@ public partial class CashReceiptViewModel : ObservableObject
         _messageBoxService = messageBoxService;
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _mtblReferencesService = mtblReferencesService;
+        _mtblLedgersService = mtblLedgersService;
         _voucherService = voucherService;
         _ledgerService = ledgerService;
 
         SetThisCompany();
         PopulateStateList();
+        SetMasterLedger();
         ResetVoucher();
 
     }
@@ -111,20 +127,27 @@ public partial class CashReceiptViewModel : ObservableObject
         // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
     }
 
+    private async Task SetMasterLedger()
+    {
+        MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
+    }
+
 
     [RelayCommand]
     private async Task FetchCustomer(EditValueChangedEventArgs args)
     {
-        if (args.NewValue is not string phoneNumber) return;
+        if (args.NewValue is not string customerPhoneNumber) return;
 
-        phoneNumber = phoneNumber.Trim();
+        customerPhoneNumber = customerPhoneNumber.Trim();
 
-        if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
+        if (string.IsNullOrEmpty(customerPhoneNumber) || customerPhoneNumber.Length < 10)
             return;
+
+        CustomerReadOnly = false;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
-        Payer = await _customerService.GetCustomer(phoneNumber);
+        Payer = await _customerService.GetCustomer(customerPhoneNumber);
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
@@ -165,49 +188,59 @@ public partial class CashReceiptViewModel : ObservableObject
 
     }
 
-    private async void ProcessLedger(Voucher voucher)
+    private async void ProcessLedger() //(Voucher voucher)
     {
 
-        //check customer has already ledger entry
-        var ledgerHdr = await _ledgerService.GetHeader(voucher.CustomerGkey);
+        //check customer has any ledger entry
+        LedgerHdr = await _ledgerService.GetHeader(MtblLedger.GKey, Payer.GKey);
 
-        if (ledgerHdr is not null)
+        if (LedgerHdr is not null)
         {
             LedgersTransactions ledgerTrans = new();
 
             ledgerTrans.DrCr = "Cr";
             ledgerTrans.TransactionAmount = Voucher.TransAmount;
-            ledgerTrans.DocumentNbr = "Doc";
-            ledgerTrans.DocumentDate = DateTime.Now;
+            ledgerTrans.DocumentNbr = Voucher.VoucherNbr;
+            ledgerTrans.DocumentDate = Voucher.VoucherDate;
+            ledgerTrans.LedgerHdrGkey = LedgerHdr.GKey;
+            ledgerTrans.TransactionDate = DateTime.Now;
+            ledgerTrans.Status = true;
 
-            ledgerHdr.CurrentBalance = voucher.TransAmount;
+            LedgerHdr.Transactions.Add(ledgerTrans);
 
-            ledgerHdr.Transactions.Add(ledgerTrans);
+            await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
 
-            await _ledgerService.CreateLedgersTransactions(ledgerHdr.Transactions);
+            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() + Voucher.TransAmount.GetValueOrDefault();
 
-            ledgerHdr.CurrentBalance = ledgerHdr.CurrentBalance - voucher.TransAmount;
-
-            await _ledgerService.UpdateHeader(ledgerHdr);
+            await _ledgerService.UpdateHeader(LedgerHdr);
         }
         else
         {
-            LedgersHeader ledgersHeader = new();
-            ledgersHeader.BalanceAsOn = DateTime.Now;
 
+            LedgerHdr = new();
+
+            LedgerHdr.MtblLedgersGkey = MtblLedger.GKey;
+            LedgerHdr.CustGkey = Payer.GKey;
+            LedgerHdr.BalanceAsOn = DateTime.Now;
+            LedgerHdr.CurrentBalance = Voucher.TransAmount;
+
+            LedgerHdr = await _ledgerService.CreateHeader(LedgerHdr);
 
             LedgersTransactions ledgerTrans = new();
 
             ledgerTrans.DrCr = "Cr";
             ledgerTrans.TransactionAmount = Voucher.TransAmount;
-            ledgerTrans.DocumentNbr = "Doc";
-            ledgerTrans.DocumentDate = DateTime.Now;
+            ledgerTrans.DocumentNbr = Voucher.VoucherNbr;
+            ledgerTrans.DocumentDate = Voucher.VoucherDate;
+            ledgerTrans.LedgerHdrGkey = LedgerHdr.GKey;
+            ledgerTrans.TransactionDate = DateTime.Now;
+            ledgerTrans.Status = true;
 
-            ledgersHeader.Transactions.Add(ledgerTrans);
+            LedgerHdr.Transactions.Add(ledgerTrans);
 
-            await _ledgerService.CreateLedgersTransactions(ledgersHeader.Transactions);
+            await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
 
-            await _ledgerService.UpdateHeader(ledgersHeader);
+            
         }
 
     }
@@ -223,15 +256,30 @@ public partial class CashReceiptViewModel : ObservableObject
     [RelayCommand]
     private void ResetVoucher()
     {
+
+        LedgerHdr = new();
         Voucher = new();
+        Payer = new();
+
         Voucher.Mode = "Cash";
         Voucher.VoucherDate = DateTime.Now;
+
         Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
         Voucher.TransType = "Receipt";
-        Voucher.VoucherType = "Advance";
-        //Voucher.CustomerGkey = Payer.GKey;
+        Voucher.VoucherType = "Advance";  //hardcoded
         Voucher.TransDesc = string.Empty;
+
+        VoucherTransDesc = string.Empty;
+        CustomerPhoneNumber = string.Empty;
+        
     }
+
+    [RelayCommand]
+    private void Focus(TextEdit sender)
+    {
+        sender.Focus();
+    }
+
 
     [RelayCommand]
     private async Task SaveVoucherAsync()
@@ -242,8 +290,7 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             var voucher = await _voucherService.CreatVoucher(Voucher);
 
-            ProcessLedger(voucher);
-
+            ProcessLedger();   // (voucher);
 
             if (voucher != null)
             {

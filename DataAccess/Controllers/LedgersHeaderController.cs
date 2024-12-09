@@ -26,10 +26,10 @@ namespace DataAccess.Controllers
         }
 
         // GET api/<InvoiceController>/5
-        [HttpGet("{custGkey}")]
-        public LedgersHeader? Get(int custGkey)
+        [HttpGet("{ledgerGkey}/{custGkey}")]
+        public LedgersHeader? Get(int ledgerGkey, int custGkey)
         {
-            return _ledgersHeaderRepository.Get(x => x.CustGkey == custGkey);
+            return _ledgersHeaderRepository.Get(x => x.CustGkey == custGkey && x.MtblLedgersGkey == ledgerGkey);
         }
 
         // POST api/<MtblLedgerController>
