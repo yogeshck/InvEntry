@@ -81,7 +81,7 @@ public partial class EstimateViewModel: ObservableObject
     private readonly IVoucherService _voucherService;
     private readonly IEstimateService _estimateService;
     private readonly IProductCategoryService _productCategoryService;
-    private readonly MtblReferencesService _mtblReferencesService;
+    private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
@@ -100,7 +100,7 @@ public partial class EstimateViewModel: ObservableObject
         IEstimateService estimateService,
         IProductCategoryService productCategoryService,
         IMessageBoxService messageBoxService,
-        MtblReferencesService mtblReferencesService,
+        IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)

@@ -137,7 +137,7 @@ public sealed class Bootstrapper
                  //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IOldMetalTransactionService, OldMetalTransactionService>()
-                 .AddSingleton<MtblReferencesService, MtblReferencesService>()
+                 .AddSingleton<IMtblReferencesService, MtblReferencesService>()
                  .AddSingleton<IOrgThisCompanyViewService, OrgThisCompanyViewService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()

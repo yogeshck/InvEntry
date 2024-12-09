@@ -48,7 +48,13 @@ public partial class InvoiceViewModel : ObservableObject
     private InvoiceArReceipt _invoiceArReceipt;
 
     [ObservableProperty]
+    private LedgersHeader _ledgerHeader;
+
+    [ObservableProperty]
     private string _productIdUI;
+
+    [ObservableProperty]
+    private MtblLedger _mtblLedger;
 
     [ObservableProperty]
     private string _productSku;
@@ -106,7 +112,8 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IInvoiceArReceiptService _invoiceArReceiptService;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IOldMetalTransactionService _oldMetalTransactionService;
-    private readonly MtblReferencesService _mtblReferencesService;
+    private readonly IMtblReferencesService _mtblReferencesService;
+    private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
@@ -134,7 +141,8 @@ public partial class InvoiceViewModel : ObservableObject
         IInvoiceArReceiptService invoiceArReceiptService,
         IOrgThisCompanyViewService orgThisCompanyViewService,
         IOldMetalTransactionService oldMetalTransactionService,
-        MtblReferencesService mtblReferencesService,
+        IMtblReferencesService mtblReferencesService,
+        IMtblLedgersService mtblLedgersService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
@@ -151,6 +159,7 @@ public partial class InvoiceViewModel : ObservableObject
         _invoiceService = invoiceService;
         _ledgerService = ledgerService;
         _messageBoxService = messageBoxService;
+        _mtblLedgersService = mtblLedgersService;
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
         _oldMetalTransactionService = oldMetalTransactionService;
@@ -169,6 +178,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         SetThisCompany();
         SetHeader();
+        SetMasterLedger();
 
         PopulateProductCategoryList();
         PopulateStateList();
@@ -177,7 +187,13 @@ public partial class InvoiceViewModel : ObservableObject
         PopulateMetalList();
         PopulateTaxList();
         PopulateSalesPersonList();
+
         //PopulateUnboundHeaderDataMap();
+    }
+
+    private async void SetMasterLedger()
+    {
+        MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
     }
 
     private async void PopulateProductCategoryList()
@@ -969,7 +985,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
         if (Header.AdvanceAdj > 0)
         {
-            SetReceipts("Advance");
+            SetReceipts("Advance Adj");
 
         }
         if (Header.RdAmountAdj > 0)
@@ -981,14 +997,7 @@ public partial class InvoiceViewModel : ObservableObject
     private async void ProcessAdvance()
     {
         //check customer has already ledger entry
-        var ledgerHeader = await _ledgerService.GetHeader(1000, Buyer.GKey);   //hard coded to be fixed
-
-        if (ledgerHeader is null)
-        {
-            return;
-        }
-
-        if (ledgerHeader.CurrentBalance < 1) return;
+        LedgerHeader = await _ledgerService.GetHeader(MtblLedger.GKey, Buyer.GKey);   //hard coded to be fixed
 
         //{
         //    _messageBoxService.ShowMessage($"Available Advance Balance is  {ProductIdUI}, Please make sure it exists",
@@ -996,27 +1005,69 @@ public partial class InvoiceViewModel : ObservableObject
         //    return;
         //}
 
-        //create ledger transaction
-
-        ledgerHeader.CurrentBalance = ledgerHeader.CurrentBalance - Header.AdvanceAdj;
-        ledgerHeader.BalanceAsOn    =  DateTime.Now;
-
-        LedgersTransactions ledgerTrans = new()
+        if (LedgerHeader is not null)
         {
-            LedgerHdrGkey = ledgerHeader.GKey,
-            TransactionDate = DateTime.Now,
-        };
 
-        ledgerTrans.DrCr = "Cr";
-        ledgerTrans.TransactionAmount = Header.AdvanceAdj;
-        ledgerTrans.DocumentNbr = Header.InvNbr;
-        ledgerTrans.DocumentDate = Header.InvDate;
+            if ((LedgerHeader.CurrentBalance < 1) || (LedgerHeader.CurrentBalance < Header.AdvanceAdj.GetValueOrDefault()))
+             {
+                _messageBoxService.ShowMessage($"Available Advance Balance is Rs.  {LedgerHeader.CurrentBalance} only...",
+                            "Insufficient Balance", MessageButton.OK, MessageIcon.Error);
+                return;
+            }
 
-        ledgerHeader.Transactions.Add(ledgerTrans);
+            LedgerHeader.CurrentBalance = LedgerHeader.CurrentBalance.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault();
 
-        await _ledgerService.CreateLedgersTransactions(ledgerHeader.Transactions);
+            LedgersTransactions ledgerTrans = new();
 
-        await _ledgerService.UpdateHeader(ledgerHeader);
+            ledgerTrans.DrCr = "Cr";
+            ledgerTrans.TransactionAmount = Header.AdvanceAdj;
+            ledgerTrans.DocumentNbr = Header.InvNbr;
+            ledgerTrans.DocumentDate = Header.InvDate;
+            ledgerTrans.LedgerHdrGkey = LedgerHeader.GKey;
+            ledgerTrans.TransactionDate = DateTime.Now;
+            ledgerTrans.Status = true;
+
+            LedgerHeader.Transactions.Add(ledgerTrans);
+
+            await _ledgerService.CreateLedgersTransactions(LedgerHeader.Transactions);
+
+            if (LedgerHeader.CurrentBalance < 0)
+                LedgerHeader.CurrentBalance = 0;
+
+            await _ledgerService.UpdateHeader(LedgerHeader);
+        }
+        else
+        {
+
+            LedgerHeader = new();
+
+            LedgerHeader.MtblLedgersGkey = MtblLedger.GKey;
+            LedgerHeader.CustGkey = Header.CustGkey;
+            LedgerHeader.BalanceAsOn = DateTime.Now;
+
+            LedgerHeader.CurrentBalance = 0; // Header.AdvanceAdj.GetValueOrDefault();
+
+            if (LedgerHeader.CurrentBalance < 0)
+                LedgerHeader.CurrentBalance = 0;
+
+            LedgerHeader = await _ledgerService.CreateHeader(LedgerHeader);
+
+            LedgersTransactions ledgerTrans = new();
+
+            ledgerTrans.DrCr = "Cr";
+            ledgerTrans.TransactionAmount = Header.AdvanceAdj.GetValueOrDefault();
+            ledgerTrans.DocumentNbr = Header.InvNbr;
+            ledgerTrans.DocumentDate = Header.InvDate;
+            ledgerTrans.LedgerHdrGkey = LedgerHeader.GKey;
+            ledgerTrans.TransactionDate = DateTime.Now;
+            ledgerTrans.Status = true;
+
+            LedgerHeader.Transactions.Add(ledgerTrans);
+
+            await _ledgerService.CreateLedgersTransactions(LedgerHeader.Transactions);
+
+
+        }
 
     }
 
@@ -1128,7 +1179,7 @@ public partial class InvoiceViewModel : ObservableObject
            var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
            var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
            var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
-           var s when s.Equals("Advance", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+           var s when s.Equals("Advance Adj", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
            _ => 0M
        };
 

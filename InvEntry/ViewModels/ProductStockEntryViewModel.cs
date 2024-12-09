@@ -44,7 +44,7 @@ namespace InvEntry.ViewModels
         private readonly IProductStockService _productStockService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
-        private readonly MtblReferencesService _mtblReferencesService;
+        private readonly IMtblReferencesService _mtblReferencesService;
 
         [ObservableProperty]
         private ObservableCollection<string> _supplierReferencesList;
@@ -86,7 +86,7 @@ namespace InvEntry.ViewModels
                                             IDialogService dialogService,
                                             IProductCategoryService productCategoryService,
                                             IMessageBoxService messageBoxService,
-                                            MtblReferencesService mtblReferencesService
+                                            IMtblReferencesService mtblReferencesService
                                             )
         {
             _grnService                 = grnService;

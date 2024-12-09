@@ -63,13 +63,12 @@ public partial class CashReceiptViewModel : ObservableObject
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     private bool createCustomer = false;
-    private bool invBalanceChk = false;
 
     private readonly ICustomerService _customerService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceArReceiptService _invoiceArReceiptService;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
-    private readonly MtblReferencesService _mtblReferencesService;
+    private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IVoucherService _voucherService;
     private readonly ILedgerService _ledgerService;
     private readonly IMtblLedgersService _mtblLedgersService;
@@ -81,7 +80,7 @@ public partial class CashReceiptViewModel : ObservableObject
                 IVoucherService voucherService,
                 ILedgerService ledgerService,
                 IMtblLedgersService mtblLedgersService,
-                MtblReferencesService mtblReferencesService
+                IMtblReferencesService mtblReferencesService
                 )
     {
         _customerService = customerService;
@@ -95,6 +94,7 @@ public partial class CashReceiptViewModel : ObservableObject
         SetThisCompany();
         PopulateStateList();
         SetMasterLedger();
+
         ResetVoucher();
 
     }
@@ -155,14 +155,14 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
 
-            /*            Payer = new();
-                        Payer.MobileNbr = phoneNumber;
-                        Payer.Address.GstStateCode = Company.GstCode;
-                        Payer.Address.State = Company.State;
-                        Payer.Address.District = Company.District;
+            Payer = new();
+            Payer.MobileNbr = customerPhoneNumber;
+            Payer.Address.GstStateCode = Company.GstCode;
+            Payer.Address.State = Company.State;
+            Payer.Address.District = Company.District;
 
-                        createCustomer = true;
-                        CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);*/
+            createCustomer = true;
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
         }
         else
         {
@@ -271,7 +271,8 @@ public partial class CashReceiptViewModel : ObservableObject
 
         VoucherTransDesc = string.Empty;
         CustomerPhoneNumber = string.Empty;
-        
+        createCustomer = false;
+
     }
 
     [RelayCommand]
@@ -285,6 +286,11 @@ public partial class CashReceiptViewModel : ObservableObject
     private async Task SaveVoucherAsync()
     {
         //SetVoucherType();
+
+        if (createCustomer)
+        {
+            Payer = await _customerService.CreateCustomer(Payer);
+        }
 
         if (Voucher.GKey == 0)
         {

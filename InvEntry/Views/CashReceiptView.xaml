@@ -16,7 +16,7 @@
              d:DataContext="{d:DesignInstance Type=viewmodels:CashReceiptViewModel}"
              DataContext="{ext:DISource Type=viewmodels:CashReceiptViewModel}"
              mc:Ignorable="d" 
-             d:DesignHeight="550" d:DesignWidth="800">
+             d:DesignHeight="550" d:DesignWidth="1200">
     <dxmvvm:Interaction.Behaviors>
         <dxmvvm:KeyToCommand KeyGesture="CTRL+S" Command="{Binding SaveVoucherCommand}"/>
     </dxmvvm:Interaction.Behaviors>
@@ -40,11 +40,11 @@
                    GlyphAlignment="Top"
                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
                     GlyphSize="Large" Command="{Binding SaveVoucherCommand}"/>
-                <dxb:BarButtonItem x:Name="btnPrint" 
+            <!--    <dxb:BarButtonItem x:Name="btnPrint" 
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                    GlyphSize="Large" Alignment="Far"
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
-                                   Command="{Binding VoucherPrintCommand}" />
+                                   Command="{Binding VoucherPrintCommand}" /> -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxlc:LayoutControl Grid.Row="1" Width="400">
@@ -58,44 +58,7 @@
                         <dxe:TextEdit Height="42"  FontSize="16" IsReadOnly="True"
                             CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Customer Mobile" FontSize="14" Margin="5">
-                        <dxe:ComboBoxEdit Height="42" FontWeight="ExtraBold"  
-                                          EditValue="{Binding CustomerPhoneNumber}">
-                        </dxe:ComboBoxEdit>
-                    </dxlc:LayoutItem>
-
-                    <dxlc:LayoutGroup>
-                        <dxlc:LayoutItem Label="Mobile" LabelPosition="Top" HorizontalAlignment="Left">
-                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
-                                <dxmvvm:Interaction.Behaviors>
-                                    <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
-                                                           PassEventArgsToCommand="True"/>
-                                    <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
-                                                           CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
-                                </dxmvvm:Interaction.Behaviors>
-                            </dxe:TextEdit>
-                        </dxlc:LayoutItem>
-                        <dxlc:LayoutGroup HorizontalAlignment="Left">
-                            <dxlc:LayoutItem Label="Name" LabelPosition="Top">
-                                <dxe:TextEdit EditValue="{Binding Payer.CustomerName}" 
-                                                      IsReadOnly="{Binding CustomerReadOnly}"
-                                                      Name="CustomerNameUI"
-                                                  CharacterCasing="Upper">
-                                    <dxmvvm:Interaction.Behaviors>
-                                        <behavior:FocusTextEditBehavior />
-                                    </dxmvvm:Interaction.Behaviors>
-                                </dxe:TextEdit>
-                            </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Address" LabelPosition="Top">
-                                <dxe:TextEdit EditValue="{Binding Payer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
-                                                  CharacterCasing="Upper"/>
-                            </dxlc:LayoutItem>
-                        </dxlc:LayoutGroup>
-                        
-                        </dxlc:LayoutGroup>
-
-
-                        <dxlc:LayoutItem Label="Date  "  FontSize="14" Margin="5">
+                    <dxlc:LayoutItem Label="Date  "  FontSize="14" Margin="5">
                         <dxe:DateEdit Height="42" IsReadOnly="False" ShowBorder="False"
                                 EditValue="{Binding Voucher.VoucherDate}" >
                             <dxe:DateEdit.StyleSettings>
@@ -103,12 +66,34 @@
                             </dxe:DateEdit.StyleSettings>
                         </dxe:DateEdit>
                     </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Mobile" FontSize="14" Margin="5">
+                        <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
+                            <dxmvvm:Interaction.Behaviors>
+                                <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
+                                                           PassEventArgsToCommand="True"/>
+                                <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
+                                                           CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
+                            </dxmvvm:Interaction.Behaviors>
+                        </dxe:TextEdit>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Name" FontSize="14" Margin="5">
+                         <dxe:TextEdit EditValue="{Binding Payer.CustomerName}" IsReadOnly="{Binding CustomerReadOnly}"
+                                                      Name="CustomerNameUI"  CharacterCasing="Upper">
+                             <dxmvvm:Interaction.Behaviors>
+                                 <behavior:FocusTextEditBehavior />
+                             </dxmvvm:Interaction.Behaviors>
+                         </dxe:TextEdit>
+                    </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Address" FontSize="14" Margin="5">
+                        <dxe:TextEdit EditValue="{Binding Payer.LedgerName}" IsReadOnly="{Binding CustomerReadOnly}"
+                                                  CharacterCasing="Upper"/>
+                    </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Amount" Margin="5">
                         <dxe:TextEdit Height="42" FontSize="16"
                                 EditValue="{Binding Voucher.TransAmount}" MaskType="Numeric"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Notes" Margin="5">
-                        <dxe:TextEdit Height="80" FontSize="16"
+                    <dxlc:LayoutItem Label="Notes" Margin="5" >
+                        <dxe:TextEdit Height="80" FontSize="16" VerticalAlignment="Top"
                                 EditValue="{Binding VoucherTransDesc}" AcceptsReturn="True" EditValuePostMode="Immediate">
                             <!--<dxmvvm:Interaction.Behaviors>
                                 <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>
