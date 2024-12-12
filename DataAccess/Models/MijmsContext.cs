@@ -79,6 +79,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<ProductTransaction> ProductTransactions { get; set; }
 
+    public virtual DbSet<ProductTransactionSummary> ProductTransactionSummaries { get; set; }
+
     public virtual DbSet<ProductView> ProductViews { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
@@ -1618,19 +1620,19 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.AddressLine1)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("address_line1");
+                .HasColumnName("ADDRESS_LINE1");
             entity.Property(e => e.AddressLine2)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("address_line2");
+                .HasColumnName("ADDRESS_LINE2");
             entity.Property(e => e.Area)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("area");
+                .HasColumnName("AREA");
             entity.Property(e => e.City)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("city");
+                .HasColumnName("CITY");
             entity.Property(e => e.CompanyName)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -1638,11 +1640,11 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Country)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("country");
+                .HasColumnName("COUNTRY");
             entity.Property(e => e.District)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("district");
+                .HasColumnName("DISTRICT");
             entity.Property(e => e.GstCode)
                 .HasMaxLength(3)
                 .IsUnicode(false)
@@ -1650,16 +1652,16 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.GstNbr)
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .HasColumnName("gst_nbr");
+                .HasColumnName("GST_NBR");
             entity.Property(e => e.PanNbr)
                 .HasMaxLength(15)
                 .IsUnicode(false)
-                .HasColumnName("pan_nbr");
+                .HasColumnName("PAN_NBR");
             entity.Property(e => e.State)
                 .HasMaxLength(255)
                 .IsUnicode(false)
-                .HasColumnName("state");
-            entity.Property(e => e.ThisCompany).HasColumnName("this_company");
+                .HasColumnName("STATE");
+            entity.Property(e => e.ThisCompany).HasColumnName("THIS_COMPANY");
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -2016,6 +2018,64 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("VOUCHER_TYPE");
+        });
+
+        modelBuilder.Entity<ProductTransactionSummary>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("PRODUCT_TRANSACTION_SUMMARY");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.ClosingGrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("CLOSING_GROSS_WEIGHT");
+            entity.Property(e => e.ClosingNetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("CLOSING_NET_WEIGHT");
+            entity.Property(e => e.ClosingQty).HasColumnName("CLOSING_QTY");
+            entity.Property(e => e.ClosingStoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("CLOSING_STONE_WEIGHT");
+            entity.Property(e => e.OpeningGrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("OPENING_GROSS_WEIGHT");
+            entity.Property(e => e.OpeningNetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("OPENING_NET_WEIGHT");
+            entity.Property(e => e.OpeningQty).HasColumnName("OPENING_QTY");
+            entity.Property(e => e.OpeningStoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("OPENING_STONE_WEIGHT");
+            entity.Property(e => e.ProductCategory)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_CATEGORY");
+            entity.Property(e => e.ProductSku)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_SKU");
+            entity.Property(e => e.StockInGrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STOCK_IN_GROSS_WEIGHT");
+            entity.Property(e => e.StockInNetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STOCK_IN_NET_WEIGHT");
+            entity.Property(e => e.StockInQty).HasColumnName("STOCK_IN_QTY");
+            entity.Property(e => e.StockInStoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STOCK_IN_STONE_WEIGHT");
+            entity.Property(e => e.StockOutGrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STOCK_OUT_GROSS_WEIGHT");
+            entity.Property(e => e.StockOutNetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STOCK_OUT_NET_WEIGHT");
+            entity.Property(e => e.StockOutQty).HasColumnName("STOCK_OUT_QTY");
+            entity.Property(e => e.StockOutStoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STOCK_OUT_STONE_WEIGHT");
+            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
         });
 
         modelBuilder.Entity<ProductView>(entity =>

@@ -685,14 +685,16 @@ public partial class InvoiceViewModel : ObservableObject
 
         ProductTransaction productTransaction = new();
 
-        //Get previous record closing balance to set this record opening - if not found set opening to zero
-        var productTrans = await _productTransactionService.GetLastProductTransactionBySku(line.ProductSku);
+        //Get previous record closing balance to set this record opening balance - if not found set opening to zero
+       // var productTrans = await _productTransactionService.GetLastProductTransactionBySku(line.ProductSku);
+        var productTrans = await _productTransactionService.GetLastProductTransactionByCategory(line.ProdCategory);
         if (productTrans != null)
         {
-            productTransaction.OpeningGrossWeight = productTrans.ClosingGrossWeight;
-            productTransaction.OpeningStoneWeight = productTrans.ClosingStoneWeight;
-            productTransaction.OpeningNetWeight = productTrans.ClosingNetWeight;
+            productTransaction.OpeningGrossWeight   = productTrans.ClosingGrossWeight;
+            productTransaction.OpeningStoneWeight   = productTrans.ClosingStoneWeight;
+            productTransaction.OpeningNetWeight     = productTrans.ClosingNetWeight;
 
+            productTransaction.ObQty                = productTrans.CbQty.GetValueOrDefault();
         }
         else
         {
@@ -712,9 +714,9 @@ public partial class InvoiceViewModel : ObservableObject
         productTransaction.DocumentType = "Sales Invoice";
         productTransaction.VoucherType = "Sales";
 
-        productTransaction.ObQty = 0;
-        productTransaction.TransactionQty = line.ProdQty;
-        productTransaction.CbQty = productTransaction.ObQty - line.ProdQty;
+
+        productTransaction.TransactionQty = line.ProdQty.GetValueOrDefault();
+        productTransaction.CbQty = productTransaction.ObQty.GetValueOrDefault() - line.ProdQty.GetValueOrDefault();
 
         productTransaction.TransactionGrossWeight = line.ProdGrossWeight;
         productTransaction.TransactionStoneWeight = line.ProdStoneWeight;
