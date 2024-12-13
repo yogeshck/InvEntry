@@ -9,9 +9,13 @@ namespace InvEntry.Utils.Options;
 
 public partial class DateSearchOption : ObservableObject
 {
-        [ObservableProperty]
-        private DateTime _From;
+    [ObservableProperty]
+    private DateTime _From;
 
-        [ObservableProperty]
-        private DateTime _To;
+    [ObservableProperty]
+    private DateTime _To;
+
+    [ObservableProperty]
+    private string? _Filter1;
+
 }

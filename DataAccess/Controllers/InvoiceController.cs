@@ -61,7 +61,8 @@ namespace DataAccess.Controllers
 
             DocumentPrefixFormat = voucherType.DocNbrPrefix;
 
-            value.InvNbr = string.Format("{0}{1}",DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
+            value.InvNbr = string.Format("{0}{1}",DocumentPrefixFormat, 
+                            voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
 
             _invoiceHeaderRepository.Add(value);
             return value;

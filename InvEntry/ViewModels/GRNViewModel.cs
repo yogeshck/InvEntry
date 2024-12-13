@@ -13,6 +13,7 @@ using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Store;
 using InvEntry.Utils;
+using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,9 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private ObservableCollection<string> _supplierReferencesList;
 
+        [ObservableProperty]
+        private DateSearchOption _searchOption;
+
         /*        [ObservableProperty]
                 private ObservableCollection<GrnLine> selectedRows;*/
 
@@ -47,6 +51,7 @@ namespace InvEntry.ViewModels
         private readonly IProductCategoryService _productCategoryService;
         private readonly IProductService _productService;
         private readonly IProductTransactionService _productTransactionService;
+        private readonly IProductTransactionSummaryService _productTransactionSummaryService;
         private readonly IProductStockSummaryService _productStockSummaryService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
@@ -58,19 +63,21 @@ namespace InvEntry.ViewModels
         //private readonly IDialogService _reportDialogService;
         //private readonly ICustomerService _customerService;
 
-        public GRNViewModel(IGrnService                 grnService,
-                            IProductService             productService ,
-                            IProductStockSummaryService productStockSummaryService,
-                            IProductTransactionService  productTransactionService,
-                            IDialogService              dialogService,
-                            IProductCategoryService     productCategoryService,
-                            IMessageBoxService          messageBoxService ,
-                            IMtblReferencesService      mtblReferencesService)
+        public GRNViewModel(IGrnService                         grnService,
+                            IProductService                     productService ,
+                            IProductStockSummaryService         productStockSummaryService,
+                            IProductTransactionService          productTransactionService,
+                            IProductTransactionSummaryService   productTransactionSummaryService,
+                            IDialogService                      dialogService,
+                            IProductCategoryService             productCategoryService,
+                            IMessageBoxService                  messageBoxService ,
+                            IMtblReferencesService              mtblReferencesService)
         {
             _grnService = grnService;
             _productService = productService;
             _productStockSummaryService = productStockSummaryService;
             _productTransactionService = productTransactionService;
+            _productTransactionSummaryService = productTransactionSummaryService;
             _dialogService = dialogService;
             _productCategoryService = productCategoryService;
             _messageBoxService = messageBoxService;
@@ -286,8 +293,92 @@ namespace InvEntry.ViewModels
             productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight + productStockSummary.NetWeight;
 
             await _productTransactionService.CreateProductTransaction(productTransaction);
+
+            createProductTransactionSummary(productTransaction);
         }
 
+        private async void createProductTransactionSummary(ProductTransaction productTransaction)
+        {
+
+            ProductTransactionSummary productTransSumry = new();
+
+            SearchOption = new();
+            SearchOption.To = DateTime.Today;
+            SearchOption.From = DateTime.Today;
+            SearchOption.Filter1 ??= productTransaction.ProductCategory;
+
+            var prodTransSumry = await _productTransactionSummaryService.GetAll(SearchOption);
+
+            productTransSumry = prodTransSumry.FirstOrDefault();
+
+            if (productTransSumry is not null)
+            {
+                // then add up with the existing total
+
+                productTransSumry.StockInQty = productTransSumry.StockInQty.GetValueOrDefault() + productTransaction.TransactionQty;
+                productTransSumry.ClosingQty = productTransSumry.ClosingQty.GetValueOrDefault() + productTransaction.TransactionQty;
+
+                productTransSumry.StockInGrossWeight = productTransSumry.StockInGrossWeight.GetValueOrDefault()
+                                                                        + productTransaction.TransactionGrossWeight;
+                productTransSumry.StockInStoneWeight = productTransSumry.StockOutStoneWeight.GetValueOrDefault()
+                                                                        + productTransaction.TransactionStoneWeight;
+                productTransSumry.StockInNetWeight = productTransSumry.StockInNetWeight.GetValueOrDefault()
+                                                                        + productTransaction.TransactionNetWeight;
+
+                productTransSumry.ClosingGrossWeight = productTransSumry.ClosingGrossWeight.GetValueOrDefault()
+                                                                    + productTransaction.TransactionGrossWeight;
+                productTransSumry.ClosingStoneWeight = productTransSumry.ClosingStoneWeight.GetValueOrDefault()
+                                                                    + productTransaction.TransactionStoneWeight;
+                productTransSumry.ClosingNetWeight = productTransSumry.ClosingNetWeight.GetValueOrDefault()
+                                                                    + productTransaction.TransactionNetWeight;
+
+                await _productTransactionSummaryService.UpdateProductTransactionSummary(productTransSumry);
+            }
+            else
+            {
+                //create new record for the day if not found for todays 
+                //get the last transaction of specific category to get opening balance
+                ProductTransactionSummary prodTransSumryPrevious = new();
+
+                productTransSumry = new();
+
+                var prodTransSumryPrev = await _productTransactionSummaryService
+                                                            .GetLastProductTranSumryByCategory(productTransaction.ProductCategory);
+                if (prodTransSumryPrev != null)
+                    prodTransSumryPrevious = prodTransSumryPrev;
+
+                productTransSumry.TransactionDate = DateTime.Now;
+                productTransSumry.ProductCategory = productTransaction.ProductCategory;
+                productTransSumry.ProductSku = productTransaction.ProductSku;
+
+
+                productTransSumry.StockInGrossWeight = productTransaction.TransactionGrossWeight;
+                productTransSumry.StockInStoneWeight = productTransaction.TransactionStoneWeight;
+                productTransSumry.StockInNetWeight = productTransaction.TransactionNetWeight;
+
+                productTransSumry.StockOutGrossWeight = 0;
+                productTransSumry.StockOutStoneWeight = 0;
+                productTransSumry.StockOutNetWeight = 0;
+
+                //Opening
+                productTransSumry.OpeningQty = (prodTransSumryPrevious.ClosingQty ?? 0);
+                productTransSumry.StockInQty = productTransaction.TransactionQty;
+                productTransSumry.StockOutQty = 0;
+                productTransSumry.ClosingQty = productTransSumry.OpeningQty.GetValueOrDefault()
+                                                            + productTransaction.TransactionQty.GetValueOrDefault();
+
+                productTransSumry.OpeningGrossWeight = (prodTransSumryPrevious.ClosingGrossWeight ?? 0);
+                productTransSumry.OpeningStoneWeight = (prodTransSumryPrevious.ClosingStoneWeight ?? 0);
+                productTransSumry.OpeningNetWeight = (prodTransSumryPrevious.ClosingNetWeight ?? 0);
+
+                productTransSumry.ClosingGrossWeight = (productTransSumry.OpeningGrossWeight ?? 0) + productTransaction.TransactionGrossWeight;
+                productTransSumry.ClosingStoneWeight = (productTransSumry.OpeningStoneWeight ?? 0) + productTransaction.TransactionStoneWeight;
+                productTransSumry.ClosingNetWeight = (productTransSumry.OpeningNetWeight ?? 0) + productTransaction.TransactionNetWeight;
+
+                await _productTransactionSummaryService.CreateProductTransactionSummary(productTransSumry);
+            }
+
+        }
         private async void ProcessStockSummary(IEnumerable<GrnLineSummary> grnLineSummary)
         {
 

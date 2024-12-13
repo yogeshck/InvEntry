@@ -112,7 +112,7 @@ namespace InvEntry.ViewModels
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Saving..."));
 
-            var savedRates = await _mijmsApiService.Post<IEnumerable<DailyRate>>("api/dailyrate/save", TodayDailyMetalRate.Where(x => x.GKey == 0));
+            var savedRates = await _mijmsApiService.PostList<DailyRate>("api/dailyrate/save", TodayDailyMetalRate.Where(x => x.GKey == 0));
 
             if (savedRates is null) return;
 

@@ -1,4 +1,5 @@
 ﻿using DevExpress.CodeParser.Diagnostics;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,15 +13,15 @@ namespace InvEntry.Services;
 
 public interface IMijmsApiService
 {
-    Task<T> Get<T>(string url) where T : class;
-    Task<IEnumerable<T>> GetEnumerable<T>(string url) where T : class;
-    Task<T> Post<T>(string url, T data) where T : class;
-    Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : class;
-    Task Put<T>(string url, T data) where T : class;
-    Task Put<T>(string url, IEnumerable<T> data) where T : class;
+    Task<T> Get<T>(string url) where T : BaseEntity;
+    Task<IEnumerable<T>> GetEnumerable<T>(string url) where T : BaseEntity;
+    Task<T> Post<T>(string url, T data) where T : BaseEntity;
+    Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : BaseEntity;
+    Task Put<T>(string url, T data) where T : BaseEntity;
+    Task Put<T>(string url, IEnumerable<T> data) where T : BaseEntity;
 
     Task<IEnumerable<TResult>> PostEnumerable<TResult, TBody>(string url, TBody data)
-        where TResult : class;
+        where TResult : BaseEntity;
 }
 
 public class MijmsApiService : IMijmsApiService
@@ -32,7 +33,7 @@ public class MijmsApiService : IMijmsApiService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<T> Get<T>(string url) where T : class
+    public async Task<T> Get<T>(string url) where T : BaseEntity
     {
         try
         {
@@ -48,7 +49,8 @@ public class MijmsApiService : IMijmsApiService
 
                 return content;
             }
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Serilog.Log.Error(ex, "Error while get on {url}", url);
         }
@@ -56,7 +58,7 @@ public class MijmsApiService : IMijmsApiService
         return default;
     }
 
-    public async Task<IEnumerable<T>> GetEnumerable<T>(string url) where T : class
+    public async Task<IEnumerable<T>> GetEnumerable<T>(string url) where T : BaseEntity
     {
         try
         {
@@ -79,13 +81,15 @@ public class MijmsApiService : IMijmsApiService
         return default;
     }
 
-    public async Task<T> Post<T>(string url, T data) where T : class
+    public async Task<T> Post<T>(string url, T data) where T : BaseEntity
     {
         try
         {
             var httpClient = _httpClientFactory.CreateClient("mijms");
 
             var completeUrl = $"{httpClient.BaseAddress}{url}";
+
+            EnrichWhoColumns(data, isInit: true);
 
             var httpResponse = await httpClient.PostAsJsonAsync<T>(completeUrl, data);
 
@@ -103,8 +107,8 @@ public class MijmsApiService : IMijmsApiService
         }
     }
 
-    public async Task<IEnumerable<TResult>> PostEnumerable<TResult, TBody>(string url, TBody data) 
-        where TResult : class
+    public async Task<IEnumerable<TResult>> PostEnumerable<TResult, TBody>(string url, TBody data)
+        where TResult : BaseEntity
     {
         try
         {
@@ -128,13 +132,15 @@ public class MijmsApiService : IMijmsApiService
         }
     }
 
-    public async Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : class
+    public async Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : BaseEntity
     {
         try
         {
             var httpClient = _httpClientFactory.CreateClient("mijms");
 
             var completeUrl = $"{httpClient.BaseAddress}{url}";
+
+            EnrichWhoColumns(data, isInit: true);
 
             var httpResponse = await httpClient.PostAsJsonAsync(completeUrl, data);
 
@@ -152,13 +158,15 @@ public class MijmsApiService : IMijmsApiService
         }
     }
 
-    public async Task Put<T>(string url, T data) where T : class
+    public async Task Put<T>(string url, T data) where T : BaseEntity
     {
         try
         {
             var httpClient = _httpClientFactory.CreateClient("mijms");
 
             var completeUrl = $"{httpClient.BaseAddress}{url}";
+
+            EnrichWhoColumns(data, isInit: false);
 
             var httpResponse = await httpClient.PutAsJsonAsync(completeUrl, data);
 
@@ -173,13 +181,15 @@ public class MijmsApiService : IMijmsApiService
         }
     }
 
-    public async Task Put<T>(string url, IEnumerable<T> data) where T : class
+    public async Task Put<T>(string url, IEnumerable<T> data) where T : BaseEntity
     {
         try
         {
             var httpClient = _httpClientFactory.CreateClient("mijms");
 
             var completeUrl = $"{httpClient.BaseAddress}{url}";
+
+            EnrichWhoColumns(data, isInit: false);
 
             var httpResponse = await httpClient.PutAsJsonAsync(completeUrl, data);
 
@@ -192,5 +202,27 @@ public class MijmsApiService : IMijmsApiService
         {
             Serilog.Log.Error(ex, "Error while get on {url}", url);
         }
+    }
+
+    private void EnrichWhoColumns<T>(T data, bool isInit=false) where T : BaseEntity
+    {
+        if (isInit)
+        {
+            data.CreatedBy = "System";
+            data.CreatedOn = DateTime.Now;
+        }
+
+        data.ModifiedBy = "System";
+        data.ModifiedOn = DateTime.Now;
+
+    }
+
+    private void EnrichWhoColumns<T>(IEnumerable<T> datas, bool isInit = false) where T : BaseEntity
+    {
+        foreach (var item in datas)
+        {
+            EnrichWhoColumns(item, isInit);
+        }
+
     }
 }

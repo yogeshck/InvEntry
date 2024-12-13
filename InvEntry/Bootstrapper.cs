@@ -143,6 +143,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .AddSingleton<IProductViewService, ProductViewService>()
                  .AddSingleton<IProductTransactionService, ProductTransactionService>()
+                 .AddSingleton<IProductTransactionSummaryService, ProductTransactionSummaryService>()
                  .AddMockService()
                  .ConfigureFormulas()
                  .AddTallyService()

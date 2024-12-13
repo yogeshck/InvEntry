@@ -15,7 +15,6 @@ namespace InvEntry.Services
 
         Task<ProductTransaction> GetLastProductTransactionBySku(string lastTransaction);
 
-
         Task<ProductTransaction> GetLastProductTransactionByCategory(string lastTransaction);
 
         Task<ProductTransaction> GetByCategory(string category);
