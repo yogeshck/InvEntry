@@ -70,16 +70,23 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductTransactionController>
         [HttpPost]
-        public void Post([FromBody] ProductTransaction value)
+        public IActionResult Post([FromBody] ProductTransaction value)
         {
            _productTransaction.Add(value);
+
+            return Ok(value);
+
         }
+
 
         // PUT api/<ProductTransactionController>/5
         [HttpPut("{transGkey}")]
-        public void Put(int transactionGkey, [FromBody] ProductTransaction value)
+        public IActionResult Put(int transactionGkey, [FromBody] ProductTransaction value)
         {
            _productTransaction.Update(value);
+
+            return Ok(value);
+
         }
 
         // DELETE api/<ProductTransactionController>/5

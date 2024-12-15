@@ -91,9 +91,10 @@ namespace DataAccess.Controllers
 
         // PUT api/<VoucherController>/5
         [HttpPut]
-        public void Put([FromBody] Voucher value)
+        public IActionResult Put([FromBody] Voucher value)
         {
             _voucher.Update(value);
+            return Ok(value);
         }
 
         // DELETE api/<VoucherController>/5

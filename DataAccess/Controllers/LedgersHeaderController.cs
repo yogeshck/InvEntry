@@ -34,18 +34,21 @@ namespace DataAccess.Controllers
 
         // POST api/<MtblLedgerController>
         [HttpPost]
-        public LedgersHeader Post([FromBody] LedgersHeader value)
+        public IActionResult Post([FromBody] LedgersHeader value)
         {
             _ledgersHeaderRepository.Add(value);
-            return value;
+            return Ok(value);
         }
 
         // PUT api/<MtblLedgerController>/5
         [HttpPut("{gkey}")]
-        public void Put(int gkey, [FromBody] LedgersHeader value)
+        public IActionResult Put(int gkey, [FromBody] LedgersHeader value)
         {
             value.Gkey = gkey;
             _ledgersHeaderRepository.Update(value);
+
+            return Ok(value);
+
         }
 
     }

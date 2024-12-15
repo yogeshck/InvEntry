@@ -34,16 +34,19 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public void Post([FromBody] ProductCategory value)
+        public IActionResult Post([FromBody] ProductCategory value)
         {
              _productCategory.Add(value);
+
+            return Ok(value);
         }
 
         // PUT api/<ProductStockController>/5
         [HttpPut("{productGkey}")]
-        public void Put(decimal productGkey, [FromBody] ProductCategory value)
+        public IActionResult Put(decimal productGkey, [FromBody] ProductCategory value)
         {
             _productCategory.Update(value);
+            return Ok(value);
         }
 
         // DELETE api/<ProductStockController>/5

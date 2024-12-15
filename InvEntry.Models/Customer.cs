@@ -20,59 +20,54 @@ namespace InvEntry.Models
         private OrgAddress address;
 
         [ObservableProperty]
-        private string clientId;
+        private string _clientId;
 
         [ObservableProperty]
-        private string mobileNbr;
+        public string? _customerName;
 
         [ObservableProperty]
-        private string customerName;
+        public string? _customerType;
 
         [ObservableProperty]
-        private string email;
+        public string? _mobileNbr;
 
         [ObservableProperty]
-        private string ledgerName;
+        public string? _gstinNbr;
 
         [ObservableProperty]
-        private string gstStateCode;
+        public string? _ledgerName;
 
         [ObservableProperty]
-        private string customerType;
+        public string? _notes;
 
         [ObservableProperty]
-        private string gstinNbr; 
+        public string? _panNbr;
 
         [ObservableProperty]
-        private string notes; 
+        public string? _status;
 
         [ObservableProperty]
-        private string panNbr; 
+        public string? _creditAvailed;
 
         [ObservableProperty]
-        private string status; 
+        public int? _locationGkey;
 
         [ObservableProperty]
-        private string creditAvailed; 
+        public bool? _deleteFlag;
 
         [ObservableProperty]
-        private int? locationGkey; 
+        public int? _tenantGkey;
 
         [ObservableProperty]
-        private bool? deleteFlag; 
+        public int? _addressGkey;
 
         [ObservableProperty]
-        private int? tenantGkey;
+        public DateTime? _customerSince;
 
         [ObservableProperty]
-        private int? addressGkey;
+        public string? _salutations;
 
         [ObservableProperty]
-        private DateTime? customerSince; 
-
-        [ObservableProperty]
-        private string? salutations;
-
-
+        public string? _gstStateCode;
     }
 }

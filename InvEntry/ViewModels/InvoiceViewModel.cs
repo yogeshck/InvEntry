@@ -697,17 +697,20 @@ public partial class InvoiceViewModel : ObservableObject
         var productTrans = await _productTransactionService.GetLastProductTransactionByCategory(line.ProdCategory);
         if (productTrans != null)
         {
-            productTransaction.OpeningGrossWeight   = productTrans.ClosingGrossWeight;
-            productTransaction.OpeningStoneWeight   = productTrans.ClosingStoneWeight;
-            productTransaction.OpeningNetWeight     = productTrans.ClosingNetWeight;
+            productTransaction.OpeningGrossWeight = productTrans.ClosingGrossWeight.GetValueOrDefault();
+            productTransaction.OpeningStoneWeight = productTrans.ClosingStoneWeight.GetValueOrDefault();
+            productTransaction.OpeningNetWeight = productTrans.ClosingNetWeight.GetValueOrDefault();
 
             productTransaction.ObQty                = productTrans.CbQty.GetValueOrDefault();
+
         }
         else
         {
             productTransaction.OpeningGrossWeight = 0;
             productTransaction.OpeningStoneWeight = 0;
             productTransaction.OpeningNetWeight = 0;
+
+
         }
 
         productTransaction.ProductSku = line.ProductSku;
@@ -725,13 +728,16 @@ public partial class InvoiceViewModel : ObservableObject
         productTransaction.TransactionQty = line.ProdQty.GetValueOrDefault();
         productTransaction.CbQty = productTransaction.ObQty.GetValueOrDefault() - line.ProdQty.GetValueOrDefault();
 
-        productTransaction.TransactionGrossWeight = line.ProdGrossWeight;
-        productTransaction.TransactionStoneWeight = line.ProdStoneWeight;
-        productTransaction.TransactionNetWeight   = line.ProdNetWeight;
+        productTransaction.TransactionGrossWeight = line.ProdGrossWeight.GetValueOrDefault();
+        productTransaction.TransactionStoneWeight = line.ProdStoneWeight.GetValueOrDefault();
+        productTransaction.TransactionNetWeight = line.ProdNetWeight.GetValueOrDefault();
 
-        productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight - line.ProdGrossWeight;
-        productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight - line.ProdStoneWeight;
-        productTransaction.ClosingNetWeight   = productTransaction.OpeningNetWeight   - line.ProdNetWeight;
+        productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight.GetValueOrDefault()
+                                                        - line.ProdGrossWeight.GetValueOrDefault();
+        productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight.GetValueOrDefault()
+                                                        - line.ProdStoneWeight.GetValueOrDefault();
+        productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight.GetValueOrDefault()
+                                                        - line.ProdNetWeight.GetValueOrDefault();
 
         await _productTransactionService.CreateProductTransaction(productTransaction);
 
@@ -753,26 +759,28 @@ public partial class InvoiceViewModel : ObservableObject
 
         productTransSumry = prodTransSumry.FirstOrDefault();
 
-        if (productTransSumry is not null)
+        if (productTransSumry != null)
         {
             // then add up with the existing total
 
-            productTransSumry.StockOutQty = productTransSumry.StockOutQty.GetValueOrDefault() + productTransaction.TransactionQty;
-            productTransSumry.ClosingQty = productTransSumry.ClosingQty.GetValueOrDefault() - productTransaction.TransactionQty;
+            productTransSumry.StockOutQty = productTransSumry.StockOutQty.GetValueOrDefault() 
+                                                + productTransaction.TransactionQty.GetValueOrDefault();
+            productTransSumry.ClosingQty = productTransSumry.ClosingQty.GetValueOrDefault() 
+                                                - productTransaction.TransactionQty.GetValueOrDefault();
 
             productTransSumry.StockOutGrossWeight = productTransSumry.StockOutGrossWeight.GetValueOrDefault() 
-                                                                    + productTransaction.TransactionGrossWeight;
+                                                                    + productTransaction.TransactionGrossWeight.GetValueOrDefault();
             productTransSumry.StockOutStoneWeight = productTransSumry.StockOutStoneWeight.GetValueOrDefault()
-                                                                    + productTransaction.TransactionStoneWeight;
+                                                                    + productTransaction.TransactionStoneWeight.GetValueOrDefault();
             productTransSumry.StockOutNetWeight = productTransSumry.StockOutNetWeight.GetValueOrDefault() 
-                                                                    + productTransaction.TransactionNetWeight;
+                                                                    + productTransaction.TransactionNetWeight.GetValueOrDefault();
 
             productTransSumry.ClosingGrossWeight = productTransSumry.ClosingGrossWeight.GetValueOrDefault()
-                                                                - productTransaction.TransactionGrossWeight;
+                                                                - productTransaction.TransactionGrossWeight.GetValueOrDefault();
             productTransSumry.ClosingStoneWeight = productTransSumry.ClosingStoneWeight.GetValueOrDefault()
-                                                                - productTransaction.TransactionStoneWeight;
+                                                                - productTransaction.TransactionStoneWeight.GetValueOrDefault();
             productTransSumry.ClosingNetWeight = productTransSumry.ClosingNetWeight.GetValueOrDefault()
-                                                                - productTransaction.TransactionNetWeight;
+                                                                - productTransaction.TransactionNetWeight.GetValueOrDefault();
 
             await _productTransactionSummaryService.UpdateProductTransactionSummary(productTransSumry);
         }

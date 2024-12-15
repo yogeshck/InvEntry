@@ -27,17 +27,18 @@ namespace DataAccess.Controllers
 
         // POST api/<MtblLedgerController>
         [HttpPost]
-        public LedgersTransaction Post([FromBody] LedgersTransaction value)
+        public IActionResult Post([FromBody] LedgersTransaction value)
         {
             _ledgersTransactionRepository.Add(value);
-            return value;
+            return Ok(value);
         }
 
         // PUT api/<MtblLedgerController>/5
         [HttpPut]
-        public void Put([FromBody] LedgersTransaction value)
+        public IActionResult Put([FromBody] LedgersTransaction value)
         {
             _ledgersTransactionRepository.Update(value);
+            return Ok(value);
         }
     }
 }

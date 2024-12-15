@@ -23,6 +23,15 @@ namespace DataAccess.Controllers
             return _repository.Get(x => x.Gkey == id);
         }
 
+
+/*        // POST api/<AddressController>
+        [HttpPost("address")]
+        public IActionResult Post([FromBody] OrgAddress value)
+        {
+            _repository.Add(value);
+            return Ok(value);
+        }*/
+
         // PUT api/<AddressController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] OrgAddress value)

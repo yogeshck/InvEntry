@@ -33,17 +33,18 @@ namespace DataAccess.Controllers
 
         // POST api/<MtblLedgerController>
         [HttpPost]
-        public MtblLedger Post([FromBody] MtblLedger value)
+        public IActionResult Post([FromBody] MtblLedger value)
         {
             _mtblLedgerRepository.Add(value);
-            return value;
+            return Ok(value);
         }
 
         // PUT api/<MtblLedgerController>/5
         [HttpPut]
-        public void Put([FromBody] MtblLedger value)
+        public IActionResult Put([FromBody] MtblLedger value)
         {
             _mtblLedgerRepository.Update(value);
+            return Ok(value);
         }
 
     }

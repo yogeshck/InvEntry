@@ -50,16 +50,19 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockSummaryController>
         [HttpPost]
-        public void Post([FromBody] ProductStockSummary value)
+        public IActionResult Post([FromBody] ProductStockSummary value)
         {
             _productStockSummary.Add(value);
+
+            return Ok(value);
         }
 
         // PUT api/<ProductStockSummaryController>/5
         [HttpPut("{productGkey}")]
-        public void Put(int productGkey, [FromBody] ProductStockSummary value)
+        public IActionResult Put(int productGkey, [FromBody] ProductStockSummary value)
         {
             _productStockSummary.Update(value);
+            return Ok(value);
         }
 
         // DELETE api/<ProductStockSummaryController>/5
