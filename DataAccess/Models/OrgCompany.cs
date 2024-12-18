@@ -33,7 +33,7 @@ public partial class OrgCompany
 
     public DateTime? ModifiedOn { get; set; }
 
-    public long TenantGkey { get; set; }
+    public int TenantGkey { get; set; }
 
     public string? Tagline { get; set; }
 
@@ -46,4 +46,10 @@ public partial class OrgCompany
     public string? GstNbr { get; set; }
 
     public bool? ThisCompany { get; set; }
+
+    public string? ContactNbr1 { get; set; }
+
+    public string? ContactNbr2 { get; set; }
+
+    public string? EmailId { get; set; }
 }

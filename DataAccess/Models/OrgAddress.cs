@@ -21,7 +21,7 @@ public partial class OrgAddress
 
     public string? Country { get; set; }
 
-    public decimal? TenantGkey { get; set; }
+    public int? TenantGkey { get; set; }
 
     public string? CreatedBy { get; set; }
 
@@ -34,4 +34,6 @@ public partial class OrgAddress
     public string? Area { get; set; }
 
     public string? GstStateCode { get; set; }
+
+    public int? Pincode { get; set; }
 }

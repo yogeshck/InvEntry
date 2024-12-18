@@ -20,6 +20,9 @@ namespace InvEntry.Models
         private string? _addressLine2;
 
         [ObservableProperty]
+        private string? _addressLine3;
+
+        [ObservableProperty]
         private string? _area;
 
         [ObservableProperty]
@@ -38,6 +41,9 @@ namespace InvEntry.Models
         private string? _city;
 
         [ObservableProperty]
+        private int? _pincode;
+
+        [ObservableProperty]
         private string? _panNbr;
 
         [ObservableProperty]
@@ -45,7 +51,25 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private bool _thisCompany;
-    }
 
+        [ObservableProperty]
+        public string? _contactNbr1;
+
+        [ObservableProperty]
+        public string? _contactNbr2;
+
+        [ObservableProperty]
+        public string? _emailId;
+
+        [ObservableProperty]
+        public int _tenantGkey;
+
+        [ObservableProperty]
+        public string? _Tagline;
+
+        [ObservableProperty]
+        public string? _ServiceTaxNbr;
+
+    }
 
 }

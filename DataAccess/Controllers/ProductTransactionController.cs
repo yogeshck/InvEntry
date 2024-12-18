@@ -48,7 +48,7 @@ namespace DataAccess.Controllers
         public async Task<IActionResult> GetLastByProductSku(string productSku)
         {
 
-            var productTrans = _productTransaction.GetList(x => x.ProductSku == productSku)
+            var productTrans = _productTransaction.GetList(x => x != null && x.ProductSku == productSku)
                                                                .OrderByDescending(x => x.Gkey)
                                                                .FirstOrDefault();
 
@@ -59,10 +59,10 @@ namespace DataAccess.Controllers
         [HttpGet("lastTransaction/Category/{productCategory}")]
         public async Task<IActionResult> GetLastByProductCategory(string productCategory)
         {
-
-           var productTrans = _productTransaction.GetList(x => x.ProductCategory == productCategory)
+          // if null appplication crashes, hence added null check
+           var productTrans = _productTransaction.GetList(x => x != null && x.ProductCategory == productCategory )
                                                                 .OrderByDescending(x => x.Gkey)
-                                                                .First();
+                                                                .FirstOrDefault();
 
            return Ok(productTrans);
         

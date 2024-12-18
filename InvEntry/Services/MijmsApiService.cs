@@ -47,6 +47,9 @@ public class MijmsApiService : IMijmsApiService
             {
                 var content = await httpResponse.Content.ReadFromJsonAsync<T>();
 
+                if (content is null)
+                    return default;
+
                 return content;
             }
         }

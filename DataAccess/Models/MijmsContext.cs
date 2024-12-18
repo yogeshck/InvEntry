@@ -1218,13 +1218,12 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ModifiedOn)
                 .HasPrecision(6)
                 .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.Pincode).HasColumnName("PINCODE");
             entity.Property(e => e.State)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("STATE");
-            entity.Property(e => e.TenantGkey)
-                .HasColumnType("decimal(19, 0)")
-                .HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
         });
 
         modelBuilder.Entity<OrgBankDetail>(entity =>
@@ -1295,6 +1294,14 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("CIN_NBR");
+            entity.Property(e => e.ContactNbr1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CONTACT_NBR1");
+            entity.Property(e => e.ContactNbr2)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CONTACT_NBR2");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(30)
                 .IsUnicode(false)
@@ -1304,6 +1311,10 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("CREATED_ON");
             entity.Property(e => e.DeleteFlag).HasColumnName("DELETE_FLAG");
             entity.Property(e => e.DraftId).HasColumnName("DRAFT_ID");
+            entity.Property(e => e.EmailId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EMAIL_ID");
             entity.Property(e => e.GstNbr)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -1625,6 +1636,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("ADDRESS_LINE2");
+            entity.Property(e => e.AddressLine3)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("ADDRESS_LINE3");
             entity.Property(e => e.Area)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -1637,6 +1652,14 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("company_name");
+            entity.Property(e => e.ContactNbr1)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CONTACT_NBR1");
+            entity.Property(e => e.ContactNbr2)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CONTACT_NBR2");
             entity.Property(e => e.Country)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -1645,6 +1668,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("DISTRICT");
+            entity.Property(e => e.EmailId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EMAIL_ID");
             entity.Property(e => e.GstCode)
                 .HasMaxLength(3)
                 .IsUnicode(false)
@@ -1657,10 +1684,20 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false)
                 .HasColumnName("PAN_NBR");
+            entity.Property(e => e.Pincode).HasColumnName("PINCODE");
+            entity.Property(e => e.ServiceTaxNbr)
+                .HasMaxLength(15)
+                .IsUnicode(false)
+                .HasColumnName("SERVICE_TAX_NBR");
             entity.Property(e => e.State)
                 .HasMaxLength(255)
                 .IsUnicode(false)
                 .HasColumnName("STATE");
+            entity.Property(e => e.Tagline)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("TAGLINE");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
             entity.Property(e => e.ThisCompany).HasColumnName("THIS_COMPANY");
         });
 
