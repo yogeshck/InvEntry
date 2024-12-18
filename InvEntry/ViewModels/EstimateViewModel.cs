@@ -63,6 +63,9 @@ public partial class EstimateViewModel: ObservableObject
     private ObservableCollection<string> metalList;
 
     [ObservableProperty]
+    private ObservableCollection<string> stkTrfrList;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
@@ -70,11 +73,12 @@ public partial class EstimateViewModel: ObservableObject
 
     public ICommand ShowWindowCommand { get; set; }
 
-    private bool createCustomer = false;
-    private bool estBalanceChk = false;
+    private bool createCustomer  = false;
+    private bool estBalanceChk   = false;
+    private bool isStockTransfer = false;
 
     private readonly ICustomerService _customerService;
-    private readonly IProductService _productService;
+    private readonly IProductViewService _productViewService;
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
@@ -82,6 +86,8 @@ public partial class EstimateViewModel: ObservableObject
     private readonly IEstimateService _estimateService;
     private readonly IProductCategoryService _productCategoryService;
     private readonly IMtblReferencesService _mtblReferencesService;
+    private readonly IProductStockSummaryService _productStockSummaryService;
+    private readonly IProductTransactionService _productTransactionService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
@@ -95,10 +101,12 @@ public partial class EstimateViewModel: ObservableObject
     };
 
     public EstimateViewModel(ICustomerService customerService,
-        IProductService productService,
+        IProductViewService productViewService,
         IDialogService dialogService,
         IEstimateService estimateService,
-        IProductCategoryService productCategoryService,
+        IProductCategoryService productCategoryService, 
+        IProductStockSummaryService productStockSummaryService,
+        IProductTransactionService productTransactionService,
         IMessageBoxService messageBoxService,
         IMtblReferencesService mtblReferencesService,
         SettingsPageViewModel settingsPageViewModel,
@@ -110,7 +118,7 @@ public partial class EstimateViewModel: ObservableObject
 
         SetHeader();
         _customerService = customerService;
-        _productService = productService;
+        _productViewService = productViewService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _estimateService = estimateService;
@@ -118,6 +126,8 @@ public partial class EstimateViewModel: ObservableObject
         _reportDialogService = reportDialogService;
         _reportFactoryService = reportFactoryService;
         _mtblReferencesService = mtblReferencesService;
+        _productStockSummaryService = productStockSummaryService;
+        _productTransactionService = productTransactionService;
 
         selectedRows = new();
         _customerReadOnly = false;
@@ -131,6 +141,8 @@ public partial class EstimateViewModel: ObservableObject
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
+        PopulateStockTransfer();
+
     }
 
     private async void PopulateProductCategoryList()
@@ -160,6 +172,12 @@ public partial class EstimateViewModel: ObservableObject
     {
         var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
         MetalList = new(metalRefList.Select(x => x.RefValue));
+    }
+
+    private async void PopulateStockTransfer()
+    {
+        var stkTrfrRefList = await _mtblReferencesService.GetReferenceList("STOCK_TRANSFER");
+        StkTrfrList = new(stkTrfrRefList.Select(x => x.RefValue));
     }
 
     private async void PopulateMtblRefNameList()
@@ -266,6 +284,14 @@ public partial class EstimateViewModel: ObservableObject
         }
 
         Header.CustMobile = phoneNumber;
+
+        //to effect stock update though it is just estimate - being used for stock transfer to other branches
+        foreach (var item in StkTrfrList)
+        {
+            if (item is not null && item == phoneNumber)
+                isStockTransfer = true;
+        }
+
     }
 
     [RelayCommand]
@@ -277,7 +303,7 @@ public partial class EstimateViewModel: ObservableObject
 
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-        var product = await _productService.GetProduct(ProductIdUI);
+        var product = await _productViewService.GetProduct(ProductIdUI);
 
         // await Task.Delay(30000);
 
@@ -402,6 +428,9 @@ public partial class EstimateViewModel: ObservableObject
             // loop for validation check for customer
             await _estimateService.CreateEstimateLine(Header.Lines);
 
+            if (isStockTransfer)
+                await ProcessProductTransaction(Header.Lines);
+
             //   await ProcessOldMetalTransaction();
 
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
@@ -415,6 +444,82 @@ public partial class EstimateViewModel: ObservableObject
             PrintEstimateCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
+        }
+    }
+
+    private async Task ProcessProductTransaction(IEnumerable<EstimateLine> estLines)
+    {
+        foreach (var line in estLines)
+        {
+
+            await ProductStockSummaryUpdate(line);
+
+            //await ProductStockUpdate(line);  //Put in on-hold for time being - till we introduce barcode
+
+            //await CreateProductTransaction(line);
+        }
+    }
+
+    //Consolidated stock line in product stock summary - stock qty / weight has to be reduced based on invoiced qty
+    //this logic would be revisited/changed once product sku - barcode feature introduced
+    //WARN :- Ensure all product category must have one record in table
+    private async Task ProductStockSummaryUpdate(EstimateLine estline)
+    {
+        ProductTransaction productTransaction = new();
+
+        var productSumryStk = await _productStockSummaryService.GetByProductGkey(estline.ProductGkey);
+
+        if (productSumryStk is not null)
+        {
+            //Set Product Transaction
+            productTransaction.OpeningGrossWeight = productSumryStk.GrossWeight.GetValueOrDefault();
+            productTransaction.OpeningStoneWeight = productSumryStk.StoneWeight.GetValueOrDefault();
+            productTransaction.OpeningNetWeight = productSumryStk.NetWeight.GetValueOrDefault();
+
+            productTransaction.ObQty = productSumryStk.StockQty.GetValueOrDefault();
+
+            //productTransaction.ProductSku = estline.ProductSku;
+            productTransaction.RefGkey = estline.GKey;
+            productTransaction.TransactionDate = DateTime.Now;
+            productTransaction.ProductCategory = estline.ProdCategory;
+
+            productTransaction.TransactionType = "Issue";
+            productTransaction.DocumentNbr = estline.EstimateId;
+            productTransaction.DocumentDate = DateTime.Now;
+            productTransaction.DocumentType = "Stock Transfer";
+            productTransaction.VoucherType = "Stock Transfer";
+            productTransaction.TransactionQty = estline.ProdQty;
+            productTransaction.CbQty = productTransaction.ObQty.GetValueOrDefault() - estline.ProdQty;
+
+            productTransaction.TransactionGrossWeight = estline.ProdGrossWeight.GetValueOrDefault();
+            productTransaction.TransactionStoneWeight = estline.ProdStoneWeight.GetValueOrDefault();
+            productTransaction.TransactionNetWeight = estline.ProdNetWeight.GetValueOrDefault();
+
+            productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight.GetValueOrDefault()
+                                                            - estline.ProdGrossWeight.GetValueOrDefault();
+            productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight.GetValueOrDefault()
+                                                            - estline.ProdStoneWeight.GetValueOrDefault();
+            productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight.GetValueOrDefault()
+                                                            - estline.ProdNetWeight.GetValueOrDefault();
+
+            //Set Product Stock Summary
+            productSumryStk.GrossWeight = (productSumryStk.GrossWeight ?? 0) - estline.ProdGrossWeight;
+            productSumryStk.StoneWeight = (productSumryStk.StoneWeight ?? 0) - estline.ProdStoneWeight;
+            productSumryStk.NetWeight = (productSumryStk.NetWeight ?? 0) - estline.ProdNetWeight;
+            productSumryStk.SuppliedGrossWeight = (productSumryStk.SuppliedGrossWeight ?? 0) - estline.ProdGrossWeight;
+            //productSumryStk.AdjustedWeight = (productSumryStk.AdjustedWeight ?? 0);
+            productSumryStk.SoldWeight = (productSumryStk.SoldWeight ?? 0) + estline.ProdNetWeight;
+            productSumryStk.BalanceWeight = (productSumryStk.BalanceWeight ?? 0) - estline.ProdNetWeight;
+            //productSumryStk.SuppliedQty = (productSumryStk.SuppliedQty ?? 0) + x.SuppliedQty;
+            productSumryStk.SoldQty = (productSumryStk.SoldQty ?? 0) + estline.ProdQty;
+            productSumryStk.StockQty = (productSumryStk.StockQty ?? 0) - estline.ProdQty;
+            //productSumryStk.AdjustedQty = (productSumryStk.AdjustedQty ?? 0);
+
+            await _productStockSummaryService.UpdateProductStockSummary(productSumryStk);
+
+            productTransaction = await _productTransactionService.CreateProductTransaction(productTransaction);
+
+            //await CreateProductTransaction(line, productSumryStk);
         }
     }
 

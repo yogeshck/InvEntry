@@ -27,24 +27,32 @@ public partial class VoucherEntryViewModel: ObservableObject
     private ObservableCollection<string> transactionTypeList;
 
     [ObservableProperty]
+    private ObservableCollection<string> accountGroupList;
+
+    [ObservableProperty]
     private string _voucherTransDesc;
 
     private bool createVoucher = false;
 
     //private readonly IReportFactoryService _reportFactoryService;
     private readonly IVoucherService _voucherService;
+    private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IMessageBoxService _messageBoxService;
 
     public VoucherEntryViewModel(
             IVoucherService voucherService,
+            IMtblLedgersService mtblLedgersService,
             IMessageBoxService messageBoxService)
     {
         CashVoucherTypeList = new();
         transactionTypeList = new();
+
         _voucherService = voucherService;
+        _mtblLedgersService = mtblLedgersService;
         _messageBoxService = messageBoxService;
         
         PopulateReferenceList();
+        PopulateAccountrGroupList();
         ResetVoucher();
     }
 
@@ -57,6 +65,13 @@ public partial class VoucherEntryViewModel: ObservableObject
         TransactionTypeList.Add("Receipt");
 
     }
+
+    private async void PopulateAccountrGroupList()
+    {
+        var list = await _mtblLedgersService.GetLedgerList("Indirect Expenses");
+        AccountGroupList = new(list.Select(x => x.LedgerName));
+    }
+
 
     private void SetVoucher()
     {

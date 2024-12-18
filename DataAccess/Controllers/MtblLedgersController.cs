@@ -31,6 +31,14 @@ namespace DataAccess.Controllers
             return _mtblLedgerRepository.Get(x => x.LedgerAccountCode == lAccountCode);
         }
 
+        // GET: api/<MtblLedgerController>
+        [HttpGet("accountGroup/{accGroupName}")]
+        public IEnumerable<MtblLedger> Get(string accGroupName)
+        {
+            return _mtblLedgerRepository.GetList(x => x.AccountGroupName == accGroupName);
+        }
+
+
         // POST api/<MtblLedgerController>
         [HttpPost]
         public IActionResult Post([FromBody] MtblLedger value)

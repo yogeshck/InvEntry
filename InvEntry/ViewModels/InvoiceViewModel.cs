@@ -106,7 +106,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IProductStockService _productStockService;
     private readonly IProductStockSummaryService _productStockSummaryService;
     private readonly IProductTransactionService _productTransactionService;
-    private readonly IProductTransactionSummaryService _productTransactionSummaryService;
+    //private readonly IProductTransactionSummaryService _productTransactionSummaryService;
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
@@ -137,7 +137,7 @@ public partial class InvoiceViewModel : ObservableObject
         IProductStockService productStockService,
         IProductStockSummaryService productStockSummaryService,
         IProductTransactionService productTransactionService,
-        IProductTransactionSummaryService productTransactionSummaryService,
+        //IProductTransactionSummaryService productTransactionSummaryService,
         IDialogService dialogService,
         IInvoiceService invoiceService,
         ILedgerService ledgerService,
@@ -160,7 +160,7 @@ public partial class InvoiceViewModel : ObservableObject
         _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
         _productTransactionService = productTransactionService;
-        _productTransactionSummaryService = productTransactionSummaryService;
+        //_productTransactionSummaryService = productTransactionSummaryService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;

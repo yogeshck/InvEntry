@@ -10,6 +10,8 @@ namespace InvEntry.Services
     public interface IMtblLedgersService
     {
         Task<MtblLedger> GetLedger(int lAccountCode);
+
+        Task<IEnumerable<MtblLedger>> GetLedgerList(string accGroupName);
     }
 
     public class MtblLedgersService : IMtblLedgersService
@@ -26,5 +28,12 @@ namespace InvEntry.Services
         {
             return await _mijmsApiService.Get<MtblLedger>($"api/MtblLedgers/{lAccountCode}");
         }
+
+        public async Task<IEnumerable<MtblLedger>> GetLedgerList(string accGroupName)
+        {
+            return await _mijmsApiService.GetEnumerable<MtblLedger>($"api/MtblLedgers/accountGroup/{accGroupName}");
+        }
+
+
     }
 }

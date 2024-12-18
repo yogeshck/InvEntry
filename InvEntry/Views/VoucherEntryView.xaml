@@ -69,6 +69,11 @@
                                           EditValue="{Binding Voucher.TransType}">
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Account" FontSize="14" Margin="5">
+                        <dxe:ComboBoxEdit Height="42" FontWeight="ExtraBold" ItemsSource="{Binding AccountGroupList}" 
+                                          EditValue="{Binding Voucher.TransType}">
+                        </dxe:ComboBoxEdit>
+                    </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Number" FontSize="14" Margin="5">
                         <dxe:TextEdit Height="42"  FontSize="16"
                             CharacterCasing="Upper" EditValue="{Binding Voucher.VoucherNbr}"/>

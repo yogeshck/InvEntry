@@ -24,13 +24,13 @@ namespace DataAccess.Controllers
         }
 
 
-/*        // POST api/<AddressController>
+        // POST api/<AddressController>
         [HttpPost("address")]
         public IActionResult Post([FromBody] OrgAddress value)
         {
             _repository.Add(value);
             return Ok(value);
-        }*/
+        }
 
         // PUT api/<AddressController>/5
         [HttpPut("{id}")]
