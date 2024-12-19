@@ -35,7 +35,7 @@ namespace InvEntry
         static App()
         {
             ApplicationThemeHelper.Preload(PreloadCategories.Controls);
-            ApplicationThemeHelper.ApplicationThemeName = Theme.Win11System.Name;
+            ApplicationThemeHelper.ApplicationThemeName = Theme.Office2019DarkGray.Name; // Win11System.Name;
         }
 
         protected override void OnStartup(StartupEventArgs e)
