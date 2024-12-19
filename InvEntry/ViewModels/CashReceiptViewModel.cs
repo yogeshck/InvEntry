@@ -294,7 +294,7 @@ public partial class CashReceiptViewModel : ObservableObject
 
         if (Voucher.GKey == 0)
         {
-            var voucher = await _voucherService.CreatVoucher(Voucher);
+            var voucher = await _voucherService.CreateVoucher(Voucher);
 
             ProcessLedger();   // (voucher);
 

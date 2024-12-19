@@ -13,7 +13,7 @@ public interface IVoucherService
 {
     Task<Voucher> GetVoucher(string voucherId);
 
-    Task<Voucher> CreatVoucher(Voucher voucher);
+    Task<Voucher> CreateVoucher(Voucher voucher);
 
     Task<IEnumerable<Voucher>> GetAll(VoucherSearchOption options);
 
@@ -30,7 +30,7 @@ public class VoucherService : IVoucherService
         _mijmsApiService = mijmsApiService;
     }
 
-    public async Task<Voucher> CreatVoucher(Voucher voucher)
+    public async Task<Voucher> CreateVoucher(Voucher voucher)
     {
         return await _mijmsApiService.Post($"api/Voucher/", voucher);
     }

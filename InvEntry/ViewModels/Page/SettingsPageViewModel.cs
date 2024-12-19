@@ -31,6 +31,9 @@ namespace InvEntry.ViewModels
         private DailyRate _Gold22C;
 
         [ObservableProperty]
+        private DailyRate _Gold18KT;
+
+        [ObservableProperty]
         private DailyRate _Silver;
 
         [ObservableProperty]
@@ -46,6 +49,15 @@ namespace InvEntry.ViewModels
                 Metal = "GOLD",
                 Purity = "916",
                 Carat = "22 C",
+                EffectiveDate = DateTime.Now.Date,
+                IsDisplay = true
+            };
+
+            _Gold18KT = new DailyRate()
+            {
+                Metal = "GOLD.18KT",
+                Purity = "750",
+                Carat = "18 KT",
                 EffectiveDate = DateTime.Now.Date,
                 IsDisplay = true
             };
@@ -164,6 +176,11 @@ namespace InvEntry.ViewModels
             else
                 Gold22C = TodayDailyMetalRate.First(x => IsSame(x, Gold22C));
 
+            if (!TodayDailyMetalRate.Any(x => IsSame(x, Gold18KT)))
+                TodayDailyMetalRate.Add(Gold18KT);
+            else
+                Gold18KT = TodayDailyMetalRate.First(x => IsSame(x, Gold18KT));
+
             if (!TodayDailyMetalRate.Any(x => IsSame(x, Silver)))
                 TodayDailyMetalRate.Add(Silver);
             else
@@ -187,8 +204,9 @@ namespace InvEntry.ViewModels
             var date = DateTime.Now.Date;
 
             return Gold22C.EffectiveDate.Date == date && Gold22C.Price.HasValue
-                && Silver.EffectiveDate.Date == date && Silver.Price.HasValue;
-                //&& Diamond.EffectiveDate.Date == date && Diamond.Price.HasValue;
+                    && Gold18KT.EffectiveDate.Date == date && Gold18KT.Price.HasValue
+                    && Silver.EffectiveDate.Date == date && Silver.Price.HasValue
+                    && Diamond.EffectiveDate.Date == date && Diamond.Price.HasValue;
         }
 
         public decimal? GetPrice(MetalType metalType)
@@ -196,6 +214,7 @@ namespace InvEntry.ViewModels
             return metalType switch
             {
                 MetalType.Gold => Gold22C.Price,
+                MetalType.Gold18KT => Gold18KT.Price,
                 MetalType.Silver => Silver.Price,
                 MetalType.Diamond => Diamond.Price,
                 _ => 0M
@@ -207,6 +226,7 @@ namespace InvEntry.ViewModels
             return metalType switch
             {
                 var s when s.Equals("GOLD", StringComparison.OrdinalIgnoreCase) => Gold22C.Price,
+                var s when s.Equals("GOLD.18KT", StringComparison.OrdinalIgnoreCase) => Gold18KT.Price,
                 var s when s.Equals("Silver", StringComparison.OrdinalIgnoreCase) => Silver.Price,
                 var s when s.Equals("Diamond", StringComparison.OrdinalIgnoreCase) => Diamond.Price,
                 _ => 0M

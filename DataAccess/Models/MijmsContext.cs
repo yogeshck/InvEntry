@@ -2216,7 +2216,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("ref_doc_nbr");
             entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
-            entity.Property(e => e.ToKedgerGkey).HasColumnName("to_kedger_gkey");
+            entity.Property(e => e.ToLedgerGkey).HasColumnName("to_ledger_gkey");
             entity.Property(e => e.TransAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("trans_amount");

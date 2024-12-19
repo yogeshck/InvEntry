@@ -10,43 +10,43 @@ namespace InvEntry.Models
     public partial class VoucherType : BaseEntity
     {
         [ObservableProperty]
-        public string? _DocumentType;
+        public string? _documentType;
 
         [ObservableProperty]
-        public string? _Abbreviation;
+        public string? _abbreviation;
 
         [ObservableProperty]
-        private int? _MtblVoucherTypeGkey;
+        private int? _mtblVoucherTypeGkey;
 
         [ObservableProperty]
-        public int? _LastUsedNumber;
+        public int? _lastUsedNumber;
 
         [ObservableProperty]
-        public bool? _IsTaxable;
+        public bool? _isTaxable;
 
         [ObservableProperty]
-        public string? _Narration;
+        public string? _narration;
 
         [ObservableProperty]
-        public string? _DocNbrMethod;
+        public string? _docNbrMethod;
 
         [ObservableProperty]
-        public int? _DocNbrLength;
+        public int? _docNbrLength;
 
         [ObservableProperty]
-        public string? _DocNbrPrefill;
+        public string? _docNbrPrefill;
 
         [ObservableProperty]
-        public string? _DocNbrPrefix;
+        public string? _docNbrPrefix;
 
         [ObservableProperty]
-        public string? _DocNbrSuffix;
+        public string? _docNbrSuffix;
 
         [ObservableProperty]
-        public bool? _IsActive;
+        public bool? _isActive;
 
         [ObservableProperty]
-        public string? _UsedFor;
+        public string? _usedFor;
     }
 
 }

@@ -12,63 +12,63 @@ namespace InvEntry.Models
     {
 
         [ObservableProperty]
-        private int? _SeqNbr ;
+        private int? _seqNbr ;
 
         [ObservableProperty]
-        private int? _CustomerGkey;
+        private int? _customerGkey;
 
         [ObservableProperty]
-        private string? _TransType;
+        private string? _transType;
 
         [ObservableProperty]
-        private string? _VoucherType;
+        private string? _voucherType;
 
         [ObservableProperty]
-        private string? _Mode;
+        private string? _mode;
 
         [ObservableProperty]
-        private decimal? _TransAmount;
+        private decimal? _transAmount;
 
         [ObservableProperty]
-        private string? _VoucherNbr;
+        private string? _voucherNbr;
 
         [ObservableProperty]
-        private DateTime? _VoucherDate;
+        private DateTime? _voucherDate;
 
         [ObservableProperty]
-        private long? _RefDocGkey;
+        private long? _refDocGkey;
 
         [ObservableProperty]
-        private string? _RefDocNbr;
+        private string? _refDocNbr;
 
         [ObservableProperty]
-        private DateTime? _RefDocDate;
+        private DateTime? _refDocDate;
 
         [ObservableProperty]
-        private string? _TransDesc;
+        private string? _transDesc;
 
         [ObservableProperty]
-        private DateTime? _TransDate;
+        private DateTime? _transDate;
 
         [ObservableProperty]
-        private int? _FromLedgerGkey;
+        private int? _fromLedgerGkey;
 
         [ObservableProperty]
-        private int? _ToKedgerGkey;
+        private int? _toLedgerGkey;
 
         [ObservableProperty]
-        private decimal? _ObAmount;
+        private decimal? _obAmount;
 
         [ObservableProperty]
-        private decimal? _CbAmount;
+        private decimal? _cbAmount;
 
         [ObservableProperty]
-        private int? _FundTransferMode;
+        private int? _fundTransferMode;
 
         [ObservableProperty]
-        private int? _FundTransferRefGkey;
+        private int? _fundTransferRefGkey;
 
         [ObservableProperty]
-        private DateTime? _FundTransferDate;
+        private DateTime? _fundTransferDate;
     }
 }

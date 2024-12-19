@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.CodeParser;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
@@ -17,6 +18,7 @@ namespace InvEntry.ViewModels;
 
 public partial class VoucherEntryViewModel: ObservableObject
 {
+
     [ObservableProperty]
     private Voucher _voucher;
 
@@ -30,7 +32,13 @@ public partial class VoucherEntryViewModel: ObservableObject
     private ObservableCollection<string> accountGroupList;
 
     [ObservableProperty]
+    private ObservableCollection<MtblLedger> masterLedgerList;
+
+    [ObservableProperty]
     private string _voucherTransDesc;
+
+    [ObservableProperty]
+    private string _fromLedgerName;
 
     private bool createVoucher = false;
 
@@ -68,8 +76,14 @@ public partial class VoucherEntryViewModel: ObservableObject
 
     private async void PopulateAccountrGroupList()
     {
-        var list = await _mtblLedgersService.GetLedgerList("Indirect Expenses");
-        AccountGroupList = new(list.Select(x => x.LedgerName));
+        var masterLedgerList = await _mtblLedgersService.GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic
+
+        if (masterLedgerList is not null)
+        {
+            MasterLedgerList = new(masterLedgerList); 
+            AccountGroupList = new(MasterLedgerList.Select(x => x.LedgerName));
+        }
+
     }
 
 
@@ -145,7 +159,13 @@ public partial class VoucherEntryViewModel: ObservableObject
 
         if (Voucher.GKey == 0)
         {
-            var voucher = await _voucherService.CreatVoucher(Voucher);
+
+            Voucher.FromLedgerGkey =   (int)MasterLedgerList
+                                        .Where(x => x.LedgerName == FromLedgerName)
+                                        .Select( x => x.GKey)
+                                        .Min();
+
+            var voucher = await _voucherService.CreateVoucher(Voucher);
 
             if (voucher != null)
             {

@@ -280,7 +280,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}", (item, val) => item.InvlTaxableAmount = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.ProdNetWeight)}", (item, val) => item.ProdNetWeight = val);
-        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlGrossAmt)}", (item, val) => item.InvlGrossAmt = val);
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlGrossAmt)}", 
+                        (item, val) => item.InvlGrossAmt = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.VaAmount)}", (item, val) => item.VaAmount = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlCgstAmount)}", (item, val) => item.InvlCgstAmount = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlSgstAmount)}", (item, val) => item.InvlSgstAmount = val);
@@ -325,7 +326,8 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-    private ProductView? ProductStockSelection()
+    //might be introduced when SKU implmeneted
+/*    private ProductView? ProductStockSelection()
     {
      
         var vm = DISource.Resolve<InvoiceProductSelectionViewModel>();
@@ -339,7 +341,7 @@ public partial class InvoiceViewModel : ObservableObject
             return vm.SelectedProduct; 
         } 
         return null;
-    }
+    }*/
 
     [RelayCommand]
     private async Task FetchCustomer(EditValueChangedEventArgs args)
@@ -443,7 +445,7 @@ public partial class InvoiceViewModel : ObservableObject
             TaxType = "GST"
         };
 
-        invoiceLine.SetProductDetails(productStk);    
+        invoiceLine.SetProductDetails(productStk);
 
         EvaluateFormula(invoiceLine, isInit: true);
 
@@ -1307,7 +1309,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (voucher.GKey == 0)
         {
-            var voucherResult = await _voucherService.CreatVoucher(voucher);
+            var voucherResult = await _voucherService.CreateVoucher(voucher);
 
             if (voucherResult != null)
             {

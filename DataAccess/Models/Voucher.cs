@@ -35,7 +35,7 @@ public partial class Voucher
 
     public int? FromLedgerGkey { get; set; }
 
-    public int? ToKedgerGkey { get; set; }
+    public int? ToLedgerGkey { get; set; }
 
     public decimal? ObAmount { get; set; }
 
