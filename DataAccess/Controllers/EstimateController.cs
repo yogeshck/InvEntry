@@ -36,7 +36,7 @@ namespace DataAccess.Controllers
 
         // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
         [HttpPost("filter")]
-        public IEnumerable<EstimateHeader> FilterHeader([FromBody] EstimateSearchOption criteria)
+        public IEnumerable<EstimateHeader> FilterHeader([FromBody] DateSearchOption criteria)
         {
             return _estimateHeaderRepository.GetList(x => x.EstDate.HasValue && x.EstDate.Value.Date >= criteria.From.Date &&
                                                         x.EstDate.Value.Date <= criteria.To.Date);

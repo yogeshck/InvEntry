@@ -148,6 +148,7 @@ public sealed class Bootstrapper
                  .ConfigureFormulas()
                  .AddTallyService()
                  .AddSingleton<VoucherEntryViewModel>()
+                 .AddSingleton<EstimateListViewModel>()
                  .AddSingleton<InvoiceListViewModel>()
                  .AddSingleton<InvoiceProductSelectionViewModel>()   
                  .AddSingleton<InvoiceViewModel>()

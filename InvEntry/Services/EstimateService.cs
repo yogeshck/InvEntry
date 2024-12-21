@@ -16,7 +16,7 @@ namespace InvEntry.Services
 
         Task UpdateHeader(EstimateHeader estHdr);
 
-        Task<IEnumerable<EstimateHeader>> GetAll(EstimateSearchOption options);
+        Task<IEnumerable<EstimateHeader>> GetAll(DateSearchOption options);
 
         Task CreateEstimateLine(EstimateLine line);
 
@@ -62,10 +62,10 @@ namespace InvEntry.Services
             await Task.WhenAll(list);
         }
 
-        public async Task<IEnumerable<EstimateHeader>> GetAll(EstimateSearchOption options)
+        public async Task<IEnumerable<EstimateHeader>> GetAll(DateSearchOption options)
         {
 
-            return await _mijmsApiService.PostEnumerable<EstimateHeader, EstimateSearchOption>($"api/estimate/filter", options);
+            return await _mijmsApiService.PostEnumerable<EstimateHeader, DateSearchOption>($"api/estimate/filter", options);
 
 
         }
