@@ -3,6 +3,7 @@ using DevExpress.DataAccess.Sql;
 using DevExpress.XtraGauges.Core.Model;
 using DevExpress.XtraReports.Native;
 using DevExpress.XtraReports.UI;
+using InvEntry.Services;
 using Microsoft.Extensions.Configuration;
 using mijmsReports;
 using System;
@@ -38,10 +39,13 @@ public interface IReportFactoryService
 public class ReportFactoryService : IReportFactoryService
 {
     private readonly string _connectionString;
+    private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
 
-    public ReportFactoryService(IConfiguration configuration) 
+    public ReportFactoryService(IConfiguration configuration,
+                                IOrgThisCompanyViewService orgThisCompanyViewService) 
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _orgThisCompanyViewService = orgThisCompanyViewService;
     }
 
     public XtraReport CreateInvoiceReport()
@@ -74,9 +78,18 @@ public class ReportFactoryService : IReportFactoryService
     {
         var report = CreateEstimateReport();
 
+        setReportParametersAsync(report);
+
         report.Parameters["paramEstNbr"].Value = pEstimateNbr;
         report.CreateDocument();
         return report;
+    }
+
+    private async Task setReportParametersAsync(XtraReport report)
+    {
+        var orgThisCompany = await _orgThisCompanyViewService.GetOrgThisCompany();
+        report.Parameters["pCompanyName"].Value = orgThisCompany.CompanyName;
+
     }
 
     public async Task CreateEstimateReportPdf(string pEstimateNbr, string filePath)

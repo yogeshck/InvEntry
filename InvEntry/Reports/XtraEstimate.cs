@@ -6,7 +6,7 @@ using System.Drawing;
 using InvEntry.Utils;
 using System.Globalization;
 
-namespace mijmsReports
+namespace InvEntry.Reports
 {
     public partial class XtraEstimate : DevExpress.XtraReports.UI.XtraReport
     {
