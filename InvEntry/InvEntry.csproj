@@ -20,6 +20,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="DevExpress.DataAccess.UI" Version="24.2.3" />
     <PackageReference Include="DevExpress.Images" Version="24.2.3" />
 	<PackageReference Include="DevExpress.Wpf" Version="24.2.3" />
     <PackageReference Include="DevExpress.Wpf.Core" Version="24.2.3" />

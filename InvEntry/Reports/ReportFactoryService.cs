@@ -89,6 +89,15 @@ public class ReportFactoryService : IReportFactoryService
     {
         var orgThisCompany = await _orgThisCompanyViewService.GetOrgThisCompany();
         report.Parameters["pCompanyName"].Value = orgThisCompany.CompanyName;
+        report.Parameters["pTagLine"].Value = orgThisCompany.Tagline;
+        report.Parameters["pAddressLine1"].Value = orgThisCompany.AddressLine1;
+        report.Parameters["pContactNbr1"].Value = orgThisCompany.ContactNbr1;
+        report.Parameters["pContactNbr2"].Value = orgThisCompany.ContactNbr2;
+        report.Parameters["pArea"].Value = orgThisCompany.Area;
+        report.Parameters["pDistrict"].Value = orgThisCompany.District;
+        report.Parameters["pState"].Value = orgThisCompany.State;
+        report.Parameters["pEmailId"].Value = orgThisCompany.EmailId;
+        report.Parameters["pShopLicNbr"].Value = orgThisCompany.ServiceTaxNbr;
 
     }
 
