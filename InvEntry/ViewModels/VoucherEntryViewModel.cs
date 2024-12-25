@@ -99,6 +99,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     {
         Voucher = new();
         Voucher.Mode = "Petty Cash";
+        Voucher.ToLedgerGkey = 2100;
         SetVoucher();
         VoucherTransDesc = string.Empty;
     }
@@ -107,6 +108,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     private void CreateCashVoucher()
     {
         Voucher.Mode = "Cash";
+        Voucher.ToLedgerGkey = 2000;
         SetVoucherType();
     }
 
@@ -164,6 +166,9 @@ public partial class VoucherEntryViewModel: ObservableObject
                                         .Where(x => x.LedgerName == FromLedgerName)
                                         .Select( x => x.GKey)
                                         .Min();
+
+            var toLedger = await _mtblLedgersService.GetLedger(Voucher.ToLedgerGkey);
+            Voucher.ToLedgerGkey = toLedger.GKey;
 
             var voucher = await _voucherService.CreateVoucher(Voucher);
 

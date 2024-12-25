@@ -9,7 +9,7 @@ namespace InvEntry.Services
 {
     public interface IMtblLedgersService
     {
-        Task<MtblLedger> GetLedger(int lAccountCode);
+        Task<MtblLedger> GetLedger(int? lAccountCode);
 
         Task<IEnumerable<MtblLedger>> GetLedgerList(string accGroupName);
     }
@@ -24,7 +24,7 @@ namespace InvEntry.Services
             _mijmsApiService = mijmsApiService;
         }
 
-        public async Task<MtblLedger> GetLedger(int lAccountCode)
+        public async Task<MtblLedger> GetLedger(int? lAccountCode)
         {
             return await _mijmsApiService.Get<MtblLedger>($"api/MtblLedgers/{lAccountCode}");
         }

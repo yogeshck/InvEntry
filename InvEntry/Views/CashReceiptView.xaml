@@ -66,6 +66,11 @@
                             </dxe:DateEdit.StyleSettings>
                         </dxe:DateEdit>
                     </dxlc:LayoutItem>
+                    <dxlc:LayoutItem Label="Transacion Type" FontSize="14" Margin="5">
+                        <dxe:ComboBoxEdit Height="42" FontWeight="ExtraBold" ItemsSource="{Binding FromLedgerList}" 
+                                          EditValue="{Binding SelectedLedger}">
+                        </dxe:ComboBoxEdit>
+                    </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Mobile" FontSize="14" Margin="5">
                         <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
                             <dxmvvm:Interaction.Behaviors>

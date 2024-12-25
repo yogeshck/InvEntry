@@ -52,7 +52,10 @@
                                                  Glyph="{dx:DXImage 'Images/XAF/BO_Invoice_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
                                                  Content="Estimate List View"
-                                                 Glyph="{dx:DXImage 'Office2013/Reports/InsertHeader_32x32.png'}" />                    
+                                                 Glyph="{dx:DXImage 'Office2013/Reports/InsertHeader_32x32.png'}" />
+                    <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
+                                                 Content="Stock Summary List View"
+                                                 Glyph="{dx:DXImage 'Office2013/Reports/InsertHeader_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
                                                  Content="Product Stock Entry"
                                                  Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}" />

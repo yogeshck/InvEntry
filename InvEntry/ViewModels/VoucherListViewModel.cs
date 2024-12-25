@@ -81,7 +81,7 @@ public partial class VoucherListViewModel: ObservableObject
     {
         Vouchers = new();
 
-        SearchOption.BookType = null;
+       // SearchOption.BookType = null;
 
         var vouchersResult = await _voucherService.GetAll(SearchOption);
         if (vouchersResult is not null)

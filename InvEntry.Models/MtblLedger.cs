@@ -9,8 +9,6 @@ namespace InvEntry.Models
 {
     public partial class MtblLedger : BaseEntity
     {
-        [ObservableProperty]
-        public int? _grnHdrGkey;
 
         [ObservableProperty]
         public string? _ledgerName;
