@@ -17,7 +17,7 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=viewmodels:VoucherListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:VoucherListViewModel}"
-             d:DesignHeight="450" d:DesignWidth="400" Height="900">
+             d:DesignHeight="450" d:DesignWidth="400" Height="1200">
     <Grid Width="1100" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -57,12 +57,12 @@
                 <!--Command="{Binding PrintInvoiceCommand}"/> -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="None" 
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding VouchersView}" AutoGenerateColumns="None" 
                          MinHeight="500"
                          Height="500"
                          MaxHeight="900"
                          MinWidth="800"
-                         Width="400" SelectedItem="{Binding SelectedVoucher}"
+                         Width="1200" SelectedItem="{Binding SelectedVoucher}"
                          HorizontalAlignment="Left" VerticalAlignment="Top">
 
             <dxg:GridControl.View>
@@ -75,13 +75,24 @@
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="VoucherNbr" Header="Voucher #" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="100" />
-                <dxg:GridColumn FieldName="Mode" Header="Voucher Mode" ReadOnly="True" Width="100" />                
+                <dxg:GridColumn FieldName="Mode" Header="Voucher Mode" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="TransDesc" Header="Desc" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
                 <dxg:GridColumn FieldName="TransAmount" Header="Trans. Amt" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="RecdAmount" Header="Received" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="PaidAmount" Header="Payment" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
                     </dxg:GridColumn.EditSettings>

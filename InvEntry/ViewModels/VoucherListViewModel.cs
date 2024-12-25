@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using DevExpress.XtraPivotGrid.Data;
 using System.Windows.Documents;
 using DevExpress.Mvvm.Native;
+using System.Linq;
+using DevExpress.XtraGrid.Views.Items;
 
 namespace InvEntry.ViewModels;
 
@@ -34,13 +36,25 @@ public partial class VoucherListViewModel: ObservableObject
     private ObservableCollection<Voucher> _vouchers;
 
     [ObservableProperty]
+    private ObservableCollection<VoucherView> _vouchersView;
+
+    [ObservableProperty]
     private VoucherSearchOption _searchOption;
+
+    [ObservableProperty]
+    private decimal? _recdAmount;
+
+    [ObservableProperty]
+    private decimal? _paidAmount;
 
     [ObservableProperty]
     private ObservableCollection<string> _statementTypeOptionList;
 
     [ObservableProperty]
     private Voucher _selectedVoucher;
+
+    [ObservableProperty]
+    private VoucherView _tempView;
 
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
@@ -80,13 +94,48 @@ public partial class VoucherListViewModel: ObservableObject
     private async Task RefreshVoucherAsync()
     {
         Vouchers = new();
+        VouchersView = new();
 
        // SearchOption.BookType = null;
 
         var vouchersResult = await _voucherService.GetAll(SearchOption);
         if (vouchersResult is not null)
-            Vouchers = new(vouchersResult);
-            
+        {
+            //Vouchers = new(vouchersResult);
+
+            VouchersView = new();
+
+            foreach (var voucher in vouchersResult)
+            {
+                TempView = new();
+
+                if (voucher.TransType == "Receipt")
+                {
+                    RecdAmount = voucher.TransAmount;
+                    PaidAmount = 0;
+                } 
+                else if (voucher.TransType == "Payment")
+                {
+                    PaidAmount = voucher.TransAmount;
+                    RecdAmount = 0;
+                }
+
+                TempView.RecdAmount = RecdAmount;
+                TempView.PaidAmount = PaidAmount;
+                TempView.VoucherNbr = voucher.VoucherNbr;
+                TempView.VoucherDate = voucher.VoucherDate; 
+                TempView.Mode = voucher.Mode;
+                TempView.TransAmount = voucher.TransAmount;
+                TempView.TransDesc = voucher.TransDesc;
+                TempView.RefDocNbr = voucher.RefDocNbr;
+                TempView.RefDocDate = voucher.RefDocDate;
+
+                VouchersView.Add(TempView);
+
+            }
+            //RecdAmount = (Vouchers.Select(x => x.TransType == "Receipt")).TransAmount;
+
+        }    
     }
 
     [RelayCommand] //CanExecute = nameof(CanPrintStatement))]
