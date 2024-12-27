@@ -53,7 +53,7 @@
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
                                                  Content="Estimate List View"
                                                  Glyph="{dx:DXImage 'Office2013/Reports/InsertHeader_32x32.png'}" />
-                    <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
+                    <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:ProductStockSummaryListView}"
                                                  Content="Stock Summary List View"
                                                  Glyph="{dx:DXImage 'Office2013/Reports/InsertHeader_32x32.png'}" />
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
