@@ -70,5 +70,11 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private DateTime? _fundTransferDate;
+
+        [ObservableProperty]
+        private decimal? _recdAmount;
+
+        [ObservableProperty]
+        private decimal? _paidAmount;
     }
 }

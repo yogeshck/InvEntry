@@ -1,4 +1,5 @@
 ﻿using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.Grid.Printing;
 using DevExpress.Xpf.WindowsUI;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,13 @@ namespace InvEntry.Views
         {
             InitializeComponent();
             GridControl.AllowInfiniteGridSize = true;
+        }
+
+        private void btnPrint_ItemClick(object sender, DevExpress.Xpf.Bars.ItemClickEventArgs e)
+        {
+            //PrintHelper.ShowPrintPreviewDialog(this,);
+            //VouchersTableview.ShowPrintPreviewDialog(Application.Current.MainWindow);
+            VouchersTableview.ShowRibbonPrintPreviewDialog(Application.Current.MainWindow);
         }
     }
 }

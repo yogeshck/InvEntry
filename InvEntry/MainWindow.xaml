@@ -71,14 +71,14 @@
                     <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:VoucherEntryPage}"
                              Content="Daily Expense Entry"
                              Glyph="{dx:DXImage 'Images/Business Objects/BOProductGroup_32x32.png'}" />
-                    <!--<dxwui:HamburgerSubMenu>
+                    <dxwui:HamburgerSubMenu>
                         <dxmvvm:Interaction.Behaviors>
                             <dxwui:HamburgerSubMenuThemeSelectorBehavior ShowTouchThemes="False" />
                         </dxmvvm:Interaction.Behaviors>
-                    </dxwui:HamburgerSubMenu>--> 
+                    </dxwui:HamburgerSubMenu>
                 </dxwui:HamburgerMenu.Items>
                 <dxwui:HamburgerMenu.Content>
-                    <dxwui:NavigationFrame x:Name="frame" BackNavigationMode="PreviousScreen" Width="1500"
+                    <dxwui:NavigationFrame x:Name="frame" BackNavigationMode="PreviousScreen" 
                                            AnimationDelay="0" AnimationType="None" MaxHeight="1500">
                         <dxmvvm:Interaction.Behaviors>
                             <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}" />

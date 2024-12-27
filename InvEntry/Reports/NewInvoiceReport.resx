@@ -117,20 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="customSqlQuery1.Sql" xml:space="preserve">
-    <value>select "CASH_TRANSACTION"."TRANSACTION_DATE",
-       "CASH_TRANSACTION"."LEDGER_BOOK",
-       "CASH_TRANSACTION"."LEDGER_KEY",
-       "CASH_TRANSACTION"."RECEIPTS",
-       "CASH_TRANSACTION"."OPENING_BALANCE",
-       "CASH_TRANSACTION"."PAYMENTS",
-       "CASH_TRANSACTION"."CLOSING_BALANCE"
-  from "dbo"."CASH_TRANSACTION" "CASH_TRANSACTION"
- where (("CASH_TRANSACTION"."LEDGER_BOOK" = @StmtTypeParam)
-       and (("CASH_TRANSACTION"."TRANSACTION_DATE" &gt;= @FromDtParam)
-       and ("CASH_TRANSACTION"."TRANSACTION_DATE" &lt;= @ToDtParam)))</value>
-  </data>
-  <data name="sqlDataSource1.ResultSchemaSerializable" xml:space="preserve">
-    <value>PERhdGFTZXQgTmFtZT0ic3FsRGF0YVNvdXJjZTEiPjxWaWV3IE5hbWU9IlZPVUNIRVJfMSI+PEZpZWxkIE5hbWU9IlRSQU5TQUNUSU9OX0RBVEUiIFR5cGU9IkRhdGVUaW1lIiAvPjxGaWVsZCBOYW1lPSJMRURHRVJfQk9PSyIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJMRURHRVJfS0VZIiBUeXBlPSJJbnQzMiIgLz48RmllbGQgTmFtZT0iUkVDRUlQVFMiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9Ik9QRU5JTkdfQkFMQU5DRSIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iUEFZTUVOVFMiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IkNMT1NJTkdfQkFMQU5DRSIgVHlwZT0iRGVjaW1hbCIgLz48L1ZpZXc+PC9EYXRhU2V0Pg==</value>
-  </data>
 </root>

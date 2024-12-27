@@ -1,4 +1,5 @@
 ﻿using InvEntry.Models;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,9 @@ namespace InvEntry.Services
         Task CreateProductStockSummary(ProductStockSummary productStockSummary);
    
         Task UpdateProductStockSummary(ProductStockSummary productStockSummary);
-        
+
+        Task<IEnumerable<ProductStockSummary>> GetAll();
+
     }
  
     public class ProductStockSummaryService : IProductStockSummaryService
@@ -64,7 +67,13 @@ namespace InvEntry.Services
         {
             await _mijmsApiService.Put($"api/productStockSummary/{productStockSummary.ProductGkey}", productStockSummary);
         }
-    
+
+        public async Task<IEnumerable<ProductStockSummary>> GetAll()
+        {
+            return await _mijmsApiService.GetEnumerable<ProductStockSummary>($"api/productStockSummary/");
+        }
+
     }
 
 }
+    

@@ -249,7 +249,8 @@ public partial class CashReceiptViewModel : ObservableObject
             //await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
 
             LedgerHdr.BalanceAsOn = DateTime.Now;
-            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() + Voucher.TransAmount.GetValueOrDefault();
+            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() + 
+                                            Voucher.TransAmount.GetValueOrDefault();
 
             await _ledgerService.UpdateHeader(LedgerHdr);
         }

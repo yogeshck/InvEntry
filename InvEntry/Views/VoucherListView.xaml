@@ -17,8 +17,8 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=viewmodels:VoucherListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:VoucherListViewModel}"
-             d:DesignHeight="450" d:DesignWidth="400" Height="1200">
-    <Grid Width="1100" HorizontalAlignment="Left">
+             d:DesignHeight="450" d:DesignWidth="1500" Height="1500" >
+    <Grid  HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -53,22 +53,22 @@
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                    GlyphSize="Large" Alignment="Far"
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
-                                   Command="{Binding StatementPrintCommand}" /> 
-                <!--Command="{Binding PrintInvoiceCommand}"/> -->
+                                   ItemClick="btnPrint_ItemClick" />
+                <!--Command="{Binding StatementPrintCommand}"/>   -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding VouchersView}" AutoGenerateColumns="None" 
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="None" x:Name="VouchersGrid"
                          MinHeight="500"
                          Height="500"
                          MaxHeight="900"
                          MinWidth="800"
-                         Width="1200" SelectedItem="{Binding SelectedVoucher}"
+                         Width="1500" SelectedItem="{Binding SelectedVoucher}"
                          HorizontalAlignment="Left" VerticalAlignment="Top">
 
             <dxg:GridControl.View>
-                <dxg:TableView ShowGroupPanel="False" x:Name="tableView" AllowBestFit="True"
-            EditorButtonShowMode="ShowOnlyInEditor" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowAutoFilterRow="True" 
+                <dxg:TableView ShowGroupPanel="False" AllowBestFit="True" x:Name="VouchersTableview"
+                               EditorButtonShowMode="ShowOnlyInEditor" NavigationStyle="Row" 
+                               AllowEditing="False" AllowGrouping="False" ShowAutoFilterRow="True" 
                                AutoWidth="False" ShowTotalSummary="True"/>
             </dxg:GridControl.View>
 

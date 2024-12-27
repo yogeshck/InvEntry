@@ -2,6 +2,7 @@
 using DevExpress.Utils.StructuredStorage.Internal.Reader;
 using InvEntry.Extension;
 using InvEntry.Models;
+using InvEntry.Models.Report;
 using InvEntry.Services;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ public class InvoiceDataSource
     public InvoiceHeader Header { get; set; }
     public string InvoiceNbr { get; set; }
     private readonly IInvoiceService _invoiceService;
+    public List<InvoiceReportModel> _invoiceReports;
 
     [HighlightedMember]
     public InvoiceDataSource(InvoiceHeader invoiceHeader)
@@ -42,9 +44,10 @@ public class InvoiceDataSource
 
 
     [HighlightedMember]
-    public IEnumerable<InvoiceLine> GetInvoiceLines()
+    public IEnumerable<InvoiceReportModel> GetInvoiceLines()
     {
-        return Header.Lines;
+        // return Header.Lines;
+        return _invoiceReports;
     }
 
    

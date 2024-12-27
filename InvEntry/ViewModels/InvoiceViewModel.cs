@@ -7,6 +7,7 @@ using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
+using InvEntry.Helper;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
@@ -48,8 +49,8 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private InvoiceArReceipt _invoiceArReceipt;
 
-    [ObservableProperty]
-    private LedgersHeader _ledgerHeader;
+/*    [ObservableProperty]
+    private LedgersHeader _ledgerHeader;*/
 
     [ObservableProperty]
     private string _productIdUI;
@@ -549,6 +550,8 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
     private async Task CreateInvoice()
     {
+        LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
+
         invBalanceChk = true;  //is this a right place to fix
         var isSuccess = ProcessInvBalance();
 
@@ -613,9 +616,9 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
-            if (Header.AdvanceAdj > 0)
-                ProcessAdvance();
-        
+            if ( (Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0) )
+                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);
+
             _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created", 
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
@@ -1082,11 +1085,11 @@ public partial class InvoiceViewModel : ObservableObject
         }
         if (Header.RdAmountAdj > 0)
         {
-            SetReceipts("RD");
+            SetReceipts("Recurring Deposit");
         }
     }
 
-    private async void ProcessAdvance()
+/*    private async void ProcessAdvance()
     {
         //check customer has already ledger entry
         LedgerHeader = await _ledgerService.GetHeader(MtblLedger.GKey, Buyer.GKey);   //hard coded to be fixed
@@ -1161,7 +1164,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         }
 
-    }
+    }*/
 
     private void SetReceipts(String str)
     {
@@ -1267,7 +1270,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
        return transType switch
        {
-           var s when s.Equals("RD", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
+           var s when s.Equals("Recurring Deposit", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
            var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
            var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
            var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
