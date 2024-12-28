@@ -398,17 +398,17 @@ namespace InvEntry.ViewModels
                 productStockSummary.Category            = x.ProductCategory;
                 productStockSummary.ProductGkey         = x.ProductGkey;
                 //productStockSummary.ProductSku          = productStockSummary.ProductSku;
-                productStockSummary.GrossWeight         = (productStockSummary.GrossWeight ?? 0 ) + x.GrossWeight;
-                productStockSummary.StoneWeight         = (productStockSummary.StoneWeight ?? 0 ) + x.StoneWeight;
-                productStockSummary.NetWeight           = (productStockSummary.NetWeight   ?? 0 ) + x.NetWeight;
-                productStockSummary.SuppliedGrossWeight = (productStockSummary.SuppliedGrossWeight ?? 0) + x.GrossWeight;
-                productStockSummary.AdjustedWeight      = (productStockSummary.AdjustedWeight ?? 0);
-                productStockSummary.SoldWeight          = (productStockSummary.SoldWeight ?? 0 );
-                productStockSummary.BalanceWeight       = (productStockSummary.BalanceWeight ?? 0) + x.NetWeight;
-                productStockSummary.SuppliedQty         = (productStockSummary.SuppliedQty ?? 0 ) + x.SuppliedQty;
-                productStockSummary.SoldQty             = (productStockSummary.SoldQty ?? 0);
-                productStockSummary.StockQty            = (productStockSummary.StockQty ?? 0 ) + x.SuppliedQty;
-                productStockSummary.AdjustedQty         = (productStockSummary.AdjustedQty ?? 0);
+                productStockSummary.GrossWeight         = (productStockSummary.GrossWeight).GetValueOrDefault() + x.GrossWeight;
+                productStockSummary.StoneWeight         = (productStockSummary.StoneWeight).GetValueOrDefault() + x.StoneWeight;
+                productStockSummary.NetWeight           = (productStockSummary.NetWeight).GetValueOrDefault() + x.NetWeight;
+                productStockSummary.SuppliedGrossWeight = (productStockSummary.SuppliedGrossWeight).GetValueOrDefault() + x.GrossWeight;
+                productStockSummary.AdjustedWeight      = (productStockSummary.AdjustedWeight).GetValueOrDefault();
+                productStockSummary.SoldWeight          = (productStockSummary.SoldWeight).GetValueOrDefault();
+                productStockSummary.BalanceWeight       = (productStockSummary.BalanceWeight).GetValueOrDefault() + x.NetWeight;
+                productStockSummary.SuppliedQty         = (productStockSummary.SuppliedQty).GetValueOrDefault() + x.SuppliedQty;
+                productStockSummary.SoldQty             = (productStockSummary.SoldQty).GetValueOrDefault();
+                productStockSummary.StockQty            = (productStockSummary.StockQty).GetValueOrDefault() + x.SuppliedQty;
+                productStockSummary.AdjustedQty         = (productStockSummary.AdjustedQty).GetValueOrDefault();
                 productStockSummary.Status              = "In-Stock";
 
                 if (createProductStockSummary)
