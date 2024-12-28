@@ -15,6 +15,8 @@ public partial class MijmsContext : DbContext
     {
     }
 
+    public virtual DbSet<CashTransaction> CashTransactions { get; set; }
+
     public virtual DbSet<DailyRate> DailyRates { get; set; }
 
     public virtual DbSet<DailyStockSummary> DailyStockSummaries { get; set; }
@@ -101,6 +103,33 @@ public partial class MijmsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CashTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Gkey).HasName("PK_cash_transaction_summary");
+
+            entity.ToTable("CASH_TRANSACTION");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.ClosingBalance)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("CLOSING_BALANCE");
+            entity.Property(e => e.LedgerBook)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("LEDGER_BOOK");
+            entity.Property(e => e.LedgerKey).HasColumnName("LEDGER_KEY");
+            entity.Property(e => e.OpeningBalance)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("OPENING_BALANCE");
+            entity.Property(e => e.Payments)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PAYMENTS");
+            entity.Property(e => e.Receipts)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("RECEIPTS");
+            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+        });
+
         modelBuilder.Entity<DailyRate>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -2238,10 +2267,11 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("REP_DAILY_STOCK_SUMMARY");
 
-            entity.Property(e => e.Gkey).HasColumnName("gkey");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.ClosingStock)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK");
+            entity.Property(e => e.ClosingStockQty).HasColumnName("CLOSING_STOCK_QTY");
             entity.Property(e => e.Metal)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -2249,6 +2279,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.OpeningStock)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("OPENING_STOCK");
+            entity.Property(e => e.OpeningStockQty).HasColumnName("OPENING_STOCK_QTY");
             entity.Property(e => e.ProductCategory)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -2256,15 +2287,19 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.StockIn)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("STOCK_IN");
+            entity.Property(e => e.StockInQty).HasColumnName("STOCK_IN_QTY");
             entity.Property(e => e.StockOut)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("STOCK_OUT");
+            entity.Property(e => e.StockOutQty).HasColumnName("STOCK_OUT_QTY");
             entity.Property(e => e.StockTransferIn)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("STOCK_TRANSFER_IN");
+            entity.Property(e => e.StockTransferInQty).HasColumnName("STOCK_TRANSFER_IN_QTY");
             entity.Property(e => e.StockTransferOut)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("STOCK_TRANSFER_OUT");
+            entity.Property(e => e.StockTrnsferOutQty).HasColumnName("STOCK_TRNSFER_OUT_QTY");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
         });
 

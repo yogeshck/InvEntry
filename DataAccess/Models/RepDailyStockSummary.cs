@@ -24,4 +24,16 @@ public partial class RepDailyStockSummary
     public string? Metal { get; set; }
 
     public int Gkey { get; set; }
+
+    public int? OpeningStockQty { get; set; }
+
+    public int? StockInQty { get; set; }
+
+    public int? StockTransferInQty { get; set; }
+
+    public int? StockOutQty { get; set; }
+
+    public int? StockTrnsferOutQty { get; set; }
+
+    public int? ClosingStockQty { get; set; }
 }

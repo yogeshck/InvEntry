@@ -62,7 +62,7 @@
                          Height="500"
                          MaxHeight="900"
                          MinWidth="800"
-                         Width="1500" SelectedItem="{Binding SelectedVoucher}"
+                         Width="1400" SelectedItem="{Binding SelectedVoucher}"
                          HorizontalAlignment="Left" VerticalAlignment="Top">
 
             <dxg:GridControl.View>
