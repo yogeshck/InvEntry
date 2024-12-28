@@ -26,12 +26,12 @@
                 <dxb:BarButtonItem x:Name="btnPrintGrid"
                     Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
-                <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date">
+                <dxb:BarEditItem EditValue="{Binding DateSearchOption.From}" EditWidth="120" Content="From Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.To}" EditWidth="120" Content="To Date">
+                <dxb:BarEditItem EditValue="{Binding DateSearchOption.To}" EditWidth="120" Content="To Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}" />
                     </dxb:BarEditItem.EditSettings>

@@ -35,8 +35,8 @@ namespace InvEntry.ViewModels
             _reportDialogService = reportDialogService;
 
             _dateSearchOption = new();
-            DateSearchOption.To = StartDate;
-            DateSearchOption.From = StartDate.AddDays(-2);
+            DateSearchOption.From = StartDate.AddDays(-1);
+            DateSearchOption.To = StartDate.AddDays(-1);
 
             Task.Run(RefreshDailyStockSummaryAsync).Wait();
         }
