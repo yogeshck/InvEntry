@@ -76,21 +76,24 @@
                 <dxg:GridColumn FieldName="VoucherNbr" Header="Voucher #" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="Mode" Header="Voucher Mode" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="TransType" Header="Type" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="FromLedgerGkey" Header="From A/c" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="ToLedgerGkey" Header="To A/c" ReadOnly="True" Width="100" />                
                 <dxg:GridColumn FieldName="TransDesc" Header="Desc" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" Width="100">
                     <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" NullText="" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="TransAmount" Header="Trans. Amt" Width="100">
+        <!--        <dxg:GridColumn FieldName="TransAmount" Header="Trans. Amt" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
                     </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>
+                </dxg:GridColumn> -->
                 <dxg:GridColumn FieldName="RecdAmount" Header="Received" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
-                    </dxg:GridColumn.EditSettings>
+                        </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
                 <dxg:GridColumn FieldName="PaidAmount" Header="Payment" Width="100">
                     <dxg:GridColumn.EditSettings>

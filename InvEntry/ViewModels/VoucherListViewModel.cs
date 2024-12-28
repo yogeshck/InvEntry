@@ -29,14 +29,15 @@ public partial class VoucherListViewModel: ObservableObject
     private readonly IVoucherService _voucherService;
     private readonly IDialogService _reportDialogService;
     private readonly ITallyXMLService _xmlService;
+    private readonly IMtblLedgersService _mtblLedgersService;
 
     private readonly IReportFactoryService _reportFactoryService;
 
     [ObservableProperty]
     private ObservableCollection<Voucher> _vouchers;
 
-/*    [ObservableProperty]
-    private ObservableCollection<VoucherView> _vouchersView;*/
+    /*    [ObservableProperty]
+        private ObservableCollection<VoucherView> _vouchersView;*/
 
     [ObservableProperty]
     private VoucherSearchOption _searchOption;
@@ -50,13 +51,18 @@ public partial class VoucherListViewModel: ObservableObject
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
 
+    [ObservableProperty]
+    private ObservableCollection<MtblLedger> _masterLedgerList;
+
     public  VoucherListViewModel(IVoucherService voucherService,
             ITallyXMLService xmlService,
+            IMtblLedgersService mtblLedgersService,
             IReportFactoryService reportFactoryService,
             [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
         _voucherService = voucherService;
         _reportDialogService = reportDialogService;
+        _mtblLedgersService = mtblLedgersService;
         _xmlService = xmlService;
         _reportFactoryService = reportFactoryService;
 
@@ -66,6 +72,7 @@ public partial class VoucherListViewModel: ObservableObject
         SearchOption.BookType ??= "Cash";
 
         PopulateStatmentTypeOpionList();
+        PopulateMasterLedgerList();
 
         Task.Run(RefreshVoucherAsync).Wait();
     }
@@ -80,6 +87,18 @@ public partial class VoucherListViewModel: ObservableObject
 
     }
 
+    private async void PopulateMasterLedgerList()
+    {
+        var masterLedgerList = await _mtblLedgersService.GetAll();
+            //GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic
+
+        if (masterLedgerList is not null)
+        {
+            MasterLedgerList = new(masterLedgerList);
+            //AccountGroupList = new(MasterLedgerList.Select(x => x.LedgerName));
+        }
+
+    }
 
     [RelayCommand]
     private async Task RefreshVoucherAsync()
@@ -107,6 +126,13 @@ public partial class VoucherListViewModel: ObservableObject
                     voucher.PaidAmount = voucher.TransAmount;
                     voucher.RecdAmount = 0;
                 }
+
+                //fruits.Where(fruit => fruit.Length < 6);
+
+                voucher.FromLedgerName
+                = MasterLedgerList.Where(x => x.GKey == voucher.FromLedgerGkey).ToString();
+
+              //  foreach (var x in MasterLedgerList.Where(x => x.GKey)) { /* Do Something */ }
 
                 Vouchers.Add(voucher);
 

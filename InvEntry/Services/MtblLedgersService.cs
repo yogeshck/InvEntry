@@ -1,4 +1,5 @@
 ﻿using InvEntry.Models;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace InvEntry.Services
     {
         Task<MtblLedger> GetLedger(int? lAccountCode);
 
+        Task<IEnumerable<MtblLedger>> GetAll();
+
         Task<IEnumerable<MtblLedger>> GetLedgerList(string accGroupName);
     }
 
@@ -22,6 +25,11 @@ namespace InvEntry.Services
         public MtblLedgersService(IMijmsApiService mijmsApiService)
         {
             _mijmsApiService = mijmsApiService;
+        }
+
+        public async Task<IEnumerable<MtblLedger>> GetAll()
+        {
+            return await _mijmsApiService.GetEnumerable<MtblLedger>($"api/MtblLedgers/");
         }
 
         public async Task<MtblLedger> GetLedger(int? lAccountCode)

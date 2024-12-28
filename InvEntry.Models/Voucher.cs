@@ -76,5 +76,12 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private decimal? _paidAmount;
+
+        [ObservableProperty]
+        private string? _fromLedgerName;
+
+        [ObservableProperty]
+        private string? _toLedgerName;
+
     }
 }

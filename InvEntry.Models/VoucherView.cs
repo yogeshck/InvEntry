@@ -77,4 +77,10 @@ public partial class VoucherView : BaseEntity
     [ObservableProperty]
     private decimal? _paidAmount;
 
+    [ObservableProperty]
+    private string? _fromLedgerName;
+
+    [ObservableProperty]
+    private string? _toLedgerName;
+
 }
