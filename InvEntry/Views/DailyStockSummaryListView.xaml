@@ -23,7 +23,7 @@
     <Grid>
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <!--   <dxb:BarButtonItem x:Name="btnPrintGrid"
+                <dxb:BarButtonItem x:Name="btnPrintGrid"
                     Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
                 <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date">
@@ -39,7 +39,7 @@
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh"
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
-                    Command="{Binding RefreshInvoicesCommand}" /> -->
+                    Command="{Binding RefreshDailyStockSummaryCommand}" />
                 <dxb:BarButtonItem x:Name="btnPrintStockSummary"
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                    GlyphSize="Large" Alignment="Far"
@@ -51,7 +51,7 @@
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="1000" 
+                         Width="1300" 
                          HorizontalAlignment="Left">
             <!--    <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
@@ -69,8 +69,8 @@
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="TransactionDate" Header="Trans Date" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="Metal" Header="Metal" ReadOnly="True" Width="70" />
                 <dxg:GridColumn FieldName="ProductCategory" Header="Category" ReadOnly="True" Width="70" />
-                <dxg:GridColumn FieldName="StockQty" Header="Stock Qty" ReadOnly="True" Width="90" />
                 <dxg:GridColumn FieldName="OpeningStock" Header="OB Gross Wt" ReadOnly="True" Width="100"/>
                 <dxg:GridColumn FieldName="StockIn" Header="Stock IN Wt" ReadOnly="True" Width="90"/>
                 <dxg:GridColumn FieldName="StockTransferIn" Header="Stk Trfr IN Wt" ReadOnly="True" Width="90"/>
@@ -82,7 +82,7 @@
                 <dxg:GridColumn FieldName="StockTransferInQty" Header="StkTrfr In Qty" ReadOnly="True" Width="70"/>
                 <dxg:GridColumn FieldName="StockOutQty" Header="Sold Qty" ReadOnly="True" Width="70"/>
                 <dxg:GridColumn FieldName="StockTransferOutQty" Header="StkTrfr Out Qty" ReadOnly="True" Width="70"/>
-                <dxg:GridColumn FieldName="ClosingQty" Header="Closing Qty" ReadOnly="True" Width="70"/>
+                <dxg:GridColumn FieldName="ClosingStockQty" Header="Closing Qty" ReadOnly="True" Width="70"/>
             </dxg:GridControl.Columns>
         </dxg:GridControl>
     </Grid>

@@ -21,14 +21,12 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private ObservableCollection<RepDailyStockSummary> _dailyStockStockSummary;
 
-        /*    [ObservableProperty]
-            private DateSearchOption _searchOption;
+        [ObservableProperty]
+        private DateSearchOption _dateSearchOption;
 
-            [ObservableProperty]
-            private InvoiceHeader _SelectedInvoice;
+        [ObservableProperty]
+        private DateTime _startDate = DateTime.Today;
 
-            [ObservableProperty]
-            private DateTime _Today = DateTime.Today;*/
 
         public DailyStockSummaryListViewModel(IDailyStockSummaryService dailyStockSummaryService,
                                                 [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
@@ -36,13 +34,17 @@ namespace InvEntry.ViewModels
             _dailyStockSummaryService = dailyStockSummaryService;
             _reportDialogService = reportDialogService;
 
+            _dateSearchOption = new();
+            DateSearchOption.To = StartDate;
+            DateSearchOption.From = StartDate.AddDays(-2);
+
             Task.Run(RefreshDailyStockSummaryAsync).Wait();
         }
 
         [RelayCommand]
         private async Task RefreshDailyStockSummaryAsync()
         {
-            var dailyStockSummaryResult = await _dailyStockSummaryService.GetAll();
+            var dailyStockSummaryResult = await _dailyStockSummaryService.GetAll(DateSearchOption);
             if (dailyStockSummaryResult is not null)
                 DailyStockStockSummary = new(dailyStockSummaryResult);
         }

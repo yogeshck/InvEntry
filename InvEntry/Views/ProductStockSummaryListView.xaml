@@ -51,7 +51,7 @@
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="1000" 
+                         Width="1200" 
                          HorizontalAlignment="Left">
         <!--    <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"

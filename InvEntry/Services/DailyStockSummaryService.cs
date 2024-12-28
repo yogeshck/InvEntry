@@ -1,4 +1,5 @@
-﻿using InvEntry.Models;
+﻿using DevExpress.CodeParser;
+using InvEntry.Models;
 using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace InvEntry.Services
     public interface IDailyStockSummaryService
     {
 
-        Task<IEnumerable<RepDailyStockSummary>> GetAll();
+        Task<IEnumerable<RepDailyStockSummary>> GetAll(DateSearchOption options);
 
     }
 
@@ -29,6 +30,10 @@ namespace InvEntry.Services
         {
             return await _mijmsApiService.GetEnumerable<RepDailyStockSummary>($"api/dailyStockSummary/");
         }
-    
+
+        public async Task<IEnumerable<RepDailyStockSummary>> GetAll(DateSearchOption options)
+        {
+            return await _mijmsApiService.PostEnumerable<RepDailyStockSummary, DateSearchOption>($"api/dailyStockSummary/filter", options);
+        }
     }
 }

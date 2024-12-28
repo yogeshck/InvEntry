@@ -23,7 +23,7 @@ namespace DataAccess.Controllers
         public async Task<IActionResult> GetAll()
         {
             _logger.LogInformation("All Product Stock Summary");
-            return Ok(_productStockSummary.GetAll());
+            return Ok(_productStockSummary.GetAll().OrderBy(x => x.ProductSku));   //using productsku instead of metal
         }
 
         // GET api/<ProductStockSummaryController>/5
