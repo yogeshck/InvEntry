@@ -74,6 +74,9 @@
                 <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:GRNEntryPage}"
                                                  Content="GRN Entry"
                                                  Glyph="{dx:DXImage Images/Business Objects/BOProductGroup_32x32.png}" />
+                <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
+                                                 Content="GRN List View"
+                                                 Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />
                 <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:CashReceiptEntryPage}"
                                                  Content="Cash Receipt Entry"
                                                  Glyph="{dx:DXImage Images/Business Objects/BOProductGroup_32x32.png}" />

@@ -32,7 +32,7 @@ public partial class EstimateListViewModel : ObservableObject
     private DateTime _Today = DateTime.Today;
 
     public EstimateListViewModel(IEstimateService estimateService,
-    [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
+                                [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
         _estimateService = estimateService;
         _reportDialogService = reportDialogService;

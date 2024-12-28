@@ -158,6 +158,7 @@ public sealed class Bootstrapper
                  .AddSingleton<CashReceiptViewModel>()
                  .AddSingleton<VoucherListViewModel>()
                  .AddSingleton<GRNViewModel>()
+                 .AddSingleton<GRNListViewModel>()
                  .AddSingleton<ProductStockEntryViewModel>()
                  .AddSingleton<ProductStockSummaryListViewModel>()
                  .AddSingleton<DailyStockSummaryListViewModel>()
