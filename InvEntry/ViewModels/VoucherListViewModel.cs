@@ -132,12 +132,8 @@ public partial class VoucherListViewModel: ObservableObject
                     voucher.RecdAmount = 0;
                 }
 
-                //fruits.Where(fruit => fruit.Length < 6);
-
-             //   voucher.FromLedgerName
-              //  = MasterLedgerList.Where(x => x.GKey == voucher.FromLedgerGkey).ToString();
-
-              //  foreach (var x in MasterLedgerList.Where(x => x.GKey)) { /* Do Something */ }
+              //  voucher.FromLedgerName
+              //  = MasterLedgerList.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey)?.LedgerName;
 
                 Vouchers.Add(voucher);
 
