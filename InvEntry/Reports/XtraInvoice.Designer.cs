@@ -111,6 +111,7 @@
             this.xrLabel5 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLine5 = new DevExpress.XtraReports.UI.XRLine();
+            this.xrPictureBox1 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.sqlDataSource1 = new DevExpress.DataAccess.Sql.SqlDataSource(this.components);
             this.baseControlStyle = new DevExpress.XtraReports.UI.XRControlStyle();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
@@ -207,7 +208,6 @@
             this.totalMetalWeight = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell21 = new DevExpress.XtraReports.UI.XRTableCell();
             this.calculatedField2 = new DevExpress.XtraReports.UI.CalculatedField();
-            this.xrPictureBox1 = new DevExpress.XtraReports.UI.XRPictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
@@ -964,9 +964,16 @@
             this.xrLine5.SizeF = new System.Drawing.SizeF(723F, 10F);
             this.xrLine5.StylePriority.UseForeColor = false;
             // 
+            // xrPictureBox1
+            // 
+            this.xrPictureBox1.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox1.ImageSource"));
+            this.xrPictureBox1.LocationFloat = new DevExpress.Utils.PointFloat(276.2914F, 159.1665F);
+            this.xrPictureBox1.Name = "xrPictureBox1";
+            this.xrPictureBox1.SizeF = new System.Drawing.SizeF(61.34036F, 39.6667F);
+            this.xrPictureBox1.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
+            // 
             // sqlDataSource1
             // 
-            this.sqlDataSource1.ConnectionName = "DefaultConnection";
             this.sqlDataSource1.Name = "sqlDataSource1";
             customSqlQuery1.MetaSerializable = "<Meta X=\"212\" Y=\"20\" Width=\"179\" Height=\"744\" />";
             customSqlQuery1.Name = "invoiceLine";
@@ -2207,14 +2214,6 @@
             this.calculatedField2.Name = "calculatedField2";
             this.calculatedField2.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField2_GetValue);
             // 
-            // xrPictureBox1
-            // 
-            this.xrPictureBox1.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox1.ImageSource"));
-            this.xrPictureBox1.LocationFloat = new DevExpress.Utils.PointFloat(276.2914F, 159.1665F);
-            this.xrPictureBox1.Name = "xrPictureBox1";
-            this.xrPictureBox1.SizeF = new System.Drawing.SizeF(61.34036F, 39.6667F);
-            this.xrPictureBox1.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
-            // 
             // XtraInvoice
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -2238,7 +2237,7 @@
             this.pInvoiceNbr});
             this.StyleSheet.AddRange(new DevExpress.XtraReports.UI.XRControlStyle[] {
             this.baseControlStyle});
-            this.Version = "24.1";
+            this.Version = "24.2";
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).EndInit();

@@ -100,6 +100,11 @@ public partial class VoucherListViewModel: ObservableObject
 
     }
 
+    private void SetOpeningBalance(string type)
+    {
+
+    }
+
     [RelayCommand]
     private async Task RefreshVoucherAsync()
     {
@@ -129,8 +134,8 @@ public partial class VoucherListViewModel: ObservableObject
 
                 //fruits.Where(fruit => fruit.Length < 6);
 
-                voucher.FromLedgerName
-                = MasterLedgerList.Where(x => x.GKey == voucher.FromLedgerGkey).ToString();
+             //   voucher.FromLedgerName
+              //  = MasterLedgerList.Where(x => x.GKey == voucher.FromLedgerGkey).ToString();
 
               //  foreach (var x in MasterLedgerList.Where(x => x.GKey)) { /* Do Something */ }
 
