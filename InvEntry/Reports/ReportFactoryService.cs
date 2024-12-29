@@ -39,6 +39,7 @@ public interface IReportFactoryService
 public class ReportFactoryService : IReportFactoryService
 {
     private readonly string _connectionString;
+    private readonly string _appConfigName;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
 
     public ReportFactoryService(IConfiguration configuration,
@@ -46,11 +47,12 @@ public class ReportFactoryService : IReportFactoryService
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
         _orgThisCompanyViewService = orgThisCompanyViewService;
+        _appConfigName = "ReportDBCon01";
     }
 
     public XtraReport CreateInvoiceReport()
     {
-        return new XrNewInvoice24();        // XtraInvoice();
+        return new XrNewInvoice24().AddDataSource(_appConfigName);        // XtraInvoice();
     }
 
     public XtraReport CreateInvoiceReport(string pInvoiceNbr)
@@ -71,7 +73,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XtraEstimate();
+        return new XtraEstimate().AddDataSource(_appConfigName);
     }
 
     public XtraReport CreateEstimateReport(string pEstimateNbr)
@@ -111,7 +113,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateFinStatementReport()
     {
-        return new PettyCashReport();
+        return new PettyCashReport().AddDataSource(_appConfigName);
     }
 
     public XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate, string statementType)
@@ -133,4 +135,18 @@ public class ReportFactoryService : IReportFactoryService
         await report.ExportToPdfAsync(filePath);
     }
 
+}
+
+
+public static class ReportExtensions
+{
+    public static XtraReport AddDataSource(this XtraReport report, string appConfigName)
+    {
+        if(report.DataSource is SqlDataSource sqlds)
+        {
+            sqlds.ConnectionName = appConfigName;
+        }
+
+        return report;
+    }
 }
