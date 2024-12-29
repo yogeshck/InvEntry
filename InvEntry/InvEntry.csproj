@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UserSecretsId>6bbfdca0-bde8-4a50-802f-731f5fbd6d8b</UserSecretsId>
     <ApplicationIcon>InvEntry.ico</ApplicationIcon>
@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
+    <None Remove="Reports\xwsjqmj0.tyj~" />
     <None Remove="Views\Images\diamond.svg" />
     <None Remove="Views\Images\gold.svg" />
     <None Remove="Views\Images\silver.svg" />
@@ -37,6 +38,7 @@
     <PackageReference Include="Serilog" Version="4.1.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.0" />
     <PackageReference Include="System.Runtime.Caching" Version="9.0.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
   </ItemGroup>
