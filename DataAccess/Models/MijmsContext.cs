@@ -31,6 +31,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<GrnLineSummary> GrnLineSummaries { get; set; }
 
+    public virtual DbSet<Grndbview> Grndbviews { get; set; }
+
     public virtual DbSet<InvoiceArReceipt> InvoiceArReceipts { get; set; }
 
     public virtual DbSet<InvoiceHeader> InvoiceHeaders { get; set; }
@@ -641,6 +643,66 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("uom");
+        });
+
+        modelBuilder.Entity<Grndbview>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("GRNDBVIEW");
+
+            entity.Property(e => e.DocumentType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_TYPE");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.GrnDate)
+                .HasPrecision(6)
+                .HasColumnName("GRN_DATE");
+            entity.Property(e => e.GrnNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("GRN_NBR");
+            entity.Property(e => e.GrossWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("GROSS_WEIGHT");
+            entity.Property(e => e.ItemReceivedDate).HasColumnName("ITEM_RECEIVED_DATE");
+            entity.Property(e => e.LineNbr).HasColumnName("LINE_NBR");
+            entity.Property(e => e.NetWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("NET_WEIGHT");
+            entity.Property(e => e.OrderDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DATE");
+            entity.Property(e => e.OrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.ProductCategory)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_CATEGORY");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductPurity)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_PURITY");
+            entity.Property(e => e.StoneWeight)
+                .HasColumnType("decimal(10, 3)")
+                .HasColumnName("STONE_WEIGHT");
+            entity.Property(e => e.SuppliedQty).HasColumnName("SUPPLIED_QTY");
+            entity.Property(e => e.SupplierId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("SUPPLIER_ID");
+            entity.Property(e => e.SupplierRefNbr)
+                .HasMaxLength(150)
+                .IsUnicode(false)
+                .HasColumnName("SUPPLIER_REF_NBR");
+            entity.Property(e => e.Uom)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("UOM");
         });
 
         modelBuilder.Entity<InvoiceArReceipt>(entity =>
@@ -1306,9 +1368,7 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("ORG_BANK_DETAILS");
 
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedNever()
-                .HasColumnName("GKEY");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.BankAccountNbr)
                 .HasMaxLength(200)
                 .IsUnicode(false)
@@ -1343,6 +1403,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasComment("True/  False")
                 .HasColumnName("ONLINE_ENABLED");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
             entity.Property(e => e.UseByRefGkey).HasColumnName("USE_BY_REF_GKEY");
             entity.Property(e => e.UseByRefName)
                 .HasMaxLength(200)

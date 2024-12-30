@@ -127,7 +127,6 @@
             this.lineDetHdrTableRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.hsnCaption = new DevExpress.XtraReports.UI.XRTableCell();
             this.lineDetHdrTable = new DevExpress.XtraReports.UI.XRTable();
-            this.xrLine2 = new DevExpress.XtraReports.UI.XRLine();
             this.GroupHeader1 = new DevExpress.XtraReports.UI.GroupHeaderBand();
             this.PageHeader = new DevExpress.XtraReports.UI.PageHeaderBand();
             this.xrLine1 = new DevExpress.XtraReports.UI.XRLine();
@@ -208,6 +207,7 @@
             this.totalMetalWeight = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell21 = new DevExpress.XtraReports.UI.XRTableCell();
             this.calculatedField2 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.xrLine2 = new DevExpress.XtraReports.UI.XRLine();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
@@ -1179,15 +1179,6 @@
             this.lineDetHdrTable.StylePriority.UsePadding = false;
             this.lineDetHdrTable.StylePriority.UseTextAlignment = false;
             this.lineDetHdrTable.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopCenter;
-            // 
-            // xrLine2
-            // 
-            this.xrLine2.ForeColor = System.Drawing.Color.Gold;
-            this.xrLine2.LineWidth = 2F;
-            this.xrLine2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 25F);
-            this.xrLine2.Name = "xrLine2";
-            this.xrLine2.SizeF = new System.Drawing.SizeF(723F, 10F);
-            this.xrLine2.StylePriority.UseForeColor = false;
             // 
             // GroupHeader1
             // 
@@ -2214,6 +2205,15 @@
             this.calculatedField2.Name = "calculatedField2";
             this.calculatedField2.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField2_GetValue);
             // 
+            // xrLine2
+            // 
+            this.xrLine2.ForeColor = System.Drawing.Color.Gold;
+            this.xrLine2.LineWidth = 2F;
+            this.xrLine2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 25F);
+            this.xrLine2.Name = "xrLine2";
+            this.xrLine2.SizeF = new System.Drawing.SizeF(723F, 10F);
+            this.xrLine2.StylePriority.UseForeColor = false;
+            // 
             // XtraInvoice
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -2313,7 +2313,6 @@
         private DevExpress.XtraReports.UI.XRTableCell quantityCaption;
         private DevExpress.XtraReports.UI.XRTableRow lineDetHdrTableRow;
         private DevExpress.XtraReports.UI.XRTable lineDetHdrTable;
-        private DevExpress.XtraReports.UI.XRLine xrLine2;
         private DevExpress.XtraReports.UI.GroupHeaderBand GroupHeader1;
         private DevExpress.XtraReports.UI.PageHeaderBand PageHeader;
         private DevExpress.XtraReports.UI.XRTableRow xrTableRow4;
@@ -2419,5 +2418,6 @@
         private DevExpress.XtraReports.UI.XRLabel xrLabel15;
         private DevExpress.XtraReports.UI.CalculatedField calculatedField2;
         private DevExpress.XtraReports.UI.XRPictureBox xrPictureBox1;
+        private DevExpress.XtraReports.UI.XRLine xrLine2;
     }
 }

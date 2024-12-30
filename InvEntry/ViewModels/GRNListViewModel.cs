@@ -1,16 +1,26 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
+using InvEntry.Tally;
+using InvEntry.Tally.Model;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using DevExpress.Xpf.Printing;
+using IDialogService = DevExpress.Mvvm.IDialogService;
+using InvEntry.Reports;
+using System.Windows;
+using System.Collections.Generic;
+using DevExpress.XtraPivotGrid.Data;
+using System.Windows.Documents;
+using DevExpress.Mvvm.Native;
+using System.Linq;
+using DevExpress.XtraGrid.Views.Items;
 
 namespace InvEntry.ViewModels;
 
@@ -18,11 +28,11 @@ namespace InvEntry.ViewModels;
 public partial class GRNListViewModel : ObservableObject
 {
 
-    private readonly IGrnService _grnService;
+    private readonly IGrnDbViewService _grnDbViewService;
     private readonly IDialogService _reportDialogService;
 
     [ObservableProperty]
-    private ObservableCollection<GrnHeader> _grnHeader;
+    private ObservableCollection<GrnDbView> _grnDbView;
 
     [ObservableProperty]
     private DateSearchOption _dateSearchOption;
@@ -33,10 +43,10 @@ public partial class GRNListViewModel : ObservableObject
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
 
-    public GRNListViewModel( IGrnService grnService,
+    public GRNListViewModel(IGrnDbViewService grnDbViewService,
                              [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService )  
     {
-        _grnService = grnService;
+        _grnDbViewService = grnDbViewService;
         _reportDialogService = reportDialogService;
         _dateSearchOption = new();
         DateSearchOption.To = Today;
@@ -49,13 +59,12 @@ public partial class GRNListViewModel : ObservableObject
     [RelayCommand]
     private async Task RefreshGrnHeader() 
     {
-        var grnResult = await _grnService.GetAll(DateSearchOption);
+        var grnResult = await _grnDbViewService.GetAll(DateSearchOption);
 
         if (grnResult is not null)
 
-            GrnHeader = new (grnResult);
+            GrnDbView = new (grnResult);
 
     }
-
 
 }

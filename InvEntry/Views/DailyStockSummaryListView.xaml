@@ -23,9 +23,6 @@
     <Grid>
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <dxb:BarButtonItem x:Name="btnPrintGrid"
-                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
                 <dxb:BarEditItem EditValue="{Binding DateSearchOption.From}" EditWidth="120" Content="From Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
@@ -40,11 +37,13 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshDailyStockSummaryCommand}" />
-                <dxb:BarButtonItem x:Name="btnPrintStockSummary"
-                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
-                   GlyphSize="Large" Alignment="Far"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintStockSummaryCommand}" />
-            </dxb:MainMenuControl>
+                <dxb:BarItemSeparator Margin="2,0,2,0"/>
+                <dxb:BarButtonItem x:Name="btnPrintGrid" 
+                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                   GlyphSize="Large" 
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
+                                   ItemClick="btnPrint_ItemClick" />
+           </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding DailyStockStockSummary}" AutoGenerateColumns="None"
                          MinHeight="500"
@@ -59,7 +58,7 @@
                 <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}"/>
             </dxmvvm:Interaction.Behaviors>  -->
             <dxg:GridControl.View>
-                <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
+                <dxg:TableView  x:Name="DailyStkSumryTblView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
                                AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
                                 AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
                     <!--     <dxg:TableView.ColumnMenuCustomizations>

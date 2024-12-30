@@ -11,10 +11,10 @@ namespace DataAccess.Controllers
         private readonly IRepositoryBase<ProductView> _productStkViewRepo;
         private readonly ILogger<ProductViewController> _logger;
 
-        public ProductViewController(   IRepositoryBase<ProductView> _productStockViewRepo, 
+        public ProductViewController(   IRepositoryBase<ProductView> productStockViewRepo, 
                                         ILogger<ProductViewController> logger)
         {
-            _productStkViewRepo = _productStockViewRepo;
+            _productStkViewRepo = productStockViewRepo;
             _logger = logger;
         }
 

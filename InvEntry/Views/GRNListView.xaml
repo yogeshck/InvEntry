@@ -12,13 +12,14 @@
              xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
-             mc:Ignorable="d" 
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+             xmlns:ext="clr-namespace:InvEntry.Extension"                       
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
-             xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"
-                d:DataContext="{d:DesignInstance Type=viewmodels.GRNListViewModel}"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=viewmodels.GRNListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:GRNListViewModel}"
              d:DesignHeight="450" d:DesignWidth="800">
+    <!-- xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"-->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -26,9 +27,6 @@
         </Grid.RowDefinitions>
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <dxb:BarButtonItem x:Name="btnPrintGrid"
-                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
                 <dxb:BarEditItem EditValue="{Binding DateSearchOption.From}" EditWidth="120" Content="From Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
@@ -43,50 +41,53 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshGrnHeaderCommand}" />
-                <dxb:BarButtonItem x:Name="btnPrintEstimate"
+                <dxb:BarItemSeparator Margin="2,0,2,0"/>
+                <dxb:BarButtonItem x:Name="btnPrintGrid" 
+                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                   GlyphSize="Large" 
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
+                                   ItemClick="btnPrint_ItemClick" />
+            <!--    <dxb:BarButtonItem x:Name="btnPrintEstimate"
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                    GlyphSize="Large" Alignment="Far"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintEstimateCommand}" />
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintEstimateCommand}" />  -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dx:DXTabControl Grid.Row="1" >
-            <dx:DXTabItem Header="Page 1">
-                <dxg:GridControl ItemsSource="{Binding GrnHeader}" AutoGenerateColumns="None"
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnDbView}" AutoGenerateColumns="None"
                          MinHeight="500"
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="1000" SelectedItem="{Binding SelectedGRN}"
+                         Width="1200"     
                          HorizontalAlignment="Left">
-                    <dxmvvm:Interaction.Behaviors>
-                        <dxmvvm:EventToCommand EventName="SelectedItemChanged"
+            <!--  SelectedItem="{Binding SelectedEstimate}"             <dxmvvm:Interaction.Behaviors>
+                <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                        Command="{Binding SelectionChangedCommand}" />
-                        <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}"/>
-                    </dxmvvm:Interaction.Behaviors>
-                    <dxg:GridControl.View>
-                        <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="True"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
+                <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}"/>
+            </dxmvvm:Interaction.Behaviors> -->
+            <dxg:GridControl.View>
+                <dxg:TableView  x:Name="GRNTableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
+                               AllowGrouping="True" ShowGroupPanel="True" ShowAutoFilterRow="True"
                                 AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
-                            <!--     <dxg:TableView.ColumnMenuCustomizations>
+                    <!--     <dxg:TableView.ColumnMenuCustomizations>
                         <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}" />
                     </dxg:TableView.ColumnMenuCustomizations> -->
-                        </dxg:TableView>
-                    </dxg:GridControl.View>
-                    <dxg:GridControl.Columns>
-                        <dxg:GridColumn FieldName="GrnNbr" Header="GRN #" ReadOnly="True" Width="70" />
-                        <dxg:GridColumn FieldName="GrnDate" Header="GRN Date" ReadOnly="True" Width="90" />
-                        <dxg:GridColumn FieldName="SupplierId" Header="Supp" Width="100"/>
-                        <dxg:GridColumn FieldName="DocumentRef" Header="Doc Ref" Width="100"/>
-                        <dxg:GridColumn FieldName="DocumentDate" Header="Doc Date" Width="100"/>
-                        <dxg:GridColumn FieldName="ItemReceivedDate" Header="Item Recd On" Width="100"/>
-                        <dxg:GridColumn FieldName="GrnLineSumry.ProductCategory" Header="Category" Width="100"/>
-
-                    </dxg:GridControl.Columns>
-                </dxg:GridControl>
-            </dx:DXTabItem>
-            <dx:DXTabItem Header="Page 2">
-            </dx:DXTabItem>
-        </dx:DXTabControl>
+                </dxg:TableView>
+            </dxg:GridControl.View>
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="GrnNbr" Header="GRN #" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="GrnDate" Header="GRN Date" ReadOnly="True" Width="90" />
+                <dxg:GridColumn FieldName="SupplierId" Header="Supp" Width="100"/>
+                <dxg:GridColumn FieldName="DocumentType" Header="Doc Type" Width="100"/>
+                <dxg:GridColumn FieldName="ItemReceivedDate" Header="Item Recd On" Width="100"/>
+                <dxg:GridColumn FieldName="LineNbr" Header="Line#" Width="100"/>
+                <dxg:GridColumn FieldName="ProductCategory" Header="Category" Width="100"/>
+                <dxg:GridColumn FieldName="SuppliedQty" Header="Qty" Width="100"/>                
+                <dxg:GridColumn FieldName="GrossWeight" Header="Gross" Width="100"/>
+                <dxg:GridColumn FieldName="StoneWeight" Header="Stone" Width="100"/>
+                <dxg:GridColumn FieldName="NetWeight" Header="Net" Width="100"/>
+            </dxg:GridControl.Columns>
+        </dxg:GridControl>
 
     </Grid>
 </dxwui:NavigationPage>

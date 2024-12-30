@@ -227,16 +227,15 @@
             // Detail
             // 
             this.Detail.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
-            this.xrLine3,
             this.detailTable});
-            this.Detail.HeightF = 43F;
+            this.Detail.HeightF = 27.66668F;
             this.Detail.Name = "Detail";
             // 
             // xrLine3
             // 
             this.xrLine3.ForeColor = System.Drawing.Color.Gold;
             this.xrLine3.LineWidth = 2F;
-            this.xrLine3.LocationFloat = new DevExpress.Utils.PointFloat(0F, 23F);
+            this.xrLine3.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
             this.xrLine3.Name = "xrLine3";
             this.xrLine3.SizeF = new System.Drawing.SizeF(723F, 10F);
             this.xrLine3.StylePriority.UseForeColor = false;
@@ -812,6 +811,7 @@
             // GroupFooter1
             // 
             this.GroupFooter1.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.xrLine3,
             this.metalSumryTable,
             this.xrLabel2,
             this.xrLabel1,
@@ -830,7 +830,7 @@
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
             this.metalSumryTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F);
             this.metalSumryTable.ForeColor = System.Drawing.Color.Black;
-            this.metalSumryTable.LocationFloat = new DevExpress.Utils.PointFloat(0.002182007F, 0F);
+            this.metalSumryTable.LocationFloat = new DevExpress.Utils.PointFloat(0.002182007F, 11.6666F);
             this.metalSumryTable.Name = "metalSumryTable";
             this.metalSumryTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.mSumryTableHdr,
@@ -1160,7 +1160,7 @@
             | DevExpress.XtraPrinting.BorderSide.Right) 
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
             this.taxTable.ForeColor = System.Drawing.Color.Black;
-            this.taxTable.LocationFloat = new DevExpress.Utils.PointFloat(551.2936F, 0F);
+            this.taxTable.LocationFloat = new DevExpress.Utils.PointFloat(551.2936F, 11.6666F);
             this.taxTable.Name = "taxTable";
             this.taxTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.cgstTableRow,
@@ -1437,7 +1437,7 @@
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
             this.oldExTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.oldExTable.ForeColor = System.Drawing.Color.Black;
-            this.oldExTable.LocationFloat = new DevExpress.Utils.PointFloat(291.4247F, 0F);
+            this.oldExTable.LocationFloat = new DevExpress.Utils.PointFloat(291.4247F, 11.6666F);
             this.oldExTable.Name = "oldExTable";
             this.oldExTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.xrTableRow6,
@@ -1600,13 +1600,13 @@
             this.xrLabel12,
             this.xrLabel13,
             this.xrLabel14});
-            this.ReportFooter.HeightF = 254.0001F;
+            this.ReportFooter.HeightF = 229.0836F;
             this.ReportFooter.Name = "ReportFooter";
             // 
             // xrPictureBox1
             // 
             this.xrPictureBox1.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox1.ImageSource"));
-            this.xrPictureBox1.LocationFloat = new DevExpress.Utils.PointFloat(276.2914F, 159.1666F);
+            this.xrPictureBox1.LocationFloat = new DevExpress.Utils.PointFloat(276.2914F, 141.4999F);
             this.xrPictureBox1.Name = "xrPictureBox1";
             this.xrPictureBox1.SizeF = new System.Drawing.SizeF(61.34036F, 39.6667F);
             this.xrPictureBox1.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
@@ -1627,7 +1627,7 @@
             this.xrLabel4.Multiline = true;
             this.xrLabel4.Name = "xrLabel4";
             this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel4.SizeF = new System.Drawing.SizeF(107.0634F, 23F);
+            this.xrLabel4.SizeF = new System.Drawing.SizeF(107.0634F, 23.99993F);
             this.xrLabel4.StylePriority.UseFont = false;
             this.xrLabel4.Text = "Bank Details";
             // 
@@ -1759,7 +1759,7 @@
             // xrLabel14
             // 
             this.xrLabel14.Font = new DevExpress.Drawing.DXFont("Times New Roman", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel14.LocationFloat = new DevExpress.Utils.PointFloat(322.3795F, 200.1666F);
+            this.xrLabel14.LocationFloat = new DevExpress.Utils.PointFloat(322.3795F, 181.1666F);
             this.xrLabel14.Multiline = true;
             this.xrLabel14.Name = "xrLabel14";
             this.xrLabel14.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -2147,6 +2147,7 @@
             this.calculatedField1.DataMember = "Invoice";
             this.calculatedField1.Expression = "[INVL_PAYABLE_AMT]";
             this.calculatedField1.Name = "calculatedField1";
+            this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
             // XrNewInvoice24
             // 

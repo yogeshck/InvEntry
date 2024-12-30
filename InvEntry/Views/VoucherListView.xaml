@@ -14,6 +14,7 @@
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension" 
+             xmlns:behavior="clr-namespace:InvEntry.Behavior"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=viewmodels:VoucherListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:VoucherListViewModel}"
@@ -51,7 +52,7 @@
                     Command="{Binding RefreshVoucherCommand}"/>
                 <dxb:BarButtonItem x:Name="btnPrint" 
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
-                   GlyphSize="Large" Alignment="Far"
+                   GlyphSize="Large" 
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
                                    ItemClick="btnPrint_ItemClick" />
                 <!--Command="{Binding StatementPrintCommand}"/>   -->
@@ -77,8 +78,8 @@
                 <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="Mode" Header="Voucher Mode" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="TransType" Header="Type" ReadOnly="True" Width="100" />
-                <dxg:GridColumn FieldName="FromLedgerGkey" Header="From A/c" ReadOnly="True" Width="100" />
-                <dxg:GridColumn FieldName="ToLedgerGkey" Header="To A/c" ReadOnly="True" Width="100" />                
+                <dxg:GridColumn FieldName="FromLedgerName" Header="From A/c" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="ToLedgerName" Header="To A/c" ReadOnly="True" Width="100" />                
                 <dxg:GridColumn FieldName="TransDesc" Header="Desc" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" Width="100">
                     <dxg:GridColumn.EditSettings>

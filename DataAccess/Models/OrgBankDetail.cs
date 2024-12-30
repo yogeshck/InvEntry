@@ -21,7 +21,7 @@ public partial class OrgBankDetail
 
     public string? MobileEnabled { get; set; }
 
-    public long? UseByRefGkey { get; set; }
+    public int? UseByRefGkey { get; set; }
 
     public string? UseByRefName { get; set; }
 
@@ -30,5 +30,7 @@ public partial class OrgBankDetail
     /// </summary>
     public string? OnlineEnabled { get; set; }
 
-    public long? LocationGkey { get; set; }
+    public int? LocationGkey { get; set; }
+
+    public int? TenantGkey { get; set; }
 }

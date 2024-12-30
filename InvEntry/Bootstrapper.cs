@@ -142,6 +142,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .AddSingleton<IProductViewService, ProductViewService>()
+                 .AddSingleton<IGrnDbViewService, GrnDbViewService>()
                  .AddSingleton<IDailyStockSummaryService, DailyStockSummaryService>()
                  .AddSingleton<IProductTransactionService, ProductTransactionService>()
                  .AddSingleton<IProductTransactionSummaryService, ProductTransactionSummaryService>()

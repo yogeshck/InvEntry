@@ -132,8 +132,8 @@ public partial class VoucherListViewModel: ObservableObject
                     voucher.RecdAmount = 0;
                 }
 
-              //  voucher.FromLedgerName
-              //  = MasterLedgerList.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey)?.LedgerName;
+                voucher.FromLedgerName
+                = MasterLedgerList.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey)?.LedgerName;
 
                 Vouchers.Add(voucher);
 
