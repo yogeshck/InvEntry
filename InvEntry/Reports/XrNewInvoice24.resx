@@ -203,7 +203,8 @@ where  "INVOICE_AR_RECEIPTS"."INVOICE_NBR" = @paramInvNbr2</value>
   from "dbo"."INVOICE_LINE" "INVOICE_LINE",
  	 "dbo"."INVOICE_HEADER" "INVOICE_HEADER"
  where "INVOICE_HEADER"."GKEY" = "INVOICE_LINE"."INVOICE_HDR_GKEY"
-   and "INVOICE_HEADER"."INV_NBR" = @paramInvNbr1</value>
+   and "INVOICE_HEADER"."INV_NBR" = @paramInvNbr1
+   order by "dbo"."INVOICE_LINE"."INV_LINE_NBR"</value>
   </data>
   <data name="customSqlQuery3.Sql" xml:space="preserve">
     <value>select "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_NAME",
