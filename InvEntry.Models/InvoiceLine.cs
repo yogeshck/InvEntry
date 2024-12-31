@@ -98,7 +98,7 @@ public partial class InvoiceLine : BaseEntity
     private string? _invoiceId;
 
     [ObservableProperty]
-    private string? _tenantGkey;
+    private int? _tenantGkey;
 
     [ObservableProperty]
     private decimal? _invlCgstPercent;

@@ -57,6 +57,9 @@ public partial class EstimateViewModel: ObservableObject
     private ObservableCollection<EstimateLine> selectedRows;
 
     [ObservableProperty]
+    private OrgThisCompanyView _company;
+
+    [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
 
     [ObservableProperty]
@@ -86,6 +89,7 @@ public partial class EstimateViewModel: ObservableObject
     private readonly IEstimateService _estimateService;
     private readonly IProductCategoryService _productCategoryService;
     private readonly IMtblReferencesService _mtblReferencesService;
+    private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IProductStockSummaryService _productStockSummaryService;
     private readonly IProductTransactionService _productTransactionService;
     private readonly IReportFactoryService _reportFactoryService;
@@ -109,7 +113,8 @@ public partial class EstimateViewModel: ObservableObject
         IProductTransactionService productTransactionService,
         IMessageBoxService messageBoxService,
         IMtblReferencesService mtblReferencesService,
-        SettingsPageViewModel settingsPageViewModel,
+        IOrgThisCompanyViewService orgThisCompanyViewService,
+    SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
@@ -118,6 +123,7 @@ public partial class EstimateViewModel: ObservableObject
 
         SetHeader();
         _customerService = customerService;
+        _orgThisCompanyViewService = orgThisCompanyViewService;
         _productViewService = productViewService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
