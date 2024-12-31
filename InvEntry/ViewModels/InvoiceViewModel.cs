@@ -184,8 +184,8 @@ public partial class InvoiceViewModel : ObservableObject
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
-        SetThisCompany();
         SetHeader();
+        SetThisCompany();
         SetMasterLedger();
 
         PopulateProductCategoryList();
@@ -604,6 +604,7 @@ public partial class InvoiceViewModel : ObservableObject
             {
                 x.InvoiceHdrGkey = header.GKey;
                 x.InvoiceId = header.InvNbr;
+                x.TenantGkey = header.TenantGkey;
             });
 
             // loop for validation check for customer
@@ -1340,6 +1341,8 @@ public partial class InvoiceViewModel : ObservableObject
     {
 
         SetHeader();
+        SetThisCompany();
+        //SetMasterLedger();
         Buyer = null;
         CustomerPhoneNumber = null;
         CustomerState = null;
@@ -1401,7 +1404,8 @@ public partial class InvoiceViewModel : ObservableObject
         {
             InvDate = DateTime.Now,
             IsTaxApplicable = true,
-            GstLocSeller = Company.GstCode
+       //     GstLocSeller = Company.GstCode,
+        //    TenantGkey = Company.TenantGkey
         };
     }
 
@@ -1409,6 +1413,8 @@ public partial class InvoiceViewModel : ObservableObject
     {
         Company = new();
         Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+        Header.TenantGkey = Company.TenantGkey;
+        Header.GstLocSeller = Company.GstCode;
     }
 
     private decimal GetGSTPercent(string taxType = "SGST")
