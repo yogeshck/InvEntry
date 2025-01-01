@@ -140,7 +140,7 @@ public partial class VoucherListViewModel: ObservableObject
                 }
 
                 voucher.FromLedgerName
-                = MasterLedgerList.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey)?.LedgerName;
+                = MasterLedgerList?.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey).LedgerName;
 
                 Vouchers.Add(voucher);
 
