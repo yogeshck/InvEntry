@@ -80,14 +80,14 @@ public class ReportFactoryService : IReportFactoryService
     {
         var report = CreateEstimateReport();
 
-        //setReportParametersAsync(report);
+        setReportParametersAsync(report);
 
-        report.Parameters["pEstNbr"].Value = pEstimateNbr;
+        report.Parameters["paramEstNbr"].Value = pEstimateNbr;
         report.CreateDocument();
         return report;
     }
 
-/*    private async Task setReportParametersAsync(XtraReport report)
+    private async Task setReportParametersAsync(XtraReport report)
     {
         var orgThisCompany = await _orgThisCompanyViewService.GetOrgThisCompany();
         report.Parameters["pCompanyName"].Value = orgThisCompany.CompanyName;
@@ -102,7 +102,7 @@ public class ReportFactoryService : IReportFactoryService
         report.Parameters["pShopLicNbr"].Value = orgThisCompany.ServiceTaxNbr;
 
     }
-*/
+
  
     public async Task CreateEstimateReportPdf(string pEstimateNbr, string filePath)
     {

@@ -88,6 +88,13 @@
                     <Setter Property="Width" Value="150"/>
                     <Setter Property="Height" Value="35"/>
                 </Style>
+                <Style x:Key="NumberFormatEditSettingsStyle" TargetType="dxe:TextEditSettings">
+                    <Setter Property="MaskType" Value="Numeric" />
+                    <Setter Property="Mask" Value="#,##,##,##,###.00" />
+                    <Setter Property="MaskShowPlaceHolders" Value="False" />
+                    <Setter Property="MaskUseAsDisplayFormat" Value="True" />
+                    <Setter Property="AllowNullInput" Value="False" />
+                </Style>
                 <DataTemplate x:Key="RsTemplate">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding}"/>
@@ -381,10 +388,22 @@
                                             <dxg:GridColumn FieldName="EstlBilledPrice" Header="Rate" />
                                             <dxg:GridColumn FieldName="ProdQty" Header="Quantity"/>
                                             <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
-                                            <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight"/>
+                                            <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight">
+                                                <dxg:GridColumn.EditSettings>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}" />
+                                                </dxg:GridColumn.EditSettings>
+                                            </dxg:GridColumn>
                                             <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight" ReadOnly="True"/>
-                                            <dxg:GridColumn FieldName="EstlStoneAmount" Header="Stone Amount (Rs)" />
-                                            <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" />
+                                            <dxg:GridColumn FieldName="EstlStoneAmount" Header="Stone Amount (Rs)" >
+                                                <dxg:GridColumn.EditSettings>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+                                                </dxg:GridColumn.EditSettings>
+                                            </dxg:GridColumn>
+                                            <dxg:GridColumn FieldName="VaPercent" Header="VA Percent (%)" >
+                                                <dxg:GridColumn.EditSettings>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+                                                </dxg:GridColumn.EditSettings>
+                                            </dxg:GridColumn>
                                             <dxg:GridColumn FieldName="EstlTaxableAmount" Header="Taxable Amount (Rs)" ReadOnly="True"/>
                                             <dxg:GridColumn FieldName="EstlTotal" Header="Total Amount (Rs)" ReadOnly="True"/>
                                         </dxg:GridControl.Columns>

@@ -212,7 +212,7 @@ public partial class EstimateViewModel: ObservableObject
 
         copyEstimateExpression.Add($"{nameof(EstimateLine.EstlTaxableAmount)}", (item, val) => item.EstlTaxableAmount = val);
         copyEstimateExpression.Add($"{nameof(EstimateLine.ProdNetWeight)}", (item, val) => item.ProdNetWeight = val);
-        copyEstimateExpression.Add($"{nameof(EstimateLine.EstlGrossAmt)}", (item, val) => item.EstlGrossAmt = val);
+        copyEstimateExpression.Add($"{nameof(EstimateLine.EstlGrossAmt)}", (item, val) => item.EstlGrossAmt = val * (item.Metal.Equals("DIAMOND") ? 100 : 1));
         copyEstimateExpression.Add($"{nameof(EstimateLine.VaAmount)}", (item, val) => item.VaAmount = val);
         copyEstimateExpression.Add($"{nameof(EstimateLine.EstlCgstAmount)}", (item, val) => item.EstlCgstAmount = val);
         copyEstimateExpression.Add($"{nameof(EstimateLine.EstlSgstAmount)}", (item, val) => item.EstlSgstAmount = val);
@@ -490,7 +490,11 @@ public partial class EstimateViewModel: ObservableObject
 
         var productSumryStk = await _productStockSummaryService.GetByProductGkey(estline.ProductGkey);
 
-        if (productSumryStk is not null)
+        if (productSumryStk is null) 
+        {
+            return; 
+        }
+        else if (productSumryStk is not null)
         {
             //Set Product Transaction
             productTransaction.OpeningGrossWeight = productSumryStk.GrossWeight.GetValueOrDefault();
