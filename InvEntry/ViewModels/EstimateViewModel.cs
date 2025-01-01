@@ -121,7 +121,7 @@ public partial class EstimateViewModel: ObservableObject
 
         //MtblRefNameList = new();
 
-        SetHeader();
+
         _customerService = customerService;
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _productViewService = productViewService;
@@ -135,12 +135,18 @@ public partial class EstimateViewModel: ObservableObject
         _productStockSummaryService = productStockSummaryService;
         _productTransactionService = productTransactionService;
 
+
+        SetHeader();
+        SetThisCompany();
+
         selectedRows = new();
         _customerReadOnly = false;
 
         _isBalance = true;
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
+
+        SetThisCompany();
 
         PopulateProductCategoryList();
         PopulateStateList();
@@ -190,6 +196,14 @@ public partial class EstimateViewModel: ObservableObject
     {
         var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
         MtblReferencesList = new(mtblRefList);
+    }
+
+    private async void SetThisCompany()
+    {
+        Company = new();
+        Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+        Header.TenantGkey = Company.TenantGkey;
+        Header.GstLocSeller = Company.GstCode;
     }
 
     private void PopulateUnboundLineDataMap()
@@ -430,6 +444,7 @@ public partial class EstimateViewModel: ObservableObject
                 x.EstimateHdrGkey = header.GKey;
                 x.EstimateId = header.EstNbr;
                 x.EstimateHdrGkey = Header.GKey;
+                x.TenantGkey = header.TenantGkey;
             });
             // loop for validation check for customer
             await _estimateService.CreateEstimateLine(Header.Lines);
@@ -657,6 +672,7 @@ public partial class EstimateViewModel: ObservableObject
         //     return;
 
         SetHeader();
+        SetThisCompany();
         Buyer = null;
         CustomerPhoneNumber = null;
         CreateEstimateCommand.NotifyCanExecuteChanged();

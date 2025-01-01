@@ -73,7 +73,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XtraEstimate().AddDataSource(_appConfigName);
+        return new XrNewEstimate24().AddDataSource(_appConfigName);     // XtraEstimate().AddDataSource(_appConfigName);
     }
 
     public XtraReport CreateEstimateReport(string pEstimateNbr)
@@ -82,7 +82,7 @@ public class ReportFactoryService : IReportFactoryService
 
         //setReportParametersAsync(report);
 
-        report.Parameters["paramEstNbr"].Value = pEstimateNbr;
+        report.Parameters["pEstNbr"].Value = pEstimateNbr;
         report.CreateDocument();
         return report;
     }
