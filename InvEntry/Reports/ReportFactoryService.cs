@@ -73,7 +73,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XrNewEstimate24().AddDataSource(_appConfigName);     // XtraEstimate().AddDataSource(_appConfigName);
+        return new XtraEstimate().AddDataSource(_appConfigName);   //XrNewEstimate24().AddDataSource(_appConfigName);
     }
 
     public XtraReport CreateEstimateReport(string pEstimateNbr)
