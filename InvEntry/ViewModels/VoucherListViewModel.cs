@@ -72,9 +72,9 @@ public partial class VoucherListViewModel: ObservableObject
         SearchOption.BookType ??= "Cash";
 
         PopulateStatmentTypeOpionList();
-        PopulateMasterLedgerList();
+        //PopulateMasterLedgerList();
 
-        Task.Run(RefreshVoucherAsync).Wait();
+        Task.Run(init).Wait();
     }
 
     private void PopulateStatmentTypeOpionList()
@@ -87,7 +87,14 @@ public partial class VoucherListViewModel: ObservableObject
 
     }
 
-    private async void PopulateMasterLedgerList()
+    private async void init()
+    {
+
+        await PopulateMasterLedgerList();
+        await RefreshVoucherAsync();
+    }
+
+    private async Task PopulateMasterLedgerList()
     {
         var masterLedgerList = await _mtblLedgersService.GetAll();
             //GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic

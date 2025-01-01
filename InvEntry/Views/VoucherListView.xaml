@@ -68,8 +68,8 @@
 
             <dxg:GridControl.View>
                 <dxg:TableView ShowGroupPanel="False" AllowBestFit="True" x:Name="VouchersTableview"
-                               EditorButtonShowMode="ShowOnlyInEditor" NavigationStyle="Row" 
-                               AllowEditing="False" AllowGrouping="False" ShowAutoFilterRow="True" 
+                               EditorButtonShowMode="ShowForFocusedCell" 
+                               AllowEditing="True" AllowGrouping="False" ShowAutoFilterRow="True" 
                                AutoWidth="False" ShowTotalSummary="True"/>
             </dxg:GridControl.View>
 

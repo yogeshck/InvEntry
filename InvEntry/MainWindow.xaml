@@ -47,6 +47,9 @@
                         </dxmvvm:Interaction.Behaviors>
                     </dxwui:NavigationFrame>
                 </dxwui:HamburgerMenu.Content>
+                <dxwui:HamburgerSubMenu>
+                    
+                </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                  Content="Invoice Entry"
                                                  Glyph="{dx:DXImage Images/XAF/BO_Invoice_32x32.png}" />
