@@ -33,7 +33,7 @@ public partial class OrgThisCompanyView
 
     public string? PanNbr { get; set; }
 
-    public int TenantGkey { get; set; }
+    public int? TenantGkey { get; set; }
 
     public string? ServiceTaxNbr { get; set; }
 

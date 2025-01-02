@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using DevExpress.XtraReports.UI;
+using InvEntry.Models;
 using InvEntry.Reports;
 using mijmsReports;
 using System;
@@ -27,9 +28,9 @@ namespace InvEntry.ViewModels
             Report = _reportFactoryService.CreateInvoiceReport(pInvoiceNbr);
         }
 
-        public void EstInit(string pEstimateNbr)
+        public void EstInit(string pEstimateNbr, OrgThisCompanyView company)
         {
-            Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr);
+            Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr, company);
         }
 
         public void FinStmtPCInit(DateTime pFromDate, DateTime pToDate, string statementType)

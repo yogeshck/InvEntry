@@ -30,7 +30,7 @@
                 </dxb:BarEditItem>
                 <dxb:BarEditItem EditValue="{Binding DateSearchOption.To}" EditWidth="120" Content="To Date">
                     <dxb:BarEditItem.EditSettings>
-                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}" />
+                        <dxe:DateEditSettings AllowDefaultButton="True" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh"

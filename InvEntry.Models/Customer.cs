@@ -69,5 +69,11 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         public string? _gstStateCode;
+
+        partial void OnGstStateCodeChanged(string? value)
+        {
+            this.Address.GstStateCode = value;
+        }
+
     }
 }

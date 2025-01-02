@@ -27,6 +27,9 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private DateTime _startDate = DateTime.Today;
 
+        [ObservableProperty]
+        private DateTime _Today = DateTime.Today;
+
 
         public DailyStockSummaryListViewModel(IDailyStockSummaryService dailyStockSummaryService,
                                                 [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)

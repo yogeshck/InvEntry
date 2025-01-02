@@ -176,6 +176,7 @@
             this.pContactNbr2 = new DevExpress.XtraReports.Parameters.Parameter();
             this.pEmailId = new DevExpress.XtraReports.Parameters.Parameter();
             this.pShopLicNbr = new DevExpress.XtraReports.Parameters.Parameter();
+            this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.estimateDatesTable)).BeginInit();
@@ -1389,6 +1390,8 @@
             // 
             // xrLabel15
             // 
+            this.xrLabel15.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[calculatedField1]")});
             this.xrLabel15.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel15.LocationFloat = new DevExpress.Utils.PointFloat(0F, 173.3335F);
             this.xrLabel15.Multiline = true;
@@ -1747,6 +1750,12 @@
             this.pShopLicNbr.Description = "Shop Lic";
             this.pShopLicNbr.Name = "pShopLicNbr";
             // 
+            // calculatedField1
+            // 
+            this.calculatedField1.DataMember = "estimateLine";
+            this.calculatedField1.Name = "calculatedField1";
+            this.calculatedField1.GetValue += CalculatedField1_GetValue;
+            // 
             // XtraEstimate
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -1756,6 +1765,8 @@
             this.GroupFooter1,
             this.GroupHeader1,
             this.PageHeader});
+            this.CalculatedFields.AddRange(new DevExpress.XtraReports.UI.CalculatedField[] {
+            this.calculatedField1});
             this.ComponentStorage.AddRange(new System.ComponentModel.IComponent[] {
             this.sqlDataSource1});
             this.DataMember = "estimateLine";
@@ -1936,5 +1947,6 @@
         private DevExpress.XtraReports.Parameters.Parameter pContactNbr2;
         private DevExpress.XtraReports.Parameters.Parameter pEmailId;
         private DevExpress.XtraReports.Parameters.Parameter pShopLicNbr;
+        private DevExpress.XtraReports.UI.CalculatedField calculatedField1;
     }
 }

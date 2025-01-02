@@ -40,5 +40,8 @@ namespace InvEntry.Models
         [ObservableProperty]
         public int? _ledgerAccountCode;
 
+        [ObservableProperty]
+        public string? _transactionType;
+
     }
 }

@@ -26,4 +26,6 @@ public partial class MtblLedger
     public int? TenantGkey { get; set; }
 
     public int? LedgerAccountCode { get; set; }
+
+    public string? TransactionType { get; set; }
 }

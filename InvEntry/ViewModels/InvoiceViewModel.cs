@@ -303,7 +303,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (Buyer is null) return;
 
-        Buyer.Address.GstStateCode = value.RefCode;
+        Buyer.GstStateCode = value.RefCode;
 
         Header.CgstPercent = GetGSTPercent("CGST");
         Header.SgstPercent = GetGSTPercent("SGST");

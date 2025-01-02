@@ -3,6 +3,7 @@ using DevExpress.DataAccess.Sql;
 using DevExpress.XtraGauges.Core.Model;
 using DevExpress.XtraReports.Native;
 using DevExpress.XtraReports.UI;
+using InvEntry.Models;
 using InvEntry.Services;
 using Microsoft.Extensions.Configuration;
 using mijmsReports;
@@ -24,9 +25,9 @@ public interface IReportFactoryService
 
     XtraReport CreateEstimateReport();
 
-    XtraReport CreateEstimateReport(string pEstimateNbr);
+    XtraReport CreateEstimateReport(string pEstimateNbr, OrgThisCompanyView orgThisCompany);
 
-    Task CreateEstimateReportPdf(string pEstimateNbr, string filePath);
+    Task CreateEstimateReportPdf(string pEstimateNbr, OrgThisCompanyView orgThisCompany,string filePath);
 
     XtraReport CreateFinStatementReport();
 
@@ -76,20 +77,19 @@ public class ReportFactoryService : IReportFactoryService
         return new XtraEstimate().AddDataSource(_appConfigName);   //XrNewEstimate24().AddDataSource(_appConfigName);
     }
 
-    public XtraReport CreateEstimateReport(string pEstimateNbr)
+    public XtraReport CreateEstimateReport(string pEstimateNbr, OrgThisCompanyView orgThisCompany)
     {
         var report = CreateEstimateReport();
 
-        setReportParametersAsync(report);
+        setReportParametersAsync(report, orgThisCompany);
 
         report.Parameters["paramEstNbr"].Value = pEstimateNbr;
         report.CreateDocument();
         return report;
     }
 
-    private async Task setReportParametersAsync(XtraReport report)
+    private void setReportParametersAsync(XtraReport report, OrgThisCompanyView orgThisCompany)
     {
-        var orgThisCompany = await _orgThisCompanyViewService.GetOrgThisCompany();
         report.Parameters["pCompanyName"].Value = orgThisCompany.CompanyName;
         report.Parameters["pTagLine"].Value = orgThisCompany.Tagline;
         report.Parameters["pAddressLine1"].Value = orgThisCompany.AddressLine1;
@@ -104,9 +104,9 @@ public class ReportFactoryService : IReportFactoryService
     }
 
  
-    public async Task CreateEstimateReportPdf(string pEstimateNbr, string filePath)
+    public async Task CreateEstimateReportPdf(string pEstimateNbr, OrgThisCompanyView orgThisCompany, string filePath)
     {
-        var report = CreateEstimateReport(pEstimateNbr);
+        var report = CreateEstimateReport(pEstimateNbr, orgThisCompany);
 
         await report.ExportToPdfAsync(filePath);
     }

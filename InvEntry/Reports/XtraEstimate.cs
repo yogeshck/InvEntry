@@ -16,5 +16,14 @@ namespace InvEntry.Reports
             InitializeComponent();
         }
 
+        private void CalculatedField1_GetValue(object sender, DevExpress.XtraReports.UI.GetValueEventArgs e)
+        {
+            var words = NumberToWords.Convert(invGrandTotal.Value);
+
+            if (!string.IsNullOrEmpty(words))
+                e.Value = string.Format(NumberToWordsFormat, words);
+            else
+                e.Value = "NIL";
+        }
     }
 }

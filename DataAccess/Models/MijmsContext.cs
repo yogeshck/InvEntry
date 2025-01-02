@@ -1159,6 +1159,10 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Status).HasColumnName("STATUS");
             entity.Property(e => e.SubGroup).HasColumnName("SUB_GROUP");
             entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TransactionType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("TRANSACTION_TYPE");
         });
 
         modelBuilder.Entity<MtblReference>(entity =>

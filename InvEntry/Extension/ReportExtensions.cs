@@ -1,4 +1,5 @@
 ﻿using DevExpress.Mvvm;
+using InvEntry.Models;
 using InvEntry.ViewModels;
 using InvEntry.Views;
 using System;
@@ -19,10 +20,10 @@ namespace InvEntry.Extension
             reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
 
-        public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader)
+        public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader, OrgThisCompanyView company)
         {
             var dialogVM = DISource.Resolve<ReportDialogViewModel>();
-            dialogVM.EstInit(estimateHeader);
+            dialogVM.EstInit(estimateHeader, company);
 
             reportDialogService.ShowDialog(null, "Estimate Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }

@@ -98,7 +98,7 @@
                                 EditValue="{Binding Voucher.TransAmount}" MaskType="Numeric"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Notes" Margin="5" >
-                        <dxe:TextEdit Height="80" FontSize="16" VerticalAlignment="Top"
+                        <dxe:TextEdit Height="80" FontSize="16" VerticalAlignment="Top" HorizontalContentAlignment="Left"  VerticalContentAlignment="Top"
                                 EditValue="{Binding VoucherTransDesc}" AcceptsReturn="True" EditValuePostMode="Immediate">
                             <!--<dxmvvm:Interaction.Behaviors>
                                 <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>
