@@ -32,13 +32,13 @@ namespace DataAccess.Controllers
 
         // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
         [HttpPost("filter")]
-        public IEnumerable<Voucher> FilterVoucher([FromBody] VoucherSearchOption criteria)
+        public IEnumerable<Voucher> FilterVoucher([FromBody] DateSearchOption criteria)
         {
-            if (criteria.BookType is not null)
+            if (criteria.Filter1 is not null)
             {
                 return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
                                                         x.TransDate.Value.Date <= criteria.To.Date
-                                                        && x.Mode == criteria.BookType).OrderBy(x => x.VoucherDate);
+                                                        && x.Mode == criteria.Filter1).OrderBy(x => x.VoucherDate);
             } else
             {
                 return _voucher.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&

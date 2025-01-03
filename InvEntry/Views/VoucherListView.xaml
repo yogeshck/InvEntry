@@ -40,7 +40,7 @@
                         <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}"/>
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-                <dxb:BarEditItem   EditValue="{Binding SearchOption.BookType}"
+                <dxb:BarEditItem   EditValue="{Binding SearchOption.Filter1}"
                                                  Content="Options" EditWidth="150" EditHeight="30">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:ComboBoxEditSettings ItemsSource="{Binding StatementTypeOptionList}"/>
@@ -60,7 +60,7 @@
                 <!--Command="{Binding StatementPrintCommand}"/>   -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
-        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Vouchers}" AutoGenerateColumns="None" x:Name="VouchersGrid"
+        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding VouchersView}" AutoGenerateColumns="None" x:Name="VouchersGrid"
                          MinHeight="500"
                          Height="500"
                          MaxHeight="900"

@@ -26,7 +26,7 @@ namespace InvEntry.ViewModels;
 
 public partial class VoucherListViewModel: ObservableObject
 {
-    private readonly IVoucherService _voucherService;
+    private readonly IVoucherDbViewService _voucherDbViewService;
     private readonly IDialogService _reportDialogService;
     private readonly ITallyXMLService _xmlService;
     private readonly IMtblLedgersService _mtblLedgersService;
@@ -34,13 +34,10 @@ public partial class VoucherListViewModel: ObservableObject
     private readonly IReportFactoryService _reportFactoryService;
 
     [ObservableProperty]
-    private ObservableCollection<Voucher> _vouchers;
-
-    /*    [ObservableProperty]
-        private ObservableCollection<VoucherView> _vouchersView;*/
+    private ObservableCollection<VoucherDbView> _vouchersView;
 
     [ObservableProperty]
-    private VoucherSearchOption _searchOption;
+    private DateSearchOption _searchOption;
 
     [ObservableProperty]
     private ObservableCollection<string> _statementTypeOptionList;
@@ -54,13 +51,13 @@ public partial class VoucherListViewModel: ObservableObject
     [ObservableProperty]
     private ObservableCollection<MtblLedger> _masterLedgerList;
 
-    public  VoucherListViewModel(IVoucherService voucherService,
+    public  VoucherListViewModel(IVoucherDbViewService voucherDbViewService,
             ITallyXMLService xmlService,
             IMtblLedgersService mtblLedgersService,
             IReportFactoryService reportFactoryService,
             [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
-        _voucherService = voucherService;
+        _voucherDbViewService = voucherDbViewService;
         _reportDialogService = reportDialogService;
         _mtblLedgersService = mtblLedgersService;
         _xmlService = xmlService;
@@ -69,7 +66,7 @@ public partial class VoucherListViewModel: ObservableObject
         _searchOption = new();
         SearchOption.To = Today;
         SearchOption.From = Today.AddDays(-2);
-        SearchOption.BookType ??= "Cash";
+        SearchOption.Filter1 ??= "Cash";
 
         PopulateStatmentTypeOpionList();
         //PopulateMasterLedgerList();
@@ -115,12 +112,12 @@ public partial class VoucherListViewModel: ObservableObject
     [RelayCommand]
     private async Task RefreshVoucherAsync()
     {
-        Vouchers = new();
+        VouchersView = new();
 
 
        // SearchOption.BookType = null;
 
-        var vouchersResult = await _voucherService.GetAll(SearchOption);
+        var vouchersResult = await _voucherDbViewService.GetAll(SearchOption);
         if (vouchersResult is not null)
         {
 
@@ -128,7 +125,7 @@ public partial class VoucherListViewModel: ObservableObject
             {
 //                TempView = new();
 
-                if (voucher.TransType == "Receipt")
+/*                if (voucher.TransType == "Receipt")
                 {
                     voucher.RecdAmount = voucher.TransAmount;
                     voucher.PaidAmount = 0;
@@ -137,12 +134,12 @@ public partial class VoucherListViewModel: ObservableObject
                 {
                     voucher.PaidAmount = voucher.TransAmount;
                     voucher.RecdAmount = 0;
-                }
+                }*/
 
             //    voucher.FromLedgerName
              //   = MasterLedgerList?.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey).LedgerName;
 
-                Vouchers.Add(voucher);
+                VouchersView.Add(voucher);
 
             }
             //RecdAmount = (Vouchers.Select(x => x.TransType == "Receipt")).TransAmount;
@@ -157,7 +154,7 @@ public partial class VoucherListViewModel: ObservableObject
 
         var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, 
                                                 SearchOption.To, 
-                                                SearchOption.BookType);
+                                                SearchOption.Filter1);
 
         PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
 

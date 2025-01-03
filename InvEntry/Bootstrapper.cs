@@ -133,6 +133,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IGrnService, GrnService>()
                  .AddSingleton<IEstimateService, EstimateService>()
                  .AddSingleton<IVoucherService, VoucherService>()
+                 .AddSingleton<IVoucherDbViewService, VoucherDbViewService>()
                  .AddSingleton<IVoucherTypeService, VoucherTypeService>()
                  //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()

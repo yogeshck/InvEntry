@@ -11,10 +11,10 @@ namespace DataAccess.Controllers
     public class GrnDbViewController :ControllerBase
     {
         private readonly IRepositoryBase<Grndbview> _grnDbViewRepo;
-        private readonly ILogger<ProductViewController> _logger;
+        private readonly ILogger<GrnDbViewController> _logger;
 
         public GrnDbViewController(IRepositoryBase<Grndbview> grnDbViewRepo,
-                                        ILogger<ProductViewController> logger)
+                                        ILogger<GrnDbViewController> logger)
         {
             _grnDbViewRepo = grnDbViewRepo;
             _logger = logger;

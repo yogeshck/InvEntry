@@ -97,6 +97,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
+    public virtual DbSet<VoucherDbView> VoucherDbViews { get; set; }
+
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -2419,6 +2421,69 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("ref_doc_nbr");
             entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
             entity.Property(e => e.ToLedgerGkey).HasColumnName("to_ledger_gkey");
+            entity.Property(e => e.TransAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("trans_amount");
+            entity.Property(e => e.TransDate).HasColumnName("trans_date");
+            entity.Property(e => e.TransDesc)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_desc");
+            entity.Property(e => e.TransType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("trans_type");
+            entity.Property(e => e.VoucherDate).HasColumnName("voucher_date");
+            entity.Property(e => e.VoucherNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("voucher_nbr");
+            entity.Property(e => e.VoucherType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("voucher_type");
+        });
+
+        modelBuilder.Entity<VoucherDbView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("VOUCHER_DB_VIEW");
+
+            entity.Property(e => e.CbAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("cb_amount");
+            entity.Property(e => e.CustomerGkey).HasColumnName("customer_gkey");
+            entity.Property(e => e.FromLedgerGkey).HasColumnName("from_ledger_gkey");
+            entity.Property(e => e.FromLedgerName).HasColumnName("FROM_LEDGER_NAME");
+            entity.Property(e => e.FundTransferDate).HasColumnName("fund_transfer_date");
+            entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
+            entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("GKEY");
+            entity.Property(e => e.Mode)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("mode");
+            entity.Property(e => e.ObAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ob_amount");
+            entity.Property(e => e.PaidAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("Paid Amount");
+            entity.Property(e => e.RecdAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("Recd Amount");
+            entity.Property(e => e.RefDocDate).HasColumnName("ref_doc_date");
+            entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
+            entity.Property(e => e.RefDocNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ref_doc_nbr");
+            entity.Property(e => e.SeqNbr).HasColumnName("seq_nbr");
+            entity.Property(e => e.ToLedgerGkey).HasColumnName("to_ledger_gkey");
+            entity.Property(e => e.ToLedgerName).HasColumnName("TO_LEDGER_NAME");
             entity.Property(e => e.TransAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("trans_amount");

@@ -15,7 +15,7 @@ public interface IVoucherService
 
     Task<Voucher> CreateVoucher(Voucher voucher);
 
-    Task<IEnumerable<Voucher>> GetAll(VoucherSearchOption options);
+    Task<IEnumerable<Voucher>> GetAll(DateSearchOption options);
 
     Task UpdateVoucher(Voucher voucher);
 }
@@ -40,9 +40,9 @@ public class VoucherService : IVoucherService
         return await _mijmsApiService.Get<Voucher>($"api/Voucher/{voucherId}");
     }
 
-    public async Task<IEnumerable<Voucher>> GetAll(VoucherSearchOption options)
+    public async Task<IEnumerable<Voucher>> GetAll(DateSearchOption options)
     {
-        return await _mijmsApiService.PostEnumerable<Voucher, VoucherSearchOption>($"api/voucher/filter", options);
+        return await _mijmsApiService.PostEnumerable<Voucher, DateSearchOption>($"api/voucher/filter", options);
     }
 
     public async Task UpdateVoucher(Voucher voucher)
