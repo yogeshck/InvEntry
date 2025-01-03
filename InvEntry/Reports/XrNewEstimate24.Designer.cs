@@ -171,6 +171,7 @@
             this.xrLabel5 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrPictureBox1 = new DevExpress.XtraReports.UI.XRPictureBox();
+            this.xrLine1 = new DevExpress.XtraReports.UI.XRLine();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -604,10 +605,11 @@
             // GroupHeader2
             // 
             this.GroupHeader2.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.xrLine1,
             this.invoiceDatesTable,
             this.invoiceNumberTable,
             this.customerTable});
-            this.GroupHeader2.HeightF = 82.33332F;
+            this.GroupHeader2.HeightF = 85F;
             this.GroupHeader2.Level = 1;
             this.GroupHeader2.Name = "GroupHeader2";
             // 
@@ -1690,6 +1692,15 @@
             this.xrPictureBox1.SizeF = new System.Drawing.SizeF(61.34036F, 39.6667F);
             this.xrPictureBox1.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
+            // xrLine1
+            // 
+            this.xrLine1.ForeColor = System.Drawing.Color.Gold;
+            this.xrLine1.LineWidth = 2F;
+            this.xrLine1.LocationFloat = new DevExpress.Utils.PointFloat(1.000113F, 75F);
+            this.xrLine1.Name = "xrLine1";
+            this.xrLine1.SizeF = new System.Drawing.SizeF(739.0001F, 10F);
+            this.xrLine1.StylePriority.UseForeColor = false;
+            // 
             // XrNewEstimate24
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -1704,7 +1715,7 @@
             this.ComponentStorage.AddRange(new System.ComponentModel.IComponent[] {
             this.sqlDataSource1});
             this.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F);
-            this.Margins = new DevExpress.Drawing.DXMargins(49F, 62F, 35.83333F, 303.8334F);
+            this.Margins = new DevExpress.Drawing.DXMargins(49F, 57F, 35.83333F, 303.8334F);
             this.ParameterPanelLayoutItems.AddRange(new DevExpress.XtraReports.Parameters.ParameterPanelLayoutItem[] {
             new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pEstNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
@@ -1846,5 +1857,6 @@
         private DevExpress.XtraReports.UI.XRTableRow gstinRow;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell17;
         private DevExpress.XtraReports.UI.XRTableCell slno;
+        private DevExpress.XtraReports.UI.XRLine xrLine1;
     }
 }

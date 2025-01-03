@@ -23,16 +23,19 @@ public partial class VoucherEntryViewModel: ObservableObject
     private Voucher _voucher;
 
     [ObservableProperty]
-    private ObservableCollection<string> cashVoucherTypeList;
+    private ObservableCollection<string> _cashVoucherTypeList;
 
     [ObservableProperty]
     private ObservableCollection<string> transactionTypeList;
 
     [ObservableProperty]
-    private ObservableCollection<string> accountGroupList;
+    private ObservableCollection<string> _accountGroupList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblLedger> masterLedgerList;
+    private ObservableCollection<MtblLedger> _masterLedgerList;
+
+    [ObservableProperty]
+    private string _transactionType;
 
     [ObservableProperty]
     private string _voucherTransDesc;
@@ -53,14 +56,14 @@ public partial class VoucherEntryViewModel: ObservableObject
             IMessageBoxService messageBoxService)
     {
         CashVoucherTypeList = new();
-        transactionTypeList = new();
+        TransactionTypeList = new();
 
         _voucherService = voucherService;
         _mtblLedgersService = mtblLedgersService;
         _messageBoxService = messageBoxService;
         
         PopulateReferenceList();
-        PopulateAccountrGroupList();
+        Task.Run(PopulateAccountrGroupList).Wait();
         ResetVoucher();
     }
 
@@ -74,9 +77,9 @@ public partial class VoucherEntryViewModel: ObservableObject
 
     }
 
-    private async void PopulateAccountrGroupList()
+    private async Task PopulateAccountrGroupList()
     {
-        var masterLedgerList = await _mtblLedgersService.GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic
+        var masterLedgerList = await _mtblLedgersService.GetAll();   //GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic
 
         if (masterLedgerList is not null)
         {
@@ -116,8 +119,37 @@ public partial class VoucherEntryViewModel: ObservableObject
     {
         if (Voucher.TransType is null)
         {
-            Voucher.TransType = "Payment";
+           // Voucher.TransType = "Payment";
+            TransactionType = "Payment";
         }
+    }
+
+    partial void OnTransactionTypeChanged(string value)
+    {
+        Voucher.TransType = value;
+        
+        var filter = GetLookUp(value);
+        if (string.IsNullOrEmpty(filter))
+        {
+            AccountGroupList = new(MasterLedgerList.Select(x => x.LedgerName));
+            return;
+        }
+
+        AccountGroupList = new(
+            MasterLedgerList.Where(x => x.TransactionType.Contains(filter)).Select(x => x.LedgerName)
+            );
+
+    }
+
+    private string GetLookUp(string value)
+    {
+        if (value.Equals("Payment"))
+            return "Exp";
+
+        if (value.Equals("Receipt"))
+            return "Rct";
+
+            return null;
     }
 
     private void SetVoucherType()

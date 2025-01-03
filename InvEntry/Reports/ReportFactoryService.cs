@@ -5,6 +5,7 @@ using DevExpress.XtraReports.Native;
 using DevExpress.XtraReports.UI;
 using InvEntry.Models;
 using InvEntry.Services;
+using InvEntry.Reports;
 using Microsoft.Extensions.Configuration;
 using mijmsReports;
 using System;
@@ -25,9 +26,10 @@ public interface IReportFactoryService
 
     XtraReport CreateEstimateReport();
 
-    XtraReport CreateEstimateReport(string pEstimateNbr, OrgThisCompanyView orgThisCompany);
+    XtraReport CreateEstimateReport(string pEstimateNbr, int estGkey, OrgThisCompanyView orgThisCompany);
 
-    Task CreateEstimateReportPdf(string pEstimateNbr, OrgThisCompanyView orgThisCompany,string filePath);
+    Task CreateEstimateReportPdf(string pEstimateNbr, int pEstHdrGkey,
+                                                OrgThisCompanyView orgThisCompany, string filePath);
 
     XtraReport CreateFinStatementReport();
 
@@ -74,16 +76,18 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XtraEstimate().AddDataSource(_appConfigName);   //XrNewEstimate24().AddDataSource(_appConfigName);
+        return new XrtEstimate24().AddDataSource(_appConfigName);  //XtraEstimate().AddDataSource(_appConfigName);   
+                                                                     //XrNewEstimate24().AddDataSource(_appConfigName);
     }
 
-    public XtraReport CreateEstimateReport(string pEstimateNbr, OrgThisCompanyView orgThisCompany)
+    public XtraReport CreateEstimateReport(string pEstimateNbr, int pEstHdrGkey, OrgThisCompanyView orgThisCompany)
     {
         var report = CreateEstimateReport();
 
-        setReportParametersAsync(report, orgThisCompany);
+        //setReportParametersAsync(report, orgThisCompany);
 
-        report.Parameters["paramEstNbr"].Value = pEstimateNbr;
+        report.Parameters["pEstNbr"].Value = pEstimateNbr;    //paramEstNbr
+        report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
         report.CreateDocument();
         return report;
     }
@@ -104,9 +108,10 @@ public class ReportFactoryService : IReportFactoryService
     }
 
  
-    public async Task CreateEstimateReportPdf(string pEstimateNbr, OrgThisCompanyView orgThisCompany, string filePath)
+    public async Task CreateEstimateReportPdf(string pEstimateNbr, int pEstHdrGkey,
+                                                OrgThisCompanyView orgThisCompany, string filePath)
     {
-        var report = CreateEstimateReport(pEstimateNbr, orgThisCompany);
+        var report = CreateEstimateReport(pEstimateNbr, pEstHdrGkey, orgThisCompany);
 
         await report.ExportToPdfAsync(filePath);
     }

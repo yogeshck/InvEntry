@@ -64,9 +64,9 @@
                         <dxe:TextEdit Height="42" IsReadOnly="True" ShowBorder="False" FontWeight="ExtraBold"
                                           EditValue="{Binding Voucher.Mode}"/>
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Transacion Type" FontSize="14" Margin="5">
+                    <dxlc:LayoutItem Label="Transaction Type" FontSize="14" Margin="5">
                         <dxe:ComboBoxEdit Height="42" FontWeight="ExtraBold" ItemsSource="{Binding TransactionTypeList}" 
-                                          EditValue="{Binding Voucher.TransType}">
+                                          EditValue="{Binding TransactionType}">
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Account" FontSize="14" Margin="5">
@@ -91,7 +91,7 @@
                                 EditValue="{Binding Voucher.TransAmount}" MaskType="Numeric"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Notes" Margin="5">
-                        <dxe:TextEdit Height="80" FontSize="16"
+                        <dxe:TextEdit Height="80" FontSize="16" HorizontalContentAlignment="Left"  VerticalContentAlignment="Top"
                                 EditValue="{Binding VoucherTransDesc}" AcceptsReturn="True" EditValuePostMode="Immediate">
                             <!--<dxmvvm:Interaction.Behaviors>
                                 <dxmvvm:KeyToCommand KeyGesture="Enter" Command="{Binding SaveVoucherCommand}"/>

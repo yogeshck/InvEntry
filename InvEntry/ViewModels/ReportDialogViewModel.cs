@@ -28,9 +28,9 @@ namespace InvEntry.ViewModels
             Report = _reportFactoryService.CreateInvoiceReport(pInvoiceNbr);
         }
 
-        public void EstInit(string pEstimateNbr, OrgThisCompanyView company)
+        public void EstInit(string pEstimateNbr, int estGkey, OrgThisCompanyView company)
         {
-            Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr, company);
+            Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr, estGkey, company);
         }
 
         public void FinStmtPCInit(DateTime pFromDate, DateTime pToDate, string statementType)

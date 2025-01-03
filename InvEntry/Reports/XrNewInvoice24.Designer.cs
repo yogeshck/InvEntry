@@ -47,7 +47,6 @@
             this.TopMargin = new DevExpress.XtraReports.UI.TopMarginBand();
             this.BottomMargin = new DevExpress.XtraReports.UI.BottomMarginBand();
             this.Detail = new DevExpress.XtraReports.UI.DetailBand();
-            this.xrLine3 = new DevExpress.XtraReports.UI.XRLine();
             this.detailTable = new DevExpress.XtraReports.UI.XRTable();
             this.detailTableRow1 = new DevExpress.XtraReports.UI.XRTableRow();
             this.slno = new DevExpress.XtraReports.UI.XRTableCell();
@@ -60,6 +59,7 @@
             this.prodStoneAmt = new DevExpress.XtraReports.UI.XRTableCell();
             this.stoneAmt = new DevExpress.XtraReports.UI.XRTableCell();
             this.lineTotal = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrLine3 = new DevExpress.XtraReports.UI.XRLine();
             this.pInvNbr = new DevExpress.XtraReports.Parameters.Parameter();
             this.sqlDataSource1 = new DevExpress.DataAccess.Sql.SqlDataSource(this.components);
             this.GroupHeader1 = new DevExpress.XtraReports.UI.GroupHeaderBand();
@@ -231,15 +231,6 @@
             this.Detail.HeightF = 27.66668F;
             this.Detail.Name = "Detail";
             // 
-            // xrLine3
-            // 
-            this.xrLine3.ForeColor = System.Drawing.Color.Gold;
-            this.xrLine3.LineWidth = 2F;
-            this.xrLine3.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
-            this.xrLine3.Name = "xrLine3";
-            this.xrLine3.SizeF = new System.Drawing.SizeF(723F, 10F);
-            this.xrLine3.StylePriority.UseForeColor = false;
-            // 
             // detailTable
             // 
             this.detailTable.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
@@ -396,6 +387,15 @@
             this.lineTotal.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopRight;
             this.lineTotal.TextFormatString = "{0:##,###,##0.00}";
             this.lineTotal.Weight = 0.6841282285179775D;
+            // 
+            // xrLine3
+            // 
+            this.xrLine3.ForeColor = System.Drawing.Color.Gold;
+            this.xrLine3.LineWidth = 2F;
+            this.xrLine3.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
+            this.xrLine3.Name = "xrLine3";
+            this.xrLine3.SizeF = new System.Drawing.SizeF(723F, 10F);
+            this.xrLine3.StylePriority.UseForeColor = false;
             // 
             // pInvNbr
             // 
@@ -1133,7 +1133,7 @@
             this.xrLabel15.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[calculatedField1]")});
             this.xrLabel15.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel15.LocationFloat = new DevExpress.Utils.PointFloat(0F, 179.5F);
+            this.xrLabel15.LocationFloat = new DevExpress.Utils.PointFloat(0.002187093F, 180.6667F);
             this.xrLabel15.Multiline = true;
             this.xrLabel15.Name = "xrLabel15";
             this.xrLabel15.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);

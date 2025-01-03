@@ -21,11 +21,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="DevExpress.Images" Version="24.2.3" />
-	<PackageReference Include="DevExpress.Wpf" Version="24.2.3" />
-    <PackageReference Include="DevExpress.Wpf.Core" Version="24.2.3" />
-    <PackageReference Include="DevExpress.Wpf.Printing" Version="24.2.3" />
-	<PackageReference Include="DevExpress.Wpf.Themes.All" Version="24.2.3" />
+    <PackageReference Include="DevExpress.Images" Version="24.2.4-pre-24357" />
+	<PackageReference Include="DevExpress.Wpf" Version="24.2.4-pre-24357" />
+    <PackageReference Include="DevExpress.Wpf.Core" Version="24.2.4-pre-24357" />
+    <PackageReference Include="DevExpress.Wpf.Printing" Version="24.2.4-pre-24357" />
+	<PackageReference Include="DevExpress.Wpf.Themes.All" Version="24.2.4-pre-24357" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
+    <ProjectReference Include="..\InvEntry.Reports\InvEntry.Reports.csproj" />
     <ProjectReference Include="..\InvEntry.Tally\InvEntry.Tally.csproj" />
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
   </ItemGroup>

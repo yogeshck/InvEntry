@@ -557,7 +557,7 @@ public partial class EstimateViewModel: ObservableObject
     private void PrintEstimate()
     {
         //after report uncomment this
-            var printed = PrintHelper.Print(_reportFactoryService.CreateEstimateReport(Header.EstNbr, Company ));
+            var printed = PrintHelper.Print(_reportFactoryService.CreateEstimateReport(Header.EstNbr, Header.GKey, Company ));
         
             if (printed.HasValue && printed.Value)
                 _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);
@@ -571,7 +571,7 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintEstimate))]
     private void PrintPreviewEstimate()
     {
-        _reportDialogService.PrintPreviewEstimate(Header.EstNbr, Company);
+        _reportDialogService.PrintPreviewEstimate(Header.EstNbr, Header.GKey, Company);
         ResetEstimate();
     }
 
@@ -579,7 +579,7 @@ public partial class EstimateViewModel: ObservableObject
     private void ExportToPdf()
     {
      
-            _reportFactoryService.CreateEstimateReportPdf(Header.EstNbr, Company, "D:\\Madrone\\Invoice\\");
+            _reportFactoryService.CreateEstimateReportPdf(Header.EstNbr, Header.GKey, Company, "D:\\Madrone\\Invoice\\");
     }
 
     [RelayCommand]
