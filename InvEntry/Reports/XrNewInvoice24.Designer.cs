@@ -202,6 +202,7 @@
             this.vendorEmailRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -2007,7 +2008,8 @@
             this.ReportHeader.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
             this.xrLine2,
             this.gstinTable,
-            this.vendorTable});
+            this.vendorTable,
+            this.xrPictureBox2});
             this.ReportHeader.Font = new DevExpress.Drawing.DXFont("Times New Roman", 9.75F);
             this.ReportHeader.HeightF = 151F;
             this.ReportHeader.KeepTogether = true;
@@ -2148,6 +2150,14 @@
             this.calculatedField1.Expression = "[INVL_PAYABLE_AMT]";
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
+            // 
+            // xrPictureBox2
+            // 
+            this.xrPictureBox2.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox2.ImageSource"));
+            this.xrPictureBox2.LocationFloat = new DevExpress.Utils.PointFloat(628.5313F, 0F);
+            this.xrPictureBox2.Name = "xrPictureBox2";
+            this.xrPictureBox2.SizeF = new System.Drawing.SizeF(99.46887F, 92.80001F);
+            this.xrPictureBox2.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
             // XrNewInvoice24
             // 
@@ -2349,5 +2359,6 @@
         private DevExpress.XtraReports.UI.XRTableCell totalRow;
         private DevExpress.XtraReports.UI.XRTableCell totalMetalWeight;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell21;
+        private DevExpress.XtraReports.UI.XRPictureBox xrPictureBox2;
     }
 }

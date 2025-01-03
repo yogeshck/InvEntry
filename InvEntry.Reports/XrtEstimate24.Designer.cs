@@ -179,6 +179,7 @@
             this.xrLabel14 = new DevExpress.XtraReports.UI.XRLabel();
             this.pEstHdrGkey = new DevExpress.XtraReports.Parameters.Parameter();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -803,7 +804,8 @@
             this.ReportHeader.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
             this.xrLine4,
             this.gstinTable,
-            this.vendorTable});
+            this.vendorTable,
+            this.xrPictureBox2});
             this.ReportHeader.HeightF = 151F;
             this.ReportHeader.Name = "ReportHeader";
             // 
@@ -1750,6 +1752,16 @@
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
+            // xrPictureBox2
+            // 
+            this.xrPictureBox2.BorderColor = System.Drawing.Color.Transparent;
+            this.xrPictureBox2.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox2.ImageSource"));
+            this.xrPictureBox2.LocationFloat = new DevExpress.Utils.PointFloat(605.7509F, 0F);
+            this.xrPictureBox2.Name = "xrPictureBox2";
+            this.xrPictureBox2.SizeF = new System.Drawing.SizeF(141.2491F, 100F);
+            this.xrPictureBox2.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
+            this.xrPictureBox2.StylePriority.UseBorderColor = false;
+            // 
             // XrtEstimate24
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -1916,5 +1928,6 @@
         private DevExpress.XtraReports.UI.XRTableRow gstinRow;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell17;
         private DevExpress.XtraReports.UI.CalculatedField calculatedField1;
+        private DevExpress.XtraReports.UI.XRPictureBox xrPictureBox2;
     }
 }
