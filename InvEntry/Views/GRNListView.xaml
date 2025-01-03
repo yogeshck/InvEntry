@@ -59,7 +59,7 @@
                          MaxHeight="1100"
                          MinWidth="700"
                          Width="1200"     
-                         HorizontalAlignment="Left">
+                         HorizontalAlignment="Left" VerticalAlignment="Top">
             <!--  SelectedItem="{Binding SelectedEstimate}"             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                        Command="{Binding SelectionChangedCommand}" />

@@ -30,9 +30,6 @@
         </Grid.ColumnDefinitions>-->
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <dxb:BarButtonItem x:Name="btnPrintGrid"
-                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
                 <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
@@ -47,6 +44,11 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshEstimateCommand}" />
+                <dxb:BarItemSeparator Margin="2,0,2,0"/>
+                <dxb:BarButtonItem x:Name="btnPrintGrid" GlyphSize="Large"
+                    Content="Export" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" />
+                <dxb:BarItemSeparator Margin="2,0,2,0"/>
                 <dxb:BarButtonItem x:Name="btnPrintEstimate"
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                    GlyphSize="Large" Alignment="Far"
@@ -59,7 +61,7 @@
                          MaxHeight="1100"
                          MinWidth="700"
                          Width="1000" SelectedItem="{Binding SelectedEstimate}"
-                         HorizontalAlignment="Left">
+                         HorizontalAlignment="Left" VerticalAlignment="Top">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                        Command="{Binding SelectionChangedCommand}" />

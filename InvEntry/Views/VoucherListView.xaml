@@ -45,11 +45,13 @@
                     <dxb:BarEditItem.EditSettings>
                         <dxe:ComboBoxEditSettings ItemsSource="{Binding StatementTypeOptionList}"/>
                     </dxb:BarEditItem.EditSettings> 
-                </dxb:BarEditItem> 
+                </dxb:BarEditItem>
+                <dxb:BarItemSeparator Margin="2,0,2,0"/>
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh" 
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshVoucherCommand}"/>
+                <dxb:BarItemSeparator Margin="2,0,2,0"/>
                 <dxb:BarButtonItem x:Name="btnPrint" 
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                    GlyphSize="Large" 
@@ -78,6 +80,11 @@
                 <dxg:GridColumn FieldName="VoucherDate" Header="Voucher Date" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="Mode" Header="Voucher Mode" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="TransType" Header="Type" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="TransAmount" Header="Trans Amt" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
                 <dxg:GridColumn FieldName="FromLedgerName" Header="From A/c" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="ToLedgerName" Header="To A/c" ReadOnly="True" Width="100" />                
                 <dxg:GridColumn FieldName="TransDesc" Header="Desc" ReadOnly="True" Width="100" />
