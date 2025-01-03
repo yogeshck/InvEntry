@@ -54,7 +54,9 @@ public partial class EstimateListViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintEstimate))]
     private void PrintEstimate()
     {
-        _reportDialogService.PrintPreview(SelectedEstimate.EstNbr);
+        _reportDialogService.PrintPreviewEstimate(SelectedEstimate.EstNbr, SelectedEstimate.GKey);
+            
+            //PrintPreviewEstimate(SelectedEstimate.EstNbr);
     }
 
     private bool CanPrintEstimate()

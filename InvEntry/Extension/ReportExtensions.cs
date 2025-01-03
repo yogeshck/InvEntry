@@ -28,5 +28,12 @@ namespace InvEntry.Extension
 
             reportDialogService.ShowDialog(null, "Estimate Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
+
+        public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader,
+                                                                    int estGkey)
+        {
+            PrintPreviewEstimate(reportDialogService, estimateHeader, estGkey, null);
+        }
+
     }
 }

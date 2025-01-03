@@ -34,6 +34,7 @@ namespace DataAccess.Controllers
             return _repDailyStockSummary.GetList(x => x.TransactionDate.HasValue && 
                                                       x.TransactionDate.Value.Date >= criteria.From.Date &&
                                                       x.TransactionDate.Value.Date <= criteria.To.Date)
+                                                        .OrderBy(x => x.TransactionDate)
                                                         .OrderBy(x => x.Metal);
         }
 
