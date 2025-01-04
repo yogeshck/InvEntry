@@ -23,7 +23,7 @@
         ResizeMode="CanResizeWithGrip"
     MinHeight="400"
     MinWidth="700"
-    Icon="InvEntry.ico"
+    Icon="MathaLogo.png"
     DataContext="{ext:DISource Type={x:Type viewmodels:MainWindowViewModel}}">
     <Grid>
         <Grid.RowDefinitions>
@@ -47,15 +47,15 @@
                         </dxmvvm:Interaction.Behaviors>
                     </dxwui:NavigationFrame>
                 </dxwui:HamburgerMenu.Content>
-                <dxwui:HamburgerSubMenu>
-                    
+                <dxwui:HamburgerSubMenu Content="Invoice" Glyph="{dx:DXImage Images/XAF/BO_Invoice_32x32.png}">
+                    <dxwui:HamburgerSubMenu.Items>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
+                                                 Content="Invoice Entry"/>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
+                                                 Content="Invoice List View" />
+                                                 <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
+                    </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
-                <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
-                                                 Content="Invoice Entry"
-                                                 Glyph="{dx:DXImage Images/XAF/BO_Invoice_32x32.png}" />
-                <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
-                                                 Content="Invoice List View"
-                                                 Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />
                 <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type views:VoucherListView}"
                                                  Content="Voucher List View"
                                                  Glyph="{dx:DXImage Images/Business Objects/BOReport2_32x32.png}"/>
