@@ -1,0 +1,25 @@
+﻿CREATE TABLE [dbo].[VOUCHER] (
+    [gkey]                   INT             IDENTITY (1, 1) NOT NULL,
+    [seq_nbr]                INT             NULL,
+    [customer_gkey]          INT             NULL,
+    [trans_type]             VARCHAR (50)    NULL,
+    [voucher_type]           VARCHAR (50)    NULL,
+    [mode]                   VARCHAR (50)    NULL,
+    [trans_amount]           DECIMAL (18, 2) NULL,
+    [voucher_nbr]            VARCHAR (50)    NULL,
+    [voucher_date]           DATETIME2 (7)   NULL,
+    [ref_doc_gkey]           INT             NULL,
+    [ref_doc_nbr]            VARCHAR (50)    NULL,
+    [ref_doc_date]           DATETIME2 (7)   NULL,
+    [trans_desc]             VARCHAR (50)    NULL,
+    [trans_date]             DATETIME2 (7)   NULL,
+    [from_ledger_gkey]       INT             NULL,
+    [to_kedger_gkey]         INT             NULL,
+    [ob_amount]              DECIMAL (18, 2) NULL,
+    [cb_amount]              DECIMAL (18, 2) NULL,
+    [fund_transfer_mode]     INT             NULL,
+    [fund_transfer_ref_gkey] INT             NULL,
+    [fund_transfer_date]     DATETIME2 (7)   NULL,
+    CONSTRAINT [PK_fin_day_book] PRIMARY KEY CLUSTERED ([gkey] ASC)
+);
+

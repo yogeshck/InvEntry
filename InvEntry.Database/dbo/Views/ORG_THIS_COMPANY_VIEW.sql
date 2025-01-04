@@ -1,5 +1,5 @@
 ﻿
-CREATE VIEW "dbo"."ORG_THIS_COMPANY_VIEW" AS
+CREATE VIEW [dbo].[ORG_THIS_COMPANY_VIEW] AS
 	SELECT
     orgCompany.name AS company_name,
     orgAddress.address_line1 AS address_line1,

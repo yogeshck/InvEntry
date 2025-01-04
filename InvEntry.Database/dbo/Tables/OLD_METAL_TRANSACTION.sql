@@ -1,0 +1,28 @@
+﻿CREATE TABLE [dbo].[OLD_METAL_TRANSACTION] (
+    [gkey]                 INT             IDENTITY (1, 1) NOT NULL,
+    [trans_nbr]            VARCHAR (50)    NULL,
+    [trans_date]           DATETIME2 (7)   NULL,
+    [trans_type]           VARCHAR (50)    NULL,
+    [doc_ref_gkey]         INT             NULL,
+    [doc_ref_nbr]          VARCHAR (50)    NULL,
+    [doc_ref_date]         DATETIME2 (7)   NULL,
+    [cust_gkey]            INT             NULL,
+    [cust_mobile]          VARCHAR (50)    NULL,
+    [product_gkey]         INT             NULL,
+    [product_id]           VARCHAR (50)    NULL,
+    [product_category]     VARCHAR (50)    NULL,
+    [metal]                VARCHAR (50)    NULL,
+    [purity]               VARCHAR (50)    NULL,
+    [transacted_rate]      DECIMAL (18, 2) NULL,
+    [uom]                  VARCHAR (50)    NULL,
+    [gross_weight]         DECIMAL (18, 3) NULL,
+    [stone_weight]         DECIMAL (18, 3) NULL,
+    [wastage_percent]      DECIMAL (18, 2) NULL,
+    [wastage_weight]       DECIMAL (18, 3) NULL,
+    [net_weight]           DECIMAL (18, 3) NULL,
+    [total_proposed_price] DECIMAL (18, 2) NULL,
+    [final_purchase_price] DECIMAL (18, 2) NULL,
+    [remarks]              VARCHAR (50)    NULL,
+    CONSTRAINT [PK_old_metal_transaction] PRIMARY KEY CLUSTERED ([gkey] ASC)
+);
+

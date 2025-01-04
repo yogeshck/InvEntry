@@ -62,14 +62,13 @@
     <Folder Include="dbo\Tables\" />
     <Folder Include="dbo\Views\" />
     <Folder Include="Security\" />
+    <Folder Include="dbo\Stored Procedures\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\PRODUCT_STOCK.sql" />
-    <Build Include="dbo\Tables\ar_invoice_receipts.sql" />
     <Build Include="dbo\Tables\ORG_CUSTOMER.sql" />
     <Build Include="dbo\Tables\ORG_COMPANY.sql" />
     <Build Include="dbo\Tables\ORG_ADDRESS.sql" />
-    <Build Include="dbo\Tables\fin_day_book.sql" />
     <Build Include="dbo\Tables\INVOICE_LINE.sql" />
     <Build Include="dbo\Tables\mtbl_references.sql" />
     <Build Include="dbo\Tables\DAILY_RATE.sql" />
@@ -83,8 +82,30 @@
     <Build Include="dbo\Tables\ORG_GEO_LOCATIONS.sql" />
     <Build Include="dbo\Tables\PRODUCT_CATEGORY.sql" />
     <Build Include="dbo\Views\ORG_THIS_COMPANY_VIEW.sql" />
-    <Build Include="Security\mijmsuser.sql" />
-    <Build Include="Security\mijms.sql" />
     <Build Include="Security\mijms_1.sql" />
+    <Build Include="dbo\Tables\VOUCHER_TYPES.sql" />
+    <Build Include="dbo\Tables\VOUCHER.sql" />
+    <Build Include="dbo\Tables\REP_DAILY_STOCK_SUMMARY.sql" />
+    <Build Include="dbo\Tables\PRODUCT_STOCK_SUMMARY.sql" />
+    <Build Include="dbo\Tables\PRODUCT.sql" />
+    <Build Include="dbo\Tables\ORG_PLACES.sql" />
+    <Build Include="dbo\Tables\OLD_METAL_TRANSACTION.sql" />
+    <Build Include="dbo\Tables\MTBL_VOUCHER_TYPES.sql" />
+    <Build Include="dbo\Tables\MTBL_LEDGERS.sql" />
+    <Build Include="dbo\Tables\LEDGERS_TRANSACTIONS.sql" />
+    <Build Include="dbo\Tables\LEDGERS_HEADER.sql" />
+    <Build Include="dbo\Tables\INVOICE_AR_RECEIPTS.sql" />
+    <Build Include="dbo\Tables\GRN_LINE_SUMMARY.sql" />
+    <Build Include="dbo\Tables\GRN_LINE.sql" />
+    <Build Include="dbo\Tables\GRN_HEADER.sql" />
+    <Build Include="dbo\Tables\ESTIMATE_LINE.sql" />
+    <Build Include="dbo\Tables\ESTIMATE_HEADER.sql" />
+    <Build Include="dbo\Views\PRODUCT_VIEW.sql" />
+    <Build Include="dbo\Views\ORG_CUSTOMER_ADDRESS_VIEW.sql" />
+    <Build Include="dbo\Views\daily_stock_summary.sql" />
+    <Build Include="Security\NT AUTHORITY_SYSTEM.sql" />
+    <Build Include="Security\RoleMemberships.sql" />
+    <Build Include="dbo\Stored Procedures\sp_BackupDatabases.sql" />
+    <Build Include="dbo\Stored Procedures\Get_Stock_Day_Book.sql" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,8 @@
 ﻿CREATE TABLE [dbo].[ORG_BANK_DETAILS] (
-    [GKEY]              BIGINT        NOT NULL,
+    [GKEY]              INT           NOT NULL,
     [BANK_NAME]         VARCHAR (200) NULL,
     [BRANCH_NAME]       VARCHAR (200) NULL,
-    [IFSC_CODE]         VARCHAR (20)  NULL,
+    [IFSC_CODE]         VARCHAR (20)  NOT NULL,
     [BANK_ACCOUNT_NBR]  VARCHAR (200) NULL,
     [BANK_CUST_REF_NBR] VARCHAR (200) NULL,
     [IS_PRIMARY]        VARCHAR (1)   NULL,
@@ -15,9 +15,10 @@
 );
 
 
+
+
 GO
-CREATE UNIQUE NONCLUSTERED INDEX [BANK_DETAILS_PK_2]
-    ON [dbo].[ORG_BANK_DETAILS]([GKEY] ASC);
+
 
 
 GO

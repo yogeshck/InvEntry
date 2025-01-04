@@ -1,13 +1,13 @@
-﻿CREATE TABLE [dbo].[mtbl_references] (
-    [gkey]      INT            IDENTITY (1, 1) NOT NULL,
-    [ref_name]  NVARCHAR (50)  NOT NULL,
-    [ref_code]  NVARCHAR (50)  NOT NULL,
-    [ref_value] NVARCHAR (50)  NOT NULL,
-    [sort_seq]  SMALLINT       NOT NULL,
-    [ref_desc]  NVARCHAR (MAX) NULL,
-    [module]    NVARCHAR (50)  NULL,
-    [is_active] BIT            NOT NULL,
+﻿CREATE TABLE [dbo].[MTBL_REFERENCES] (
+    [gkey]      INT           IDENTITY (1, 1) NOT NULL,
+    [ref_name]  VARCHAR (50)  NOT NULL,
+    [ref_code]  VARCHAR (50)  NOT NULL,
+    [ref_value] VARCHAR (50)  NOT NULL,
+    [sort_seq]  INT           NOT NULL,
+    [ref_desc]  VARCHAR (500) NULL,
+    [module]    VARCHAR (50)  NULL,
+    [is_active] BIT           NOT NULL,
     CONSTRAINT [PK_mtbl_references] PRIMARY KEY CLUSTERED ([gkey] ASC),
-    CONSTRAINT [FK_mtbl_references_mtbl_references] FOREIGN KEY ([gkey]) REFERENCES [dbo].[mtbl_references] ([gkey])
+    CONSTRAINT [FK_mtbl_references_mtbl_references] FOREIGN KEY ([gkey]) REFERENCES [dbo].[MTBL_REFERENCES] ([gkey])
 );
 

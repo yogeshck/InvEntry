@@ -1,0 +1,9 @@
+﻿CREATE TABLE [dbo].[LEDGERS_HEADER] (
+    [GKEY]              INT             IDENTITY (99, 1) NOT NULL,
+    [MTBL_LEDGERS_GKEY] INT             NULL,
+    [CUST_GKEY]         INT             NULL,
+    [BALANCE_AS_ON]     DATETIME2 (7)   NULL,
+    [CURRENT_BALANCE]   DECIMAL (18, 2) NULL,
+    CONSTRAINT [PK_LEDGERS_HEADER] PRIMARY KEY CLUSTERED ([GKEY] ASC)
+);
+

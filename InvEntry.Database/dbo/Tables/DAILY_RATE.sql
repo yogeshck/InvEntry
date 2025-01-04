@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [dbo].[DAILY_RATE] (
-    [GKEY]           BIGINT         IDENTITY (1, 1) NOT NULL,
+    [GKEY]           INT            IDENTITY (1, 1) NOT NULL,
     [EFFECTIVE_DATE] DATETIME2 (7)  NOT NULL,
     [METAL]          NVARCHAR (20)  NULL,
     [PURITY]         NVARCHAR (20)  NULL,
