@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <UserSecretsId>6bbfdca0-bde8-4a50-802f-731f5fbd6d8b</UserSecretsId>
     <ApplicationIcon>InvEntry.ico</ApplicationIcon>
@@ -45,7 +45,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
-    <ProjectReference Include="..\InvEntry.Reports\InvEntry.Reports.csproj" />
     <ProjectReference Include="..\InvEntry.Tally\InvEntry.Tally.csproj" />
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
   </ItemGroup>
