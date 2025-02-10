@@ -32,6 +32,12 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private string _categoryUI;
 
+/*        [ObservableProperty]
+        private string _supplierId;*/
+
+        [ObservableProperty]
+        private MtblReference _supplierId;
+
         [ObservableProperty]
         private ObservableCollection<string> _productCategoryList;
 
@@ -116,6 +122,15 @@ namespace InvEntry.ViewModels
             SupplierReferencesList = new(suppRefServiceList.Select(x => x.RefValue));
         }
 
+        partial void OnSupplierIdChanged(MtblReference value)
+        {
+            //if (Buyer is null) return;
+            
+            if (value.RefValue is not null)
+            {
+                Header.SupplierId = value.RefValue;
+            }
+        }
 
         [RelayCommand]
         private async Task FetchProduct(EditValueChangedEventArgs args)
@@ -125,16 +140,28 @@ namespace InvEntry.ViewModels
 
             var product = await _productService.GetByCategory(CategoryUI);
 
+            if (product is null)
+            {
+                _messageBoxService.ShowMessage("Category " + CategoryUI + " not found., Contact Admin",
+                                 "Product not found",
+                                 MessageButton.OK);
+
+                return;
+            }
+
             GrnLineSummary grnLineSumry = new GrnLineSummary()
             {
                 ProductGkey = product.GKey,
                 ProductCategory = CategoryUI,
-                StoneWeight = 0
+                SuppliedQty = 1,
+                StoneWeight = 0,
+                NetWeight = 0
             };
 
             SetLineSummary(grnLineSumry,product);
 
-            grnLineSumry.NetWeight = grnLineSumry.GrossWeight - grnLineSumry.StoneWeight;
+            //var NetWeight = grnLineSumry.GrossWeight.GetValueOrDefault() - grnLineSumry.StoneWeight.GetValueOrDefault();
+            //grnLineSumry.NetWeight = Math.Round(NetWeight, 3, MidpointRounding.AwayFromZero);
 
             Header.GrnLineSumry.Add(grnLineSumry);
 
@@ -174,7 +201,6 @@ namespace InvEntry.ViewModels
                 {
                     x.GrnHdrGkey    = header.GKey;
                     x.LineNbr       = Header.GrnLineSumry.IndexOf(x) + 1;
-                    x.StoneWeight   = 0;
                 });
 
                 await _grnService.CreateGrnLineSummary(Header.GrnLineSumry);
@@ -244,7 +270,8 @@ namespace InvEntry.ViewModels
         private void ResetGRN()
         {
             SetHeader();
-            
+
+            SupplierId = null;
         }
 
 

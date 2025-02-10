@@ -30,15 +30,15 @@ public class FormulaStore
 
     Dictionary<string, List<Formula>> _storage;
 
-    public void AddFormula<TSource>(Expression<Func<TSource, object>> lamdaExpression, string expression, Action<object, object>? action = null) 
+    public void AddFormula<TSource>(Expression<Func<TSource, object>> lamdaExpression, string expression, int precision = 2, Action<object, object>? action = null) 
         where TSource : class
     {
-        AddFormula<TSource>(lamdaExpression.GetMemberName(), expression, action);
+        AddFormula<TSource>(lamdaExpression.GetMemberName(), expression, precision, action);
     }
 
-    public void AddFormula<T>(string fieldName, string expression, Action<object, object>? action = null) where T : class
+    public void AddFormula<T>(string fieldName, string expression, int precision = 2, Action<object, object>? action = null) where T : class
     {
-        var formula = Formula.Create<T>(fieldName, expression, action);
+        var formula = Formula.Create<T>(fieldName, expression, precision, action);
 
         var key = typeof(T).Name;
 
@@ -101,16 +101,16 @@ public class FormulaStore
 
 public class Formula
 {
-    public static Formula Create<T>(string fieldName, string expression, Action<object, object>? action = null) where T : class
-        => new(fieldName, expression, typeof(T), action);
+    public static Formula Create<T>(string fieldName, string expression, int precision = 2, Action<object, object>? action = null) where T : class
+        => new(fieldName, expression, typeof(T), precision, action);
 
-    public static Formula Create(string fieldName, string expression, Type type, Action<object, object>? action = null)
-    => new(fieldName, expression, type, action);
+    public static Formula Create(string fieldName, string expression, Type type, int precision = 2, Action<object, object>? action = null)
+    => new(fieldName, expression, type, precision, action);
 
-    private Formula(string fieldName, string expression, Type type, Action<object, object>? action = null) 
+    private Formula(string fieldName, string expression, Type type, int precision=2, Action<object, object>? action = null) 
     {
         FieldName = fieldName;
-        Expression = MathUtils.NormalizeRounding(expression);
+        Expression = MathUtils.NormalizeRounding(expression,precision);
         Type = type;
         Action = action;
     }

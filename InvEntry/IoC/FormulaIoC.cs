@@ -103,7 +103,7 @@ namespace InvEntry.IoC
             // nameof()
 
             store.AddFormula<GrnLineSummary>(x => x.NetWeight,
-                $" [{nameof(GrnLineSummary.GrossWeight)}] - [{nameof(GrnLineSummary.StoneWeight)}]");
+                $" [{nameof(GrnLineSummary.GrossWeight)}] - [{nameof(GrnLineSummary.StoneWeight)}]",precision:3);
         }
 
         private static void ConfigureGRNLineFormulas(this FormulaStore store)
@@ -114,7 +114,7 @@ namespace InvEntry.IoC
             // nameof()
 
             store.AddFormula<GrnLine>(x => x.NetWeight,
-                $" [{nameof(GrnLine.GrossWeight)}] - [{nameof(GrnLine.StoneWeight)}]");
+                $" [{nameof(GrnLine.GrossWeight)}] - [{nameof(GrnLine.StoneWeight)}]",precision:3);
 
             //rej qty = recd qty - accp qty
             store.AddFormula<GrnLine>(x => x.OrderedQty,

@@ -13,5 +13,8 @@ namespace InvEntry.Utils
 
         public static string? NormalizeRounding(string criteria)
             => string.IsNullOrEmpty(criteria) ? null : $"Round({criteria}, 2)";
+
+        public static string? NormalizeRounding(string criteria, int precision = 2)
+            => string.IsNullOrEmpty(criteria) ? null : $"Round({criteria}, {precision})";
     }
 }

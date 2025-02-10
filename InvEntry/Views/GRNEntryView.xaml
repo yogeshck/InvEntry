@@ -25,6 +25,13 @@
                 <Setter Property="MaskUseAsDisplayFormat" Value="True" />
                 <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator" Value="False"/>
             </Style>
+            <Style x:Key="NumberFormatEditSettingsStyle" TargetType="dxe:TextEditSettings">
+                <Setter Property="MaskType" Value="Numeric" />
+                <Setter Property="Mask" Value="#,##,##,##,###.00" />
+                <Setter Property="MaskShowPlaceHolders" Value="False" />
+                <Setter Property="MaskUseAsDisplayFormat" Value="True" />
+                <Setter Property="AllowNullInput" Value="False" />
+            </Style>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -43,7 +50,7 @@
                     GlyphSize="Medium"
                     Command="{Binding ResetGRNCommand}"/>
                 <dxb:BarItemSeparator/>
-                <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
+                <dxb:BarButtonItem x:Name="Save" Content="Save GRN"
                                     BarItemDisplayMode="ContentAndGlyph"
                                     GlyphAlignment="Top"
                                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
@@ -64,9 +71,28 @@
                     <dxlc:LayoutGroup Orientation="Vertical">
                         <dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Supplier" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Name" Height="35" >
-                                    <dxe:ComboBoxEdit ItemsSource="{Binding SupplierReferencesList}"  EditValue="{Binding Header.SupplierId}"/>
-                                </dxlc:LayoutItem>
+                            <dxlc:LayoutItem Label="Supplier Name" Height="35"  >
+                             <!--   <dxg:LookUpEdit Width="290"  
+                                                EditValue="{Binding SupplierId ,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                                                ItemsSource="{Binding SupplierReferencesList}"
+                                                DisplayMember="RefValue" >
+                                    <dxg:LookUpEdit.PopupContentTemplate>
+                                        <ControlTemplate>
+                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
+                                                <dxg:GridControl.Columns>
+                                                    <dxg:GridColumn FieldName="RefValue"/>
+                                                </dxg:GridControl.Columns>
+                                                <dxg:GridControl.View>
+                                                    <dxg:TableView AutoWidth="False"/>
+                                                </dxg:GridControl.View>
+                                            </dxg:GridControl>
+                                        </ControlTemplate>
+                                    </dxg:LookUpEdit.PopupContentTemplate>
+                                </dxg:LookUpEdit> -->
+                            </dxlc:LayoutItem> 
+                               <dxlc:LayoutItem Label="Name" Height="35" >
+                                    <dxg:LookUpEdit AllowRejectUnknownValues="True"  ItemsSource="{Binding SupplierReferencesList}"  EditValue="{Binding Header.SupplierId}"/>
+                                </dxlc:LayoutItem> 
                                 <dxlc:LayoutItem Label="Supp Doc#" Height="35">
                                     <dxe:TextEdit EditValue="{Binding Header.DocumentRef}"/>
                                 </dxlc:LayoutItem>
@@ -141,7 +167,7 @@
                                             </Style>
                                         </dxg:GridControl.Resources>
                                         <dxg:GridControl.Columns >
-                                            <dxg:GridColumn  FieldName="ProductCategory" Header="Category" >
+                                            <dxg:GridColumn  FieldName="ProductCategory" Header="Category" ReadOnly="True" >
                                                 <!--           <dxg:GridColumn.EditSettings>
                                                     <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
                                                 </dxg:GridColumn.EditSettings>  -->
@@ -155,7 +181,7 @@
                                             </dxg:GridColumn>
                                             <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight" Width="100">
                                                 <dxg:GridColumn.EditSettings>
-                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
+                                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}" />
                                                 </dxg:GridColumn.EditSettings>
                                             </dxg:GridColumn>
                                             <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True" Width="100">
