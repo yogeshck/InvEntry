@@ -91,7 +91,9 @@
                                 </dxg:LookUpEdit> -->
                             </dxlc:LayoutItem> 
                                <dxlc:LayoutItem Label="Name" Height="35" >
-                                    <dxg:LookUpEdit AllowRejectUnknownValues="True"  ItemsSource="{Binding SupplierReferencesList}"  EditValue="{Binding Header.SupplierId}"/>
+                                    <dxg:LookUpEdit AllowRejectUnknownValues="True"  
+                                                    ItemsSource="{Binding SupplierReferencesList}"  
+                                                    EditValue="{Binding Header.SupplierId}"/>
                                 </dxlc:LayoutItem> 
                                 <dxlc:LayoutItem Label="Supp Doc#" Height="35">
                                     <dxe:TextEdit EditValue="{Binding Header.DocumentRef}"/>

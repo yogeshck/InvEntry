@@ -51,9 +51,9 @@
                                         Glyph="{dx:DXImage 'SvgImages/Business Objects/BO_Sale.svg'}">
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
-                                                 Content="Invoice Entry"/>
+                                                 Content="Invoice Entry" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
-                                                 Content="Invoice List View" />
+                                                 Content="Invoice List View" HideMenuWhenSelected="True"/>
                         <!--Glyph="{dx:DXImage Office2013/Reports/BO_Invoice_32x32.png}" />-->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
@@ -62,9 +62,9 @@
                     <!-- {dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:EstimateEntryPage}"
-                                                 Content="Estimate " />
+                                                 Content="Estimate "  HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
-                                                 Content="Estimate List View" />
+                                                 Content="Estimate List View" HideMenuWhenSelected="True"/>
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
@@ -73,12 +73,12 @@
                     <!-- "{dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:VoucherEntryPage}"
-                             Content="Daily Expense Entry" />
+                             Content="Daily Expense Entry" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:CashReceiptEntryPage}"
-                                                 Content="Cash Receipt Entry" />
+                                                 Content="Cash Receipt Entry" HideMenuWhenSelected="True"/>
                         <!-- Glyph="{dx:DXImage Images/Business Objects/BOProductGroup_32x32.png}" /> -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:VoucherListView}"
-                                                 Content="Voucher List View"/>
+                                                 Content="Voucher List View" HideMenuWhenSelected="True"/>
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerSubMenu Content="Stock" MoreButtonVisibilityMode="Hidden" 
@@ -86,9 +86,9 @@
                     <!-- {dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:GRNEntryPage}"
-                                                 Content="GRN Entry" />
+                                                 Content="GRN Entry" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
-                                                 Content="GRN List View"/>
+                                                 Content="GRN List View" HideMenuWhenSelected="True"/>
                         <!--  Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" /> -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:ProductStockSummaryListView}"
                                                  Content="Stock Summary List View" HideMenuWhenSelected="True" />
@@ -98,14 +98,10 @@
                                                  Content="Product Stock Entry" HideMenuWhenSelected="True"/>
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
-                  <!--      <dxwui:HamburgerMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
-                                                 Content="Product Stock Entry"
-                                                 Glyph="{dx:DXImage Images/Business Objects/BOProductGroup_32x32.png}" /> -->
-
-                <dxwui:HamburgerMenuNavigationButton Content="Price Setting"
+               <!-- <dxwui:HamburgerMenuNavigationButton Content="Price Setting"
                         NavigationTargetType="{x:Type page:SettingsPage}"
                         Glyph="{dx:DXImage 'SvgImages/XAF/Action_OrganizeDashboard.svg'}"/>
-                <!-- {dx:DXImage Images/Programming/Technology_32x32.png}"/> -->
+                 {dx:DXImage Images/Programming/Technology_32x32.png}"/> -->
 
                 <dxwui:HamburgerSubMenu>
                     <dxmvvm:Interaction.Behaviors>
