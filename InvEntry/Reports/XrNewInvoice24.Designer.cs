@@ -201,8 +201,8 @@
             this.vendorCity = new DevExpress.XtraReports.UI.XRTableCell();
             this.vendorEmailRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
-            this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
             this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
+            this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -405,6 +405,7 @@
             // 
             // sqlDataSource1
             // 
+            this.sqlDataSource1.ConnectionName = "ReportDBCon01";
             this.sqlDataSource1.Name = "sqlDataSource1";
             customSqlQuery1.MetaSerializable = "<Meta X=\"268\" Y=\"20\" Width=\"179\" Height=\"124\" />";
             customSqlQuery1.Name = "InvoiceReceipts";
@@ -2144,13 +2145,6 @@
             this.vendorEmail.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
             this.vendorEmail.Weight = 1D;
             // 
-            // calculatedField1
-            // 
-            this.calculatedField1.DataMember = "Invoice";
-            this.calculatedField1.Expression = "[INVL_PAYABLE_AMT]";
-            this.calculatedField1.Name = "calculatedField1";
-            this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
-            // 
             // xrPictureBox2
             // 
             this.xrPictureBox2.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox2.ImageSource"));
@@ -2158,6 +2152,13 @@
             this.xrPictureBox2.Name = "xrPictureBox2";
             this.xrPictureBox2.SizeF = new System.Drawing.SizeF(99.46887F, 92.80001F);
             this.xrPictureBox2.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
+            // 
+            // calculatedField1
+            // 
+            this.calculatedField1.DataMember = "Invoice";
+            this.calculatedField1.Expression = "[INVL_PAYABLE_AMT]";
+            this.calculatedField1.Name = "calculatedField1";
+            this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
             // XrNewInvoice24
             // 
