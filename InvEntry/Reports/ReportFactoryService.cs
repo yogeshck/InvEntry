@@ -87,7 +87,7 @@ public class ReportFactoryService : IReportFactoryService
         //setReportParametersAsync(report, orgThisCompany);
 
         report.Parameters["pEstNbr"].Value = pEstimateNbr;    //paramEstNbr
-        report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
+      //  report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
         report.CreateDocument();
         return report;
     }

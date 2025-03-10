@@ -14,7 +14,7 @@
              xmlns:local="clr-namespace:InvEntry.Views"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
-             xmlns:behavior="clr-namespace:InvEntry.Behavior"
+             xmlns:behavior="clr-namespace:InvEntry.Behavior" xmlns:dx1="clr-namespace:DevExpress.XtraEditors;assembly=DevExpress.XtraEditors.v24.2"
              d:DataContext="{d:DesignInstance Type=viewmodels:EstimateViewModel}"
              DataContext="{ext:DISource Type=viewmodels:EstimateViewModel}"
              mc:Ignorable="d" 
@@ -198,7 +198,7 @@
                                         <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                       EditValue="{Binding Header.OldGoldAmount}"
                                                       Width="120"
-                                                      HorizontalAlignment="Right"
+                                                      HorizontalContentAlignment="Right"
                                                       IsReadOnly="True"/>
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
@@ -323,13 +323,18 @@
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem LabelTemplate="{StaticResource RsTemplate}" 
-                                                 Label="Balance   " HorizontalAlignment="Left" 
+                                                 Label="Balance        " HorizontalAlignment="Left" 
                                                  VerticalAlignment="Center" >
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.EstBalance}" 
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True"/>
+                                </dxlc:LayoutItem>
+                                <dxlc:LayoutItem Label="Follow up   "  HorizontalAlignment="Left" 
+                                                 VerticalAlignment="Center" >
+                                    <dxe:CheckEdit x:Name="myCheckbox" EditValue="{Binding IsStockTransfer}"
+                                                   Content=" " IsChecked="True" />
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Refund Amount" Visibility="{Binding IsRefund, Converter={dxmvvm:BooleanToVisibilityConverter}}">
                                     <dxe:TextEdit EditValue="{Binding Header.EstRefund}" IsReadOnly="True"

@@ -54,6 +54,9 @@ public partial class EstimateViewModel: ObservableObject
     public bool _isBalance;
 
     [ObservableProperty]
+    public bool _isStockTransfer;
+
+    [ObservableProperty]
     private ObservableCollection<EstimateLine> selectedRows;
 
     [ObservableProperty]
@@ -78,7 +81,7 @@ public partial class EstimateViewModel: ObservableObject
 
     private bool createCustomer  = false;
     private bool estBalanceChk   = false;
-    private bool isStockTransfer = false;
+    //private bool isStockTransfer = false;
 
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
@@ -137,13 +140,14 @@ public partial class EstimateViewModel: ObservableObject
 
 
         SetHeader();
-        SetThisCompany();
+        SetThisCompany();   //-seems duplicate
 
         selectedRows = new();
         _customerReadOnly = false;
 
         _isBalance = true;
         _isRefund = false;
+        _isStockTransfer = true;
         _settingsPageViewModel = settingsPageViewModel;
 
         SetThisCompany();
@@ -212,7 +216,8 @@ public partial class EstimateViewModel: ObservableObject
 
         copyEstimateExpression.Add($"{nameof(EstimateLine.EstlTaxableAmount)}", (item, val) => item.EstlTaxableAmount = val);
         copyEstimateExpression.Add($"{nameof(EstimateLine.ProdNetWeight)}", (item, val) => item.ProdNetWeight = val);
-        copyEstimateExpression.Add($"{nameof(EstimateLine.EstlGrossAmt)}", (item, val) => item.EstlGrossAmt = val * (item.Metal.Equals("DIAMOND") ? 100 : 1));
+        copyEstimateExpression.Add($"{nameof(EstimateLine.EstlGrossAmt)}", (item, val) => 
+                                    item.EstlGrossAmt = val * (item.Metal.Equals("DIAMOND") ? 100 : 1));
         copyEstimateExpression.Add($"{nameof(EstimateLine.VaAmount)}", (item, val) => item.VaAmount = val);
         copyEstimateExpression.Add($"{nameof(EstimateLine.EstlCgstAmount)}", (item, val) => item.EstlCgstAmount = val);
         copyEstimateExpression.Add($"{nameof(EstimateLine.EstlSgstAmount)}", (item, val) => item.EstlSgstAmount = val);
@@ -306,11 +311,11 @@ public partial class EstimateViewModel: ObservableObject
         Header.CustMobile = phoneNumber;
 
         //to effect stock update though it is just estimate - being used for stock transfer to other branches
-        foreach (var item in StkTrfrList)
-        {
-            if (item is not null && item == phoneNumber)
-                isStockTransfer = true;
-        }
+      //  foreach (var item in StkTrfrList)
+      //  {
+      //      if (item is not null && item == phoneNumber)
+      //          IsStockTransfer = true;
+      //  }
 
     }
 
@@ -449,7 +454,7 @@ public partial class EstimateViewModel: ObservableObject
             // loop for validation check for customer
             await _estimateService.CreateEstimateLine(Header.Lines);
 
-            if (isStockTransfer)
+            if (IsStockTransfer)
                 await ProcessProductTransaction(Header.Lines);
 
             //   await ProcessOldMetalTransaction();
