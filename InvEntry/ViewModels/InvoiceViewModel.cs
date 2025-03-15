@@ -1029,7 +1029,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Header.InvBalance > 0)
         {
-            var result = _messageBoxService.ShowMessage("Received Amount is less than Invoice Amount, " +
+            var result = _messageBoxService.ShowMessage("Received Amount is lesser than the Invoice Amount, " +
                 "Do you want to make Credit for the balance Invoice Amount of Rs. " + Header.InvBalance + " ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
             if (result == MessageResult.Yes)

@@ -275,7 +275,7 @@ namespace InvEntry.ViewModels
         }
 
 
-        private async void CreateProductTransaction(ProductStockSummary productStockSummary)
+        private async void CreateProductTransaction(ProductStockSummary productStockSummary, int suppliedQty, int stockQty)
         {
             ProductTransaction productTransaction = new();
 
@@ -307,9 +307,9 @@ namespace InvEntry.ViewModels
             productTransaction.DocumentType = "GRN";
             productTransaction.VoucherType = "Stock Receipt";
 
-            productTransaction.ObQty = 0;
-            productTransaction.TransactionQty = productStockSummary.StockQty;
-            productTransaction.CbQty = productStockSummary.SuppliedQty;
+            productTransaction.ObQty = stockQty; 
+            productTransaction.TransactionQty = suppliedQty;
+            productTransaction.CbQty = stockQty + suppliedQty;
 
             productTransaction.TransactionGrossWeight = productStockSummary.GrossWeight;
             productTransaction.TransactionStoneWeight = productStockSummary.StoneWeight;
@@ -408,6 +408,7 @@ namespace InvEntry.ViewModels
         }
         private async void ProcessStockSummary(IEnumerable<GrnLineSummary> grnLineSummary)
         {
+            int currentStock = 0;
 
             Header.GrnLineSumry.ForEach(async x =>
             {
@@ -421,6 +422,8 @@ namespace InvEntry.ViewModels
                     createProductStockSummary = true;
 
                 }
+
+                currentStock = (productStockSummary.StockQty).GetValueOrDefault();
 
                 productStockSummary.Category            = x.ProductCategory;
                 productStockSummary.ProductGkey         = x.ProductGkey;
@@ -440,14 +443,14 @@ namespace InvEntry.ViewModels
 
                 if (createProductStockSummary)
                 {
-                    await _productStockSummaryService.CreateProductStockSummary(productStockSummary);
+                   await _productStockSummaryService.CreateProductStockSummary(productStockSummary);
                 }
                 else
                 {
-                    await _productStockSummaryService.UpdateProductStockSummary(productStockSummary);
+                   await _productStockSummaryService.UpdateProductStockSummary(productStockSummary);
                 }
-
-                CreateProductTransaction(productStockSummary);
+            
+                CreateProductTransaction(productStockSummary, (int)x.SuppliedQty, (int)currentStock);
 
             });
 
