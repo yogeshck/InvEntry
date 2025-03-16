@@ -40,10 +40,16 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding RefreshInvoicesCommand}" /> -->
-                <dxb:BarButtonItem x:Name="btnPrintStockSummary"
+                <dxb:BarButtonItem x:Name="btnPrintGrid" 
+                   Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
+                   GlyphSize="Large" 
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
+                                   ItemClick="btnPrint_ItemClick" />
+             <!--   <dxb:BarButtonItem x:Name="btnPrintStockSummary"
                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                    GlyphSize="Large" Alignment="Far"
-                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintStockSummaryCommand}" />
+                    BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" 
+                Command="{Binding PrintStockSummaryCommand}" /> -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding PStockSummary}" AutoGenerateColumns="None"

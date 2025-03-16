@@ -27,5 +27,12 @@ namespace InvEntry.Views
         {
             InitializeComponent();
         }
+
+        private void btnPrint_ItemClick(object sender, DevExpress.Xpf.Bars.ItemClickEventArgs e)
+        {
+            //PrintHelper.ShowPrintPreviewDialog(this,);
+            //VouchersTableview.ShowPrintPreviewDialog(Application.Current.MainWindow);
+            tableView.ShowRibbonPrintPreviewDialog(Application.Current.MainWindow);
+        }
     }
 }
