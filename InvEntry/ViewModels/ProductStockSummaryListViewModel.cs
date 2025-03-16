@@ -36,6 +36,7 @@ public partial class ProductStockSummaryListViewModel : ObservableObject
         _pStockSummaryService = pStockSummaryService;
         _reportDialogService = reportDialogService;
 
+        PStockSummary = null;
         Task.Run(RefreshStockSummaryAsync).Wait();
     }
 
@@ -44,6 +45,7 @@ public partial class ProductStockSummaryListViewModel : ObservableObject
     {
         var pStockSummaryResult = await _pStockSummaryService.GetAll();
         if (pStockSummaryResult is not null)
+            PStockSummary = null;
             PStockSummary = new(pStockSummaryResult);
     }
 

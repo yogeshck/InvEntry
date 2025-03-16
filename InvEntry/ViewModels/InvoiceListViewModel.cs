@@ -35,6 +35,8 @@ public partial class InvoiceListViewModel : ObservableObject
     {
         _invoiceService = invoiceService;
         _reportDialogService = reportDialogService;
+
+        Invoices = null;
         _searchOption = new();
         SearchOption.To = Today;
         SearchOption.From = Today.AddDays(-1);
@@ -45,8 +47,9 @@ public partial class InvoiceListViewModel : ObservableObject
     private async Task RefreshInvoicesAsync()
     {
         var invoicesResult = await _invoiceService.GetAll(SearchOption);
-        if(invoicesResult is not null)
-        Invoices = new(invoicesResult);
+        if (invoicesResult is not null)
+            Invoices = null;
+            Invoices = new(invoicesResult);
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]

@@ -41,6 +41,7 @@ namespace InvEntry.ViewModels
             DateSearchOption.From = StartDate.AddDays(-1);
             DateSearchOption.To = StartDate.AddDays(-1);
 
+
             Task.Run(RefreshDailyStockSummaryAsync).Wait();
         }
 
@@ -49,6 +50,7 @@ namespace InvEntry.ViewModels
         {
             var dailyStockSummaryResult = await _dailyStockSummaryService.GetAll(DateSearchOption);
             if (dailyStockSummaryResult is not null)
+                DailyStockStockSummary = null;
                 DailyStockStockSummary = new(dailyStockSummaryResult);
         }
     }
