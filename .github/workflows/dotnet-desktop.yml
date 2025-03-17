@@ -98,7 +98,7 @@ jobs:
 
       # Upload Zipped Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PublishedProjects
           path: ./PublishedProjects-${{ env.TAG_VERSION }}.zip
@@ -124,7 +124,7 @@ jobs:
           TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: PublishedProjects
 
