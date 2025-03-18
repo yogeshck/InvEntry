@@ -76,7 +76,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateEstimateReport()
     {
-        return new XrNewEstimate24().AddDataSource(_appConfigName);  //XtraEstimate().AddDataSource(_appConfigName);   
+        return new XrtNewEstimate25().AddDataSource(_appConfigName);  //XtraEstimate().AddDataSource(_appConfigName);   
                                                                      //XrNewEstimate24().AddDataSource(_appConfigName);
     }
 
@@ -87,7 +87,7 @@ public class ReportFactoryService : IReportFactoryService
         //setReportParametersAsync(report, orgThisCompany);
 
         report.Parameters["pEstNbr"].Value = pEstimateNbr;    //paramEstNbr
-      //  report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
+        report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
         report.CreateDocument();
         return report;
     }
