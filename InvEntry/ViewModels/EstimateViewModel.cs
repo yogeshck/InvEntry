@@ -506,7 +506,7 @@ public partial class EstimateViewModel: ObservableObject
             productTransaction.OpeningStoneWeight = productSumryStk.StoneWeight.GetValueOrDefault();
             productTransaction.OpeningNetWeight = productSumryStk.NetWeight.GetValueOrDefault();
 
-            productTransaction.ObQty = productSumryStk.StockQty.GetValueOrDefault();
+            productTransaction.ObQty = productSumryStk.StockQty.GetValueOrDefault();  //Current stock qty - before executing transaction
 
             //productTransaction.ProductSku = estline.ProductSku;
             productTransaction.RefGkey = estline.GKey;

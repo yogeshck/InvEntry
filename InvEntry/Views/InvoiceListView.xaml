@@ -18,7 +18,7 @@
              xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"
                       d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceListViewModel}"
-             d:DesignHeight="450" d:DesignWidth="1200">
+             d:DesignHeight="450" d:DesignWidth="1400">
     <Grid Width="1100" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -60,7 +60,7 @@
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="1000" SelectedItem="{Binding SelectedInvoice}"
+                         Width="1400" SelectedItem="{Binding SelectedInvoice}"
                          HorizontalAlignment="Left" VerticalAlignment="Top">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
@@ -69,7 +69,7 @@
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
+                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True" FontSize="15"
                                 AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
                     <!--     <dxg:TableView.ColumnMenuCustomizations>
                         <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}" />
@@ -77,9 +77,9 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="InvNbr" Header="Invoice #" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="InvNbr" Header="Invoice #" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="InvDate" Header="Invoice Date" ReadOnly="True" Width="90" />
-                <dxg:GridColumn FieldName="GrossRcbAmount" Header="Invoice Amount" Width="100">
+                <dxg:GridColumn FieldName="GrossRcbAmount" Header="Invoice Amount" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
@@ -104,12 +104,12 @@
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="RecdAmount" Header="Received" Width="90">
+                <dxg:GridColumn FieldName="RecdAmount" Header="Received" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="InvBalance" Header="Balance" Width="90">
+                <dxg:GridColumn FieldName="InvBalance" Header="Balance" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>

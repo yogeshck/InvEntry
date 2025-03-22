@@ -699,29 +699,29 @@ public partial class InvoiceViewModel : ObservableObject
             productTransaction.DocumentType = "Sales Invoice";
             productTransaction.VoucherType = "Sales";
             productTransaction.TransactionQty = line.ProdQty.GetValueOrDefault();
-            productTransaction.CbQty = productTransaction.ObQty.GetValueOrDefault() - line.ProdQty.GetValueOrDefault();
+            productTransaction.CbQty = productSumryStk.StockQty.GetValueOrDefault() - line.ProdQty.GetValueOrDefault();
 
             productTransaction.TransactionGrossWeight = line.ProdGrossWeight.GetValueOrDefault();
             productTransaction.TransactionStoneWeight = line.ProdStoneWeight.GetValueOrDefault();
             productTransaction.TransactionNetWeight = line.ProdNetWeight.GetValueOrDefault();
 
-            productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight.GetValueOrDefault()
+            productTransaction.ClosingGrossWeight = productSumryStk.GrossWeight.GetValueOrDefault()
                                                             - line.ProdGrossWeight.GetValueOrDefault();
-            productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight.GetValueOrDefault()
+            productTransaction.ClosingStoneWeight = productSumryStk.StoneWeight.GetValueOrDefault()
                                                             - line.ProdStoneWeight.GetValueOrDefault();
-            productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight.GetValueOrDefault()
+            productTransaction.ClosingNetWeight = productSumryStk.NetWeight.GetValueOrDefault()
                                                             - line.ProdNetWeight.GetValueOrDefault();
 
             //Set Product Stock Summary
             productSumryStk.GrossWeight = (productSumryStk.GrossWeight ?? 0) - line.ProdGrossWeight;
             productSumryStk.StoneWeight = (productSumryStk.StoneWeight ?? 0) - line.ProdStoneWeight;
             productSumryStk.NetWeight = (productSumryStk.NetWeight ?? 0) - line.ProdNetWeight;
-            productSumryStk.SuppliedGrossWeight = (productSumryStk.SuppliedGrossWeight ?? 0) - line.ProdGrossWeight;
+            productSumryStk.SuppliedGrossWeight = 0; //need to work ntw-- (productSumryStk.SuppliedGrossWeight ?? 0) - line.ProdGrossWeight;
             //productSumryStk.AdjustedWeight = (productSumryStk.AdjustedWeight ?? 0);
-            productSumryStk.SoldWeight = (productSumryStk.SoldWeight ?? 0) + line.ProdNetWeight;
+            productSumryStk.SoldWeight = 0; //ntw (productSumryStk.SoldWeight ?? 0) + line.ProdNetWeight;
             productSumryStk.BalanceWeight = (productSumryStk.BalanceWeight ?? 0) - line.ProdNetWeight;
             //productSumryStk.SuppliedQty = (productSumryStk.SuppliedQty ?? 0) + x.SuppliedQty;
-            productSumryStk.SoldQty = (productSumryStk.SoldQty ?? 0) + line.ProdQty;
+            productSumryStk.SoldQty = 0; //ntw (productSumryStk.SoldQty ?? 0) + line.ProdQty;
             productSumryStk.StockQty = (productSumryStk.StockQty ?? 0) - line.ProdQty;
             //productSumryStk.AdjustedQty = (productSumryStk.AdjustedQty ?? 0);
 

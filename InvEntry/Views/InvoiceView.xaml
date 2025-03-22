@@ -156,7 +156,7 @@
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                                    <dxg:LookUpEdit Width="225" 
+                                    <dxg:LookUpEdit Width="225" Height="35"
                                                     EditValue="{Binding CustomerState,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
                                                 ItemsSource="{Binding StateReferencesList}"
                                                 DisplayMember="RefValue" >
@@ -176,7 +176,7 @@
                                     </dxg:LookUpEdit>
                                 </dxlc:LayoutItem>
                                 <dxlc:LayoutItem Label="Sales Person" LabelPosition="Top" HorizontalAlignment="Left" >
-                                    <dxg:LookUpEdit Width="225" EditValue="{Binding SalesPerson}" 
+                                    <dxg:LookUpEdit Width="225" Height="35" EditValue="{Binding SalesPerson}" 
                                                 ItemsSource="{Binding SalesPersonReferencesList}"
                                                 DisplayMember="RefValue" >
                                         <dxg:LookUpEdit.PopupContentTemplate>

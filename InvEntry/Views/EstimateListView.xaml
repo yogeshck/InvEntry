@@ -69,7 +69,7 @@
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
+                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True" FontSize="15"
                                 AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
                     <!--     <dxg:TableView.ColumnMenuCustomizations>
                         <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}" />
@@ -77,9 +77,9 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="EstNbr" Header="Estimate #" ReadOnly="True" Width="70" />
-                <dxg:GridColumn FieldName="EstDate" Header="Estimate Date" ReadOnly="True" Width="90" />
-                <dxg:GridColumn FieldName="GrossRcbAmount" Header="Estimate Amount" Width="100">
+                <dxg:GridColumn FieldName="EstNbr" Header="Estimate #" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="EstDate" Header="Date" ReadOnly="True" Width="100" />
+                <dxg:GridColumn FieldName="GrossRcbAmount" Header="Total Amount" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
@@ -89,17 +89,17 @@
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="AmountPayable" Header="Receivable" Width="90">
+                <dxg:GridColumn FieldName="AmountPayable" Header="Receivable" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="RecdAmount" Header="Received" Width="90">
+                <dxg:GridColumn FieldName="RecdAmount" Header="Received" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="EstBalance" Header="Balance" Width="90">
+                <dxg:GridColumn FieldName="EstBalance" Header="Balance" Width="120">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" />
                     </dxg:GridColumn.EditSettings>
