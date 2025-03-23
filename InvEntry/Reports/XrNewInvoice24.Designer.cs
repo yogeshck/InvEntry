@@ -168,6 +168,7 @@
             this.xrLabel12 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel13 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel14 = new DevExpress.XtraReports.UI.XRLabel();
+            this.xrPictureBox3 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.GroupFooter2 = new DevExpress.XtraReports.UI.GroupFooterBand();
             this.pymtSumryTable = new DevExpress.XtraReports.UI.XRTable();
             this.xrTableRow9 = new DevExpress.XtraReports.UI.XRTableRow();
@@ -203,7 +204,6 @@
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
-            this.xrPictureBox3 = new DevExpress.XtraReports.UI.XRPictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -1794,6 +1794,14 @@
             this.xrLabel14.Text = "*** THANK YOU ***\r\nVisit Again";
             this.xrLabel14.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
             // 
+            // xrPictureBox3
+            // 
+            this.xrPictureBox3.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox3.ImageSource"));
+            this.xrPictureBox3.LocationFloat = new DevExpress.Utils.PointFloat(0.002186775F, 100F);
+            this.xrPictureBox3.Name = "xrPictureBox3";
+            this.xrPictureBox3.SizeF = new System.Drawing.SizeF(149.1667F, 183.4167F);
+            this.xrPictureBox3.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
+            // 
             // GroupFooter2
             // 
             this.GroupFooter2.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
@@ -2184,14 +2192,6 @@
             this.calculatedField1.Expression = "[INVL_PAYABLE_AMT]";
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
-            // 
-            // xrPictureBox3
-            // 
-            this.xrPictureBox3.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox3.ImageSource"));
-            this.xrPictureBox3.LocationFloat = new DevExpress.Utils.PointFloat(0.002186775F, 100F);
-            this.xrPictureBox3.Name = "xrPictureBox3";
-            this.xrPictureBox3.SizeF = new System.Drawing.SizeF(149.1667F, 183.4167F);
-            this.xrPictureBox3.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
             // XrNewInvoice24
             // 
