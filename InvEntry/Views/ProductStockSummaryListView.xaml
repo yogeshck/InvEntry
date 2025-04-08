@@ -74,7 +74,7 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="Category" Header="Category" ReadOnly="True" Width="90" >
+                <dxg:GridColumn FieldName="Category" Header="Category" ReadOnly="True" Width="120" >
                     <dxg:GridColumn.ColumnHeaderContentStyle>
                         <Style TargetType="{x:Type ContentControl}">
                             <Setter Property="FontSize" Value="15" />
@@ -83,14 +83,42 @@
                         </Style>
                     </dxg:GridColumn.ColumnHeaderContentStyle>
                 </dxg:GridColumn>
-                <dxg:GridColumn FieldName="StockQty" Header="Stock Qty" ReadOnly="True" Width="90" />
-                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" ReadOnly="True" Width="100"/>
-                <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" ReadOnly="True" Width="90"/>
-                <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" ReadOnly="True" Width="90"/>
-                <dxg:GridColumn FieldName="AdjustedWeight" Header="Adj Wt" ReadOnly="True" Width="90"/>
-                <dxg:GridColumn FieldName="BalanceWeight" Header="Balance Wt" ReadOnly="True" Width="90"/>
-                <dxg:GridColumn FieldName="AdjustedQty" Header="Adjusted Qty" ReadOnly="True" Width="70"/>
-             <!--   <dxg:GridColumn FieldName="SoldQty" Header="Sold Qty" ReadOnly="True" Width="70"/>
+                <dxg:GridColumn FieldName="StockQty" Header="Stock Qty" ReadOnly="True" Width="90">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" ReadOnly="True" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###.000" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" ReadOnly="True" Width="90">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###.000" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" ReadOnly="True" Width="90">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###.000" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="AdjustedWeight" Header="Adj Wt" ReadOnly="True" Width="90">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###.000" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="BalanceWeight" Header="Balance Wt" ReadOnly="True" Width="90">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###.000" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="AdjustedQty" Header="Adjusted Qty" ReadOnly="True" Width="70">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings Mask="##,##,###" MaskType="Numeric" MaskUseAsDisplayFormat="True"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <!--   <dxg:GridColumn FieldName="SoldQty" Header="Sold Qty" ReadOnly="True" Width="70"/>
                 <dxg:GridColumn FieldName="VApercent" Header="VA %" ReadOnly="True" Width="70"/> -->
             </dxg:GridControl.Columns>
         </dxg:GridControl>

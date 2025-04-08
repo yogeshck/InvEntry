@@ -116,10 +116,10 @@
                 <dxlc:LayoutGroup Orientation="Horizontal">
                     <dxlc:LayoutGroup Orientation="Vertical">
                         <dxlc:LayoutGroup View="GroupBox" Header="Invoice">
-                            <dxlc:LayoutItem Label="Number">
+                            <dxlc:LayoutItem Label="Number" FontSize="14">
                                 <Label Content="{Binding Header.InvNbr}" FontWeight="ExtraBlack"/>
                             </dxlc:LayoutItem>
-                            <dxlc:LayoutItem Label="Date">
+                            <dxlc:LayoutItem Label="Date" FontSize="14">
                                 <dxe:DateEdit EditValue="{Binding Header.InvDate}" IsReadOnly="True"/>
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
@@ -423,9 +423,9 @@
                                     <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
                                              AllowCustomizationMenu="False" ShowDragWidget="False">
                                         <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
-                                                 Content="Product Id" EditWidth="150" EditHeight="30">
+                                                 Content="Product Id" EditWidth="250" EditHeight="30"  >
                                             <dxb:BarEditItem.EditSettings>
-                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"/>
+                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}" />
                                             </dxb:BarEditItem.EditSettings>
                                         </dxb:BarEditItem>
                                         <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
@@ -439,7 +439,7 @@
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
                                 <dxg:GridControl ItemsSource="{Binding Header.Lines}" 
-                                         DeleteKeyBehavior="DeleteFocusedRow"
+                                         DeleteKeyBehavior="DeleteFocusedRow" FontSize="13" 
                                          MaxHeight="600" MinHeight="400" SelectedItems="{Binding SelectedRows}" HorizontalAlignment="Left">
                                     <dxg:GridControl.Resources>
                                         <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
@@ -454,24 +454,24 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="ProductId" Header="Product Id" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="ProductName" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="ProductId" Header="Product Id" Width="150" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="ProductName" ReadOnly="True" Width="250"/>
                                         <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
-                                        <dxg:GridColumn FieldName="InvlBilledPrice" Header="Rate" />
-                                        <dxg:GridColumn FieldName="ProdQty" Header="Qty" Width="60"/>
-                                        <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Weight" />
-                                        <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Weight">
+                                        <dxg:GridColumn FieldName="InvlBilledPrice" Header="Rate" Width="80"/>
+                                        <dxg:GridColumn FieldName="ProdQty" Header="Qty" Width="50"/>
+                                        <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Wt." Width="80" />
+                                        <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Wt." Width="80">
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}" />
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Weight" ReadOnly="True"/>
-                                        <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" >
+                                        <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Wt." Width="80" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" Width="80">
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}"/>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="VaPercent" Header="VA (%)" >
+                                        <dxg:GridColumn FieldName="VaPercent" Header="VA (%)" Width="60" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}"/>
                                             </dxg:GridColumn.EditSettings>
@@ -483,7 +483,7 @@
                                     <dxg:GridControl.TotalSummary>
                                         <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
                                                  DisplayFormat="Taxable = {0}"
-                                                 FieldName="InvlTaxableAmount"/>
+                                                 FieldName="InvlTaxableAmount" />
 
                                         <dxg:GridSummaryItem SummaryType="Sum" Alignment="Default"
                                                  DisplayFormat="Total = {0}"
