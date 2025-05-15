@@ -84,6 +84,13 @@
                 <Style TargetType="dxlc:LayoutItem">
                     <Setter Property="LabelStyle" Value="{StaticResource labelStyle}"/>
                 </Style>
+                <Style x:Key="NumberFormatWtStyle" TargetType="dxe:TextEditSettings">
+                    <Setter Property="MaskType" Value="Numeric" />
+                    <Setter Property="Mask" Value="######.000" />
+                    <Setter Property="MaskShowPlaceHolders" Value="False" />
+                    <Setter Property="MaskUseAsDisplayFormat" Value="True" />
+                    <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator" Value="False"/>
+                </Style>
                 <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEdit">
                     <Setter Property="MaskType" Value="Numeric" />
                     <Setter Property="Mask" Value="#,##,##,##,###.00" />
@@ -459,13 +466,21 @@
                                         <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
                                         <dxg:GridColumn FieldName="InvlBilledPrice" Header="Rate" Width="80"/>
                                         <dxg:GridColumn FieldName="ProdQty" Header="Qty" Width="50"/>
-                                        <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Wt." Width="80" />
-                                        <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Wt." Width="80">
+                                        <dxg:GridColumn FieldName="ProdGrossWeight" Header="Gross Wt." Width="80" >
                                             <dxg:GridColumn.EditSettings>
-                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}" />
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Wt." Width="80" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="ProdStoneWeight" Header="Stone Wt." Width="80">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="ProdNetWeight" Header="Net Wt." Width="80" ReadOnly="True">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="InvlStoneAmount" Header="Stone Amount (Rs)" Width="80">
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}"/>
@@ -549,10 +564,26 @@
                                         </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" />
                                         <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />
-                                        <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" />
-                                        <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight"/>
-                                        <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" />
-                                        <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" >
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" >
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
                                         <dxg:GridColumn FieldName="Uom" Header="Uom" ReadOnly="True"/>                                        
                                         <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />

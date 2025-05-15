@@ -27,7 +27,7 @@ namespace InvEntry.IoC
         private static void ConfigureInvoiceLineFormulas(this FormulaStore store)
         {
             store.AddFormula<InvoiceLine>(x => x.ProdNetWeight, 
-                $"[{nameof(InvoiceLine.ProdGrossWeight)}] - [{nameof(InvoiceLine.ProdStoneWeight)}]");
+                $"[{nameof(InvoiceLine.ProdGrossWeight)}] - [{nameof(InvoiceLine.ProdStoneWeight)}]", precision: 3);
 
             store.AddFormula<InvoiceLine>(x => x.InvlGrossAmt,
                 $"[{nameof(InvoiceLine.ProdNetWeight)}] * [{nameof(InvoiceLine.InvlBilledPrice)}]");
@@ -55,7 +55,7 @@ namespace InvEntry.IoC
         private static void ConfigureEstimateLineFormulas(this FormulaStore store)
         {
             store.AddFormula<EstimateLine>(x => x.ProdNetWeight,
-                $"[{nameof(EstimateLine.ProdGrossWeight)}] - [{nameof(EstimateLine.ProdStoneWeight)}]");
+                $"[{nameof(EstimateLine.ProdGrossWeight)}] - [{nameof(EstimateLine.ProdStoneWeight)}]", precision: 3);
 
             store.AddFormula<EstimateLine>(x => x.EstlGrossAmt,
                 $"[{nameof(EstimateLine.ProdNetWeight)}] * [{nameof(EstimateLine.EstlBilledPrice)}]");
