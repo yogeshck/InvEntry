@@ -274,6 +274,7 @@ public partial class EstimateViewModel: ObservableObject
             return;
 
         CustomerReadOnly = false;
+        createCustomer = false;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
