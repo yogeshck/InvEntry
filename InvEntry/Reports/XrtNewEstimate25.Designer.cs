@@ -672,7 +672,7 @@
             this.invoiceLabel.Name = "invoiceLabel";
             this.invoiceLabel.StylePriority.UseFont = false;
             this.invoiceLabel.StylePriority.UseTextAlignment = false;
-            this.invoiceLabel.Text = "Estimate :  ";
+            this.invoiceLabel.Text = "Estimate # :  ";
             this.invoiceLabel.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             this.invoiceLabel.Weight = 0.72621238719140269D;
             // 
@@ -682,11 +682,13 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[EST_NBR]")});
             this.invoiceNumber.Font = new DevExpress.Drawing.DXFont("Segoe UI", 12F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invoiceNumber.Name = "invoiceNumber";
+            this.invoiceNumber.Padding = new DevExpress.XtraPrinting.PaddingInfo(10, 0, 0, 0, 100F);
             this.invoiceNumber.StylePriority.UseFont = false;
+            this.invoiceNumber.StylePriority.UsePadding = false;
             this.invoiceNumber.StylePriority.UseTextAlignment = false;
             this.invoiceNumber.Text = "#000001";
-            this.invoiceNumber.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
-            this.invoiceNumber.TextFormatString = "#{0}";
+            this.invoiceNumber.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.invoiceNumber.TextFormatString = "{0}";
             this.invoiceNumber.Weight = 0.8372120433339616D;
             // 
             // invoiceDatesTable
@@ -709,12 +711,12 @@
             // 
             this.invoiceDateCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invoiceDateCaption.Name = "invoiceDateCaption";
-            this.invoiceDateCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 10, 0, 0, 100F);
+            this.invoiceDateCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
             this.invoiceDateCaption.StylePriority.UseFont = false;
             this.invoiceDateCaption.StylePriority.UsePadding = false;
             this.invoiceDateCaption.StylePriority.UseTextAlignment = false;
-            this.invoiceDateCaption.Text = "    DATE : ";
-            this.invoiceDateCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopRight;
+            this.invoiceDateCaption.Text = "    DATE :";
+            this.invoiceDateCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             this.invoiceDateCaption.Weight = 0.76433855255868821D;
             // 
             // invoiceDate
@@ -1260,7 +1262,7 @@
             // 
             this.invGrandTotal.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[AMOUNT_PAYABLE]")});
-            this.invGrandTotal.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.invGrandTotal.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invGrandTotal.Multiline = true;
             this.invGrandTotal.Name = "invGrandTotal";
             this.invGrandTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
@@ -1617,7 +1619,7 @@
             this.xrLabel5.SizeF = new System.Drawing.SizeF(81.29623F, 18F);
             this.xrLabel5.StylePriority.UseFont = false;
             this.xrLabel5.StylePriority.UseTextAlignment = false;
-            this.xrLabel5.Text = "Bank Name";
+            this.xrLabel5.Text = "Bank Name       :";
             this.xrLabel5.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
             // 
             // xrLabel6
