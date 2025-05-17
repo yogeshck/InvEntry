@@ -2,7 +2,7 @@
 using DevExpress.XtraReports.UI;
 using InvEntry.Models;
 using InvEntry.Reports;
-using mijmsReports;
+//using mijmsReports;
 using System;
 using System.Collections.Generic;
 using System.Linq;
