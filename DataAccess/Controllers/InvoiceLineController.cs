@@ -17,8 +17,6 @@ namespace DataAccess.Controllers
             _invoiceLineRepository = invoiceLineRepository;
         }
 
-
-
         // GET: api/<InvoiceController>
         [HttpGet]
         public IEnumerable<InvoiceLine> GetHeader()

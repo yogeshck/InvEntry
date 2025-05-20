@@ -493,7 +493,7 @@ public partial class InvoiceViewModel : ObservableObject
         OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
         {
             CustGkey = Header.CustGkey,
-            CustMobile = Header.CustMobile,
+            CustMobile = Header.CustMobile,  
             TransType = "Purchase",
             TransDate = DateTime.Now,
             Uom = "Grams"

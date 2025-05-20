@@ -48,7 +48,7 @@ namespace InvEntry.ViewModels
             {
                 Metal = "GOLD",
                 Purity = "916",
-                Carat = "22 C",
+                Carat = "22 KT",
                 EffectiveDate = DateTime.Now.Date,
                 IsDisplay = true
             };

@@ -33,7 +33,7 @@ public partial class OrgCompany
 
     public DateTime? ModifiedOn { get; set; }
 
-    public int TenantGkey { get; set; }
+    public int? TenantGkey { get; set; }
 
     public string? Tagline { get; set; }
 

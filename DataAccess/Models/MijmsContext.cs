@@ -15,9 +15,13 @@ public partial class MijmsContext : DbContext
     {
     }
 
-    public virtual DbSet<CashTransaction> CashTransactions { get; set; }
+    public virtual DbSet<CustomerOrder> CustomerOrders { get; set; }
+
+    public virtual DbSet<CustomerOrderLine> CustomerOrderLines { get; set; }
 
     public virtual DbSet<DailyRate> DailyRates { get; set; }
+
+    public virtual DbSet<DailySalesInvoiceReceiptDbview> DailySalesInvoiceReceiptDbviews { get; set; }
 
     public virtual DbSet<DailyStockSummary> DailyStockSummaries { get; set; }
 
@@ -107,31 +111,258 @@ public partial class MijmsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CashTransaction>(entity =>
+        modelBuilder.Entity<CustomerOrder>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("PK_cash_transaction_summary");
+            entity.HasKey(e => e.Gkey);
 
-            entity.ToTable("CASH_TRANSACTION");
+            entity.ToTable("CUSTOMER_ORDER");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
-            entity.Property(e => e.ClosingBalance)
+            entity.Property(e => e.AdvancePaidAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("CLOSING_BALANCE");
-            entity.Property(e => e.LedgerBook)
+                .HasColumnName("ADVANCE_PAID_AMOUNT");
+            entity.Property(e => e.BalanceAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("BALANCE_AMOUNT");
+            entity.Property(e => e.BalanceWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("BALANCE_WEIGHT");
+            entity.Property(e => e.BaseMaterial)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("LEDGER_BOOK");
-            entity.Property(e => e.LedgerKey).HasColumnName("LEDGER_KEY");
-            entity.Property(e => e.OpeningBalance)
+                .HasColumnName("BASE_MATERIAL");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn)
+                .HasPrecision(6)
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
+            entity.Property(e => e.CustMobileNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CUST_MOBILE_NBR");
+            entity.Property(e => e.DeliveryBranch).HasColumnName("DELIVERY_BRANCH");
+            entity.Property(e => e.DeliveryDate)
+                .HasPrecision(6)
+                .HasColumnName("DELIVERY_DATE");
+            entity.Property(e => e.FulfilledItems).HasColumnName("FULFILLED_ITEMS");
+            entity.Property(e => e.MetalRate)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("OPENING_BALANCE");
-            entity.Property(e => e.Payments)
+                .HasColumnName("METAL_RATE");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn)
+                .HasPrecision(6)
+                .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.OldMetalFineWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OLD_METAL_FINE_WEIGHT");
+            entity.Property(e => e.OldMetalNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OLD_METAL_NET_WEIGHT");
+            entity.Property(e => e.OrderBranch).HasColumnName("ORDER_BRANCH");
+            entity.Property(e => e.OrderDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DATE");
+            entity.Property(e => e.OrderDueDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DUE_DATE");
+            entity.Property(e => e.OrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.OrderStatusFlag).HasColumnName("ORDER_STATUS_FLAG");
+            entity.Property(e => e.OrderTransferDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_TRANSFER_DATE");
+            entity.Property(e => e.OrderType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_TYPE");
+            entity.Property(e => e.OrderedItems).HasColumnName("ORDERED_ITEMS");
+            entity.Property(e => e.Remark)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("REMARK");
+            entity.Property(e => e.ServiceBranch).HasColumnName("SERVICE_BRANCH");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TotalGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("TOTAL_GROSS_WEIGHT");
+            entity.Property(e => e.TotalMakingCharges)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("PAYMENTS");
-            entity.Property(e => e.Receipts)
+                .HasColumnName("TOTAL_MAKING_CHARGES");
+            entity.Property(e => e.TotalNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("TOTAL_NET_WEIGHT");
+            entity.Property(e => e.TotalOrderAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("RECEIPTS");
-            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+                .HasColumnName("TOTAL_ORDER_AMOUNT");
+            entity.Property(e => e.TotalStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("TOTAL_STONE_WEIGHT");
+            entity.Property(e => e.TotalTaxAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TOTAL_TAX_AMOUNT");
+        });
+
+        modelBuilder.Entity<CustomerOrderLine>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("CUSTOMER_ORDER_LINES");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.AdvancePaidAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ADVANCE_PAID_AMOUNT");
+            entity.Property(e => e.BalanceAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("BALANCE_AMOUNT");
+            entity.Property(e => e.BalanceWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("BALANCE_WEIGHT");
+            entity.Property(e => e.CatalogId).HasColumnName("CATALOG_ID");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn)
+                .HasPrecision(6)
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.DeliveryBranch).HasColumnName("DELIVERY_BRANCH");
+            entity.Property(e => e.DeliveryDate)
+                .HasPrecision(6)
+                .HasColumnName("DELIVERY_DATE");
+            entity.Property(e => e.DesignName)
+                .IsUnicode(false)
+                .HasColumnName("DESIGN_NAME");
+            entity.Property(e => e.FulfilledItems).HasColumnName("FULFILLED_ITEMS");
+            entity.Property(e => e.ImageName)
+                .IsUnicode(false)
+                .HasColumnName("IMAGE_NAME");
+            entity.Property(e => e.ImagePath)
+                .IsUnicode(false)
+                .HasColumnName("IMAGE_PATH");
+            entity.Property(e => e.ItemNotes)
+                .IsUnicode(false)
+                .HasColumnName("ITEM_NOTES");
+            entity.Property(e => e.ItemPacked).HasColumnName("ITEM_PACKED");
+            entity.Property(e => e.MakingCharges)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("MAKING_CHARGES");
+            entity.Property(e => e.MetalRate)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("METAL_RATE");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn)
+                .HasPrecision(6)
+                .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.OldMetalFinePercent)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OLD_METAL_FINE_PERCENT");
+            entity.Property(e => e.OldMetalFineWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OLD_METAL_FINE_WEIGHT");
+            entity.Property(e => e.OldMetalNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OLD_METAL_NET_WEIGHT");
+            entity.Property(e => e.OrderAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ORDER_AMOUNT");
+            entity.Property(e => e.OrderBranch).HasColumnName("ORDER_BRANCH");
+            entity.Property(e => e.OrderGkey).HasColumnName("ORDER_GKEY");
+            entity.Property(e => e.OrderItemDueDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_ITEM_DUE_DATE");
+            entity.Property(e => e.OrderItemStatusFlag).HasColumnName("ORDER_ITEM_STATUS_FLAG");
+            entity.Property(e => e.OrderLineNbr).HasColumnName("ORDER_LINE_NBR");
+            entity.Property(e => e.OrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.OrderSpecification)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_SPECIFICATION");
+            entity.Property(e => e.OrderTransferDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_TRANSFER_DATE");
+            entity.Property(e => e.OrderType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_TYPE");
+            entity.Property(e => e.OrderedItems).HasColumnName("ORDERED_ITEMS");
+            entity.Property(e => e.PageNbr).HasColumnName("PAGE_NBR");
+            entity.Property(e => e.ProdCategory)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PROD_CATEGORY");
+            entity.Property(e => e.ProdGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PROD_GROSS_WEIGHT");
+            entity.Property(e => e.ProdNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PROD_NET_WEIGHT");
+            entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
+            entity.Property(e => e.ProdStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PROD_STONE_WEIGHT");
+            entity.Property(e => e.ProductDesc)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_DESC");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductId)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_ID");
+            entity.Property(e => e.ProductMetal)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_METAL");
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_NAME");
+            entity.Property(e => e.ProductPurity)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_PURITY");
+            entity.Property(e => e.ProductSku)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PRODUCT_SKU");
+            entity.Property(e => e.Remark)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("REMARK");
+            entity.Property(e => e.ServiceBranch).HasColumnName("SERVICE_BRANCH");
+            entity.Property(e => e.TaxAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TAX_AMOUNT");
+            entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");
+            entity.Property(e => e.TotalGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("TOTAL_GROSS_WEIGHT");
+            entity.Property(e => e.TotalNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("TOTAL_NET_WEIGHT");
+            entity.Property(e => e.TotalStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("TOTAL_STONE_WEIGHT");
+            entity.Property(e => e.VaAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("VA_AMOUNT");
+            entity.Property(e => e.VaPercent)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("VA_PERCENT");
         });
 
         modelBuilder.Entity<DailyRate>(entity =>
@@ -163,6 +394,31 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Purity)
                 .HasMaxLength(20)
                 .HasColumnName("PURITY");
+        });
+
+        modelBuilder.Entity<DailySalesInvoiceReceiptDbview>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("DailySalesInvoiceReceiptDBView");
+
+            entity.Property(e => e.AdvanceAmt).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Bank).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Cash).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Credit).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CreditCard).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DebitCard).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DiscountAmt).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Gpay).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.InvAmount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.InvDate).HasPrecision(6);
+            entity.Property(e => e.InvNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Rd)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("RD");
+            entity.Property(e => e.Refund).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
@@ -1374,7 +1630,9 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("ORG_BANK_DETAILS");
 
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedNever()
+                .HasColumnName("GKEY");
             entity.Property(e => e.BankAccountNbr)
                 .HasMaxLength(200)
                 .IsUnicode(false)
@@ -2334,7 +2592,7 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("REP_DAILY_STOCK_SUMMARY");
 
-            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.ClosingStock)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK");
@@ -2366,7 +2624,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.StockTransferOut)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("STOCK_TRANSFER_OUT");
-            entity.Property(e => e.StockTrnsferOutQty).HasColumnName("STOCK_TRNSFER_OUT_QTY");
+            entity.Property(e => e.StockTransferOutQty).HasColumnName("STOCK_TRANSFER_OUT_QTY");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
         });
 

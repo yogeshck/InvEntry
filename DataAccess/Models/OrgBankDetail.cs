@@ -21,7 +21,7 @@ public partial class OrgBankDetail
 
     public string? MobileEnabled { get; set; }
 
-    public int? UseByRefGkey { get; set; }
+    public long? UseByRefGkey { get; set; }
 
     public string? UseByRefName { get; set; }
 

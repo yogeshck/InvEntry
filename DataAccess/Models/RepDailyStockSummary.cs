@@ -33,7 +33,7 @@ public partial class RepDailyStockSummary
 
     public int? StockOutQty { get; set; }
 
-    public int? StockTrnsferOutQty { get; set; }
+    public int? StockTransferOutQty { get; set; }
 
     public int? ClosingStockQty { get; set; }
 }

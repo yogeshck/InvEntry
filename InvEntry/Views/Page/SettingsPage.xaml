@@ -23,12 +23,19 @@
     <dxwui:NavigationPage.Resources>
         <DataTemplate x:Key="DailyRateItemTemplate">
             <StackPanel Margin="20">
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="250" IsTabStop="False"/>
-                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="250" IsTabStop="False"/>
-                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" Width="250" IsTabStop="False"/>
+                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="250" IsTabStop="False" FontSize="14" FontWeight="Bold"/>
+                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="250" IsTabStop="False" FontSize="14" FontWeight="Bold"/>
+                <dxe:TextEdit Text="{Binding Carat}"
+                              IsReadOnly="True"
+                              Width="250"
+                              IsTabStop="False"
+                              FontSize="14"
+                              FontWeight="Bold" />
                 <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" 
-                              DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250" IsTabStop="False"/>
-                <dxe:TextEdit EditValue="{Binding Price}" Width="250" NullText="Today Price" MaskType="Numeric" />
+                              DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250" IsTabStop="False"
+                              FontSize="14"
+                              FontWeight="Bold" />
+                <dxe:TextEdit EditValue="{Binding Price}" Width="250" NullText="Today Price" MaskType="Numeric" FontSize="14" FontWeight="Bold"/>
             </StackPanel>
         </DataTemplate>
 

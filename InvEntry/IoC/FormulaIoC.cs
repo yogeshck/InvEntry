@@ -15,6 +15,7 @@ namespace InvEntry.IoC
         {
             FormulaStore.Instance.ConfigureInvoiceLineFormulas();
             FormulaStore.Instance.ConfigureInvoiceHeaderFormulas();
+            FormulaStore.Instance.ConfigureCustomerOrderLineFormulas();
             FormulaStore.Instance.ConfigureEstimateLineFormulas();
             FormulaStore.Instance.ConfigureGRNLineSumryFormulas();
             FormulaStore.Instance.ConfigureGRNLineFormulas();
@@ -78,6 +79,34 @@ namespace InvEntry.IoC
             store.AddFormula<EstimateLine>(x => x.EstlTotal,
                 //$"[{nameof(EstimateLine.EstlTaxableAmount)}] + [{nameof(EstimateLine.EstlCgstAmount)}] + [{nameof(EstimateLine.EstlSgstAmount)}] + [{nameof(EstimateLine.EstlIgstAmount)}]");
                 $"[{nameof(EstimateLine.EstlTaxableAmount)}]");
+        }
+
+        private static void ConfigureCustomerOrderLineFormulas(this FormulaStore store)
+        {
+            store.AddFormula<CustomerOrderLine>(x => x.ProdNetWeight,
+                $"[{nameof(CustomerOrderLine.ProdGrossWeight)}] - [{nameof(CustomerOrderLine.ProdStoneWeight)}]", precision: 3);
+
+        //    store.AddFormula<CustomerOrderLine>(x => x.InvlGrossAmt,
+        //        $"[{nameof(CustomerOrderLine.ProdNetWeight)}] * [{nameof(CustomerOrderLine.InvlBilledPrice)}]");
+
+        //    store.AddFormula<CustomerOrderLine>(x => x.VaAmount,
+        //        $"[{nameof(CustomerOrderLine.InvlGrossAmt)}] * Round(([{nameof(CustomerOrderLine.VaPercent)}] / 100), 3)");
+
+        //    store.AddFormula<CustomerOrderLine>(x => x.InvlTaxableAmount,
+        //        $"[{nameof(CustomerOrderLine.InvlGrossAmt)}] + [{nameof(CustomerOrderLine.VaAmount)}] + [{nameof(CustomerOrderLine.InvlStoneAmount)}]");
+
+          //  store.AddFormula<CustomerOrderLine>(x => x.InvlCgstAmount,
+          //      $"[{nameof(CustomerOrderLine.InvlTaxableAmount)}] * Round(([{nameof(CustomerOrderLine.InvlCgstPercent)}]/ 100), 3)");
+
+          //  store.AddFormula<CustomerOrderLine>(x => x.InvlSgstAmount,
+          //      $"[{nameof(CustomerOrderLine.InvlTaxableAmount)}] * Round(([{nameof(CustomerOrderLine.InvlSgstPercent)}]/ 100), 3)");
+
+         //   store.AddFormula<CustomerOrderLine>(x => x.InvlIgstAmount,
+         //       $"[{nameof(CustomerOrderLine.InvlTaxableAmount)}] * Round(([{nameof(CustomerOrderLine.InvlIgstPercent)}]/ 100), 3)");
+
+         //   store.AddFormula<CustomerOrderLine>(x => x.InvlTotal,
+         //       //$"[{nameof(CustomerOrderLine.InvlTaxableAmount)}] + [{nameof(CustomerOrderLine.InvlCgstAmount)}] + [{nameof(CustomerOrderLine.InvlSgstAmount)}] + [{nameof(CustomerOrderLine.InvlIgstAmount)}]");
+         //       $"[{nameof(CustomerOrderLine.InvlTaxableAmount)}]");
         }
 
         private static void ConfigureInvoiceHeaderFormulas(this FormulaStore store)

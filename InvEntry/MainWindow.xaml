@@ -68,6 +68,19 @@
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
+                <dxwui:HamburgerSubMenu Content="Order" MoreButtonVisibilityMode="Hidden" 
+                                            Glyph="{dx:DXImage 'SvgImages/Business Objects/BO_Note.svg'}" >
+                    <!-- {dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
+                    <dxwui:HamburgerSubMenu.Items>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:CustomerOrderEntryPage}"
+                             Content="Order New/Rep Entry" HideMenuWhenSelected="True"/>
+                        <!--  <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:EstimateEntryPage}"
+                                                 Content="Estimate "  HideMenuWhenSelected="True"/>  -->
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:CustomerOrdersListView}"
+                                                 Content="Order List View" HideMenuWhenSelected="True"/>
+                        <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
+                    </dxwui:HamburgerSubMenu.Items>
+                </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerSubMenu Content="Finance" MoreButtonVisibilityMode="Hidden" 
                                         Glyph="{dx:DXImage 'SvgImages/Icon Builder/Business_DollarCircled.svg'}" >
                     <!-- "{dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
