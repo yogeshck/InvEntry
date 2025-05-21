@@ -50,6 +50,9 @@ public partial class CustomerOrderViewModel : ObservableObject
     private string _productIdUI;
 
     [ObservableProperty]
+    private string _orderStatus;
+
+    [ObservableProperty]
     private MtblLedger _mtblLedger;
 
     [ObservableProperty]
@@ -78,6 +81,9 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<string> metalList;
+
+    [ObservableProperty]
+    private ObservableCollection<string> custOrdStatusList;
 
     [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
@@ -189,11 +195,17 @@ public partial class CustomerOrderViewModel : ObservableObject
     {
         Header = new()
         {
-            InvDate = DateTime.Now,
+            OrderDate = DateTime.Now,
+            OrderType = "New",
+            OrderStatusFlag = 1,    // 1 - Open,  2 - In-Progress,   3 - Completed,   4 - Delivered
+            OrderDueDate = DateTime.Now.AddDays(14),   //hard coded should be from references....
             //IsTaxApplicable = true,
             //     GstLocSeller = Company.GstCode,
             //    TenantGkey = Company.TenantGkey
         };
+
+        // OrderStatus = CustOrdStatusList.FirstOrDefault(x => x..Equals("1")).ToString();
+        OrderStatus = "OPEN";
     }
 
     private async void SetThisCompany()
@@ -283,6 +295,11 @@ public partial class CustomerOrderViewModel : ObservableObject
         var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
         MetalList = new(metalRefList.Select(x => x.RefValue));
     }
+    private async void PopulateOrderStatusList()
+    {
+        var ordStatusRefList = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
+        CustOrdStatusList = [.. ordStatusRefList.Select(x => x.RefValue)];
+    }
 
     private async void PopulateMtblRefNameList()
     {
@@ -299,6 +316,48 @@ public partial class CustomerOrderViewModel : ObservableObject
                 _gstTaxRefList = new(gstTaxRefList);
             }
         }*/
+
+    [RelayCommand]
+    private void Focus(TextEdit sender)
+    {
+        sender.Focus();
+    }
+
+
+    [RelayCommand]
+    private void ResetCustomerOrder()
+    {
+        SetHeader();
+        SetThisCompany();
+        //SetMasterLedger();
+        Buyer = null;
+        CustomerPhoneNumber = null;
+        CustomerState = null;
+        SalesPerson = null;
+        CreateCustomerOrderCommand.NotifyCanExecuteChanged();
+        //invBalanceChk = false;  //reset to false for next invoice
+    }
+
+    private bool CanDeleteRows()
+    {
+        return SelectedRows?.Any() ?? false;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanDeleteSingleRow))]
+    private void DeleteSingleRow(CustomerOrderLine line)
+    {
+        var result = _messageBoxService.ShowMessage("Delete current row", "Delete Row", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+        if (result == MessageResult.No)
+            return;
+
+        var index = Header.Lines.Remove(line);
+    }
+
+    private bool CanDeleteSingleRow(CustomerOrderLine line)
+    {
+        return line is not null && Header.Lines.IndexOf(line) > -1;
+    }
 
     [RelayCommand]
     private async Task FetchCustomer(EditValueChangedEventArgs args)
@@ -396,11 +455,6 @@ public partial class CustomerOrderViewModel : ObservableObject
         {
             ProdQty = 1,
             MetalRate = billedPrice,
-         //   InvlCgstPercent = Header.CgstPercent,
-         //   InvlSgstPercent = Header.SgstPercent,
-         //   InvlIgstPercent = Header.IgstPercent,
-         //   InvlStoneAmount = 0M,
-         //   TaxType = "GST"
         };
 
         custOrdLine.SetProductDetails(productStk);
@@ -561,17 +615,18 @@ public partial class CustomerOrderViewModel : ObservableObject
     //>>>        ProcessReceipts();
 
 /*            if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
-                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);
+                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header); */
 
-            _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created",
+            _messageBoxService.ShowMessage("Customer Order " + Header.OrderNbr + " Created Successfully", "Customer Order Created",
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+            /* Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();*/
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
+            ResetCustomerOrder();
         }
     }
 

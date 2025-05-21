@@ -47,7 +47,7 @@
                                    GlyphAlignment="Top"
                                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                                    GlyphSize="Large"
-                                   Command="{Binding ResetInvoiceCommand}" />
+                                   Command="{Binding ResetCustomerOrderCommand}" />
                 <dxb:BarItemSeparator />
                 <dxb:BarButtonItem x:Name="btnPrint"
                                    Content="Print"
@@ -303,7 +303,7 @@
                                                  Width="260"
                                                  HorizontalAlignment="Left"
                                                  VerticalAlignment="Center">
-                                    <dxe:TextEdit EditValue="{Binding Header.OrderStatusFlag}"
+                                    <dxe:TextEdit EditValue="{Binding OrderStatus}"
                                                   IsTabStop="False"
                                                   Height="35"
                                                   Width="150"
