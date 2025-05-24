@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.Charts.Designer.Native;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
@@ -50,7 +51,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private string _productIdUI;
 
     [ObservableProperty]
-    private string _orderStatus;
+    private string _orderStatusUI;
 
     [ObservableProperty]
     private MtblLedger _mtblLedger;
@@ -122,6 +123,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<CustomerOrderLine, decimal?>> copyCustomerOrderLineExpression;
     private Dictionary<string, Action<CustomerOrder, decimal?>> copyCustomerOrderExpression;
+    private Dictionary<int, string> orderStatus = new Dictionary<int, string>();
 
 
     public CustomerOrderViewModel(
@@ -205,7 +207,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         };
 
         // OrderStatus = CustOrdStatusList.FirstOrDefault(x => x..Equals("1")).ToString();
-        OrderStatus = "OPEN";
+        OrderStatusUI = "OPEN";
     }
 
     private async void SetThisCompany()
@@ -298,8 +300,29 @@ public partial class CustomerOrderViewModel : ObservableObject
     private async void PopulateOrderStatusList()
     {
         var ordStatusRefList = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
-        CustOrdStatusList = [.. ordStatusRefList.Select(x => x.RefValue)];
+        //CustOrdStatusList = [.. ordStatusRefList.Select(x => x.RefValue)];
+
+       // _orderStatus = ordStatusRefList.ToDictionary(s => s.RefCode);
+
+        if (ordStatusRefList is not null)
+        {
+            foreach ( MtblReference mtblRef in ordStatusRefList )
+            {
+                orderStatus.Add(Int32.Parse(mtblRef.RefCode), mtblRef.RefValue);
+            }
+
+        }
     }
+
+    private string GetOrderStatus(int? statusCode)
+    {
+        if (orderStatus.TryGetValue((int)statusCode, out string statusName))
+        {
+            return statusName;
+        }
+        return "No Status";
+    }
+
 
     private async void PopulateMtblRefNameList()
     {
@@ -443,7 +466,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
 
-        //might introduce agains when barcode implemented
+        //might introduce agains when barcode implementedR
         //if (productStk is null)
         //{
         //    //No stock to be handled - let the user enter manually all the details of billing item
@@ -506,7 +529,13 @@ public partial class CustomerOrderViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
+        OrderStatusUI = GetOrderStatus(Header.OrderStatusFlag);
     }
+/*
+    private string GetOrderStatus(int? orderStatusFlag)
+    {
+        throw new NotImplementedException();
+    }*/
 
     private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
     {

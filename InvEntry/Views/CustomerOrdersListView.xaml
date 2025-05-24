@@ -16,12 +16,12 @@
     xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
              xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"
-                      d:DataContext="{d:DesignInstance Type=viewmodels:CustomerOrderListViewModel}"
-                      DataContext="{ext:DISource Type=viewmodels:CustomerOrderListViewModel}"
+                      d:DataContext="{d:DesignInstance Type=viewmodels:CustomerOrderDBViewListViewModel}"
+                      DataContext="{ext:DISource Type=viewmodels:CustomerOrderDBViewListViewModel}"
              d:DesignHeight="450" HorizontalAlignment="Left" Width="1400">
 
-    <Grid Width="1100"
-          HorizontalAlignment="Left">
+    <Grid Width="1200"
+          HorizontalAlignment="Left" ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -29,14 +29,14 @@
 
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.From}"
+                <dxb:BarEditItem EditValue="{Binding DateSearchOption.From}"
                                  EditWidth="120"
                                  Content="From Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.To}"
+                <dxb:BarEditItem EditValue="{Binding DateSearchOption.To}"
                                  EditWidth="120"
                                  Content="To Date">
                     <dxb:BarEditItem.EditSettings>
@@ -57,33 +57,28 @@
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top" />
                 <dxb:BarItemSeparator Margin="2,0,2,0" />
-                <dxb:BarButtonItem x:Name="btnPrintInvoice"
+                <!-- <dxb:BarButtonItem x:Name="btnPrintInvoice"
                                    Content="Print"
                                    Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                                    GlyphSize="Large"
                                    Alignment="Far"
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top"
-                                   Command="{Binding PrintInvoiceCommand}" />
+                                   Command="{Binding PrintInvoiceCommand}" /> -->
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
 
         <dxg:GridControl Grid.Row="1"
-                         ItemsSource="{Binding CustomerOrder}"
+                         ItemsSource="{Binding CustomerOrderDBViews}"
                          AutoGenerateColumns="None"
                          MinHeight="500"
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="1400"
+                         Width="1600"
                          SelectedItem="{Binding SelectedOrder}"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Top">
-            <dxmvvm:Interaction.Behaviors>
-                <dxmvvm:EventToCommand EventName="SelectedItemChanged"
-                                       Command="{Binding SelectionChangedCommand}" />
-                <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}" />
-            </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView"
                                 AllowBestFit="False"
@@ -92,10 +87,21 @@
                                 AllowGrouping="False"
                                 ShowGroupPanel="False"
                                 ShowAutoFilterRow="True"
-                                FontSize="15"
+                                FontSize="13"
                                 AutoWidth="False"
                                 ShowTotalSummary="True"
-                                EditorButtonShowMode="ShowOnlyInEditor">
+                                EditorButtonShowMode="ShowOnlyInEditor"
+                                ShowVerticalLines="False"
+                                ShowHorizontalLines="False"
+                                ShowFocusedRectangle="True">
+                    <dxg:TableView.FocusedRowBorderTemplate>
+                        <ControlTemplate>
+                            <Rectangle Stroke="#0EA3FF"
+                                       StrokeThickness="1"
+                                       RadiusX="5"
+                                       RadiusY="5" />
+                        </ControlTemplate>
+                    </dxg:TableView.FocusedRowBorderTemplate>
                     <!--     <dxg:TableView.ColumnMenuCustomizations>
                         <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}" />
                     </dxg:TableView.ColumnMenuCustomizations> -->
@@ -110,15 +116,46 @@
                                 Header="Order Date"
                                 ReadOnly="True"
                                 Width="90" />
-                <dxg:GridColumn FieldName="TotalOrderAmount"
-                                Header="Order Amount"
-                                Width="120">
-                    <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings MaskType="Numeric"
-                                              MaskUseAsDisplayFormat="True"
-                                              Mask="C2" />
-                    </dxg:GridColumn.EditSettings>
+                <dxg:GridColumn FieldName="CustomerName"
+                                Header="Customer Name"
+                                ReadOnly="True"
+                                Width="200" />
+                <dxg:GridColumn FieldName="CustMobileNbr"
+                                Header="Contact #"
+                                ReadOnly="True"
+                                Width="90" />
+                <dxg:GridColumn FieldName="OrderType"
+                                Header="Order Type"
+                                ReadOnly="True"
+                                Width="90" />
+                <dxg:GridColumn FieldName="OrderDueDate"
+                                Header="Due Date"
+                                Width="90" />
+                <dxg:GridColumn FieldName="OrderLineNbr"
+                                Header="Line"
+                                ReadOnly="True"
+                                Width="40" />
+                <dxg:GridColumn FieldName="ProdCategory"
+                                Header="Item"
+                                Width="90">
                 </dxg:GridColumn>
+                <dxg:GridColumn FieldName="ProdQty"
+                                Header="Ord Qty"
+                                Width="60">
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="ProdGrossWeight"
+                                Header="Gross Wt"
+                                Width="90">
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="ProdStoneWeight"
+                                Header="Stone Wt"
+                                Width="90">
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="ProdNetWeight"
+                                Header="Net Wt"
+                                Width="90">
+                </dxg:GridColumn>
+                <!--
                 <dxg:GridColumn Header="Payment"
                                 FieldName="PaymentStatus"
                                 Width="100">
@@ -188,7 +225,7 @@
                         </Border>
                     </DataTemplate>
                 </dxg:GridColumn.CellTemplate>
-            </dxg:GridColumn>
+            </dxg:GridColumn>  -->
             </dxg:GridControl.Columns>
         </dxg:GridControl>
     </Grid>

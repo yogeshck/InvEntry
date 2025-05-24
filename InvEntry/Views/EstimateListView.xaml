@@ -30,7 +30,8 @@
         </Grid.ColumnDefinitions>-->
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date">
+                <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date" TextBlock.FontSize="18"
+                                 TextBlock.FontWeight="Bold">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
                     </dxb:BarEditItem.EditSettings>

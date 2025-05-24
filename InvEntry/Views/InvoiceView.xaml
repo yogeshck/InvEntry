@@ -58,7 +58,7 @@
                                     GlyphSize="Large" Command="{Binding CreateInvoiceCommand}"/>
                 <dxb:BarStaticItem Content="{Binding Gold22C.PriceDisplay, 
                                     Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
-                                    Alignment="Far" BarItemDisplayMode="ContentAndGlyph"
+                                    Alignment="Far" BarItemDisplayMode="ContentAndGlyph" TextBlock.FontSize="20"
                                     Glyph=".\Images\gold.svg" GlyphAlignment="Top" GlyphSize="Medium"/>
                 <dxb:BarItemSeparator Alignment="Far"/>
                 <dxb:BarStaticItem Content="{Binding Silver.PriceDisplay, 

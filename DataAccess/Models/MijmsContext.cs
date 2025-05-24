@@ -17,6 +17,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<CustomerOrder> CustomerOrders { get; set; }
 
+    public virtual DbSet<CustomerOrderDbView> CustomerOrderDbViews { get; set; }
+
     public virtual DbSet<CustomerOrderLine> CustomerOrderLines { get; set; }
 
     public virtual DbSet<DailyRate> DailyRates { get; set; }
@@ -208,6 +210,67 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.TotalTaxAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("TOTAL_TAX_AMOUNT");
+        });
+
+        modelBuilder.Entity<CustomerOrderDbView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("CUSTOMER_ORDER_DB_VIEW");
+
+            entity.Property(e => e.AdvancePaidAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("ADVANCE_PAID_AMOUNT");
+            entity.Property(e => e.BalanceAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("BALANCE_AMOUNT");
+            entity.Property(e => e.CustGkey).HasColumnName("CUST_GKEY");
+            entity.Property(e => e.CustMobileNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CUST_MOBILE_NBR");
+            entity.Property(e => e.CustomerName)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("CUSTOMER_NAME");
+            entity.Property(e => e.DeliveryDate)
+                .HasPrecision(6)
+                .HasColumnName("DELIVERY_DATE");
+            entity.Property(e => e.OrderBranch).HasColumnName("ORDER_BRANCH");
+            entity.Property(e => e.OrderDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DATE");
+            entity.Property(e => e.OrderDueDate)
+                .HasPrecision(6)
+                .HasColumnName("ORDER_DUE_DATE");
+            entity.Property(e => e.OrderLineNbr).HasColumnName("ORDER_LINE_NBR");
+            entity.Property(e => e.OrderNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.OrderStatus)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_STATUS");
+            entity.Property(e => e.OrderStatusFlag).HasColumnName("ORDER_STATUS_FLAG");
+            entity.Property(e => e.OrderType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_TYPE");
+            entity.Property(e => e.ProdCategory)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("PROD_CATEGORY");
+            entity.Property(e => e.ProdGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PROD_GROSS_WEIGHT");
+            entity.Property(e => e.ProdNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PROD_NET_WEIGHT");
+            entity.Property(e => e.ProdQty).HasColumnName("PROD_QTY");
+            entity.Property(e => e.ProdStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PROD_STONE_WEIGHT");
         });
 
         modelBuilder.Entity<CustomerOrderLine>(entity =>

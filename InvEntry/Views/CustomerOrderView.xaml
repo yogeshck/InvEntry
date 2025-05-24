@@ -49,7 +49,7 @@
                                    GlyphSize="Large"
                                    Command="{Binding ResetCustomerOrderCommand}" />
                 <dxb:BarItemSeparator />
-                <dxb:BarButtonItem x:Name="btnPrint"
+             <!--   <dxb:BarButtonItem x:Name="btnPrint"
                                    Content="Print"
                                    Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                                    GlyphSize="Large"
@@ -62,7 +62,7 @@
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top"
                                    GlyphSize="Large"
-                                   Command="{Binding PrintPreviewInvoiceCommand}" />
+                                   Command="{Binding PrintPreviewInvoiceCommand}" />  -->
                 <dxb:BarItemSeparator />
                 <dxb:BarButtonItem x:Name="Save"
                                    Content="Save Order"
@@ -303,7 +303,7 @@
                                                  Width="260"
                                                  HorizontalAlignment="Left"
                                                  VerticalAlignment="Center">
-                                    <dxe:TextEdit EditValue="{Binding OrderStatus}"
+                                    <dxe:TextEdit EditValue="{Binding OrderStatusUI}"
                                                   IsTabStop="False"
                                                   Height="35"
                                                   Width="150"
