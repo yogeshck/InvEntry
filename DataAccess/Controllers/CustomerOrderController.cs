@@ -49,7 +49,7 @@ namespace DataAccess.Controllers
         public CustomerOrder Post([FromBody] CustomerOrder value)
         {
 
-            var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "Sale Invoice"); // value.VoucherType);
+            var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "Customer Order"); // value.VoucherType);
 
             voucherType.LastUsedNumber++;
 
