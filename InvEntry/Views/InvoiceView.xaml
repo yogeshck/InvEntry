@@ -525,7 +525,7 @@
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup Header="Exchange">
+                    <dxlc:LayoutGroup Header="Old Metal">
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False" >
                                 <dxb:BarManager.Bars>
@@ -543,7 +543,7 @@
                                 </dxb:BarManager.Bars>
                                 <dxg:GridControl ItemsSource="{Binding Header.OldMetalTransactions}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="600" MinHeight="400" HorizontalAlignment="Left">
+                                         MaxHeight="600" MinHeight="400" HorizontalAlignment="Left" FontSize="13">
                                     <dxg:GridControl.Resources>
                                         <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
                                             <Setter Property="FontWeight" Value="Bold"/>
@@ -557,12 +557,12 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="Metal" Header="Metal" >
+                                        <dxg:GridColumn FieldName="Metal" Header="Metal" Width="150">
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalList}"/>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" />
+                                        <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" Width="100" />
                                         <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />
                                         <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" >
                                             <dxg:GridColumn.EditSettings>
@@ -626,7 +626,7 @@
                                 </dxb:BarManager.Bars>
                                 <dxg:GridControl ItemsSource="{Binding Header.ReceiptLines}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
-                                         MaxHeight="600" MinHeight="400" HorizontalAlignment="Left">
+                                         MaxHeight="600" MinHeight="400" HorizontalAlignment="Left" FontSize="13">
                                     <dxg:GridControl.Resources>
                                         <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
                                             <Setter Property="FontWeight" Value="Bold"/>

@@ -494,7 +494,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             CustGkey = Header.CustGkey,
             CustMobile = Header.CustMobile,  
-            TransType = "Purchase",
+            TransType = "OG Purchase",
             TransDate = DateTime.Now,
             Uom = "Grams"
         };
@@ -898,6 +898,8 @@ public partial class InvoiceViewModel : ObservableObject
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
+        oldMetalTransaction.DocRefType = "Invoice";
+
     }
 
     [RelayCommand]
@@ -958,7 +960,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
 
-        Header.OldGoldAmount = FilterMetalTransactions("OLD GOLD");
+        Header.OldGoldAmount = FilterMetalTransactions("OLD GOLD 18KT") + FilterMetalTransactions("OLD GOLD 22KT") + FilterMetalTransactions("OLD GOLD 916-22KT");
 
         Header.OldSilverAmount = FilterMetalTransactions("OLD SILVER");
 

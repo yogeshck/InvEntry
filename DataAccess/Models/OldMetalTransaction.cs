@@ -52,4 +52,6 @@ public partial class OldMetalTransaction
     public decimal? FinalPurchasePrice { get; set; }
 
     public string? Remarks { get; set; }
+
+    public string? DocRefType { get; set; }
 }

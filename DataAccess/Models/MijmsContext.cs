@@ -1550,6 +1550,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("doc_ref_nbr");
+            entity.Property(e => e.DocRefType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("doc_ref_type");
             entity.Property(e => e.FinalPurchasePrice)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("final_purchase_price");

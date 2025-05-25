@@ -663,4 +663,28 @@ public partial class CustomerOrderViewModel : ObservableObject
     {
         return string.IsNullOrEmpty(Header?.OrderNbr);
     }
+
+
+    [RelayCommand]
+    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)   
+    {
+
+        /*        if (oldMetalTransaction.ProductId is null)
+                {
+                    return;
+                }*/
+
+        oldMetalTransaction.NetWeight = (
+                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                        );
+
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
+                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        oldMetalTransaction.DocRefType = "Order";
+
+    }
 }

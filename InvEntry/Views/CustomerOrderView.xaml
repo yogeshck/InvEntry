@@ -474,7 +474,7 @@
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
-                    <dxlc:LayoutGroup Header="Exchange">
+                    <dxlc:LayoutGroup Header="Old Metal">
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False">
                                 <dxb:BarManager.Bars>
@@ -596,7 +596,7 @@
                                              AllowCustomizationMenu="False"
                                              ShowDragWidget="False">
                                         <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
-                                                           Command="{Binding ProcessArReceiptsCommand}"
+                                                           Command="{Binding ProcessAdvReceiptsCommand}"
                                                            GlyphSize="Large"
                                                            GlyphAlignment="Right"
                                                            BarItemDisplayMode="ContentAndGlyph" />

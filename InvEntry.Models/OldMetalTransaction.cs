@@ -79,6 +79,9 @@ namespace InvEntry.Models
         [ObservableProperty]
         public string? _remarks;
 
+        [ObservableProperty]
+        public string? _docRefType;
+
     }
 }
 
