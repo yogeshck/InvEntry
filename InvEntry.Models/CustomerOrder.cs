@@ -10,6 +10,7 @@ public partial class CustomerOrder : BaseEntity
     public CustomerOrder()
     {
         Lines = new();
+        OldMetalTransactions = new();
     }
 
     [ObservableProperty]
@@ -120,6 +121,10 @@ public partial class CustomerOrder : BaseEntity
     [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<CustomerOrderLine>? lines;
+
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<OldMetalTransaction>? oldMetalTransactions;
 
 }
 

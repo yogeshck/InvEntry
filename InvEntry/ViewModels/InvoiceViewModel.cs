@@ -184,6 +184,14 @@ public partial class InvoiceViewModel : ObservableObject
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
+
+        var metalPrice = getBilledPrice("GOLD");
+        if (metalPrice < 1)
+        {
+            displayErrorMsg();
+            //return;
+        }
+
         SetHeader();
         SetThisCompany();
         SetMasterLedger();
@@ -433,12 +441,17 @@ public partial class InvoiceViewModel : ObservableObject
         //    //No stock to be handled - let the user enter manually all the details of billing item
         //}
 
-        var billedPrice = _settingsPageViewModel.GetPrice(productStk.Metal);
+        var metalPrice = getBilledPrice(productStk.Metal);
+        if (metalPrice < 1)
+        {
+            displayErrorMsg();
+            return;
+        }
 
         InvoiceLine invoiceLine = new InvoiceLine()
         {
             ProdQty = 1,
-            InvlBilledPrice = billedPrice,
+            InvlBilledPrice = metalPrice,
             InvlCgstPercent = Header.CgstPercent,
             InvlSgstPercent = Header.SgstPercent,
             InvlIgstPercent = Header.IgstPercent,
@@ -466,27 +479,28 @@ public partial class InvoiceViewModel : ObservableObject
                 }*/
     }
 
+    private decimal getBilledPrice(string metal)
+    {
+        var metalPrice = _settingsPageViewModel.GetPrice(metal);
+
+        if (metalPrice is null)
+        {
+            metalPrice = -1;
+        }
+
+        return (decimal)metalPrice;
+    }
+
+    private void displayErrorMsg()
+    {
+        _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
+                                        "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
+        
+    }
+
     [RelayCommand]
     private Task EvaluateOldMetalTransaction()
     {
-        //if (string.IsNullOrEmpty(OldMetalIdUI))
-        //    return Task.CompletedTask;
-
-        //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching old product details...");
-
-        // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-        //var product = await _productService.GetProduct(OldMetalIdUI);
-        // await Task.Delay(30000);
-
-        // SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-        //if (product is null)
-        // {
-        //     _messageBoxService.ShowMessage($"No Product found for {OldMetalIdUI}, Please make sure it exists",
-        //         "Product not found", MessageButton.OK, MessageIcon.Error);
-        //     return;
-        //  }
 
         //   var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
 
@@ -494,9 +508,9 @@ public partial class InvoiceViewModel : ObservableObject
         {
             CustGkey = Header.CustGkey,
             CustMobile = Header.CustMobile,  
-            TransType = "OG Purchase",
+          //  TransType = "OG Purchase",
             TransDate = DateTime.Now,
-            Uom = "Grams"
+         //   Uom = "Grams"
         };
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
@@ -1207,7 +1221,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         foreach(var omTrans in Header.OldMetalTransactions)
         {
-            omTrans.EnrichHeaderDetails(Header);
+            omTrans.EnrichInvHeaderDetails(Header);
         }
 
         await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);

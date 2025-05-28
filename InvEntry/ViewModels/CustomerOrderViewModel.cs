@@ -297,6 +297,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
         MetalList = new(metalRefList.Select(x => x.RefValue));
     }
+
     private async void PopulateOrderStatusList()
     {
         var ordStatusRefList = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
@@ -563,13 +564,13 @@ public partial class CustomerOrderViewModel : ObservableObject
         if (args.Row is InvoiceArReceipt arInvRctline)
         {
             EvaluateArRctLine(arInvRctline);
-        }
+        } */
         else
         if (args.Row is OldMetalTransaction oldMetalTransaction &&
             args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
         {
             EvaluateOldMetalTransactions(oldMetalTransaction);
-        }*/
+        }
 
         EvaluateHeader();
     }
@@ -636,9 +637,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             // loop for validation check for customer
             await _customerOrderService.CreateCustomerOrderLine(Header.Lines);
 
-    //>>        await ProcessProductTransaction(Header.Lines);
-
-    //>>>        await ProcessOldMetalTransaction();
+            await ProcessOldMetalTransaction();
 
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
     //>>>        ProcessReceipts();
@@ -664,9 +663,25 @@ public partial class CustomerOrderViewModel : ObservableObject
         return string.IsNullOrEmpty(Header?.OrderNbr);
     }
 
+    [RelayCommand]
+    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
+    {
+        oldMetalTransaction.NetWeight = (
+                                   oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                   oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                   oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                );
+
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
+                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        oldMetalTransaction.DocRefType = "Order";
+    }
+
 
     [RelayCommand]
-    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)   
+    private Task EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)   
     {
 
         /*        if (oldMetalTransaction.ProductId is null)
@@ -674,17 +689,32 @@ public partial class CustomerOrderViewModel : ObservableObject
                     return;
                 }*/
 
-        oldMetalTransaction.NetWeight = (
-                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
-                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
-                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
-                                        );
 
-        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
-                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
-        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+        OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
+        {
+            CustGkey = Header.CustGkey,
+            CustMobile = Header.CustMobileNbr,
+            TransDate = DateTime.Now,
+            Uom = "Grams"
+        };
 
-        oldMetalTransaction.DocRefType = "Order";
+        Header.OldMetalTransactions.Add(oldMetalTransactionLine);
 
+        return Task.CompletedTask;
+
+
+
+
+    }
+
+    private async Task ProcessOldMetalTransaction()
+    {
+
+        foreach (var omTrans in Header.OldMetalTransactions)
+        {
+            omTrans.EnrichCustOrderDetails(Header);
+        }
+
+        await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
     }
 }
