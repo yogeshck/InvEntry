@@ -11,60 +11,60 @@ namespace InvEntry.Models
     {
 
         [ObservableProperty]
-        public int? custGkey;
+        private int? custGkey;
 
         [ObservableProperty]
-        public string? customerName;
+        private string? customerName;
 
         [ObservableProperty]
-        public string? custMobileNbr;
+        private string? custMobileNbr;
 
         [ObservableProperty]
-        public string? orderNbr;
+        private string? orderNbr;
 
         [ObservableProperty]
-        public DateTime? orderDate;
+        private DateTime? orderDate;
 
         [ObservableProperty]
-        public string? orderType;
+        private string? orderType;
 
         [ObservableProperty]
-        public DateTime? orderDueDate;
+        private DateTime? orderDueDate;
 
         [ObservableProperty]
-        public DateTime? deliveryDate;
+        private DateTime? deliveryDate;
 
         [ObservableProperty]
-        public int? orderStatusFlag;
+        private int? orderStatusFlag;
 
         [ObservableProperty]
-        public string? orderStatus;
+        private string? orderStatus;
 
         [ObservableProperty]
-        public int? orderBranch;
+        private int? orderBranch;
 
         [ObservableProperty]
-        public decimal? advancePaidAmount;
+        private decimal? advancePaidAmount;
 
         [ObservableProperty]
-        public decimal? balanceAmount;
+        private decimal? balanceAmount;
 
         [ObservableProperty]
-        public int? orderLineNbr;
+        private int? orderLineNbr;
 
         [ObservableProperty]
-        public string? prodCategory;
+        private string? prodCategory;
 
         [ObservableProperty]
-        public decimal? prodGrossWeight;
+        private decimal? prodGrossWeight;
 
         [ObservableProperty]
-        public decimal? prodStoneWeight;
+        private decimal? prodStoneWeight;
 
         [ObservableProperty]
-        public decimal? prodNetWeight;
+        private decimal? prodNetWeight;
 
         [ObservableProperty]
-        public int prodQty;
+        private int prodQty;
     }
 }

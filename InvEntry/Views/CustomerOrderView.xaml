@@ -15,12 +15,13 @@
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
-             d:DataContext="{d:DesignInstance Type=viewmodels:CustomerOrderViewModel}"
-             DataContext="{ext:DISource Type=viewmodels:CustomerOrderViewModel}"
              mc:Ignorable="d"
              d:DesignHeight="450"
+             d:DataContext="{d:DesignInstance Type=viewmodels:CustomerOrderViewModel}"
+             DataContext="{ext:DISource Type=viewmodels:CustomerOrderViewModel}" 
              HorizontalAlignment="Left"
              Width="1471">
+
     <UserControl.Resources>
         <sys:String x:Key="Ordl">OrderLine</sys:String>
         <Style TargetType="dxe:TextEdit">
@@ -245,6 +246,39 @@
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
                     <dxlc:GroupSeparator Orientation="Vertical" />
+                    <dxlc:LayoutGroup Orientation="Vertical">
+                        
+                    <!-- Search Box -->
+                        <dxlc:LayoutGroup View="GroupBox"
+                                          Header="Lookup"
+                                          HorizontalAlignment="Left"
+                                          GroupBoxDisplayMode="Light"
+                                          ItemLabelsAlignment="Local"
+                                          Orientation="Vertical">
+                            <dxlc:LayoutGroup Orientation="Horizontal">
+                                <dxlc:LayoutItem Label=""
+                                                 LabelPosition="Top"
+                                                 HorizontalAlignment="Left">
+                                    <dxe:TextEdit Width="650"
+                                                  Height="30"
+                                                  NullText="Search..."
+                                                  Name="SearchText"
+                                                  FontSize="15"
+                                                  EditValue="{Binding SearchText}">
+                                        <dxmvvm:Interaction.Behaviors>
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged"
+                                                                    Command="{Binding FetchCustomerOrderCommand}"
+                                                                    PassEventArgsToCommand="True" />
+                                            <dxmvvm:EventToCommand EventName="Loaded"
+                                                               Command="{Binding FocusCommand}"
+                                                               CommandParameter="{Binding ElementName=SearchText}" />
+                                    </dxmvvm:Interaction.Behaviors>
+
+                                    </dxe:TextEdit>
+                                </dxlc:LayoutItem>
+                            </dxlc:LayoutGroup>
+                        
+                    </dxlc:LayoutGroup>
                     <!-- Customer Order Group -->
                     <dxlc:LayoutGroup View="GroupBox"
                                       Header="Customer Order"
@@ -266,7 +300,7 @@
                                              FontSize="14"
                                              Width="200">
                                 <dxe:DateEdit EditValue="{Binding Header.OrderDate}"
-                                              IsReadOnly="True"
+                                              IsReadOnly="False"
                                               Height="35"
                                               Width="150"
                                               FontSize="14" />
@@ -322,7 +356,7 @@
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                     </dxlc:LayoutGroup>
-
+                    </dxlc:LayoutGroup>
                 </dxlc:LayoutGroup>
 
                 <dxlc:LayoutGroup View="Tabs">
@@ -354,13 +388,16 @@
                                                  Content="Delete" GlyphAlignment="Right"/> -->
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
-                                <dxg:GridControl ItemsSource="{Binding Header.Lines}"
+                                <dxg:GridControl x:Name="orderLinesUIGrid"
+                                                 ItemsSource="{Binding Header.Lines}"
                                                  DeleteKeyBehavior="DeleteFocusedRow"
                                                  FontSize="13"
                                                  MaxHeight="600"
                                                  MinHeight="400"
                                                  SelectedItems="{Binding SelectedRows}"
                                                  HorizontalAlignment="Left">
+                                    <!--  AutoGenerateColumns="None">
+                                    EnableSmartColumnsGeneration="True"> -->
                                     <dxg:GridControl.Resources>
                                         <Style x:Key="boldHeader"
                                                TargetType="dxg:BaseGridHeader">
@@ -452,7 +489,10 @@
                                                              FieldName="InvlTotal" />
                                     </dxg:GridControl.TotalSummary>
                                     <dxg:GridControl.View>
-                                        <dxg:TableView AllowGrouping="False"
+                                        <dxg:TableView 
+                                            AutoWidth="True"
+                                            NewItemRowPosition="None"
+                                            AllowGrouping="False"
                                                        AllowBestFit="True"
                                                        ShowGroupPanel="False"
                                                        TotalSummaryPosition="Bottom">
@@ -560,7 +600,7 @@
                                                         ReadOnly="True" />
                                         <dxg:GridColumn FieldName="TotalProposedPrice"
                                                         Header="Proposed Price"
-                                                        ReadOnly="True" />
+                                                        ReadOnly="True" />  
                                         <dxg:GridColumn FieldName="FinalPurchasePrice"
                                                         Header="Final Price" />
                                     </dxg:GridControl.Columns>
@@ -608,7 +648,7 @@
                                                            GlyphAlignment="Right" />
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
-                                <dxg:GridControl ItemsSource="{Binding Header.ReceiptLines}"
+                         <!--       <dxg:GridControl ItemsSource="{Binding Header.ReceiptLines}"
                                                  DeleteKeyBehavior="DeleteFocusedRow"
                                                  MaxHeight="600"
                                                  MinHeight="400"
@@ -679,7 +719,7 @@
                                             </dxg:TableView.RowCellMenuCustomizations>
                                         </dxg:TableView>
                                     </dxg:GridControl.View>
-                                </dxg:GridControl>
+                                </dxg:GridControl>  -->
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>

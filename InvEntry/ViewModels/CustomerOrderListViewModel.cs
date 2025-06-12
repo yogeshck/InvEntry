@@ -31,6 +31,8 @@ public partial class CustomerOrderListViewModel : ObservableObject
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
 
+   // public ICommand EditOrderLineCommand => new RelayCommand<CustomerOrderDBView>(OnEditOrderLine);
+
     public CustomerOrderListViewModel(  ICustomerOrderService custOrderService,
                                         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
@@ -41,11 +43,11 @@ public partial class CustomerOrderListViewModel : ObservableObject
         _searchOption = new();
         SearchOption.To = Today;
         SearchOption.From = Today.AddDays(-1);
-        Task.Run(RefreshCustomerOrderAsync).Wait();
+        Task.Run(RefreshCustomerOrder).Wait();
     }
 
     [RelayCommand]
-    private async Task RefreshCustomerOrderAsync()
+    private async Task RefreshCustomerOrder()
     {
         var custOrderResult = await _custOrderService.GetAll(SearchOption);
         if (custOrderResult is not null)
@@ -69,4 +71,6 @@ public partial class CustomerOrderListViewModel : ObservableObject
     {
       //  PrintCustomerOrderCommand.NotifyCanExecuteChanged();
     }
+
+
 }

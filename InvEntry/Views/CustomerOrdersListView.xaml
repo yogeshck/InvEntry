@@ -16,9 +16,9 @@
     xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
              xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"
-                      d:DataContext="{d:DesignInstance Type=viewmodels:CustomerOrderDBViewListViewModel}"
+                d:DataContext="{d:DesignInstance Type=viewmodels:CustomerOrderDBViewListViewModel}"
                       DataContext="{ext:DISource Type=viewmodels:CustomerOrderDBViewListViewModel}"
-             d:DesignHeight="450" HorizontalAlignment="Left" Width="1400">
+    d:DesignHeight="450" HorizontalAlignment="Left" Width="1400">
 
     <Grid Width="1200"
           HorizontalAlignment="Left" ShowGridLines="False">
@@ -154,6 +154,19 @@
                 <dxg:GridColumn FieldName="ProdNetWeight"
                                 Header="Net Wt"
                                 Width="90">
+                </dxg:GridColumn>
+                <dxg:GridColumn Header="Edit"
+                                Width="60"
+                                AllowEditing="False">
+                    <dxg:GridColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="✎"
+                                    Width="40"
+                                    Height="25"
+                                    Command="{Binding DataContext.EditOrderLineCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                    CommandParameter="{Binding}" />
+                        </DataTemplate>
+                    </dxg:GridColumn.CellTemplate>
                 </dxg:GridColumn>
                 <!--
                 <dxg:GridColumn Header="Payment"

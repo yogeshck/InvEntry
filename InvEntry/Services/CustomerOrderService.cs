@@ -1,4 +1,5 @@
-﻿using InvEntry.Models;
+﻿using DevExpress.Xpf.Core.ReflectionExtensions;
+using InvEntry.Models;
 using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,8 @@ namespace InvEntry.Services
         Task CreateCustomerOrderLine(CustomerOrderLine line);
 
         Task CreateCustomerOrderLine(IEnumerable<CustomerOrderLine> line);
+
+        Task<IEnumerable<CustomerOrderLine>> GetLines(string orderNbr);
     }
 
     public class CustomerOrderService : ICustomerOrderService
@@ -60,6 +63,11 @@ namespace InvEntry.Services
                 list.Add(CreateCustomerOrderLine(line));
 
             await Task.WhenAll(list);
+        }
+
+        public async Task<IEnumerable<CustomerOrderLine>> GetLines(string orderNbr)
+        {
+            return await _mijmsApiService.GetEnumerable<CustomerOrderLine>($"api/customerOrderLine/{orderNbr}");
         }
 
         public async Task<IEnumerable<CustomerOrder>> GetAll(DateSearchOption options)

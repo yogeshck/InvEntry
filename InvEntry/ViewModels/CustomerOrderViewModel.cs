@@ -4,6 +4,7 @@ using DevExpress.Charts.Designer.Native;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Core.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
@@ -23,6 +24,7 @@ using System.Collections.ObjectModel;
 using System.Drawing.Text;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
 namespace InvEntry.ViewModels;
@@ -96,9 +98,13 @@ public partial class CustomerOrderViewModel : ObservableObject
     private ObservableCollection<MtblReference> stateReferencesList;
 
     [ObservableProperty]
+    private string _searchText;
+
+    [ObservableProperty]
     private DateSearchOption _searchOption;
 
     private bool createCustomer = false;
+    private bool updateOrder = false;
     private bool invBalanceChk = false;
 
     private readonly ICustomerService _customerService;
@@ -315,6 +321,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
     }
 
+
     private string GetOrderStatus(int? statusCode)
     {
         if (orderStatus.TryGetValue((int)statusCode, out string statusName))
@@ -324,6 +331,57 @@ public partial class CustomerOrderViewModel : ObservableObject
         return "No Status";
     }
 
+    [RelayCommand]
+    private async Task FetchCustomerOrder(EditValueChangedEventArgs args)
+    {
+        if (args.NewValue is not string searchText) return;
+
+        searchText = searchText.Trim();
+
+        if (string.IsNullOrEmpty(searchText) || searchText.Length < 8)
+            return;
+
+        createCustomer = false;
+
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Order details..."));
+
+        Header = await _customerOrderService.GetCustomerOrder(searchText);
+
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
+        if (Header is null)
+        {
+            _messageBoxService.ShowMessage(" Order details not found.", "Order not found", MessageButton.OK);
+            return;
+        }
+
+        CustomerPhoneNumber = Header.CustMobileNbr;
+         
+        var custOrdLines =  await _customerOrderService.GetLines(Header.OrderNbr);
+
+        Header.Lines = new (custOrdLines);
+
+        var args1 = new EditValueChangedEventArgs("", CustomerPhoneNumber);
+        await FetchCustomerCommand.ExecuteAsync(args1);
+
+        SelectedRows = Header.Lines;
+
+        //orderLinesUIGrid.ItemsSource = custOrdLines;
+
+        EvaluateForAllLines();
+
+        //FetchCustomer(CustomerPhoneNumber);
+    }
+
+/*    void addNewRow(object sender, RoutedEventArgs e)
+    {
+        TableView.AddNewRow();
+        int newRowHandle = DataControlBase.NewItemRowHandle;
+        grid.SetCellValue(newRowHandle, "ProductName", "New Product");
+        grid.SetCellValue(newRowHandle, "CompanyName", "New Company");
+        grid.SetCellValue(newRowHandle, "UnitPrice", 10);
+        grid.SetCellValue(newRowHandle, "Discontinued", false);
+    }*/
 
     private async void PopulateMtblRefNameList()
     {

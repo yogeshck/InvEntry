@@ -1,5 +1,4 @@
-﻿using DevExpress.Xpf.WindowsUI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,11 +16,11 @@ using System.Windows.Shapes;
 namespace InvEntry.Views
 {
     /// <summary>
-    /// Interaction logic for OrdersListView.xaml
+    /// Interaction logic for CustomerOrderEditView.xaml
     /// </summary>
-    public partial class CustomerOrdersListView : NavigationPage
+    public partial class CustomerOrderEditView : UserControl
     {
-        public CustomerOrdersListView()
+        public CustomerOrderEditView()
         {
             InitializeComponent();
         }

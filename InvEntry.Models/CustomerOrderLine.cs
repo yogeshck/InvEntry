@@ -11,165 +11,165 @@ public partial class CustomerOrderLine : BaseEntity
 {
 
     [ObservableProperty]
-    public string? orderNbr;
+    private string? orderNbr;
 
     [ObservableProperty]
-    public int? orderGkey;
+    private int? orderGkey;
 
     [ObservableProperty]
-    public int? orderLineNbr;
+    private int? orderLineNbr;
 
     [ObservableProperty]
-    public string? prodCategory;
+    private string? prodCategory;
 
     [ObservableProperty]
-    public int? productGkey;
+    private int? productGkey;
 
     [ObservableProperty]
-    private string? _productId;
+    private string? productId;
 
     [ObservableProperty]
-    public string? _productSku;
+    private string? productSku;
 
     [ObservableProperty]
-    public string? productName;
+    private string? productName;
 
     [ObservableProperty]
-    public string? productDesc;
+    private string? productDesc;
 
     [ObservableProperty]
-    public string? productMetal;
+    private string? productMetal;
 
     [ObservableProperty]
-    public string? productPurity;
+    private string? productPurity;
 
     [ObservableProperty]
-    public string? orderSpecification;
+    private string? orderSpecification;
 
     [ObservableProperty]
-    public int prodQty;
+    private int prodQty;
 
     [ObservableProperty]
-    public decimal? prodGrossWeight;
+    private decimal? prodGrossWeight;
 
     [ObservableProperty]
-    public decimal? prodStoneWeight;
+    private decimal? prodStoneWeight;
 
     [ObservableProperty]
-    public decimal? prodNetWeight;
+    private decimal? prodNetWeight;
 
     [ObservableProperty]
-    public string? orderType;
+    private string? orderType;
 
     [ObservableProperty]
-    public string? itemNotes;
+    private string? itemNotes;
 
     [ObservableProperty]
-    public bool? itemPacked;
+    private bool? itemPacked;
 
     [ObservableProperty]
-    public DateTime? orderItemDueDate;
+    private DateTime? orderItemDueDate;
 
     [ObservableProperty]
-    public DateTime? deliveryDate;
+    private DateTime? deliveryDate;
 
     [ObservableProperty]
-    public int? orderItemStatusFlag;
+    private int? orderItemStatusFlag;
 
     [ObservableProperty]
-    public int? orderBranch;
+    private int? orderBranch;
 
     [ObservableProperty]
-    public int? serviceBranch;
+    private int? serviceBranch;
 
     [ObservableProperty]
-    public int? deliveryBranch;
+    private int? deliveryBranch;
 
     [ObservableProperty]
-    public DateTime? orderTransferDate;
+    private DateTime? orderTransferDate;
 
     [ObservableProperty]
-    public decimal? totalGrossWeight;
+    private decimal? totalGrossWeight;
 
     [ObservableProperty]
-    public decimal? totalStoneWeight;
+    private decimal? totalStoneWeight;
 
     [ObservableProperty]
-    public decimal? totalNetWeight;
+    private decimal? totalNetWeight;
 
     [ObservableProperty]
-    public int? orderedItems;
+    private int? orderedItems;
     
     [ObservableProperty]
-    public int? fulfilledItems;
+    private int? fulfilledItems;
 
     [ObservableProperty]
-    public decimal? oldMetalNetWeight;
+    private decimal? oldMetalNetWeight;
 
     [ObservableProperty]
-    public decimal? oldMetalFinePercent;
+    private decimal? oldMetalFinePercent;
 
     [ObservableProperty]
-    public decimal? oldMetalFineWeight;
+    private decimal? oldMetalFineWeight;
 
     [ObservableProperty]
-    public decimal? balanceWeight;
+    private decimal? balanceWeight;
 
     [ObservableProperty]
-    public decimal? metalRate;
+    private decimal? metalRate;
 
     [ObservableProperty]
-    public decimal? makingCharges;
+    private decimal? makingCharges;
 
     [ObservableProperty]
-    public decimal? vaPercent;
+    private decimal? vaPercent;
 
     [ObservableProperty]
-    public decimal? vaAmount;
+    private decimal? vaAmount;
 
     [ObservableProperty]
-    public decimal? taxAmount;
+    private decimal? taxAmount;
 
     [ObservableProperty]
-    public decimal? orderAmount;
+    private decimal? orderAmount;
 
     [ObservableProperty]
-    public decimal? advancePaidAmount;
+    private decimal? advancePaidAmount;
 
     [ObservableProperty]
-    public decimal? balanceAmount;
+    private decimal? balanceAmount;
 
     [ObservableProperty]
-    public string? remark;
+    private string? remark;
 
     [ObservableProperty]
-    public int? catalogId;
+    private int? catalogId;
 
     [ObservableProperty]
-    public string? designName;
+    private string? designName;
 
     [ObservableProperty]
-    public int? pageNbr;
+    private int? pageNbr;
 
     [ObservableProperty]
-    public string? imageName;
+    private string? imageName;
 
     [ObservableProperty]
-    public string? imagePath;
+    private string? imagePath;
 
     [ObservableProperty]
-    public string? createdBy;
+    private string? createdBy;
 
     [ObservableProperty]
-    public DateTime? createdOn;
+    private DateTime? createdOn;
 
     [ObservableProperty]
-    public string? modifiedBy;
+    private string? modifiedBy;
 
     [ObservableProperty]
-    public DateTime? modifiedOn;
+    private DateTime? modifiedOn;
 
     [ObservableProperty]
-    public int? tenantGkey;
+    private int? tenantGkey;
 }
 

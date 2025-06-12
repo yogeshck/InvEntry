@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataAccess.Controllers
@@ -18,17 +19,18 @@ namespace DataAccess.Controllers
 
         // GET: api/<CustomerOrderLineController>
         [HttpGet]
-        public IEnumerable<CustomerOrderLine> GetHeader()
+        public IEnumerable<CustomerOrderLine> GetAllLines()
         {
             return _customerOrderLineRepository.GetAll();
         }
 
         // GET api/<CustomerOrderLineController>/5
         [HttpGet("{orderNbr}")]
-        public CustomerOrderLine? Get(long orderNbr)
+        public IEnumerable<CustomerOrderLine?> GetLinesByOrderNbr(string orderNbr)
         {
-            return _customerOrderLineRepository.Get(x => x.OrderLineNbr == orderNbr);
+            return _customerOrderLineRepository.GetList(x => x.OrderNbr == orderNbr);
         }
+
 
         // POST api/<CustomerOrderLineController>
         [HttpPost]
@@ -47,11 +49,11 @@ namespace DataAccess.Controllers
         }
 
         // DELETE api/<CustomerOrderLineController>/5
-        [HttpDelete("{orderLineNbr}")]
+/*        [HttpDelete("{orderLineNbr}")]
         public void Delete(long orderLineNbr)
         {
             _customerOrderLineRepository.Remove(Get(orderLineNbr));
-        }
+        }*/
 
     }
 
