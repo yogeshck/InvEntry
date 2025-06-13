@@ -333,17 +333,43 @@
                         </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Vertical">
 
-                                <dxlc:LayoutItem Label="Status"
+                         <!--       <dxlc:LayoutItem Label="Status"   
                                                  Width="260"
                                                  HorizontalAlignment="Left"
                                                  VerticalAlignment="Center">
-                                    <dxe:TextEdit EditValue="{Binding OrderStatusUI}"
-                                                  IsTabStop="False"
-                                                  Height="35"
-                                                  Width="150"
-                                                  FontSize="14" />
-                                </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Delivered on"
+                                        <dxe:TextEdit EditValue="{Binding OrderStatusUI}"
+                                                      IsTabStop="False"
+                                                      Height="35"
+                                                      Width="150"
+                                                      FontSize="14" />
+                                </dxlc:LayoutItem>  -->
+
+                                    <dxlc:LayoutItem Label="Status" Width="260"
+                                                     HorizontalAlignment="Left"
+                                                     VerticalAlignment="Center">
+                                        <dxg:LookUpEdit Width="150"
+                                                        Height="35"
+                                                        FontSize="14"
+                                                        EditValue="{Binding OrderStatusUI}"
+                                                        ItemsSource="{Binding CustOrdStatusList}"
+                                                        DisplayMember="RefValue"
+                                                        ValueMember="RefValue">
+                                            <dxg:LookUpEdit.PopupContentTemplate>
+                                                <ControlTemplate>
+                                                    <dxg:GridControl Name="PART_GridControl"
+                                                                     AutoGenerateColumns="RemoveOld">
+                                                        <dxg:GridControl.Columns>
+                                                            <dxg:GridColumn FieldName="RefValue" />
+                                                        </dxg:GridControl.Columns>
+                                                        <dxg:GridControl.View>
+                                                            <dxg:TableView AutoWidth="True" />
+                                                        </dxg:GridControl.View>
+                                                    </dxg:GridControl>
+                                                </ControlTemplate>
+                                            </dxg:LookUpEdit.PopupContentTemplate>
+                                        </dxg:LookUpEdit>
+                                    </dxlc:LayoutItem>
+                                    <dxlc:LayoutItem Label="Delivered on"
                                                  Width="260"
                                                  HorizontalAlignment="Left"
                                                  VerticalAlignment="Center">

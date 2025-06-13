@@ -21,6 +21,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections;
+using System.Collections.Specialized;
 using System.Drawing.Text;
 using System.Linq;
 using System.Threading.Tasks;
@@ -86,7 +88,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private ObservableCollection<string> metalList;
 
     [ObservableProperty]
-    private ObservableCollection<string> custOrdStatusList;
+    private ObservableCollection<MtblReference> custOrdStatusList; 
 
     [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
@@ -129,7 +131,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<CustomerOrderLine, decimal?>> copyCustomerOrderLineExpression;
     private Dictionary<string, Action<CustomerOrder, decimal?>> copyCustomerOrderExpression;
-    private Dictionary<int, string> orderStatus = new Dictionary<int, string>();
+    //private Dictionary<int, string> orderStatus = new Dictionary<int, string>();
+    //private Dictionary<string, MtblReference> dictionaryOrderStatus = new Dictionary<string, MtblReference>();
 
 
     public CustomerOrderViewModel(
@@ -184,8 +187,9 @@ public partial class CustomerOrderViewModel : ObservableObject
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
-        SetHeader();
+
         SetThisCompany();
+        SetHeader();
         SetMasterLedger();
 
         PopulateProductCategoryList();
@@ -193,6 +197,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
+        PopulateOrderStatusList();
      //   PopulateTaxList();
         PopulateSalesPersonList();
 
@@ -209,7 +214,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             OrderDueDate = DateTime.Now.AddDays(14),   //hard coded should be from references....
             //IsTaxApplicable = true,
             //     GstLocSeller = Company.GstCode,
-            //    TenantGkey = Company.TenantGkey
+            TenantGkey = Company.TenantGkey
         };
 
         // OrderStatus = CustOrdStatusList.FirstOrDefault(x => x..Equals("1")).ToString();
@@ -306,29 +311,41 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private async void PopulateOrderStatusList()
     {
-        var ordStatusRefList = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
+        var ordStatusRefLst = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
+        CustOrdStatusList = new(ordStatusRefLst);
+
         //CustOrdStatusList = [.. ordStatusRefList.Select(x => x.RefValue)];
 
-       // _orderStatus = ordStatusRefList.ToDictionary(s => s.RefCode);
+        // _orderStatus = ordStatusRefList.ToDictionary(s => s.RefCode);
 
-        if (ordStatusRefList is not null)
+/*        if (ordStatusRefList is not null)
         {
             foreach ( MtblReference mtblRef in ordStatusRefList )
             {
-                orderStatus.Add(Int32.Parse(mtblRef.RefCode), mtblRef.RefValue);
+                //orderStatus.Add(Int32.Parse(mtblRef.RefCode), mtblRef.RefValue);
+                dictionaryOrderStatus.Add(mtblRef.RefCode, mtblRef);
             }
 
-        }
+        }*/
     }
 
-
-    private string GetOrderStatus(int? statusCode)
+    
+    private string GetOrderStatus(int? statusCode, string statusName)
     {
-        if (orderStatus.TryGetValue((int)statusCode, out string statusName))
+        /*        if (orderStatus.TryGetValue((int)statusCode, out string statusName))
+                {
+                    return statusName;
+                }*/
+        var ordStatus = ""; 
+
+        if (statusCode > 0)
         {
-            return statusName;
+            ordStatus = CustOrdStatusList.FirstOrDefault(x => int.TryParse(x.RefCode, out var code) && code == statusCode).RefValue;
+        } else if (statusName is not null)
+        {
+            ordStatus = CustOrdStatusList.FirstOrDefault(x => x.RefValue == statusName).RefCode;
         }
-        return "No Status";
+            return ordStatus;
     }
 
     [RelayCommand]
@@ -356,6 +373,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         CustomerPhoneNumber = Header.CustMobileNbr;
+        EvaluateHeader();
          
         var custOrdLines =  await _customerOrderService.GetLines(Header.OrderNbr);
 
@@ -495,6 +513,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         Header.CustMobileNbr = phoneNumber;
+        EvaluateHeader();
     }
 
     [RelayCommand]
@@ -545,7 +564,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
         Header.Lines.Add(custOrdLine);
 
-        ProductIdUI = string.Empty;
+        //ProductIdUI = string.Empty;
 
 //>>>>>        EvaluateHeader();
 
@@ -558,6 +577,11 @@ public partial class CustomerOrderViewModel : ObservableObject
                     return;
                 }*/
     }
+
+ /*   partial void OnOrderStatusUIChanged(string oldValue, string newValue)
+    {
+        Header.OrderStatusFlag = Int32.Parse(GetOrderStatus(0, newValue));
+    }*/
 
     partial void OnCustomerStateChanged(MtblReference value)
     {
@@ -573,7 +597,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         //>>    Header.GstLocBuyer = value.RefCode;
 
         EvaluateForAllLines();
-        EvaluateHeader();
+        //EvaluateHeader();
     }
 
 
@@ -588,13 +612,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
-        OrderStatusUI = GetOrderStatus(Header.OrderStatusFlag);
+        OrderStatusUI = GetOrderStatus(Header.OrderStatusFlag, "");
     }
-/*
-    private string GetOrderStatus(int? orderStatusFlag)
-    {
-        throw new NotImplementedException();
-    }*/
 
     private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
     {
@@ -633,27 +652,26 @@ public partial class CustomerOrderViewModel : ObservableObject
         EvaluateHeader();
     }
 
-    [RelayCommand(CanExecute = nameof(CanCreateCustomerOrder))]
+    [RelayCommand] //(CanExecute = nameof(CanCreateCustomerOrder))]
     private async Task CreateCustomerOrder()
     {
-        LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
+        //LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
 
-        invBalanceChk = true;  //is this a right place to fix
-     //   var isSuccess = ProcessInvBalance();
+        // invBalanceChk = true;  //is this a right place to fix
+        //   var isSuccess = ProcessInvBalance();
 
-    //    if (!isSuccess) return;
+        //    if (!isSuccess) return;
 
         if (!string.IsNullOrEmpty(Header.OrderNbr))
         {
-            var result = _messageBoxService.ShowMessage("Order already exists, Do you want to print preview the Order ?", "Order",
-                                                            MessageButton.OKCancel,
-                                                            MessageIcon.Question,
-                                                            MessageResult.Cancel);
 
-            if (result == MessageResult.OK)
-            {
-           //     PrintPreviewInvoice();
-            }
+            Header.OrderStatusFlag = Int32.Parse(GetOrderStatus(0, OrderStatusUI));
+
+            await _customerOrderService.UpdateHeader(Header);
+
+            _messageBoxService.ShowMessage("Customer Order " + Header.OrderNbr + " updated Successfully", "Customer Order Update",
+                                                MessageButton.OK, MessageIcon.Exclamation);
+
             return;
         }
 
@@ -759,9 +777,6 @@ public partial class CustomerOrderViewModel : ObservableObject
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
 
         return Task.CompletedTask;
-
-
-
 
     }
 

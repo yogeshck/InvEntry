@@ -20,7 +20,7 @@
                       DataContext="{ext:DISource Type=viewmodels:CustomerOrderDBViewListViewModel}"
     d:DesignHeight="450" HorizontalAlignment="Left" Width="1400">
 
-    <Grid Width="1200"
+    <Grid Width="1300"
           HorizontalAlignment="Left" ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -126,6 +126,10 @@
                                 Width="90" />
                 <dxg:GridColumn FieldName="OrderType"
                                 Header="Order Type"
+                                ReadOnly="True"
+                                Width="90" />
+                <dxg:GridColumn FieldName="OrderStatus"
+                                Header="Order Status"
                                 ReadOnly="True"
                                 Width="90" />
                 <dxg:GridColumn FieldName="OrderDueDate"
