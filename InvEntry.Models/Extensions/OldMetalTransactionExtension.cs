@@ -17,7 +17,7 @@ public static class OldMetalTransactionExtension
         oldMetalTransaction.CustGkey = invoiceHeader.CustGkey;
         oldMetalTransaction.CustMobile = invoiceHeader.CustMobile;
 
-        oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal);
+        oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Billing");
 
     }
 
@@ -25,24 +25,37 @@ public static class OldMetalTransactionExtension
     {
 
         oldMetalTransaction.DocRefGkey = custOrder.GKey;
-        oldMetalTransaction.DocRefNbr = custOrder.InvNbr;
-        oldMetalTransaction.DocRefDate = custOrder.InvDate;
+        oldMetalTransaction.DocRefNbr = custOrder.OrderNbr;
+        oldMetalTransaction.DocRefDate = custOrder.OrderDate;
+        oldMetalTransaction.DocRefType = "Customer Order";
         oldMetalTransaction.CustGkey = custOrder.CustGkey;
         oldMetalTransaction.CustMobile = custOrder.CustMobileNbr;
 
-        oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal);
+        oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Order");
     }
 
-    private static string setTransType(string metal)
+    private static string setTransType(string metal, string docType)
     {
         var transType = "";
 
-        if (metal == "OLD SILVER")
-            transType = "OS Purchase";
-        else if (metal == "DIAMOND")
-            transType = "DIA Purchase";
-        else
-            transType = "OG Purchase";
+        if (docType == "Billing")
+        {
+            if (metal == "OLD SILVER")
+                transType = "OS Purchase";
+            else if (metal == "DIAMOND")
+                transType = "DIA Purchase";
+            else
+                transType = "OG Purchase";
+        } else 
+            if (docType == "Order")
+            {
+                if (metal == "OLD SILVER")
+                    transType = "OS Advance";
+                else if (metal == "DIAMOND")
+                    transType = "DIA Advance";
+                else
+                    transType = "OG Advance";
+            }
 
         return transType;
     }

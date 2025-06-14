@@ -136,6 +136,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
 
     public CustomerOrderViewModel(
+
             ICustomerService customerService,
             IProductViewService productViewService,
             IProductStockService productStockService,
@@ -157,14 +158,13 @@ public partial class CustomerOrderViewModel : ObservableObject
             IReportFactoryService reportFactoryService,
             [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
-
+        // Assign dependencies
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
         _productViewService = productViewService;
         _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
         _productTransactionService = productTransactionService;
-        //_productTransactionSummaryService = productTransactionSummaryService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _customerOrderService = custOrderService;
@@ -177,31 +177,61 @@ public partial class CustomerOrderViewModel : ObservableObject
         _voucherService = voucherService;
         _invoiceArReceiptService = invoiceArReceiptService;
         _mtblReferencesService = mtblReferencesService;
-
-        selectedRows = new();
-        //productStockList = new();
-
-        _customerReadOnly = false;
-
-        _isBalance = true;
-        _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
+        selectedRows = new();
+        _customerReadOnly = false;
+        _isBalance = true;
+        _isRefund = false;
 
-        SetThisCompany();
+        // Start async init
+        _ = InitializeAsync();
+
         SetHeader();
-        SetMasterLedger();
+ 
 
-        PopulateProductCategoryList();
+/*        PopulateProductCategoryList();
         PopulateStateList();
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
         PopulateOrderStatusList();
      //   PopulateTaxList();
-        PopulateSalesPersonList();
+        PopulateSalesPersonList();*/
 
         //PopulateUnboundHeaderDataMap();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            await SetThisCompany();
+            SetHeader(); // Not async – keep as is
+            await SetMasterLedger();
+            await PopulateProductCategoryList();
+            await PopulateStateList();
+            await PopulateMtblRefNameList();
+            await PopulateMetalList();
+            await PopulateOrderStatusList();
+            await PopulateSalesPersonList();
+            PopulateUnboundLineDataMap();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage("Initialization failed: " + ex.Message, "Startup Error", MessageButton.OK, MessageIcon.Error);
+        }
+    }
+
+    private async Task SetThisCompany()
+    {
+        Company = new();
+        Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+    }
+
+    private async Task SetMasterLedger()
+    {
+        MtblLedger = await _mtblLedgersService.GetLedger(1000);
     }
 
     private void SetHeader()
@@ -221,26 +251,13 @@ public partial class CustomerOrderViewModel : ObservableObject
         OrderStatusUI = "OPEN";
     }
 
-    private async void SetThisCompany()
-    {
-        Company = new();
-        Company = await _orgThisCompanyViewService.GetOrgThisCompany();
-        Header.TenantGkey = Company.TenantGkey;
-        //Header.GstLocSeller = Company.GstCode;
-    }
-
-    private async void SetMasterLedger()
-    {
-        MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
-    }
-
-    private async void PopulateProductCategoryList()
+    private async Task PopulateProductCategoryList()
     {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
     }
 
-    private async void PopulateStateList()
+    private async Task PopulateStateList()
     {
         var stateRefList = new List<MtblReference>();
 
@@ -262,7 +279,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
     }
 
-    private async void PopulateSalesPersonList()
+    private async Task PopulateSalesPersonList()
     {
         var salesPersonRefList = await _mtblReferencesService.GetReferenceList("SALES_PERSON");
 
@@ -303,13 +320,13 @@ public partial class CustomerOrderViewModel : ObservableObject
     //    copyCustomerOrderExpression.Add($"{nameof(CustomerOrder.InvBalance)}", (item, val) => item.InvBalance = val);
     }
 
-    private async void PopulateMetalList()
+    private async Task PopulateMetalList()
     {
         var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
         MetalList = new(metalRefList.Select(x => x.RefValue));
     }
 
-    private async void PopulateOrderStatusList()
+    private async Task PopulateOrderStatusList()
     {
         var ordStatusRefLst = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
         CustOrdStatusList = new(ordStatusRefLst);
@@ -330,8 +347,61 @@ public partial class CustomerOrderViewModel : ObservableObject
             return ordStatus;
     }
 
+    private async Task PopulateOrderLines()
+    {
+        var lines = await _customerOrderService.GetLines(Header.OrderNbr);
+        Header.Lines = new ObservableCollection<CustomerOrderLine>(lines);
+    }
+
+    private async Task FetchAssociatedCustomer()
+    {
+        var args = new EditValueChangedEventArgs("", CustomerPhoneNumber);
+        await FetchCustomerCommand.ExecuteAsync(args);
+    }
+
+
     [RelayCommand]
     private async Task FetchCustomerOrder(EditValueChangedEventArgs args)
+    {
+        if (args.NewValue is not string searchText || string.IsNullOrWhiteSpace(searchText) || searchText.Length < 8)
+            return;
+
+        try
+        {
+            createCustomer = false;
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Order details..."));
+
+            var header = await _customerOrderService.GetCustomerOrder(searchText.Trim());
+
+            if (header == null)
+            {
+                _messageBoxService.ShowMessage("Order details not found.", "Order not found", MessageButton.OK);
+                return;
+            }
+
+            Header = header;
+            CustomerPhoneNumber = Header.CustMobileNbr;
+
+            await PopulateOrderLines();
+            await FetchAssociatedCustomer();
+            EvaluateHeader();
+            SelectedRows = Header.Lines;
+            EvaluateForAllLines();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage("Failed to fetch order: " + ex.Message, "Error", MessageButton.OK, MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+        }
+    }
+
+
+/*    [RelayCommand]
+    private async Task FetchCustomerOrderOld(EditValueChangedEventArgs args)
     {
         if (args.NewValue is not string searchText) return;
 
@@ -371,23 +441,14 @@ public partial class CustomerOrderViewModel : ObservableObject
         EvaluateForAllLines();
 
         //FetchCustomer(CustomerPhoneNumber);
-    }
+    }*/
 
-    private async void PopulateMtblRefNameList()
+    private async Task PopulateMtblRefNameList()
     {
         var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
         MtblReferencesList = new(mtblRefList);
     }
 
-    /*    private async void PopulateTaxList()
-        {
-
-            var gstTaxRefList = await _mtblReferencesService.GetReferenceList("GST");
-            if (gstTaxRefList is not null)
-            {
-                _gstTaxRefList = new(gstTaxRefList);
-            }
-        }*/
 
     [RelayCommand]
     private void Focus(TextEdit sender)
@@ -400,7 +461,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private void ResetCustomerOrder()
     {
         SetHeader();
-        SetThisCompany();
+        _ = SetThisCompany();
         //SetMasterLedger();
         Buyer = null;
         CustomerPhoneNumber = null;
@@ -491,64 +552,36 @@ public partial class CustomerOrderViewModel : ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
-        if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
+            if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        //SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-        //var product = await _productViewService.GetProduct(ProductIdUI);
-
-        // await Task.Delay(30000);
-
-        //SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-        //this code will be re-introduce once SKU/Barcode is implmeneted
-        //var product = ProductStockSelection();
-
-        var productStk = await _productViewService.GetProduct(ProductIdUI);
-
-        if (productStk is null)
-        {
-            _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
-                "Product not found", MessageButton.OK, MessageIcon.Error);
-            return;
-        }
-
-
-        //might introduce agains when barcode implementedR
-        //if (productStk is null)
-        //{
-        //    //No stock to be handled - let the user enter manually all the details of billing item
-        //}
-
-        var billedPrice = _settingsPageViewModel.GetPrice(productStk.Metal);
-
-        CustomerOrderLine custOrdLine = new CustomerOrderLine()
-        {
-            ProdQty = 1,
-            MetalRate = billedPrice,
-        };
-
-        custOrdLine.SetProductDetails(productStk);
-
-        EvaluateFormula(custOrdLine, isInit: true);
-
-        Header.Lines.Add(custOrdLine);
-
-        //ProductIdUI = string.Empty;
-
-//>>>>>        EvaluateHeader();
-
-        /*        if (invoiceLine.ProdGrossWeight > 0)
+            try
+            {
+                var productStk = await _productViewService.GetProduct(ProductIdUI);
+                if (productStk is null)
                 {
-                } else
-                {
-                    _messageBoxService.ShowMessage("Gross Weight cannot be zero ....",
-                        "Gross Weight", MessageButton.OK, MessageIcon.Error);
+                    _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}", "Product not found", MessageButton.OK);
                     return;
-                }*/
-    }
+                }
+
+                var billedPrice = _settingsPageViewModel.GetPrice(productStk.Metal);
+
+                var custOrdLine = new CustomerOrderLine
+                {
+                    ProdQty = 1,
+                    MetalRate = billedPrice
+                };
+                custOrdLine.SetProductDetails(productStk);
+
+                EvaluateFormula(custOrdLine, isInit: true);
+
+                Header.Lines.Add(custOrdLine);
+            }
+            catch (Exception ex)
+            {
+                _messageBoxService.ShowMessage("Error fetching product: " + ex.Message);
+            }
+        }
 
  /*   partial void OnOrderStatusUIChanged(string oldValue, string newValue)
     {
@@ -593,12 +626,18 @@ public partial class CustomerOrderViewModel : ObservableObject
 
         foreach (var formula in formulas)
         {
-            //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
 
             var val = formula.Evaluate<T, decimal>(item, 0M);
 
-            if (item is CustomerOrderLine custOrdLine)
-                copyCustomerOrderLineExpression[formula.FieldName].Invoke(custOrdLine, val);
+            //if (item is CustomerOrderLine custOrdLine)
+            //    copyCustomerOrderLineExpression[formula.FieldName].Invoke(custOrdLine, val);
+
+
+            if (item is CustomerOrderLine custOrdLine &&
+                copyCustomerOrderLineExpression.TryGetValue(formula.FieldName, out var setter))
+            {
+                setter.Invoke(custOrdLine, val);
+            }
         }
     }
 
@@ -624,8 +663,117 @@ public partial class CustomerOrderViewModel : ObservableObject
         EvaluateHeader();
     }
 
-    [RelayCommand] //(CanExecute = nameof(CanCreateCustomerOrder))]
+    private bool ValidateBeforeCreate()
+    {
+        if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
+        {
+            _messageBoxService.ShowMessage("Customer information is missing.", "Validation Error", MessageButton.OK, MessageIcon.Warning);
+            return false;
+        }
+
+        if (Header?.Lines == null || !Header.Lines.Any())
+        {
+            _messageBoxService.ShowMessage("No items in the order.", "Validation Error", MessageButton.OK, MessageIcon.Warning);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void AssignLineNumbers()
+    {
+        for (int i = 0; i < Header.Lines.Count; i++)
+        {
+            var line = Header.Lines[i];
+            line.OrderLineNbr = i + 1;
+            line.OrderNbr = Header.OrderNbr;
+        }
+    }
+
+    private bool IsNewOrder()
+    {
+        return string.IsNullOrEmpty(Header?.OrderNbr);
+    }
+
+
+    private async Task CreateOrUpdateCustomerAsync()
+    {
+        if (createCustomer)
+        {
+            Buyer = await _customerService.CreateCustomer(Buyer);
+        }
+    }
+
+
+    private async Task SaveNewOrderAsync()
+    {
+        Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
+
+        var headerResult = await _customerOrderService.CreateCustomerOrder(Header);
+
+        if (headerResult == null) throw new Exception("Failed to create customer order.");
+
+        Header.GKey = headerResult.GKey;
+        Header.OrderNbr = headerResult.OrderNbr;
+
+        foreach (var line in Header.Lines)
+        {
+            line.OrderGkey = Header.GKey;
+            line.OrderNbr = Header.OrderNbr;
+            line.TenantGkey = Header.TenantGkey;
+        }
+
+        await _customerOrderService.CreateCustomerOrderLine(Header.Lines);
+        await ProcessOldMetalTransaction();
+    }
+
+    private async Task UpdateOrderAsync()
+    {
+        Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
+        await _customerOrderService.UpdateHeader(Header);
+    }
+
+    [RelayCommand]                          //(CanExecute = nameof(CanCreateCustomerOrder))]
     private async Task CreateCustomerOrder()
+    {
+        try
+        {
+            if (!ValidateBeforeCreate()) return;
+
+            await CreateOrUpdateCustomerAsync();
+
+            Header.CustGkey = Buyer?.GKey;
+
+            AssignLineNumbers();
+
+            if (IsNewOrder())
+            {
+                await SaveNewOrderAsync();
+            }
+            else
+            {
+                await UpdateOrderAsync();
+            }
+
+            _messageBoxService.ShowMessage(
+                $"Customer Order {Header.OrderNbr} {(IsNewOrder() ? "Created" : "Updated")} Successfully",
+                "Customer Order",
+                MessageButton.OK,
+                MessageIcon.Exclamation
+            );
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+            ResetCustomerOrder();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage("Failed to process order: " + ex.Message, "Error", MessageButton.OK, MessageIcon.Error);
+        }
+    }
+
+
+/*    [RelayCommand] //(CanExecute = nameof(CanCreateCustomerOrder))]
+    private async Task CreateCustomerOrderOld()
     {
         //LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
 
@@ -690,21 +838,21 @@ public partial class CustomerOrderViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
     //>>>        ProcessReceipts();
 
-/*            if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
-                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header); */
+*//*            if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
+                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header); *//*
 
             _messageBoxService.ShowMessage("Customer Order " + Header.OrderNbr + " Created Successfully", "Customer Order Created",
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
-            /* Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+            *//* Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-            PrintInvoiceCommand.NotifyCanExecuteChanged();*/
+            PrintInvoiceCommand.NotifyCanExecuteChanged();*//*
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
             ResetCustomerOrder();
         }
-    }
+    }*/
 
     private bool CanCreateCustomerOrder()
     {
@@ -724,7 +872,7 @@ public partial class CustomerOrderViewModel : ObservableObject
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
-        oldMetalTransaction.DocRefType = "Order";
+        //oldMetalTransaction.DocRefType = "Order";
     }
 
 
