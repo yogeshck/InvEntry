@@ -313,29 +313,11 @@ public partial class CustomerOrderViewModel : ObservableObject
     {
         var ordStatusRefLst = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
         CustOrdStatusList = new(ordStatusRefLst);
-
-        //CustOrdStatusList = [.. ordStatusRefList.Select(x => x.RefValue)];
-
-        // _orderStatus = ordStatusRefList.ToDictionary(s => s.RefCode);
-
-/*        if (ordStatusRefList is not null)
-        {
-            foreach ( MtblReference mtblRef in ordStatusRefList )
-            {
-                //orderStatus.Add(Int32.Parse(mtblRef.RefCode), mtblRef.RefValue);
-                dictionaryOrderStatus.Add(mtblRef.RefCode, mtblRef);
-            }
-
-        }*/
     }
 
     
     private string GetOrderStatus(int? statusCode, string statusName)
     {
-        /*        if (orderStatus.TryGetValue((int)statusCode, out string statusName))
-                {
-                    return statusName;
-                }*/
         var ordStatus = ""; 
 
         if (statusCode > 0)
@@ -390,16 +372,6 @@ public partial class CustomerOrderViewModel : ObservableObject
 
         //FetchCustomer(CustomerPhoneNumber);
     }
-
-/*    void addNewRow(object sender, RoutedEventArgs e)
-    {
-        TableView.AddNewRow();
-        int newRowHandle = DataControlBase.NewItemRowHandle;
-        grid.SetCellValue(newRowHandle, "ProductName", "New Product");
-        grid.SetCellValue(newRowHandle, "CompanyName", "New Company");
-        grid.SetCellValue(newRowHandle, "UnitPrice", 10);
-        grid.SetCellValue(newRowHandle, "Discontinued", false);
-    }*/
 
     private async void PopulateMtblRefNameList()
     {
