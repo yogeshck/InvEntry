@@ -555,11 +555,11 @@
                                                            GlyphAlignment="Right"
                                                            BarItemDisplayMode="ContentAndGlyph" />
                                         <dxb:BarItemSeparator />
-                                        <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}"
+                                     <!--   <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}"
                                                            Command="{Binding DeleteRowsCommand}"
                                                            GlyphSize="Large"
                                                            Content="Delete"
-                                                           GlyphAlignment="Right" />
+                                                           GlyphAlignment="Right" />  -->
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
                                 <dxg:GridControl ItemsSource="{Binding Header.OldMetalTransactions}"
@@ -671,10 +671,10 @@
                                                            Command="{Binding DeleteRowsCommand}"
                                                            GlyphSize="Large"
                                                            Content="Delete"
-                                                           GlyphAlignment="Right" />
+                                                           GlyphAlignment="Right" /> 
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
-                         <!--       <dxg:GridControl ItemsSource="{Binding Header.ReceiptLines}"
+                                <dxg:GridControl ItemsSource="{Binding Header.AdvanceReceiptLines}"
                                                  DeleteKeyBehavior="DeleteFocusedRow"
                                                  MaxHeight="600"
                                                  MinHeight="400"
@@ -697,10 +697,10 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="SeqNbr"
+                                        <!-- <dxg:GridColumn FieldName="SeqNbr"
                                                         Header="SN"
-                                                        Width="30" />
-                                        <dxg:GridColumn FieldName="TransactionType"
+                                                        Width="30" /> -->
+                                        <dxg:GridColumn FieldName="TransType"
                                                         Header="Transaction">
                                             <dxg:GridColumn.EditSettings>
                                                 <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
@@ -722,10 +722,10 @@
                                                 </dxg:LookUpEditSettings>
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="AdjustedAmount"
+                                        <dxg:GridColumn FieldName="TransactionAmount"
                                                         Header="Trans Amount (Rs)" />
-                                        <dxg:GridColumn FieldName="BalanceAfterAdj"
-                                                        Header="Balance Amount (Rs)" />
+                                     <!--   <dxg:GridColumn FieldName="BalanceAfterAdj"
+                                                        Header="Balance Amount (Rs)" />  -->
                                     </dxg:GridControl.Columns>
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
@@ -742,10 +742,10 @@
                                                                    Command="{Binding DataContext.DeleteSingleRowCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
                                                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"
                                                                    Content="Delete Row" />
-                                            </dxg:TableView.RowCellMenuCustomizations>
+                                            </dxg:TableView.RowCellMenuCustomizations> 
                                         </dxg:TableView>
                                     </dxg:GridControl.View>
-                                </dxg:GridControl>  -->
+                                </dxg:GridControl>  
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>

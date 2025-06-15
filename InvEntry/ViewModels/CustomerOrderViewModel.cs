@@ -28,6 +28,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using IDialogService = DevExpress.Mvvm.IDialogService;
+using DevExpress.CodeParser;
 
 namespace InvEntry.ViewModels;
 
@@ -50,6 +51,9 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     [ObservableProperty]
     private CustomerOrder _header;
+
+    [ObservableProperty]
+    private LedgersHeader _ledgerHeader;
 
     [ObservableProperty]
     private string _productIdUI;
@@ -648,11 +652,11 @@ public partial class CustomerOrderViewModel : ObservableObject
         {
             EvaluateFormula(line);
         }
-/*        else
-        if (args.Row is InvoiceArReceipt arInvRctline)
+        else
+        if (args.Row is LedgersTransactions orderRctLines)
         {
-            EvaluateArRctLine(arInvRctline);
-        } */
+            EvaluateArRctLine(orderRctLines);
+        }
         else
         if (args.Row is OldMetalTransaction oldMetalTransaction &&
             args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
@@ -661,6 +665,12 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         EvaluateHeader();
+    }
+
+    [RelayCommand]
+    private void EvaluateArRctLine(LedgersTransactions orderRctLines)
+    {
+
     }
 
     private bool ValidateBeforeCreate()
@@ -692,7 +702,10 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private bool IsNewOrder()
     {
-        return string.IsNullOrEmpty(Header?.OrderNbr);
+         if (Header?.GKey > 0 )
+              return false;
+         else
+              return true;
     }
 
 
@@ -724,7 +737,10 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         await _customerOrderService.CreateCustomerOrderLine(Header.Lines);
+
         await ProcessOldMetalTransaction();
+        await ProcessReceipts();
+        await SaveLedgerTransactions();
     }
 
     private async Task UpdateOrderAsync()
@@ -733,7 +749,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         await _customerOrderService.UpdateHeader(Header);
     }
 
-    [RelayCommand]                          //(CanExecute = nameof(CanCreateCustomerOrder))]
+    [RelayCommand]                           
     private async Task CreateCustomerOrder()
     {
         try
@@ -772,78 +788,9 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
 
-/*    [RelayCommand] //(CanExecute = nameof(CanCreateCustomerOrder))]
+/*    
     private async Task CreateCustomerOrderOld()
     {
-        //LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
-
-        // invBalanceChk = true;  //is this a right place to fix
-        //   var isSuccess = ProcessInvBalance();
-
-        //    if (!isSuccess) return;
-
-        if (!string.IsNullOrEmpty(Header.OrderNbr))
-        {
-
-            Header.OrderStatusFlag = Int32.Parse(GetOrderStatus(0, OrderStatusUI));
-
-            await _customerOrderService.UpdateHeader(Header);
-
-            _messageBoxService.ShowMessage("Customer Order " + Header.OrderNbr + " updated Successfully", "Customer Order Update",
-                                                MessageButton.OK, MessageIcon.Exclamation);
-
-            return;
-        }
-
-        if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
-        {
-            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info",
-                                                MessageButton.OK, MessageIcon.Hand);
-            return;
-        }
-
-        if (createCustomer)
-        {
-            Buyer = await _customerService.CreateCustomer(Buyer);
-        }
-
-        Header.CustGkey = (int?)Buyer.GKey;
-
-        // this loop required? - repetition???
-        Header.Lines.ForEach(x =>
-        {
-            x.OrderLineNbr = Header.Lines.IndexOf(x) + 1;
-            x.OrderNbr = Header.OrderNbr;
-        });
-
-        var header = await _customerOrderService.CreateCustomerOrder(Header);
-
-        if (header is not null)
-        {
-            Header.GKey = header.GKey;
-            Header.OrderNbr = header.OrderNbr;
-
-            Header.Lines.ForEach(x =>
-            {
-                x.OrderGkey = header.GKey;
-                x.OrderNbr = header.OrderNbr;
-                x.TenantGkey = header.TenantGkey;
-            });
-
-            // loop for validation check for customer
-            await _customerOrderService.CreateCustomerOrderLine(Header.Lines);
-
-            await ProcessOldMetalTransaction();
-
-            //Invoice header details needs to be saved alongwith receipts, hence calling from here.
-    //>>>        ProcessReceipts();
-
-*//*            if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
-                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header); *//*
-
-            _messageBoxService.ShowMessage("Customer Order " + Header.OrderNbr + " Created Successfully", "Customer Order Created",
-                                                MessageButton.OK, MessageIcon.Exclamation);
-
             *//* Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
             PrintPreviewInvoice();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
@@ -872,19 +819,12 @@ public partial class CustomerOrderViewModel : ObservableObject
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
-        //oldMetalTransaction.DocRefType = "Order";
     }
 
 
     [RelayCommand]
     private Task EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)   
     {
-
-        /*        if (oldMetalTransaction.ProductId is null)
-                {
-                    return;
-                }*/
-
 
         OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
         {
@@ -909,5 +849,116 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
+    }
+
+
+    private async Task ProcessReceipts()
+    {
+        //For each Receipts row - seperate Voucher has to be created
+        foreach (var receipts in Header.AdvanceReceiptLines)
+        {
+            if (receipts is null) return;
+
+            var voucher = CreateVoucher(receipts);
+            voucher = await SaveVoucher(voucher);
+
+/*            var arReceipts = CreateArReceipts(receipts, voucher);
+            await SaveArReceipts(arReceipts);*/
+
+        }
+    }
+
+    [RelayCommand] //(CanExecute = nameof(CanProcessArReceipts))]
+    private void ProcessAdvReceipts()
+    {
+        //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
+
+        //var noOfLines = Header.AdvanceReceiptLines.Count;
+
+        Header.AdvanceReceiptLines.Add(new LedgersTransactions
+        {
+            TransactionDate = DateTime.Today,
+            DrCr = "Dr"
+        });
+
+    }
+
+    private async Task SaveLedgerTransactions()
+    {
+
+        //check customer has already ledger entry
+        LedgerHeader = await _ledgerService.GetHeader(MtblLedger.GKey, Buyer.GKey);
+
+        if (LedgerHeader is null)
+        {
+            LedgerHeader = new();
+
+            LedgerHeader.MtblLedgersGkey = MtblLedger.GKey;
+            LedgerHeader.CustGkey = Header.CustGkey;
+            LedgerHeader.BalanceAsOn = DateTime.Now;
+
+            LedgerHeader.CurrentBalance = 0; // Header.AdvanceAdj.GetValueOrDefault();
+
+            LedgerHeader = await _ledgerService.CreateHeader(LedgerHeader);
+        }
+
+        foreach (var trx in Header.AdvanceReceiptLines)
+        {
+            trx.LedgerHdrGkey = LedgerHeader.GKey;
+            trx.DocumentNbr = trx.TransType;
+
+            await _ledgerService.CreateLedgersTransactions(trx); 
+        }
+
+        //_messageBoxService.ShowMessage("Ledger transactions saved successfully.");
+    }
+
+
+    private Voucher CreateVoucher(LedgersTransactions advLdgrTrans)
+    {
+
+        Voucher Voucher = new()
+        {
+            VoucherDate = DateTime.Now
+        };
+
+        Voucher.SeqNbr = 1;
+        Voucher.CustomerGkey = Header.CustGkey;
+        Voucher.VoucherDate = DateTime.Now;
+        Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+        Voucher.VoucherType = "Advance"; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.Mode = advLdgrTrans.TransType;
+        Voucher.TransDate =  DateTime.Now;
+        Voucher.VoucherNbr = Header.OrderNbr;
+        Voucher.RefDocNbr = Header.OrderNbr;
+        Voucher.RefDocDate = Header.OrderDate;
+        Voucher.RefDocGkey = Header.GKey;
+        Voucher.TransAmount = advLdgrTrans.TransactionAmount;
+        Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
+
+        return Voucher;
+
+    }
+
+    private async Task<Voucher> SaveVoucher(Voucher voucher)
+    {
+        if (voucher.GKey == 0)
+        {
+            var voucherResult = await _voucherService.CreateVoucher(voucher);
+
+            if (voucherResult != null)
+            {
+                voucher = voucherResult;
+                //  _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
+                //      MessageButton.OK, MessageIcon.Exclamation);
+            }
+        }
+        else
+        {
+            await _voucherService.UpdateVoucher(voucher);
+        }
+
+        return voucher;
+
     }
 }

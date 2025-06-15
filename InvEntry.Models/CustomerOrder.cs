@@ -11,6 +11,7 @@ public partial class CustomerOrder : BaseEntity
     {
         Lines = new();
         OldMetalTransactions = new();
+        AdvanceReceiptLines = new();
     }
 
     [ObservableProperty]
@@ -125,6 +126,13 @@ public partial class CustomerOrder : BaseEntity
     [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<OldMetalTransaction>? oldMetalTransactions;
+
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<LedgersTransactions>? advanceReceiptLines;
+
+
+ //{ get; set; } = new();
 
 }
 
