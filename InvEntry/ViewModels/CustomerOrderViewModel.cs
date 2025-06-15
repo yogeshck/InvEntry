@@ -905,7 +905,8 @@ public partial class CustomerOrderViewModel : ObservableObject
         foreach (var trx in Header.AdvanceReceiptLines)
         {
             trx.LedgerHdrGkey = LedgerHeader.GKey;
-            trx.DocumentNbr = trx.TransType;
+            trx.DocumentNbr = Header.OrderNbr;
+            trx.DocumentDate = Header.OrderDate;
 
             await _ledgerService.CreateLedgersTransactions(trx); 
         }

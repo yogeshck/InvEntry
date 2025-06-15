@@ -57,6 +57,9 @@ public partial class EstimateViewModel: ObservableObject
     public bool _isStockTransfer;
 
     [ObservableProperty]
+    public bool _estimateWithTax;
+
+    [ObservableProperty]
     private ObservableCollection<EstimateLine> selectedRows;
 
     [ObservableProperty]
@@ -81,6 +84,7 @@ public partial class EstimateViewModel: ObservableObject
 
     private bool createCustomer  = false;
     private bool estBalanceChk   = false;
+    private bool estimateWithTax = false;
     //private bool isStockTransfer = false;
 
     private readonly ICustomerService _customerService;
@@ -302,7 +306,9 @@ public partial class EstimateViewModel: ObservableObject
         {
             Header.GstLocBuyer = Buyer.GstStateCode;
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-            IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
+
+            if (EstimateWithTax)
+                IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
 
             Header.CgstPercent = GetGSTWithinState();
             Header.SgstPercent = GetGSTWithinState();
@@ -748,10 +754,15 @@ public partial class EstimateViewModel: ObservableObject
 
     private decimal GetGSTWithinState()
     {
-        if (Buyer?.GstStateCode == "33")
+        if (EstimateWithTax)
         {
-            return Math.Round(SCGSTPercent / 2, 3);
-        }
+            if (Buyer?.GstStateCode == "33")
+            {
+                return Math.Round(SCGSTPercent / 2, 3);
+            }
+
+        };
+
         return 0M;
     }
 

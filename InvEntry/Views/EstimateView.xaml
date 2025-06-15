@@ -158,6 +158,21 @@
                                         </dxlc:LayoutItem>
                                     </dxlc:LayoutGroup>
                                 </dxlc:LayoutGroup>
+                                <dxlc:LayoutItem Label="Estimate with applicable Tax : "
+                                                 LabelPosition="Left">
+                                    <dxe:CheckEdit Content="Enable Option"
+                                                   IsChecked="{Binding EstimateWithTax, Mode=TwoWay}" />
+
+                                </dxlc:LayoutItem>
+
+                                <!--  <dxe:TextEdit EditValue="{Binding EstimateWithTax}"
+                                                  IsReadOnly="False"
+                                                  CharacterCasing="Upper">
+                                        <dxmvvm:Interaction.Behaviors>
+                                            <behavior:FocusTextEditBehavior />
+                                        </dxmvvm:Interaction.Behaviors>
+                                    </dxe:TextEdit>
+                                </dxlc:LayoutItem> -->
                                 <!--<dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
                                 <dxg:LookUpEdit Width="450" EditValue="{Binding CustomerState}" 
                                                 ItemsSource="{Binding StateReferencesList}"
