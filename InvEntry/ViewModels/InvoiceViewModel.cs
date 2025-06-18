@@ -161,7 +161,6 @@ public partial class InvoiceViewModel : ObservableObject
         _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
         _productTransactionService = productTransactionService;
-        //_productTransactionSummaryService = productTransactionSummaryService;
         _productCategoryService = productCategoryService;
         _dialogService = dialogService;
         _invoiceService = invoiceService;
@@ -174,6 +173,8 @@ public partial class InvoiceViewModel : ObservableObject
         _voucherService = voucherService;
         _invoiceArReceiptService = invoiceArReceiptService;
         _mtblReferencesService = mtblReferencesService;
+
+        //_productTransactionSummaryService = productTransactionSummaryService;
 
         selectedRows = new();
         //productStockList = new();

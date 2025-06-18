@@ -26,7 +26,7 @@ public partial class VoucherEntryViewModel: ObservableObject
     private ObservableCollection<string> _cashVoucherTypeList;
 
     [ObservableProperty]
-    private ObservableCollection<string> transactionTypeList;
+    private ObservableCollection<string> _transactionTypeList;
 
     [ObservableProperty]
     private ObservableCollection<string> _accountGroupList;
@@ -63,7 +63,7 @@ public partial class VoucherEntryViewModel: ObservableObject
         _messageBoxService = messageBoxService;
         
         PopulateReferenceList();
-        Task.Run(PopulateAccountrGroupList).Wait();
+        Task.Run(PopulateAccountGroupList).Wait();
         ResetVoucher();
     }
 
@@ -77,7 +77,7 @@ public partial class VoucherEntryViewModel: ObservableObject
 
     }
 
-    private async Task PopulateAccountrGroupList()
+    private async Task PopulateAccountGroupList()
     {
         var masterLedgerList = await _mtblLedgersService.GetAll();   //GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic
 
@@ -115,11 +115,19 @@ public partial class VoucherEntryViewModel: ObservableObject
         SetVoucherType();
     }
 
+    [RelayCommand]
+    private void CreatePettyCashVoucher()
+    {
+        Voucher.Mode = "Petty Cash";
+        Voucher.ToLedgerGkey = 2100;
+        SetVoucherType();
+    }
+
     private void SetTransType()
     {
         if (Voucher.TransType is null)
         {
-           // Voucher.TransType = "Payment";
+            Voucher.TransType = "Payment";
             TransactionType = "Payment";
         }
     }
@@ -170,14 +178,6 @@ public partial class VoucherEntryViewModel: ObservableObject
     private void VoucherPrint()
     {
 
-    }
-
-
-    [RelayCommand]
-    private void CreatePettyCashVoucher()
-    {
-        Voucher.Mode = "Petty Cash";
-        SetVoucherType();
     }
 
     partial void OnVoucherTransDescChanged(string value)

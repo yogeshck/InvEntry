@@ -10,6 +10,8 @@ public partial class EstimateHeader : BaseEntity
     public EstimateHeader()
     {
         Lines = new();
+        ReceiptLines = new();
+        OldMetalTransactions = new();
         PaymentMode = "EST_ONLY";
         TaxType = "GST";
         RoundOff = 0M;
@@ -132,5 +134,13 @@ public partial class EstimateHeader : BaseEntity
     [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<EstimateLine>? lines;
+
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<InvoiceArReceipt>? receiptLines;
+
+    [ObservableProperty]
+    [property: JsonIgnore]
+    private ObservableCollection<OldMetalTransaction>? oldMetalTransactions;
 
 }

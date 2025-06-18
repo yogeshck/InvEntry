@@ -21,6 +21,19 @@ public static class OldMetalTransactionExtension
 
     }
 
+    public static void EnrichEstHeaderDetails(this OldMetalTransaction oldMetalTransaction, EstimateHeader estimateHeader)
+    {
+
+        oldMetalTransaction.DocRefGkey = estimateHeader.GKey;
+        oldMetalTransaction.DocRefNbr = estimateHeader.EstNbr;
+        oldMetalTransaction.DocRefDate = estimateHeader.EstDate;
+        oldMetalTransaction.CustGkey = estimateHeader.CustGkey;
+        oldMetalTransaction.CustMobile = estimateHeader.CustMobile;
+
+        oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Estimate");
+
+    }
+
     public static void EnrichCustOrderDetails(this OldMetalTransaction oldMetalTransaction, CustomerOrder custOrder)
     {
 
@@ -38,7 +51,7 @@ public static class OldMetalTransactionExtension
     {
         var transType = "";
 
-        if (docType == "Billing")
+        if (docType == "Billing" || docType == "Estimate" )
         {
             if (metal == "OLD SILVER")
                 transType = "OS Purchase";

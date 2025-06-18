@@ -149,6 +149,7 @@ public partial class CashReceiptViewModel : ObservableObject
         if (SelectedLedger.Equals("Recurring Deposit"))
             accountCode = 3000;
 
+        MtblLedger = new();
         MtblLedger = await _mtblLedgersService.GetLedger(accountCode);      //GetLedger(1000);   //pass account code - Advance Receipt
 
         if (MtblLedger is null)
@@ -227,6 +228,9 @@ public partial class CashReceiptViewModel : ObservableObject
     {
 
         await SetMasterLedger();
+        if (MtblLedger.GKey < 0)
+            return;
+
         //check customer has any ledger entry
 
         LedgerHdr = new();

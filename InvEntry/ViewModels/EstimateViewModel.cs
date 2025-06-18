@@ -7,12 +7,14 @@ using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
+using InvEntry.Helper;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Store;
 using InvEntry.Utils;
+using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -33,13 +35,28 @@ public partial class EstimateViewModel: ObservableObject
     private MtblReference _customerState;
 
     [ObservableProperty]
+    private MtblReference _salesPerson;
+
+    [ObservableProperty]
     private Customer _buyer;
+
+    [ObservableProperty]
+    private OrgThisCompanyView _company;
+
+    [ObservableProperty]
+    private InvoiceArReceipt _invoiceArReceipt;
 
     [ObservableProperty]
     private EstimateHeader _header;
 
     [ObservableProperty]
     private string _productIdUI;
+
+    [ObservableProperty]
+    private MtblLedger _mtblLedger;
+
+    [ObservableProperty]
+    private string _productSku;
 
     [ObservableProperty]
     private string _oldMetalIdUI;
@@ -63,9 +80,6 @@ public partial class EstimateViewModel: ObservableObject
     private ObservableCollection<EstimateLine> selectedRows;
 
     [ObservableProperty]
-    private OrgThisCompanyView _company;
-
-    [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
 
     [ObservableProperty]
@@ -78,9 +92,17 @@ public partial class EstimateViewModel: ObservableObject
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
+    private ObservableCollection<MtblReference> salesPersonReferencesList;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> stateReferencesList;
 
     public ICommand ShowWindowCommand { get; set; }
+
+    [ObservableProperty]
+    private DateSearchOption _searchOption;
+
+    private List<MtblReference> _gstTaxRefList;
 
     private bool createCustomer  = false;
     private bool estBalanceChk   = false;
@@ -89,16 +111,22 @@ public partial class EstimateViewModel: ObservableObject
 
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
+    private readonly IProductStockService _productStockService;
+
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IVoucherService _voucherService;
     private readonly IEstimateService _estimateService;
+    private readonly ILedgerService _ledgerService;
     private readonly IProductCategoryService _productCategoryService;
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IProductStockSummaryService _productStockSummaryService;
     private readonly IProductTransactionService _productTransactionService;
+    private readonly IInvoiceArReceiptService _invoiceArReceiptService;
+    private readonly IOldMetalTransactionService _oldMetalTransactionService;
+    private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IReportFactoryService _reportFactoryService;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
@@ -113,15 +141,21 @@ public partial class EstimateViewModel: ObservableObject
 
     public EstimateViewModel(ICustomerService customerService,
         IProductViewService productViewService,
+        IProductStockService productStockService,
         IDialogService dialogService,
         IEstimateService estimateService,
-        IProductCategoryService productCategoryService, 
+        IProductCategoryService productCategoryService,
+        ILedgerService ledgerService,
         IProductStockSummaryService productStockSummaryService,
         IProductTransactionService productTransactionService,
         IMessageBoxService messageBoxService,
         IMtblReferencesService mtblReferencesService,
         IOrgThisCompanyViewService orgThisCompanyViewService,
-    SettingsPageViewModel settingsPageViewModel,
+        IVoucherService voucherService,
+        IInvoiceArReceiptService invoiceArReceiptService,
+        IOldMetalTransactionService oldMetalTransactionService,
+        IMtblLedgersService mtblLedgersService,
+        SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
@@ -129,22 +163,25 @@ public partial class EstimateViewModel: ObservableObject
         //MtblRefNameList = new();
 
 
-        _customerService = customerService;
-        _orgThisCompanyViewService = orgThisCompanyViewService;
-        _productViewService = productViewService;
-        _productCategoryService = productCategoryService;
-        _dialogService = dialogService;
+        
         _estimateService = estimateService;
-        _messageBoxService = messageBoxService;
-        _reportDialogService = reportDialogService;
-        _reportFactoryService = reportFactoryService;
-        _mtblReferencesService = mtblReferencesService;
+        _orgThisCompanyViewService = orgThisCompanyViewService;
+        _customerService = customerService;
+        _productViewService = productViewService;
+        _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
         _productTransactionService = productTransactionService;
-
-
-        SetHeader();
-        SetThisCompany();   //-seems duplicate
+        _productCategoryService = productCategoryService;
+        _dialogService = dialogService;
+        _ledgerService = ledgerService;
+        _messageBoxService = messageBoxService;
+        _mtblLedgersService = mtblLedgersService;
+        _reportDialogService = reportDialogService;
+        _reportFactoryService = reportFactoryService;
+        _oldMetalTransactionService = oldMetalTransactionService;
+        _voucherService = voucherService;
+        _invoiceArReceiptService = invoiceArReceiptService;
+        _mtblReferencesService = mtblReferencesService;
 
         selectedRows = new();
         _customerReadOnly = false;
@@ -154,7 +191,18 @@ public partial class EstimateViewModel: ObservableObject
         _isStockTransfer = true;
         _settingsPageViewModel = settingsPageViewModel;
 
+        var metalPrice = getBilledPrice("GOLD");
+        if (metalPrice < 1)
+        {
+            displayErrorMsg();
+            //return;
+        }
+
+        SetHeader();
         SetThisCompany();
+        SetMasterLedger();
+
+        //SetThisCompany();
 
         PopulateProductCategoryList();
         PopulateStateList();
@@ -163,12 +211,38 @@ public partial class EstimateViewModel: ObservableObject
         PopulateMetalList();
         PopulateStockTransfer();
 
+        PopulateTaxList();
+        PopulateSalesPersonList();
+
+        //PopulateUnboundHeaderDataMap();
+    }
+
+    private async void SetMasterLedger()
+    {
+        MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
     }
 
     private async void PopulateProductCategoryList()
     {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
+    }
+
+    private async void PopulateSalesPersonList()
+    {
+        var salesPersonRefList = await _mtblReferencesService.GetReferenceList("SALES_PERSON");
+
+        if (salesPersonRefList is null)
+        {
+            SalesPersonReferencesList = new();
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" }); //Yet To fix
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Vinnila", RefCode = "32" });
+            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Anju", RefCode = "30" });
+            return;
+        }
+
+        SalesPersonReferencesList = new(salesPersonRefList);
+
     }
 
     private async void PopulateStateList()
@@ -186,6 +260,16 @@ public partial class EstimateViewModel: ObservableObject
 
         StateReferencesList = new(stateRefList);
 
+    }
+
+    private async void PopulateTaxList()
+    {
+
+        var gstTaxRefList = await _mtblReferencesService.GetReferenceList("GST");
+        if (gstTaxRefList is not null)
+        {
+            _gstTaxRefList = new(gstTaxRefList);
+        }
     }
 
     private async void PopulateMetalList()
@@ -210,7 +294,7 @@ public partial class EstimateViewModel: ObservableObject
     {
         Company = new();
         Company = await _orgThisCompanyViewService.GetOrgThisCompany();
-        Header.TenantGkey = Company.TenantGkey;
+        //Header.TenantGkey = Company.TenantGkey;
         Header.GstLocSeller = Company.GstCode;
     }
 
@@ -241,14 +325,40 @@ public partial class EstimateViewModel: ObservableObject
 
     partial void OnCustomerStateChanged(MtblReference value)
     {
-        if (Buyer is null) return;
+/*        if (Buyer is null) return;
 
         Buyer.GstStateCode = value.RefCode;    //Need to fetch based on pincode - future change
         Header.GstLocBuyer = value.RefCode;
         Header.CgstPercent = GetGSTWithinState();
         Header.SgstPercent = GetGSTWithinState();
-        Header.IgstPercent = IGSTPercent;
+        Header.IgstPercent = IGSTPercent;*/
+
+            if (Buyer is null) return;
+
+            Buyer.GstStateCode = value.RefCode;
+
+            Header.CgstPercent = GetGSTPercent("CGST");
+            Header.SgstPercent = GetGSTPercent("SGST");
+            Header.IgstPercent = GetGSTPercent("IGST");
+
+            //Need to fetch based on pincode - future change
+            Header.GstLocBuyer = value.RefCode;
+
+            EvaluateForAllLines();
+            EvaluateHeader();
+        
     }
+
+    partial void OnSalesPersonChanged(MtblReference value)
+    {
+        if (Buyer is null) return;
+
+        if (value.RefValue is not null)
+        {
+          //  Header.SalesPerson = value.RefValue;
+        }
+    }
+
 
     [RelayCommand]
     private void AddReceipts()
@@ -271,6 +381,8 @@ public partial class EstimateViewModel: ObservableObject
     {
         if (args.NewValue is not string phoneNumber) return;
 
+        phoneNumber = phoneNumber.Trim();
+
         if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
             return;
 
@@ -289,30 +401,40 @@ public partial class EstimateViewModel: ObservableObject
         if (Buyer is null)
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
+
             Buyer = new();
             Buyer.MobileNbr = phoneNumber;
+            Buyer.Address.GstStateCode = Company.GstCode;
+            Buyer.Address.State = Company.State;
+            Buyer.Address.District = Company.District;
+
             createCustomer = true;
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
 
-
-            Buyer.GstStateCode = "33";    //Need to fetch based on pincode - future change
-            Header.GstLocBuyer = Buyer.GstStateCode;
-            Header.CgstPercent = GetGSTWithinState();
-            Header.SgstPercent = GetGSTWithinState();
-            Header.IgstPercent = IGSTPercent;
 
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
         else
         {
-            Header.GstLocBuyer = Buyer.GstStateCode;
+            var gstCode = Buyer.Address is null ? Company.GstCode : Buyer.Address.GstStateCode;
+
+            if (Buyer.Address is null)
+            {
+                Buyer.Address = new();
+                Buyer.Address.GstStateCode = Company.GstCode;
+            }
+
+            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
-            if (EstimateWithTax)
+
+/*            if (EstimateWithTax)
                 IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
 
             Header.CgstPercent = GetGSTWithinState();
             Header.SgstPercent = GetGSTWithinState();
-            Header.IgstPercent = IGSTPercent;
+            Header.IgstPercent = IGSTPercent;*/
         }
 
         Header.CustMobile = phoneNumber;
@@ -348,17 +470,24 @@ public partial class EstimateViewModel: ObservableObject
             return;
         }
 
-        var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
+        var metalPrice = _settingsPageViewModel.GetPrice(product.Metal);
+
+        if (metalPrice < 1)
+        {
+            displayErrorMsg();
+            return;
+        }
 
         EstimateLine estimateLine = new EstimateLine()
         {
             ProdQty = 1,
-            EstlBilledPrice = billedPrice,
-            EstlCgstPercent = GetGSTWithinState(),
-            EstlSgstPercent = GetGSTWithinState(),
-            EstlIgstPercent = IGSTPercent,
+            EstlBilledPrice = metalPrice,
+            EstlCgstPercent = Header.CgstPercent,
+            EstlSgstPercent = Header.SgstPercent,
+            EstlIgstPercent = Header.IgstPercent,
             EstlStoneAmount = 0M,
             TaxType = "GST"
+
         };
 
 
@@ -380,6 +509,25 @@ public partial class EstimateViewModel: ObservableObject
                         "Gross Weight", MessageButton.OK, MessageIcon.Error);
                     return;
                 }*/
+    }
+
+    private decimal getBilledPrice(string metal)
+    {
+        var metalPrice = _settingsPageViewModel.GetPrice(metal);
+
+        if (metalPrice is null)
+        {
+            metalPrice = -1;
+        }
+
+        return (decimal)metalPrice;
+    }
+
+    private void displayErrorMsg()
+    {
+        _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
+                                        "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
+
     }
 
     private bool CanProcessArReceipts()
@@ -410,8 +558,12 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreateEstimate))]
     private async Task CreateEstimate()
     {
+        LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
+
         estBalanceChk = true;  //is this a right place to fix
-        //ProcessEstBalance();
+        var isSuccess = ProcessEstBalance();
+
+        if (!isSuccess) return;
 
         if (!string.IsNullOrEmpty(Header.EstNbr))
         {
@@ -464,10 +616,14 @@ public partial class EstimateViewModel: ObservableObject
             if (IsStockTransfer)
                 await ProcessProductTransaction(Header.Lines);
 
-            //   await ProcessOldMetalTransaction();
+            await ProcessOldMetalTransaction();
 
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
-            //    ProcessReceipts();
+            ProcessReceipts();
+
+            // to check the logic
+        //    if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
+        //        await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);
 
             _messageBoxService.ShowMessage("Estimate Created Successfully", "Estimate Created", MessageButton.OK, MessageIcon.Exclamation);
 
@@ -492,6 +648,22 @@ public partial class EstimateViewModel: ObservableObject
             //await CreateProductTransaction(line);
         }
     }
+
+/*    private async Task ProductStockUpdate(EstimateLine line)
+    {
+
+        var productStk = await _productStockService.GetProductStock(line.ProductSku);
+
+        productStk.SoldWeight = line.ProdGrossWeight;
+        productStk.BalanceWeight = 0;
+        productStk.SoldQty = line.ProdQty;
+        productStk.StockQty = 0;
+        productStk.Status = "Sold";
+        productStk.IsProductSold = true;
+
+        await _productStockService.UpdateProductStock(productStk);
+
+    }*/
 
     //Consolidated stock line in product stock summary - stock qty / weight has to be reduced based on invoiced qty
     //this logic would be revisited/changed once product sku - barcode feature introduced
@@ -601,8 +773,122 @@ public partial class EstimateViewModel: ObservableObject
         {
             EvaluateFormula(line);
         }
+        else
+        if (args.Row is InvoiceArReceipt arInvRctline)
+        {
+            EvaluateArRctLine(arInvRctline);
+        }
+        else
+        if (args.Row is OldMetalTransaction oldMetalTransaction &&
+            args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
+        {
+            EvaluateOldMetalTransactions(oldMetalTransaction);
+        }
 
         EvaluateHeader();
+    }
+
+    [RelayCommand]
+    private void EvaluateArRctLine(InvoiceArReceipt arInvRctLine)
+    {
+
+        if (string.IsNullOrEmpty(arInvRctLine.TransactionType))
+        {
+            return;
+        }
+
+        if (!arInvRctLine.BalBeforeAdj.HasValue)
+            arInvRctLine.BalBeforeAdj = Header.EstBalance.GetValueOrDefault();
+
+        arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() -
+                                        arInvRctLine.AdjustedAmount.GetValueOrDefault();
+
+
+        if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
+        {
+            arInvRctLine.ModeOfReceipt = "Cash";
+        }
+        else if (arInvRctLine.TransactionType == "Credit")
+        {
+            arInvRctLine.ModeOfReceipt = "Credit";
+        }
+        else
+        {
+            arInvRctLine.ModeOfReceipt = "Bank";
+        }
+
+        EvaluateHeader();
+
+    }
+
+    [RelayCommand]
+    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
+    {
+
+        /*        if (oldMetalTransaction.ProductId is null)
+                {
+                    return;
+                }*/
+
+        oldMetalTransaction.NetWeight = (
+                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                        );
+
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
+                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        oldMetalTransaction.DocRefType = "Invoice";
+
+    }
+
+    [RelayCommand]
+    private Task EvaluateOldMetalTransaction()
+    {
+
+        //   var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
+
+        OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
+        {
+            CustGkey = Header.CustGkey,
+            CustMobile = Header.CustMobile,
+            //  TransType = "OG Purchase",
+            TransDate = DateTime.Now,
+            //   Uom = "Grams"
+        };
+
+        Header.OldMetalTransactions.Add(oldMetalTransactionLine);
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanProcessArReceipts))]
+    private async Task ProcessArReceipts()
+    {
+        //  var paymentMode = await _mtblReferencesService.GetReference("PAYMENT_MODE");
+        // _productService.GetProduct(ProductIdUI);
+
+        // var waitVM = WaitIndicatorVM.ShowIndicator("Fetching Invoice Receipt details...");
+
+        var noOfLines = Header.ReceiptLines.Count;
+
+        InvoiceArReceipt arInvRctLine = new InvoiceArReceipt()
+        {
+            CustGkey = Header.CustGkey,
+            Status = "Open",    //Status Open - Before Adjustment
+            SeqNbr = noOfLines + 1
+        };
+
+        Header.ReceiptLines.Add(arInvRctLine);
+    }
+
+    private decimal? FilterMetalTransactions(string metal)
+    {
+        return Header.OldMetalTransactions
+                        .Where(x => metal.Equals(x.Metal, StringComparison.OrdinalIgnoreCase))
+                        .Select(x => x.FinalPurchasePrice)
+                        .Sum();
     }
 
     [RelayCommand]
@@ -612,11 +898,11 @@ public partial class EstimateViewModel: ObservableObject
         // Header.AdvanceAdj = FilterReceiptTransactions("Advance");
         // Header.RdAmountAdj = FilterReceiptTransactions("RD");
 
-        Header.RecdAmount = 0; // Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
+        Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
 
-        Header.OldGoldAmount = 0; // FilterMetalTransactions("OLD GOLD");
+        Header.OldGoldAmount = FilterMetalTransactions("OLD GOLD 18KT") + FilterMetalTransactions("OLD GOLD 22KT") + FilterMetalTransactions("OLD GOLD 916-22KT");
 
-        Header.OldSilverAmount = 0; // FilterMetalTransactions("OLD SILVER");
+        Header.OldSilverAmount = FilterMetalTransactions("OLD SILVER");
 
         // TaxableTotal from line without tax value
         Header.EstlTaxTotal = Header.Lines.Select(x => x.EstlTotal).Sum();
@@ -640,6 +926,8 @@ public partial class EstimateViewModel: ObservableObject
             Header.SgstAmount = 0;
             Header.IgstAmount = 0;
         }
+
+        Header.EstlTaxableAmount = BeforeTax;
 
         // After Tax Gross Value
         Header.GrossRcbAmount = 0;
@@ -670,6 +958,245 @@ public partial class EstimateViewModel: ObservableObject
                 Header.RdAmountAdj.GetValueOrDefault()
              );
 
+        if (estBalanceChk)
+        {
+            ProcessEstBalance();
+        }
+    }
+
+    private bool ProcessEstBalance()
+    {
+
+        ProcessSettlements();
+
+        //Note if inv balance is greater than zero - we need to show message to get confirmation from user
+        // and warn to check there is unpaid balance........ 
+
+        if (Header.EstBalance > 0)
+        {
+            var result = _messageBoxService.ShowMessage("Received Amount is lesser than the Invoice Amount, " +
+                "Do you want to make Credit for the balance Invoice Amount of Rs. " + Header.EstBalance + " ?", "Estimate", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+            if (result == MessageResult.Yes)
+            {
+                Header.PaymentDueDate = Header.EstDate.Value.AddDays(7);
+                Header.EstRefund = 0M;
+                BalanceVisible();
+                SetReceipts("Credit");
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (Header.EstBalance == 0)
+        {
+            Header.PaymentDueDate = null;
+            BalanceVisible();
+
+        }
+        else if (Header.EstBalance < 0)
+        {
+            var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, " +
+                "Do you want to Refund excess Amount of Rs. " + Header.EstBalance + " ?", "Estimate", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+            if (result == MessageResult.Yes)
+            {
+                Header.PaymentDueDate = null;
+                Header.EstRefund = Header.EstBalance * -1;
+                Header.EstBalance = 0M;
+                RefundVisible();
+                SetReceipts("Refund");
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+
+    private void ProcessSettlements()
+    {
+        if (Header.DiscountAmount > 0)
+        {
+            SetReceipts("Discount");
+        }
+        if (Header.AdvanceAdj > 0)
+        {
+            SetReceipts("Advance Adj");
+
+        }
+        if (Header.RdAmountAdj > 0)
+        {
+            SetReceipts("Recurring Deposit");
+        }
+    }
+
+    private void SetReceipts(String str)
+    {
+
+        var noOfLines = Header.ReceiptLines.Count;
+
+        InvoiceArReceipt arInvRct = new InvoiceArReceipt();
+
+        arInvRct.TransactionType = str;
+        arInvRct.ModeOfReceipt = str;
+        arInvRct.SeqNbr = noOfLines + 1;
+        var adjustedAmount = getTransAmount(str);
+        arInvRct.AdjustedAmount = adjustedAmount;
+
+        Header.ReceiptLines.Add(arInvRct);
+    }
+
+    private async void ProcessReceipts()
+    {
+        //For each Receipts row - seperate Voucher has to be created
+        foreach (var receipts in Header.ReceiptLines)
+        {
+            if (receipts is null) return;
+
+            var voucher = CreateVoucher(receipts);
+            voucher = await SaveVoucher(voucher);
+
+            var arReceipts = CreateArReceipts(receipts, voucher);
+            await SaveArReceipts(arReceipts);
+
+        }
+    }
+
+    private async Task ProcessOldMetalTransaction()
+    {
+
+        foreach (var omTrans in Header.OldMetalTransactions)
+        {
+            omTrans.EnrichEstHeaderDetails(Header);
+        }
+
+        await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
+    }
+
+    private InvoiceArReceipt CreateArReceipts(InvoiceArReceipt invoiceArReceipt, Voucher voucher)
+    {
+
+        InvoiceArReceipt arInvRct = new()
+        {
+            //VoucherDate = DateTime.Now
+        };
+
+        arInvRct.SeqNbr = invoiceArReceipt.SeqNbr;
+        arInvRct.CustGkey = invoiceArReceipt.CustGkey;
+        arInvRct.InvoiceGkey = (int?)Header.GKey;
+        arInvRct.InvoiceNbr = Header.EstNbr;
+        arInvRct.InvoiceReceivableAmount = invoiceArReceipt.InvoiceReceivableAmount;
+        arInvRct.BalanceAfterAdj = invoiceArReceipt.BalanceAfterAdj;
+        arInvRct.TransactionType = invoiceArReceipt.TransactionType;
+        arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
+        arInvRct.BalBeforeAdj = invoiceArReceipt.BalBeforeAdj;
+        arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
+        arInvRct.InternalVoucherDate = voucher.VoucherDate;
+        arInvRct.InvoiceReceiptNbr = Header.EstNbr.Replace("B", "R");  //hard coded - future review 
+        arInvRct.Status = "Adj";
+
+        var adjustedAmount = getTransAmount(invoiceArReceipt.TransactionType);
+        arInvRct.AdjustedAmount = adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
+
+        return arInvRct;
+
+    }
+
+    private Voucher CreateVoucher(InvoiceArReceipt invoiceArReceipt)
+    {
+
+        Voucher Voucher = new()
+        {
+            VoucherDate = DateTime.Now
+        };
+
+        Voucher.SeqNbr = 1;
+        Voucher.CustomerGkey = Header.CustGkey;
+        Voucher.VoucherDate = Header.EstDate;
+        Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
+        Voucher.VoucherType = invoiceArReceipt.TransactionType; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.Mode = invoiceArReceipt.ModeOfReceipt; // Mode          1 = Cash,       2 = Bank,       3 = Credit
+        Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
+        Voucher.VoucherNbr = Header.EstNbr;
+        Voucher.RefDocNbr = Header.EstNbr;
+        Voucher.RefDocDate = Header.EstDate;
+        Voucher.RefDocGkey = Header.GKey;
+        Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
+
+        var transAmount = getTransAmount(invoiceArReceipt.TransactionType);
+        Voucher.TransAmount = transAmount == 0 ? invoiceArReceipt.AdjustedAmount : transAmount;
+
+        return Voucher;
+
+    }
+
+    private decimal? getTransAmount(string transType)
+    {
+        return transType switch
+        {
+            var s when s.Equals("Recurring Deposit", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
+            var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.EstRefund,
+            var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.EstBalance,
+            var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
+            var s when s.Equals("Advance Adj", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+            _ => 0M
+        };
+
+    }
+
+    private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
+    {
+        if (invoiceArReceipt.GKey == 0)
+        {
+            try
+            {
+                var voucherResult = await _invoiceArReceiptService.CreateInvArReceipt(invoiceArReceipt);
+
+                if (voucherResult != null)
+                {
+                    invoiceArReceipt = voucherResult;
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+        }
+        else
+        {
+            await _invoiceArReceiptService.UpdateInvArReceipt(invoiceArReceipt);
+        }
+
+    }
+
+    //[RelayCommand]
+    private async Task<Voucher> SaveVoucher(Voucher voucher)
+    {
+        if (voucher.GKey == 0)
+        {
+            var voucherResult = await _voucherService.CreateVoucher(voucher);
+
+            if (voucherResult != null)
+            {
+                voucher = voucherResult;
+                //  _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
+                //      MessageButton.OK, MessageIcon.Exclamation);
+            }
+        }
+        else
+        {
+            await _voucherService.UpdateVoucher(voucher);
+        }
+
+        return voucher;
+
     }
 
 
@@ -691,6 +1218,8 @@ public partial class EstimateViewModel: ObservableObject
         SetThisCompany();
         Buyer = null;
         CustomerPhoneNumber = null;
+        CustomerState = null;
+        SalesPerson = null;
         CreateEstimateCommand.NotifyCanExecuteChanged();
         estBalanceChk = false;  //reset to false for next estimate
     }
@@ -748,11 +1277,11 @@ public partial class EstimateViewModel: ObservableObject
         {
             EstDate = DateTime.Now,
             IsTaxApplicable = true,
-            GstLocSeller = "33"
+            //GstLocSeller = "33"
         };
     }
 
-    private decimal GetGSTWithinState()
+/*    private decimal GetGSTWithinState()
     {
         if (EstimateWithTax)
         {
@@ -763,6 +1292,30 @@ public partial class EstimateViewModel: ObservableObject
 
         };
 
+        return 0M;
+    }*/
+
+    private decimal GetGSTPercent(string taxType = "SGST")
+    {
+
+        var gstPercent = _gstTaxRefList.FirstOrDefault
+            (x => x.RefCode.Equals(taxType, StringComparison.OrdinalIgnoreCase));
+
+        if (taxType.Equals("IGST", StringComparison.OrdinalIgnoreCase))
+        {
+            if (Buyer.Address.GstStateCode != Company.GstCode &&
+                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent))
+            {
+                return igstPercent;
+            }
+            return 0M;
+        }
+
+        if (Buyer.Address.GstStateCode == Company.GstCode &&
+            decimal.TryParse(gstPercent.RefValue.ToString(), out var result))
+        {
+            return result;
+        }
         return 0M;
     }
 

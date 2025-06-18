@@ -156,7 +156,7 @@ public partial class VoucherListViewModel: ObservableObject
                                                 SearchOption.To, 
                                                 SearchOption.Filter1);
 
-        PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
+ //       PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
 
         //if (printed.HasValue && printed.Value)
         //    _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);
