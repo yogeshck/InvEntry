@@ -134,6 +134,8 @@ public partial class InvoiceViewModel : ObservableObject
         nameof(InvoiceLine.VaAmount)
     };
 
+    private ProductView OldMetalProduct;
+
     public InvoiceViewModel(ICustomerService customerService,
         IProductViewService productViewService,
         IProductStockService productStockService,
@@ -186,14 +188,6 @@ public partial class InvoiceViewModel : ObservableObject
         _isRefund = false;
         _settingsPageViewModel = settingsPageViewModel;
 
-
-/*        var metalPrice = getBilledPrice("GOLD");
-        if (metalPrice < 1)
-        {
-            displayErrorMsg();
-            //return;
-        }*/
-
         SetMetalPrice();
         SetHeader();
         SetThisCompany();
@@ -215,7 +209,7 @@ public partial class InvoiceViewModel : ObservableObject
         var metalPrice = getBilledPrice("GOLD");
         if (metalPrice < 1)
         {
-            displayErrorMsg();
+            displayRateErrorMsg();
             //return;
         }
 
@@ -459,7 +453,7 @@ public partial class InvoiceViewModel : ObservableObject
         var metalPrice = getBilledPrice(productStk.Metal);
         if (metalPrice < 1)
         {
-            displayErrorMsg();
+            displayRateErrorMsg();
             return;
         }
 
@@ -506,11 +500,52 @@ public partial class InvoiceViewModel : ObservableObject
         return (decimal)metalPrice;
     }
 
-    private void displayErrorMsg()
+    private void displayRateErrorMsg()
     {
         _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
                                         "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
         
+    }
+
+    private async Task EvaluateOldMetalTransactionLineAsync(OldMetalTransaction oldMetalTransaction)
+    {
+
+        if (string.IsNullOrEmpty(oldMetalTransaction.Metal)) return;
+
+        OldMetalProduct = await _productViewService.GetProduct(oldMetalTransaction.Metal);
+
+        if (OldMetalProduct is null)
+        {
+            _messageBoxService.ShowMessage($"No Product found for {OldMetalProduct}, Please make sure it exists",
+                "Product not found", MessageButton.OK, MessageIcon.Error);
+            return;
+        }
+
+        var metalPrice = _settingsPageViewModel.GetPrice(OldMetalProduct.Metal);
+
+        if (metalPrice < 1)
+        {
+            displayRateErrorMsg();
+            //return;
+        }
+
+
+        oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
+
+        oldMetalTransaction.Purity = OldMetalProduct.Purity;
+
+        oldMetalTransaction.NetWeight = (
+                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                        );
+
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
+                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        oldMetalTransaction.DocRefType = "Invoice";
+
     }
 
     [RelayCommand]
@@ -654,7 +689,15 @@ public partial class InvoiceViewModel : ObservableObject
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+
+            var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
+
+            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
             PrintPreviewInvoice();
+
+            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
@@ -902,7 +945,7 @@ public partial class InvoiceViewModel : ObservableObject
         if (args.Row is OldMetalTransaction oldMetalTransaction &&
             args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
         {
-            EvaluateOldMetalTransactions(oldMetalTransaction);
+            _ = EvaluateOldMetalTransactionLineAsync(oldMetalTransaction);
         }
 
         EvaluateHeader();
@@ -1239,6 +1282,7 @@ public partial class InvoiceViewModel : ObservableObject
         foreach(var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichInvHeaderDetails(Header);
+            omTrans.EnrichProductDetails(OldMetalProduct);
         }
 
         await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);

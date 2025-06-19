@@ -137,10 +137,11 @@ public partial class EstimateViewModel: ObservableObject
     private decimal SCGSTPercent = 3M;
     private decimal todaysRate;
 
-/*    private List<string> IGNORE_UPDATE = new List<string>
+    private List<string> IGNORE_UPDATE = new List<string>
     {
         nameof(EstimateLine.VaAmount)
-    };*/
+    };
+
     private ProductView OldMetalProduct;
 
     public EstimateViewModel(ICustomerService customerService,
@@ -640,11 +641,8 @@ public partial class EstimateViewModel: ObservableObject
 
             PrintPreviewEstimate();
 
-            // await Task.Delay(30000);
-
             SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
-            //PrintPreviewEstimate();
             PrintPreviewEstimateCommand.NotifyCanExecuteChanged();
             PrintEstimateCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
@@ -872,7 +870,7 @@ public partial class EstimateViewModel: ObservableObject
 
         oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
-        //oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
         oldMetalTransaction.DocRefType = "Estimate";
 
