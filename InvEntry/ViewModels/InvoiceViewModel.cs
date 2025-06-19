@@ -127,6 +127,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     private decimal IGSTPercent = 0M;
     private decimal SCGSTPercent = 3M;
+    private decimal todaysRate;
 
     private List<string> IGNORE_UPDATE = new List<string>
     {
@@ -186,13 +187,14 @@ public partial class InvoiceViewModel : ObservableObject
         _settingsPageViewModel = settingsPageViewModel;
 
 
-        var metalPrice = getBilledPrice("GOLD");
+/*        var metalPrice = getBilledPrice("GOLD");
         if (metalPrice < 1)
         {
             displayErrorMsg();
             //return;
-        }
+        }*/
 
+        SetMetalPrice();
         SetHeader();
         SetThisCompany();
         SetMasterLedger();
@@ -206,6 +208,18 @@ public partial class InvoiceViewModel : ObservableObject
         PopulateSalesPersonList();
 
         //PopulateUnboundHeaderDataMap();
+    }
+
+    private void SetMetalPrice()
+    {
+        var metalPrice = getBilledPrice("GOLD");
+        if (metalPrice < 1)
+        {
+            displayErrorMsg();
+            //return;
+        }
+
+        todaysRate = (decimal)metalPrice;
     }
 
     private async void SetMasterLedger()
@@ -902,6 +916,8 @@ public partial class InvoiceViewModel : ObservableObject
                 {
                     return;
                 }*/
+
+        oldMetalTransaction.TransactedRate = todaysRate;
 
         oldMetalTransaction.NetWeight = (
                                            oldMetalTransaction.GrossWeight.GetValueOrDefault() -

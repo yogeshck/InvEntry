@@ -161,10 +161,8 @@
                                 <dxlc:LayoutItem Label="Estimate with applicable Tax : "
                                                  LabelPosition="Left">
                                     <dxe:CheckEdit Content="Enable Option"
-                                                   IsChecked="{Binding EstimateWithTax, Mode=TwoWay}" />
-
+                                                   IsChecked="{Binding EstimateWithTax, Mode=TwoWay, NotifyOnSourceUpdated=True}" />
                                 </dxlc:LayoutItem>
-
                                 <!--  <dxe:TextEdit EditValue="{Binding EstimateWithTax}"
                                                   IsReadOnly="False"
                                                   CharacterCasing="Upper">

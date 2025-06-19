@@ -5,6 +5,7 @@ using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.Layout.Core;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Helper;
@@ -106,7 +107,7 @@ public partial class EstimateViewModel: ObservableObject
 
     private bool createCustomer  = false;
     private bool estBalanceChk   = false;
-    private bool estimateWithTax = false;
+   // private bool estimateWithTax = false;
     //private bool isStockTransfer = false;
 
     private readonly ICustomerService _customerService;
@@ -131,13 +132,16 @@ public partial class EstimateViewModel: ObservableObject
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
     private Dictionary<string, Action<EstimateHeader, decimal?>> copyHeaderExpression;
+
     private decimal IGSTPercent = 0M;
     private decimal SCGSTPercent = 3M;
+    private decimal todaysRate;
 
-    private List<string> IGNORE_UPDATE = new List<string>
+/*    private List<string> IGNORE_UPDATE = new List<string>
     {
         nameof(EstimateLine.VaAmount)
-    };
+    };*/
+    private ProductView OldMetalProduct;
 
     public EstimateViewModel(ICustomerService customerService,
         IProductViewService productViewService,
@@ -189,15 +193,17 @@ public partial class EstimateViewModel: ObservableObject
         _isBalance = true;
         _isRefund = false;
         _isStockTransfer = true;
+        _estimateWithTax = true;
         _settingsPageViewModel = settingsPageViewModel;
 
-        var metalPrice = getBilledPrice("GOLD");
+/*        var metalPrice = getBilledPrice("GOLD");
         if (metalPrice < 1)
         {
-            displayErrorMsg();
+            displayRateErrorMsg();
             //return;
-        }
+        }*/
 
+        SetMetalPrice();
         SetHeader();
         SetThisCompany();
         SetMasterLedger();
@@ -215,6 +221,16 @@ public partial class EstimateViewModel: ObservableObject
         PopulateSalesPersonList();
 
         //PopulateUnboundHeaderDataMap();
+    }
+
+    private void SetMetalPrice()
+    {
+        var metalPrice = getBilledPrice("GOLD");
+        if (metalPrice < 1)
+        {
+            displayRateErrorMsg();
+            //return;
+        }
     }
 
     private async void SetMasterLedger()
@@ -294,7 +310,7 @@ public partial class EstimateViewModel: ObservableObject
     {
         Company = new();
         Company = await _orgThisCompanyViewService.GetOrgThisCompany();
-        //Header.TenantGkey = Company.TenantGkey;
+        Header.TenantGkey = Company.TenantGkey;
         Header.GstLocSeller = Company.GstCode;
     }
 
@@ -323,23 +339,22 @@ public partial class EstimateViewModel: ObservableObject
         copyHeaderExpression.Add($"{nameof(EstimateHeader.EstBalance)}", (item, val) => item.EstBalance = val);
     }
 
+    partial void OnEstimateWithTaxChanged(bool value)
+    {
+        if (EstimateWithTax)
+            getTaxInfo();
+
+        EvaluateHeader();
+    }
+
     partial void OnCustomerStateChanged(MtblReference value)
     {
-/*        if (Buyer is null) return;
-
-        Buyer.GstStateCode = value.RefCode;    //Need to fetch based on pincode - future change
-        Header.GstLocBuyer = value.RefCode;
-        Header.CgstPercent = GetGSTWithinState();
-        Header.SgstPercent = GetGSTWithinState();
-        Header.IgstPercent = IGSTPercent;*/
 
             if (Buyer is null) return;
 
             Buyer.GstStateCode = value.RefCode;
 
-            Header.CgstPercent = GetGSTPercent("CGST");
-            Header.SgstPercent = GetGSTPercent("SGST");
-            Header.IgstPercent = GetGSTPercent("IGST");
+            getTaxInfo();
 
             //Need to fetch based on pincode - future change
             Header.GstLocBuyer = value.RefCode;
@@ -347,6 +362,13 @@ public partial class EstimateViewModel: ObservableObject
             EvaluateForAllLines();
             EvaluateHeader();
         
+    }
+
+    private void getTaxInfo()
+    {
+        Header.CgstPercent = GetGSTPercent("CGST");
+        Header.SgstPercent = GetGSTPercent("SGST");
+        Header.IgstPercent = GetGSTPercent("IGST");
     }
 
     partial void OnSalesPersonChanged(MtblReference value)
@@ -358,7 +380,6 @@ public partial class EstimateViewModel: ObservableObject
           //  Header.SalesPerson = value.RefValue;
         }
     }
-
 
     [RelayCommand]
     private void AddReceipts()
@@ -427,14 +448,6 @@ public partial class EstimateViewModel: ObservableObject
             CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
 
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-
-
-/*            if (EstimateWithTax)
-                IGSTPercent = Buyer.GstStateCode == "33" ? 0M : 3M;
-
-            Header.CgstPercent = GetGSTWithinState();
-            Header.SgstPercent = GetGSTWithinState();
-            Header.IgstPercent = IGSTPercent;*/
         }
 
         Header.CustMobile = phoneNumber;
@@ -474,7 +487,7 @@ public partial class EstimateViewModel: ObservableObject
 
         if (metalPrice < 1)
         {
-            displayErrorMsg();
+            displayRateErrorMsg();
             return;
         }
 
@@ -490,7 +503,6 @@ public partial class EstimateViewModel: ObservableObject
 
         };
 
-
         estimateLine.SetProductDetails(product);   
 
         EvaluateFormula(estimateLine, isInit: true);
@@ -501,33 +513,27 @@ public partial class EstimateViewModel: ObservableObject
 
         EvaluateHeader();
 
-        /*        if (invoiceLine.ProdGrossWeight > 0)
-                {
-                } else
-                {
-                    _messageBoxService.ShowMessage("Gross Weight cannot be zero ....",
-                        "Gross Weight", MessageButton.OK, MessageIcon.Error);
-                    return;
-                }*/
     }
 
     private decimal getBilledPrice(string metal)
     {
         var metalPrice = _settingsPageViewModel.GetPrice(metal);
 
-        if (metalPrice is null)
+        if (metalPrice < 1)
         {
-            metalPrice = -1;
+            displayRateErrorMsg();
+            //metalPrice = -1;
         }
+
+        todaysRate = (decimal)metalPrice;
 
         return (decimal)metalPrice;
     }
 
-    private void displayErrorMsg()
+    private void displayRateErrorMsg()
     {
-        _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
+        _messageBoxService.ShowMessage($"Todays Rate not updated in system, set the rate and start estimate....",
                                         "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
-
     }
 
     private bool CanProcessArReceipts()
@@ -628,7 +634,17 @@ public partial class EstimateViewModel: ObservableObject
             _messageBoxService.ShowMessage("Estimate Created Successfully", "Estimate Created", MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Estimate..."));
+
+            var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
+            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
             PrintPreviewEstimate();
+
+            // await Task.Delay(30000);
+
+            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+
+            //PrintPreviewEstimate();
             PrintPreviewEstimateCommand.NotifyCanExecuteChanged();
             PrintEstimateCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
@@ -782,7 +798,7 @@ public partial class EstimateViewModel: ObservableObject
         if (args.Row is OldMetalTransaction oldMetalTransaction &&
             args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
         {
-            EvaluateOldMetalTransactions(oldMetalTransaction);
+            _ = EvaluateOldMetalTransactionLineAsync(oldMetalTransaction);
         }
 
         EvaluateHeader();
@@ -821,14 +837,32 @@ public partial class EstimateViewModel: ObservableObject
 
     }
 
-    [RelayCommand]
-    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
+    private async Task EvaluateOldMetalTransactionLineAsync(OldMetalTransaction oldMetalTransaction)
     {
 
-        /*        if (oldMetalTransaction.ProductId is null)
-                {
-                    return;
-                }*/
+        if (string.IsNullOrEmpty(oldMetalTransaction.Metal)) return;
+
+        OldMetalProduct = await _productViewService.GetProduct(oldMetalTransaction.Metal);
+
+        if (OldMetalProduct is null)
+        {
+            _messageBoxService.ShowMessage($"No Product found for {OldMetalProduct}, Please make sure it exists",
+                "Product not found", MessageButton.OK, MessageIcon.Error);
+            return;
+        }
+
+        var metalPrice = _settingsPageViewModel.GetPrice(OldMetalProduct.Metal);
+
+        if (metalPrice < 1)
+        {
+            displayRateErrorMsg();
+            //return;
+        }
+
+
+        oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
+
+        oldMetalTransaction.Purity = OldMetalProduct.Purity;
 
         oldMetalTransaction.NetWeight = (
                                            oldMetalTransaction.GrossWeight.GetValueOrDefault() -
@@ -838,14 +872,14 @@ public partial class EstimateViewModel: ObservableObject
 
         oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
-        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+        //oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
-        oldMetalTransaction.DocRefType = "Invoice";
+        oldMetalTransaction.DocRefType = "Estimate";
 
     }
 
     [RelayCommand]
-    private Task EvaluateOldMetalTransaction()
+    private Task EvaluateOldMetalTransaction()    //rename FetchOldMetalDetails
     {
 
         //   var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
@@ -913,12 +947,12 @@ public partial class EstimateViewModel: ObservableObject
                     Header.OldGoldAmount.GetValueOrDefault() -
                     Header.OldSilverAmount.GetValueOrDefault();
 
-        if (BeforeTax >= 0)
+     
+        if (BeforeTax >= 0 && EstimateWithTax)
         {
             Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
             Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
             Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
-
         }
         else
         {
@@ -1073,6 +1107,7 @@ public partial class EstimateViewModel: ObservableObject
         foreach (var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichEstHeaderDetails(Header);
+            omTrans.EnrichProductDetails(OldMetalProduct);
         }
 
         await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
@@ -1277,45 +1312,33 @@ public partial class EstimateViewModel: ObservableObject
         {
             EstDate = DateTime.Now,
             IsTaxApplicable = true,
-            //GstLocSeller = "33"
         };
     }
 
-/*    private decimal GetGSTWithinState()
+    private decimal GetGSTPercent(string taxType = "SGST")
     {
         if (EstimateWithTax)
         {
-            if (Buyer?.GstStateCode == "33")
+            var gstPercent = _gstTaxRefList.FirstOrDefault
+                (x => x.RefCode.Equals(taxType, StringComparison.OrdinalIgnoreCase));
+
+            if (taxType.Equals("IGST", StringComparison.OrdinalIgnoreCase))
             {
-                return Math.Round(SCGSTPercent / 2, 3);
+                if (Buyer.Address.GstStateCode != Company.GstCode &&
+                    decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent))
+                {
+                    return igstPercent;
+                }
+                return 0M;
             }
 
-        };
-
-        return 0M;
-    }*/
-
-    private decimal GetGSTPercent(string taxType = "SGST")
-    {
-
-        var gstPercent = _gstTaxRefList.FirstOrDefault
-            (x => x.RefCode.Equals(taxType, StringComparison.OrdinalIgnoreCase));
-
-        if (taxType.Equals("IGST", StringComparison.OrdinalIgnoreCase))
-        {
-            if (Buyer.Address.GstStateCode != Company.GstCode &&
-                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent))
+            if (Buyer.Address.GstStateCode == Company.GstCode &&
+                decimal.TryParse(gstPercent.RefValue.ToString(), out var result))
             {
-                return igstPercent;
+                return result;
             }
-            return 0M;
         }
 
-        if (Buyer.Address.GstStateCode == Company.GstCode &&
-            decimal.TryParse(gstPercent.RefValue.ToString(), out var result))
-        {
-            return result;
-        }
         return 0M;
     }
 

@@ -47,6 +47,13 @@ public static class OldMetalTransactionExtension
         oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Order");
     }
 
+    public static void EnrichProductDetails(this OldMetalTransaction oldMetalTransaction, ProductView productView)
+    {
+        oldMetalTransaction.ProductGkey = productView.GKey;
+        oldMetalTransaction.ProductId = productView.Id;
+        oldMetalTransaction.ProductCategory = productView.Category;
+    }
+
     private static string setTransType(string metal, string docType)
     {
         var transType = "";
