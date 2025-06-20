@@ -857,8 +857,8 @@ public partial class EstimateViewModel: ObservableObject
             //return;
         }
 
-
-        oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
+        if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
+            oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
 
         oldMetalTransaction.Purity = OldMetalProduct.Purity;
 

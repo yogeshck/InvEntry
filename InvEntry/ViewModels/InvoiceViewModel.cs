@@ -530,7 +530,8 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
 
-        oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
+        if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
+            oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
 
         oldMetalTransaction.Purity = OldMetalProduct.Purity;
 
