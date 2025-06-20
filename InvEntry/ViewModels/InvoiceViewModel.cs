@@ -222,9 +222,11 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     private async void PopulateProductCategoryList()
-    {
+    { 
         var list = await _productCategoryService.GetProductCategoryList();
-        ProductCategoryList = new(list.Select(x => x.Name));
+        ProductCategoryList = new(list
+                                .Where(x => !x.Name.StartsWith("OLD"))
+                                .Select(x => x.Name));
     }
 
     private async void PopulateSalesPersonList()
