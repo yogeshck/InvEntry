@@ -51,7 +51,8 @@
                                         Glyph="{dx:DXImage 'SvgImages/Business Objects/BO_Sale.svg'}">
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
-                                                 Content="Invoice Entry" />
+                                                                Content="Invoice Entry"
+                                                                HideMenuWhenSelected="True" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
                                                  Content="Invoice List View" HideMenuWhenSelected="True"/>
                         <!--Glyph="{dx:DXImage Office2013/Reports/BO_Invoice_32x32.png}" />-->
@@ -65,6 +66,12 @@
                                                  Content="Estimate "  HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
                                                  Content="Estimate List View" HideMenuWhenSelected="True"/>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockTransferEntryView}"
+                                                                Content="Stock Transfer "
+                                                                HideMenuWhenSelected="True" />
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OMEntryView}"
+                                                                Content="Old Metal Transfer "
+                                                                HideMenuWhenSelected="True" />
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
