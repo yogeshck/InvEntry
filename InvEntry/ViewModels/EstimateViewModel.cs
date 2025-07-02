@@ -663,7 +663,7 @@ public partial class EstimateViewModel: ObservableObject
         }
     }
 
-/*    private async Task ProductStockUpdate(EstimateLine line)
+    /*    private async Task ProductStockUpdate(EstimateLine line)
     {
 
         var productStk = await _productStockService.GetProductStock(line.ProductSku);
@@ -1378,6 +1378,7 @@ public partial class EstimateViewModel: ObservableObject
     }
 
     private void RefundVisible() => SetVisibilityForRefund();
+
     private void BalanceVisible() => SetVisibilityForRefund(isVisible: false);
 
     private void SetVisibilityForRefund(bool isVisible = true)

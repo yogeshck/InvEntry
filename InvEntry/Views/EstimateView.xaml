@@ -14,10 +14,11 @@
              xmlns:local="clr-namespace:InvEntry.Views"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
-             xmlns:behavior="clr-namespace:InvEntry.Behavior" xmlns:dx1="clr-namespace:DevExpress.XtraEditors;assembly=DevExpress.XtraEditors.v24.2"
+             xmlns:behavior="clr-namespace:InvEntry.Behavior" 
+             xmlns:dx1="clr-namespace:DevExpress.XtraEditors;assembly=DevExpress.XtraEditors.v24.2"
+             mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:EstimateViewModel}"
              DataContext="{ext:DISource Type=viewmodels:EstimateViewModel}"
-             mc:Ignorable="d" 
              d:DesignHeight="450" HorizontalAlignment="Left" Width="1471">
     <UserControl.Resources>
         <sys:String x:Key="Estl">EstimateLine</sys:String>
@@ -141,7 +142,7 @@
                                             </dxmvvm:Interaction.Behaviors>
                                         </dxe:TextEdit>
                                     </dxlc:LayoutItem>
-                                    <dxlc:LayoutGroup HorizontalAlignment="Left">
+                                    <dxlc:LayoutGroup HorizontalAlignment="Left"> 
                                         <dxlc:LayoutItem Label="Name" LabelPosition="Top">
                                             <dxe:TextEdit EditValue="{Binding Buyer.CustomerName}" 
                                                       IsReadOnly="{Binding CustomerReadOnly}"
