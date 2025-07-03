@@ -216,10 +216,11 @@
                                      FontSize="14"
                                      Margin="5">
                         <dxe:ComboBoxEdit Height="42"
-                                      FontWeight="ExtraBold"
-                                              ItemsSource="{Binding OldMetalList}"
-                                              EditValue="{Binding OldMetalIdUI}" />
-                            </dxlc:LayoutItem>
+                                          FontWeight="ExtraBold"
+                                          ItemsSource="{Binding OldMetalList}"
+                                          EditValue="{Binding OldMetalIdUI}">
+                        </dxe:ComboBoxEdit>
+                    </dxlc:LayoutItem>
 
                     <dxlc:LayoutItem Label="Gross Wt"
                                          Margin="5">

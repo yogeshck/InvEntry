@@ -1,24 +1,26 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DevExpress.CodeParser;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
+using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.Layout.Core;
 using DevExpress.Xpf.Printing;
-using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
 using InvEntry.Helper;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
 using InvEntry.Services;
+using InvEntry.Store;
+using InvEntry.Utils;
+using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using IDialogService = DevExpress.Mvvm.IDialogService;
@@ -68,6 +70,8 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     private readonly IProductViewService _productViewService;
 
     private SettingsPageViewModel _settingsPageViewModel;
+    private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
+    private Dictionary<string, Action<EstimateHeader, decimal?>> copyHeaderExpression;
 
     private readonly IDialogService _dialogService;
     private readonly IDialogService _reportDialogService;
@@ -83,6 +87,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
                     IOrgThisCompanyViewService orgThisCompanyViewService,
                     IMtblReferencesService mtblReferencesService,
                     ICustomerService customerService,
+                    SettingsPageViewModel settingsPageViewModel,
                     IProductViewService productViewService,
                     IReportFactoryService reportFactoryService,
                     [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService
@@ -93,6 +98,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         _mtblReferencesService = mtblReferencesService;
         _customerService = customerService;
         _productViewService = productViewService;
+        _settingsPageViewModel = settingsPageViewModel;
 
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
@@ -148,7 +154,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     {
         var branchToRefList = await _mtblReferencesService.GetReferenceList("STOCK_TRANSFER");
 
-        ReceipientStrList = new(branchToRefList.Select(x => x.RefCode)); //[.. branchToRefList.Select(x => x.RefCode)];
+        ReceipientStrList = new(branchToRefList.Select(x => x.RefCode));  
 
         ReceipientsList = new(branchToRefList);
 
@@ -169,7 +175,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     partial void OnSentToChanged(string value)
     {
-        //if (Buyer is null) return;
+       
         var receipient = string.Empty;
 
         if (value is not null)
@@ -240,7 +246,6 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     }
 
-    [RelayCommand]
     private async Task FetchProduct()
     {
         if (string.IsNullOrEmpty(OldMetalIdUI)) return;
@@ -286,12 +291,136 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         //EvaluateFormula(estimateLine, isInit: true);
 
+        SetLineDetails(estimateLine);
+
         Header.Lines.Add(estimateLine);
 
-        OldMetalIdUI = string.Empty;
+        //OldMetalIdUI = string.Empty;
 
-        //EvaluateHeader();
+        EvaluateHeader();
 
+    }
+
+    private void SetLineDetails(EstimateLine estLine)
+    {
+
+        estLine.EstLineNbr = 1;
+        estLine.ProdGrossWeight = ProductGrossWeight;
+        estLine.ProdStoneWeight = 0;
+        estLine.ProdNetWeight = ProductGrossWeight;
+
+    }
+
+    private void EvaluateHeader()
+    {
+
+        // Header.AdvanceAdj = FilterReceiptTransactions("Advance");
+        // Header.RdAmountAdj = FilterReceiptTransactions("RD");
+
+        Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
+
+        Header.OldGoldAmount = 0;
+        /*FilterMetalTransactions("OLD GOLD 18KT") 
+                                + FilterMetalTransactions("OLD GOLD 22KT") 
+                                + FilterMetalTransactions("OLD GOLD 916-22KT"); */
+
+        Header.OldSilverAmount = 0; // FilterMetalTransactions("OLD SILVER");
+
+        // TaxableTotal from line without tax value
+        Header.EstlTaxTotal = Header.Lines.Select(x => x.EstlTotal).Sum();
+
+        // Line Taxable Total minus Old Gold & Silver Amount
+        decimal BeforeTax = 0;
+        BeforeTax = Header.EstlTaxTotal.GetValueOrDefault() -
+                    Header.OldGoldAmount.GetValueOrDefault() -
+                    Header.OldSilverAmount.GetValueOrDefault();
+
+
+        if (BeforeTax >= 0) // && EstimateWithTax)
+        {
+            Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
+            Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
+            Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
+        }
+        else
+        {
+            Header.CgstAmount = 0;
+            Header.SgstAmount = 0;
+            Header.IgstAmount = 0;
+        }
+
+        Header.EstlTaxableAmount = BeforeTax;
+
+        // After Tax Gross Value
+        Header.GrossRcbAmount = 0;
+        Header.GrossRcbAmount = BeforeTax +
+                                Header.CgstAmount.GetValueOrDefault() +
+                                Header.SgstAmount.GetValueOrDefault() +
+                                Header.IgstAmount.GetValueOrDefault();
+
+        decimal roundOff = 0;
+        roundOff = Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
+                        Header.GrossRcbAmount.GetValueOrDefault();
+
+        Header.RoundOff = roundOff; // Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0);
+
+        Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
+
+        decimal payableValue = 0;
+        payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
+                        Header.DiscountAmount.GetValueOrDefault();
+
+        Header.AmountPayable = 0;
+        Header.AmountPayable = MathUtils.Normalize(payableValue);
+
+        Header.EstBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
+            (
+                Header.RecdAmount.GetValueOrDefault() +
+                Header.AdvanceAdj.GetValueOrDefault() +
+                Header.RdAmountAdj.GetValueOrDefault()
+             );
+
+/*        if (estBalanceChk)
+        {
+            ProcessEstBalance();
+        }*/
+    }
+
+    private void EvaluateForAllLines()
+    {
+        foreach (var line in Header.Lines)
+        {
+            EvaluateFormula(line);
+        }
+    }
+
+    private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
+    {
+        var formulas = FormulaStore.Instance.GetFormulas<T>();
+
+        foreach (var formula in formulas)
+        {
+            //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
+
+            var val = formula.Evaluate<T, decimal>(item, 0M);
+
+            if (item is EstimateLine invLine)
+                copyEstimateExpression[formula.FieldName].Invoke(invLine, val);
+        }
+    }
+
+    private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class
+    {
+        //if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
+
+        var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
+
+        var val = formula.Evaluate<T, decimal>(item, 0M);
+
+        if (item is EstimateLine invLine)
+            copyEstimateExpression[fieldName].Invoke(invLine, val);
+        else if (item is EstimateHeader head)
+            copyHeaderExpression[fieldName].Invoke(head, val);
     }
 
     [RelayCommand(CanExecute = nameof(CanCreateStockTransfer))]
@@ -303,6 +432,8 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         //var isSuccess = ProcessEstBalance();
 
         //if (!isSuccess) return;
+
+        await FetchProduct();
 
         if (!string.IsNullOrEmpty(Header.EstNbr))
         {
@@ -350,7 +481,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
                 x.TenantGkey = header.TenantGkey;
             });
             // loop for validation check for customer
-           // to do await _estimateService.CreateEstimateLine(Header.Lines);
+            await _estimateService.CreateEstimateLine(Header.Lines);
 
         // Review >>>>>>   if (IsStockTransfer)
         //        await ProcessProductTransaction(Header.Lines);
