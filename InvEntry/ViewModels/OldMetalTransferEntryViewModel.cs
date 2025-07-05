@@ -61,6 +61,9 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     private decimal _productGrossWeight;
 
     [ObservableProperty]
+    private string _oMTransDesc;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> _receipientsList;
 
     private readonly IEstimateService _estimateService;
@@ -68,6 +71,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
+    private readonly IOldMetalTransactionService _oldMetalTransactionService;
 
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
@@ -79,6 +83,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     private readonly IReportFactoryService _reportFactoryService;
 
     private decimal todaysRate;
+    private ProductView OldMetalProduct;
 
     public OldMetalTransferEntryViewModel(
                     IDialogService dialogService,
@@ -87,6 +92,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
                     IOrgThisCompanyViewService orgThisCompanyViewService,
                     IMtblReferencesService mtblReferencesService,
                     ICustomerService customerService,
+                    IOldMetalTransactionService oldMetalTransactionService,
                     SettingsPageViewModel settingsPageViewModel,
                     IProductViewService productViewService,
                     IReportFactoryService reportFactoryService,
@@ -99,6 +105,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         _customerService = customerService;
         _productViewService = productViewService;
         _settingsPageViewModel = settingsPageViewModel;
+        _oldMetalTransactionService = oldMetalTransactionService;
 
         _messageBoxService = messageBoxService;
         _reportDialogService = reportDialogService;
@@ -172,6 +179,27 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
                                         "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
     }
 
+    [RelayCommand]
+    private void ResetOldMetalTrans()
+    {
+        // var result = _messageBoxService.ShowMessage("Reset all values", "Reset Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+        // if (result == MessageResult.No)
+        //     return;
+
+        SetHeader();
+        SetThisCompany();
+
+        Buyer = null;
+        CustomerState = null;
+        SentTo = null;
+        OldMetalIdUI = string.Empty;
+        ProductGrossWeight = 0;
+        OMTransDesc = string.Empty;
+
+        CreateStockTransferCommand.NotifyCanExecuteChanged();
+
+    }
 
     partial void OnSentToChanged(string value)
     {
@@ -216,7 +244,6 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         //    createCustomer = true;
         //Error    CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
-
             
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
@@ -254,20 +281,20 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-        var product = await _productViewService.GetProduct(OldMetalIdUI);
+        OldMetalProduct = await _productViewService.GetProduct(OldMetalIdUI);
 
         // await Task.Delay(30000);
 
         SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
-        if (product is null)
+        if (OldMetalProduct is null)
         {
             _messageBoxService.ShowMessage($"No Product found for {OldMetalIdUI}, Please make sure it exists",
                 "Product not found", MessageButton.OK, MessageIcon.Error);
             return;
         }
 
-        var metalPrice = _settingsPageViewModel.GetPrice(product.Metal);
+        var metalPrice = getBilledPrice(OldMetalProduct.Metal);    // _settingsPageViewModel.GetPrice(product.Metal);
 
         if (metalPrice < 1)
         {
@@ -287,7 +314,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         };
 
-        estimateLine.SetProductDetails(product);
+        estimateLine.SetProductDetails(OldMetalProduct);
 
         //EvaluateFormula(estimateLine, isInit: true);
 
@@ -308,6 +335,40 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         estLine.ProdGrossWeight = ProductGrossWeight;
         estLine.ProdStoneWeight = 0;
         estLine.ProdNetWeight = ProductGrossWeight;
+
+    }
+
+    private void SetOldMetalTransaction()
+    {
+
+        OldMetalTransaction oldMetalTransaction = new()
+        {
+            TransDate = DateTime.Now
+        };
+
+        oldMetalTransaction.EnrichEstHeaderOMTransDetails(Header);
+        oldMetalTransaction.EnrichProductDetails(OldMetalProduct);
+
+        if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
+            oldMetalTransaction.TransactedRate = todaysRate;
+
+        oldMetalTransaction.Uom = "Grams";
+        oldMetalTransaction.GrossWeight = ProductGrossWeight;
+        oldMetalTransaction.StoneWeight = 0;
+
+        oldMetalTransaction.NetWeight = (
+                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                        );
+
+        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
+                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
+        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        oldMetalTransaction.Remarks = Header.EstNotes;
+
+        Header.OldMetalTransactions.Add(oldMetalTransaction);
 
     }
 
@@ -426,12 +487,6 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreateStockTransfer))]
     private async Task CreateStockTransfer()
     {
-        //LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
-
-        //estBalanceChk = true;  //is this a right place to fix
-        //var isSuccess = ProcessEstBalance();
-
-        //if (!isSuccess) return;
 
         await FetchProduct();
 
@@ -452,13 +507,13 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
             return;
         }
 
-/*        if (createCustomer)
+/*      if (createCustomer)
         {
             Buyer = await _customerService.CreateCustomer(Buyer);
         }*/
 
-        //Header.InvNbr = InvoiceNumberGenerator.Generate();
         Header.CustGkey = (int?)Buyer.GKey;
+        Header.EstNotes = OMTransDesc;
 
         Header.Lines.ForEach(x =>
         {
@@ -480,11 +535,12 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
                 x.EstimateHdrGkey = Header.GKey;
                 x.TenantGkey = header.TenantGkey;
             });
+
             // loop for validation check for customer
             await _estimateService.CreateEstimateLine(Header.Lines);
 
-        // Review >>>>>>   if (IsStockTransfer)
-        //        await ProcessProductTransaction(Header.Lines);
+            SetOldMetalTransaction();
+            await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
 
             _messageBoxService.ShowMessage("Transfer Created Successfully", "Transfer Created", MessageButton.OK, MessageIcon.Exclamation);
 
@@ -513,7 +569,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     private void PrintPreviewStockTransfer()
     {
         _reportDialogService.PrintPreviewEstimate(Header.EstNbr, Header.GKey, Company);
-        //to do ResetEstimate();
+        ResetOldMetalTrans();
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
@@ -530,6 +586,8 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         if (printed.HasValue && printed.Value)
             _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);
+
+        ResetOldMetalTrans();
     }
 
     private bool CanPrintStockTransfer()

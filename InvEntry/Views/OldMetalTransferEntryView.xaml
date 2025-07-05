@@ -53,12 +53,12 @@
             <dxb:BarContainerControl>
                 <dxb:MainMenuControl>
                 <dxb:BarButtonItem x:Name="reset"
-                                   Content="Reset Voucher"
+                                   Content="Reset "
                                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                                    GlyphSize="Large"
                                    GlyphAlignment="Top"
                                    BarItemDisplayMode="ContentAndGlyph"
-                                   Command="{Binding ResetVoucherCommand}" />
+                                   Command="{Binding ResetOldMetalTransCommand}" />
 
                 <dxb:BarButtonItem x:Name="Save"
                                        Content="Save Transfer"
@@ -75,7 +75,7 @@
                                        GlyphAlignment="Top"
                                        BarItemDisplayMode="ContentAndGlyph"
                                        Alignment="Far"
-                                       Command="{Binding TransferPrintCommand}" />
+                                       Command="{Binding PrintStockTransferCommand}" />
                 </dxb:MainMenuControl>
             </dxb:BarContainerControl>
             
@@ -101,35 +101,6 @@
                                       IsReadOnly="True" />
                     </dxlc:LayoutItem>
 
-                        <!--
-                    <dxlc:LayoutItem Label="Transfer To"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:ComboBoxEdit Height="42"
-                                          FontWeight="ExtraBold"
-                                          ItemsSource="{Binding ToBranchList}"
-                                          EditValue="{Binding CustomerPlace}">
-                            <dxmvvm:Interaction.Behaviors>
-                                <dxmvvm:EventToCommand EventName="EditValueChanged"
-                                                       Command="{Binding FetchSupplyToCommand}"
-                                                       PassEventArgsToCommand="True" />
-                            </dxmvvm:Interaction.Behaviors>
-                        </dxe:ComboBoxEdit>
-                    </dxlc:LayoutItem>
-                        
-                        
-                    <dxlc:LayoutItem Label="To"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxg:LookUpEdit Width="225"
-                                        Height="35"
-                                        EditValue="{Binding CustomerPlace,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
-                                        ItemsSource="{Binding ReceipientList}"
-                                        DisplayMember="RefCode">
-                        </dxg:LookUpEdit>
-                    </dxlc:LayoutItem>
-                        -->
-
                     <dxlc:LayoutItem Label="Transfer To"
                                      FontSize="14"
                                      Margin="5">
@@ -138,52 +109,6 @@
                                           ItemsSource="{Binding ReceipientStrList}"
                                           EditValue="{Binding SentTo}" />
                     </dxlc:LayoutItem>
-
-                        <!--
-                    <dxlc:LayoutItem Label="Transfer To"
-                                     LabelPosition="Left">
-                        <dxg:LookUpEdit Width="225"
-                                        Height="35"
-                                        EditValue="{Binding SentTo}"
-                                        ItemsSource="{Binding ReceipientList}"
-                                        DisplayMember="RefCode">
-                            <dxg:LookUpEdit.PopupContentTemplate>
-                                <ControlTemplate>
-                                    <dxg:GridControl Name="PART_GridControl"
-                                                     AutoGenerateColumns="None">
-                                        <dxg:GridControl.Columns>
-                                            <dxg:GridColumn FieldName="RefCode" />
-                                        </dxg:GridControl.Columns>
-                                        <dxg:GridControl.View>
-                                            <dxg:TableView AutoWidth="True" />
-                                        </dxg:GridControl.View>
-                                    </dxg:GridControl>
-                                </ControlTemplate>
-                            </dxg:LookUpEdit.PopupContentTemplate>
-                        </dxg:LookUpEdit>
-                    </dxlc:LayoutItem>
--->
-                        
-                    <!--               <dxlc:LayoutItem Label="Transfer To"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:ComboBoxEdit Height="42"
-                                          FontWeight="ExtraBold"
-                                          ItemsSource="{Binding ToBranchList}"
-                                          EditValue="{Binding CustomerPlace}">
-                            <dxmvvm:Interaction.Behaviors>
-                                <dxmvvm:EventToCommand EventName="SelectedIndexChanged"
-                                                       Command="{Binding FetchSupplyToCommand}"
-                                                        CommandParameter="{Binding CustomerPlace, RelativeSource={RelativeSource Self}}" />
-                            </dxmvvm:Interaction.Behaviors>
-
-
-                            <dxmvvm:EventToCommand EventName="SelectedIndexChanged"
-                                                   Command="{Binding FetchSupplyToCommand}"
- 
-                            
-                        </dxe:ComboBoxEdit>
-                    </dxlc:LayoutItem> -->
 
                     <!-- PassEventArgsToCommand="True" /> -->
                     <dxlc:LayoutItem Label="Transfer #"
@@ -242,7 +167,7 @@
                                           VerticalContentAlignment="Top"
                                           AcceptsReturn="True"
                                           EditValuePostMode="Immediate"
-                                          EditValue="{Binding VoucherTransDesc}" />
+                                          EditValue="{Binding OMTransDesc}" />
                         </dxlc:LayoutItem>
 
                     </dxlc:LayoutGroup>

@@ -27,10 +27,25 @@ public static class OldMetalTransactionExtension
         oldMetalTransaction.DocRefGkey = estimateHeader.GKey;
         oldMetalTransaction.DocRefNbr = estimateHeader.EstNbr;
         oldMetalTransaction.DocRefDate = estimateHeader.EstDate;
+        oldMetalTransaction.DocRefType = "Estimate";
         oldMetalTransaction.CustGkey = estimateHeader.CustGkey;
         oldMetalTransaction.CustMobile = estimateHeader.CustMobile;
 
         oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Estimate");
+
+    }
+
+    public static void EnrichEstHeaderOMTransDetails(this OldMetalTransaction oldMetalTransaction, EstimateHeader estimateHeader)
+    {
+
+        oldMetalTransaction.DocRefGkey = estimateHeader.GKey;
+        oldMetalTransaction.DocRefNbr = estimateHeader.EstNbr;
+        oldMetalTransaction.DocRefDate = estimateHeader.EstDate;
+        oldMetalTransaction.DocRefType = "Stock Transfer";
+        oldMetalTransaction.CustGkey = estimateHeader.CustGkey;
+        oldMetalTransaction.CustMobile = estimateHeader.CustMobile;
+
+        oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Transfer");
 
     }
 
@@ -45,6 +60,7 @@ public static class OldMetalTransactionExtension
         oldMetalTransaction.CustMobile = custOrder.CustMobileNbr;
 
         oldMetalTransaction.TransType = setTransType(oldMetalTransaction.Metal, "Order");
+
     }
 
     public static void EnrichProductDetails(this OldMetalTransaction oldMetalTransaction, ProductView productView)
@@ -52,6 +68,13 @@ public static class OldMetalTransactionExtension
         oldMetalTransaction.ProductGkey = productView.GKey;
         oldMetalTransaction.ProductId = productView.Id;
         oldMetalTransaction.ProductCategory = productView.Category;
+
+        oldMetalTransaction.ProductGkey = productView.GKey;
+        oldMetalTransaction.Purity = productView.Purity;
+        oldMetalTransaction.ProductId = productView.Id;
+        oldMetalTransaction.Metal = productView.Metal;
+        oldMetalTransaction.ProductCategory = productView.Category;
+
     }
 
     private static string setTransType(string metal, string docType)
@@ -75,6 +98,15 @@ public static class OldMetalTransactionExtension
                     transType = "DIA Advance";
                 else
                     transType = "OG Advance";
+        } else
+            if (docType == "Transfer")
+            {
+                if (metal == "OLD SILVER")
+                    transType = "OS Transfer";
+                else if (metal == "DIAMOND")
+                    transType = "DIA Transfer";
+                else
+                    transType = "OG Transfer";
             }
 
         return transType;
