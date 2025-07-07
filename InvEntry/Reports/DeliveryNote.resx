@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="customSqlQuery1.Sql" xml:space="preserve">
+    <value>select "ESTIMATE_HEADER"."GKEY",
+       "ESTIMATE_HEADER"."EST_NBR",
+       "ESTIMATE_HEADER"."EST_DATE",
+       "ESTIMATE_HEADER"."PAYMENT_MODE",
+       "ESTIMATE_HEADER"."CUST_GKEY",
+       "ESTIMATE_HEADER"."CUST_MOBILE",
+       "ESTIMATE_HEADER"."EST_REFUND",
+       "ESTIMATE_HEADER"."EST_TAXABLE_AMOUNT",
+       "ESTIMATE_HEADER"."IS_TAX_APPLICABLE",
+       "ESTIMATE_HEADER"."GROSS_RCB_AMOUNT",
+       "ESTIMATE_HEADER"."OLD_GOLD_AMOUNT",
+       "ESTIMATE_HEADER"."OLD_SILVER_AMOUNT",
+       "ESTIMATE_HEADER"."TAX_TYPE",
+       "ESTIMATE_HEADER"."GST_LOC_SELLER",
+       "ESTIMATE_HEADER"."GST_LOC_BUYER",
+       "ESTIMATE_HEADER"."CGST_PERCENT",
+       "ESTIMATE_HEADER"."CGST_AMOUNT",
+       "ESTIMATE_HEADER"."SGST_PERCENT",
+       "ESTIMATE_HEADER"."SGST_AMOUNT",
+       "ESTIMATE_HEADER"."IGST_PERCENT",
+       "ESTIMATE_HEADER"."IGST_AMOUNT",
+       "ESTIMATE_HEADER"."AMOUNT_PAYABLE",
+       "ESTIMATE_HEADER"."DISCOUNT_PERCENT",
+       "ESTIMATE_HEADER"."DISCOUNT_AMOUNT",
+       "ESTIMATE_HEADER"."ADVANCE_ADJ",
+       "ESTIMATE_HEADER"."PAYMENT_DUE_DATE",
+       "ESTIMATE_HEADER"."RD_AMOUNT_ADJ",
+       "ESTIMATE_HEADER"."EST_BALANCE",
+       "ESTIMATE_HEADER"."RECD_AMOUNT",
+       "ESTIMATE_HEADER"."ROUND_OFF",
+       "ESTIMATE_HEADER"."EST_NOTES",
+       "ESTIMATE_HEADER"."DELIVERY_METHOD",
+       "ESTIMATE_HEADER"."DELIVERY_REF",
+       "ESTIMATE_HEADER"."ORDER_NBR",
+       "ESTIMATE_HEADER"."ORDER_DATE",
+       "ESTIMATE_HEADER"."ESTL_TAX_TOTAL",
+       "ESTIMATE_HEADER"."CREATED_BY",
+       "ESTIMATE_HEADER"."CREATED_ON",
+       "ESTIMATE_HEADER"."MODIFIED_BY",
+       "ESTIMATE_HEADER"."MODIFIED_ON",
+       "ESTIMATE_HEADER"."TENANT_GKEY"
+  from "dbo"."ESTIMATE_HEADER" "ESTIMATE_HEADER"
+where        "ESTIMATE_HEADER"."EST_NBR" = @paramEstNbr1</value>
+  </data>
+  <data name="customSqlQuery2.Sql" xml:space="preserve">
+    <value>select TOP 1 "ORG_COMPANY"."name" AS "COMPANY_NAME",
+       "ORG_ADDRESS"."ADDRESS_LINE1",
+       "ORG_ADDRESS"."ADDRESS_LINE2",
+       "ORG_ADDRESS"."ADDRESS_LINE3",
+       "ORG_ADDRESS"."AREA",
+       "ORG_ADDRESS"."STATE",
+       "ORG_ADDRESS"."PINCODE",
+       "ORG_ADDRESS"."COUNTRY",
+       "ORG_ADDRESS"."DISTRICT",
+       "ORG_ADDRESS"."CITY",
+       "ORG_COMPANY"."CONTACT_NBR1",
+       "ORG_COMPANY"."CONTACT_NBR2",
+       "ORG_COMPANY"."EMAIL_ID",
+       "ORG_COMPANY"."PAN_NBR",
+       "ORG_COMPANY"."TENANT_GKEY",
+       "ORG_COMPANY"."SERVICE_TAX_NBR",
+       "ORG_COMPANY"."GST_NBR",
+       "ORG_ADDRESS"."gst_STATE_code" AS "GST_CODE",
+       "ORG_COMPANY"."TAGLINE"
+  from "dbo"."ORG_COMPANY" "ORG_COMPANY",
+	 "dbo"."ORG_ADDRESS" "ORG_ADDRESS",
+       "dbo"."ESTIMATE_HEADER" "ESTIMATE_HEADER"
+ where "ORG_COMPANY"."TENANT_GKEY" = "ESTIMATE_HEADER"."TENANT_GKEY"
+   and "ORG_COMPANY"."ADDRESS_GKEY" = "ORG_ADDRESS"."GKEY"
+   and "ORG_COMPANY"."THIS_COMPANY" = '1'
+   and "ESTIMATE_HEADER"."EST_NBR" = @paramEstNbr4</value>
+  </data>
+  <data name="customSqlQuery3.Sql" xml:space="preserve">
+    <value>select "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_NAME",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."PAN_NBR",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CREDIT_AVAILED",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_STATUS",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_SINCE",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."SALUTATIONS",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_TYPE",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."ADD_LINE1",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."ADD_LINE2",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."ADD_LINE3",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."AREA",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CITY",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_GST_CODE",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."DISTRICT",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."STATE",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."COUNTRY",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."MOBILE_NBR",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_GKEY",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."CLIENT_ID",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."GSTIN_NBR",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."LOCATION_GKEY",
+       "ORG_CUSTOMER_ADDRESS_VIEW"."ADDRESS_GKEY"
+  from "dbo"."ORG_CUSTOMER_ADDRESS_VIEW" "ORG_CUSTOMER_ADDRESS_VIEW",
+	 "dbo"."ESTIMATE_HEADER" "ESTIMATE_HEADER"
+ where "ORG_CUSTOMER_ADDRESS_VIEW"."CUST_GKEY" = "ESTIMATE_HEADER"."CUST_GKEY"
+   and "ESTIMATE_HEADER"."EST_NBR" = @paramEstNbr3</value>
+  </data>
+  <data name="sqlDataSource1.ResultSchemaSerializable" xml:space="preserve">
+    <value>PERhdGFTZXQgTmFtZT0ic3FsRGF0YVNvdXJjZTEiPjxWaWV3IE5hbWU9IkVTVElNQVRFX0hFQURFUiI+PEZpZWxkIE5hbWU9IkdLRVkiIFR5cGU9IkludDMyIiAvPjxGaWVsZCBOYW1lPSJFU1RfTkJSIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkVTVF9EQVRFIiBUeXBlPSJEYXRlVGltZSIgLz48RmllbGQgTmFtZT0iUEFZTUVOVF9NT0RFIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkNVU1RfR0tFWSIgVHlwZT0iSW50MzIiIC8+PEZpZWxkIE5hbWU9IkNVU1RfTU9CSUxFIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkVTVF9SRUZVTkQiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IkVTVF9UQVhBQkxFX0FNT1VOVCIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iSVNfVEFYX0FQUExJQ0FCTEUiIFR5cGU9IkJvb2xlYW4iIC8+PEZpZWxkIE5hbWU9IkdST1NTX1JDQl9BTU9VTlQiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9Ik9MRF9HT0xEX0FNT1VOVCIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iT0xEX1NJTFZFUl9BTU9VTlQiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IlRBWF9UWVBFIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkdTVF9MT0NfU0VMTEVSIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkdTVF9MT0NfQlVZRVIiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQ0dTVF9QRVJDRU5UIiBUeXBlPSJEZWNpbWFsIiAvPjxGaWVsZCBOYW1lPSJDR1NUX0FNT1VOVCIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iU0dTVF9QRVJDRU5UIiBUeXBlPSJEZWNpbWFsIiAvPjxGaWVsZCBOYW1lPSJTR1NUX0FNT1VOVCIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iSUdTVF9QRVJDRU5UIiBUeXBlPSJEZWNpbWFsIiAvPjxGaWVsZCBOYW1lPSJJR1NUX0FNT1VOVCIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iQU1PVU5UX1BBWUFCTEUiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IkRJU0NPVU5UX1BFUkNFTlQiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IkRJU0NPVU5UX0FNT1VOVCIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iQURWQU5DRV9BREoiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IlBBWU1FTlRfRFVFX0RBVEUiIFR5cGU9IkRhdGVUaW1lIiAvPjxGaWVsZCBOYW1lPSJSRF9BTU9VTlRfQURKIiBUeXBlPSJEZWNpbWFsIiAvPjxGaWVsZCBOYW1lPSJFU1RfQkFMQU5DRSIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iUkVDRF9BTU9VTlQiIFR5cGU9IkRlY2ltYWwiIC8+PEZpZWxkIE5hbWU9IlJPVU5EX09GRiIgVHlwZT0iRGVjaW1hbCIgLz48RmllbGQgTmFtZT0iRVNUX05PVEVTIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkRFTElWRVJZX01FVEhPRCIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJERUxJVkVSWV9SRUYiIFR5cGU9IkludDMyIiAvPjxGaWVsZCBOYW1lPSJPUkRFUl9OQlIiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iT1JERVJfREFURSIgVHlwZT0iRGF0ZVRpbWUiIC8+PEZpZWxkIE5hbWU9IkVTVExfVEFYX1RPVEFMIiBUeXBlPSJEZWNpbWFsIiAvPjxGaWVsZCBOYW1lPSJDUkVBVEVEX0JZIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkNSRUFURURfT04iIFR5cGU9IkRhdGVUaW1lIiAvPjxGaWVsZCBOYW1lPSJNT0RJRklFRF9CWSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJNT0RJRklFRF9PTiIgVHlwZT0iRGF0ZVRpbWUiIC8+PEZpZWxkIE5hbWU9IlRFTkFOVF9HS0VZIiBUeXBlPSJJbnQzMiIgLz48L1ZpZXc+PFZpZXcgTmFtZT0iQ29tcERldGFpbHMiPjxGaWVsZCBOYW1lPSJDT01QQU5ZX05BTUUiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQUREUkVTU19MSU5FMSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJBRERSRVNTX0xJTkUyIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkFERFJFU1NfTElORTMiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQVJFQSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJTVEFURSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJQSU5DT0RFIiBUeXBlPSJJbnQzMiIgLz48RmllbGQgTmFtZT0iQ09VTlRSWSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJESVNUUklDVCIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJDSVRZIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkNPTlRBQ1RfTkJSMSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJDT05UQUNUX05CUjIiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iRU1BSUxfSUQiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iUEFOX05CUiIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJURU5BTlRfR0tFWSIgVHlwZT0iSW50MzIiIC8+PEZpZWxkIE5hbWU9IlNFUlZJQ0VfVEFYX05CUiIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJHU1RfTkJSIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkdTVF9DT0RFIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IlRBR0xJTkUiIFR5cGU9IlN0cmluZyIgLz48L1ZpZXc+PFZpZXcgTmFtZT0iQ3VzdG9tZXJEZXRhaWxzIj48RmllbGQgTmFtZT0iQ1VTVF9OQU1FIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IlBBTl9OQlIiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQ1JFRElUX0FWQUlMRUQiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQ1VTVF9TVEFUVVMiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQ1VTVF9TSU5DRSIgVHlwZT0iRGF0ZVRpbWUiIC8+PEZpZWxkIE5hbWU9IlNBTFVUQVRJT05TIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkNVU1RfVFlQRSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJBRERfTElORTEiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQUREX0xJTkUyIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkFERF9MSU5FMyIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJBUkVBIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkNJVFkiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQ1VTVF9HU1RfQ09ERSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJESVNUUklDVCIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJTVEFURSIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJDT1VOVFJZIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9Ik1PQklMRV9OQlIiIFR5cGU9IlN0cmluZyIgLz48RmllbGQgTmFtZT0iQ1VTVF9HS0VZIiBUeXBlPSJJbnQzMiIgLz48RmllbGQgTmFtZT0iQ0xJRU5UX0lEIiBUeXBlPSJTdHJpbmciIC8+PEZpZWxkIE5hbWU9IkdTVElOX05CUiIgVHlwZT0iU3RyaW5nIiAvPjxGaWVsZCBOYW1lPSJMT0NBVElPTl9HS0VZIiBUeXBlPSJJbnQzMiIgLz48RmllbGQgTmFtZT0iQUREUkVTU19HS0VZIiBUeXBlPSJJbnQzMiIgLz48L1ZpZXc+PFJlbGF0aW9uIE1hc3Rlcj0iRVNUSU1BVEVfSEVBREVSIiBEZXRhaWw9IkNvbXBEZXRhaWxzIj48S2V5Q29sdW1uIE1hc3Rlcj0iVEVOQU5UX0dLRVkiIERldGFpbD0iVEVOQU5UX0dLRVkiIC8+PC9SZWxhdGlvbj48UmVsYXRpb24gTWFzdGVyPSJFU1RJTUFURV9IRUFERVIiIERldGFpbD0iQ3VzdG9tZXJEZXRhaWxzIj48S2V5Q29sdW1uIE1hc3Rlcj0iQ1VTVF9HS0VZIiBEZXRhaWw9IkNVU1RfR0tFWSIgLz48L1JlbGF0aW9uPjwvRGF0YVNldD4=</value>
+  </data>
+</root>
