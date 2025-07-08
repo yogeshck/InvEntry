@@ -189,6 +189,7 @@
   inner join "dbo"."ESTIMATE_HEADER" "ESTIMATE_HEADER"
        on ("ESTIMATE_HEADER"."GKEY" = "ESTIMATE_LINE"."ESTIMATE_HDR_GKEY"))
 where "ESTIMATE_HEADER"."EST_NBR" = @paramEstNbr1
+and "ESTIMATE_HEADER"."GKEY" = @paramEstGkey1
 order by "ESTIMATE_LINE"."EST_LINE_NBR"</value>
   </data>
   <data name="customSqlQuery2.Sql" xml:space="preserve">

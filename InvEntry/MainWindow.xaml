@@ -52,7 +52,7 @@
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                                 Content="Invoice Entry"
-                                                                HideMenuWhenSelected="True" />
+                                                                HideMenuWhenSelected="False" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
                                                  Content="Invoice List View" HideMenuWhenSelected="True"/>
                         <!--Glyph="{dx:DXImage Office2013/Reports/BO_Invoice_32x32.png}" />-->
