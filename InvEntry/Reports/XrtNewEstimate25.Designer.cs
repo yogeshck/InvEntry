@@ -2024,7 +2024,7 @@
             // 
             this.GroupFooter2.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
             this.pymtSumryTable});
-            this.GroupFooter2.HeightF = 77.08384F;
+            this.GroupFooter2.HeightF = 85.66723F;
             this.GroupFooter2.Level = 1;
             this.GroupFooter2.Name = "GroupFooter2";
             // 
@@ -2033,6 +2033,7 @@
             this.pymtSumryTable.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
             | DevExpress.XtraPrinting.BorderSide.Right) 
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
+            this.pymtSumryTable.Font = new DevExpress.Drawing.DXFont("Arial", 9F);
             this.pymtSumryTable.ForeColor = System.Drawing.Color.Black;
             this.pymtSumryTable.LocationFloat = new DevExpress.Utils.PointFloat(0.002187093F, 0F);
             this.pymtSumryTable.Name = "pymtSumryTable";
@@ -2042,8 +2043,9 @@
             this.xrTableRow2,
             this.xrTableRow8,
             this.xrTableRow3});
-            this.pymtSumryTable.SizeF = new System.Drawing.SizeF(207.1359F, 75.86F);
+            this.pymtSumryTable.SizeF = new System.Drawing.SizeF(207.1359F, 85.66723F);
             this.pymtSumryTable.StylePriority.UseBorders = false;
+            this.pymtSumryTable.StylePriority.UseFont = false;
             this.pymtSumryTable.StylePriority.UseForeColor = false;
             // 
             // xrTableRow9
