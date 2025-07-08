@@ -33,6 +33,11 @@ namespace InvEntry.ViewModels
             Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr, estGkey, company);
         }
 
+        public void DNInit(string pEstimateNbr, int estGkey, OrgThisCompanyView company)
+        {
+            Report = _reportFactoryService.CreateDeliveryNoteReport(pEstimateNbr, estGkey, company);
+        }
+
         public void FinStmtPCInit(DateTime pFromDate, DateTime pToDate, string statementType)
         {
             Report = _reportFactoryService.CreateFinStatementReport(pFromDate, pToDate, statementType);

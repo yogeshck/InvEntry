@@ -568,21 +568,21 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
     private void PrintPreviewStockTransfer()
     {
-        _reportDialogService.PrintPreviewEstimate(Header.EstNbr, Header.GKey, Company);
+        _reportDialogService.PrintPreviewDeliveryNote(Header.EstNbr, Header.GKey, Company);
         ResetOldMetalTrans();
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
     private void ExportToPdf()
     {
-        _reportFactoryService.CreateEstimateReportPdf(Header.EstNbr, Header.GKey, Company, "D:\\Madrone\\Invoice\\");
+        _reportFactoryService.CreateDeliveryNoteReportPdf(Header.EstNbr, Header.GKey, Company, "D:\\Madrone\\Invoice\\");
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
     private void PrintStockTransfer()
     {
         //after report uncomment this
-        var printed = PrintHelper.Print(_reportFactoryService.CreateEstimateReport(Header.EstNbr, Header.GKey, Company));
+        var printed = PrintHelper.Print(_reportFactoryService.CreateDeliveryNoteReport(Header.EstNbr, Header.GKey, Company));
 
         if (printed.HasValue && printed.Value)
             _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);

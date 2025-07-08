@@ -31,6 +31,14 @@ public interface IReportFactoryService
     Task CreateEstimateReportPdf(string pEstimateNbr, int pEstHdrGkey,
                                                 OrgThisCompanyView orgThisCompany, string filePath);
 
+    XtraReport CreateDeliveryNoteReport();
+
+    XtraReport CreateDeliveryNoteReport(string pEstimateNbr, int estGkey, OrgThisCompanyView orgThisCompany);
+
+    Task CreateDeliveryNoteReportPdf(string pEstimateNbr, int pEstHdrGkey,
+                                                OrgThisCompanyView orgThisCompany, string filePath);
+
+
     XtraReport CreateFinStatementReport();
 
     XtraReport CreateFinStatementReport(DateTime pFromDate, DateTime pToDate, string statementType);
@@ -90,6 +98,33 @@ public class ReportFactoryService : IReportFactoryService
         report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
         report.CreateDocument();
         return report;
+    }
+
+    public XtraReport CreateDeliveryNoteReport()
+    {
+        return new DeliveryNote().AddDataSource(_appConfigName); 
+                                                                     
+    }
+
+
+    public XtraReport CreateDeliveryNoteReport(string pEstimateNbr, int pEstHdrGkey, OrgThisCompanyView orgThisCompany)
+    {
+        var report = CreateDeliveryNoteReport();
+
+        report.Parameters["pEstNbr"].Value = pEstimateNbr;    //paramEstNbr
+        report.Parameters["pEstHdrGkey"].Value = pEstHdrGkey;
+        report.CreateDocument();
+        return report;
+
+    }
+
+    public async Task CreateDeliveryNoteReportPdf(string pEstimateNbr, int pEstHdrGkey,
+                                            OrgThisCompanyView orgThisCompany, string filePath)
+    {
+        var report = CreateDeliveryNoteReport(pEstimateNbr, pEstHdrGkey, orgThisCompany);
+
+        await report.ExportToPdfAsync(filePath);
+
     }
 
     private void setReportParametersAsync(XtraReport report, OrgThisCompanyView orgThisCompany)

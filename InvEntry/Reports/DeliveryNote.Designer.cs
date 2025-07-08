@@ -1,6 +1,6 @@
 ﻿namespace InvEntry.Reports
 {
-    partial class XtraReport1
+    partial class DeliveryNote
     {
         /// <summary>
         /// Required designer variable.
@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DeliveryNote));
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery1 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter1 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery2 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
@@ -39,8 +40,9 @@
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo1 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo2 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo2 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XtraReport1));
             this.TopMargin = new DevExpress.XtraReports.UI.TopMarginBand();
+            this.xrLabel3 = new DevExpress.XtraReports.UI.XRLabel();
+            this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.xrLabel1 = new DevExpress.XtraReports.UI.XRLabel();
             this.BottomMargin = new DevExpress.XtraReports.UI.BottomMarginBand();
             this.pageInfo1 = new DevExpress.XtraReports.UI.XRPageInfo();
@@ -100,12 +102,10 @@
             this.vendorCityRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.vendorCity = new DevExpress.XtraReports.UI.XRTableCell();
             this.ReportHeader = new DevExpress.XtraReports.UI.ReportHeaderBand();
-            this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.GroupFooter1 = new DevExpress.XtraReports.UI.GroupFooterBand();
-            this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
-            this.xrLabel3 = new DevExpress.XtraReports.UI.XRLabel();
-            this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel5 = new DevExpress.XtraReports.UI.XRLabel();
+            this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
+            this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -122,6 +122,27 @@
             this.xrLabel1});
             this.TopMargin.HeightF = 48.33335F;
             this.TopMargin.Name = "TopMargin";
+            // 
+            // xrLabel3
+            // 
+            this.xrLabel3.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.xrLabel3.LocationFloat = new DevExpress.Utils.PointFloat(504.4175F, 15.33335F);
+            this.xrLabel3.Multiline = true;
+            this.xrLabel3.Name = "xrLabel3";
+            this.xrLabel3.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel3.SizeF = new System.Drawing.SizeF(143.9158F, 23F);
+            this.xrLabel3.StylePriority.UseFont = false;
+            this.xrLabel3.Text = "NO SALE INVOLVED ";
+            // 
+            // xrPictureBox2
+            // 
+            this.xrPictureBox2.BorderColor = System.Drawing.Color.Transparent;
+            this.xrPictureBox2.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox2.ImageSource"));
+            this.xrPictureBox2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
+            this.xrPictureBox2.Name = "xrPictureBox2";
+            this.xrPictureBox2.SizeF = new System.Drawing.SizeF(55.00002F, 41.66669F);
+            this.xrPictureBox2.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
+            this.xrPictureBox2.StylePriority.UseBorderColor = false;
             // 
             // xrLabel1
             // 
@@ -796,16 +817,6 @@
             this.ReportHeader.HeightF = 59.16667F;
             this.ReportHeader.Name = "ReportHeader";
             // 
-            // xrPictureBox2
-            // 
-            this.xrPictureBox2.BorderColor = System.Drawing.Color.Transparent;
-            this.xrPictureBox2.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox2.ImageSource"));
-            this.xrPictureBox2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
-            this.xrPictureBox2.Name = "xrPictureBox2";
-            this.xrPictureBox2.SizeF = new System.Drawing.SizeF(55.00002F, 41.66669F);
-            this.xrPictureBox2.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
-            this.xrPictureBox2.StylePriority.UseBorderColor = false;
-            // 
             // GroupFooter1
             // 
             this.GroupFooter1.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
@@ -814,35 +825,6 @@
             this.xrLabel2});
             this.GroupFooter1.HeightF = 96.01669F;
             this.GroupFooter1.Name = "GroupFooter1";
-            // 
-            // xrLabel2
-            // 
-            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 22F);
-            this.xrLabel2.Multiline = true;
-            this.xrLabel2.Name = "xrLabel2";
-            this.xrLabel2.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
-            this.xrLabel2.SizeF = new System.Drawing.SizeF(100F, 23F);
-            this.xrLabel2.Text = "NOTE:";
-            // 
-            // xrLabel3
-            // 
-            this.xrLabel3.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel3.LocationFloat = new DevExpress.Utils.PointFloat(504.4175F, 15.33335F);
-            this.xrLabel3.Multiline = true;
-            this.xrLabel3.Name = "xrLabel3";
-            this.xrLabel3.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
-            this.xrLabel3.SizeF = new System.Drawing.SizeF(143.9158F, 23F);
-            this.xrLabel3.StylePriority.UseFont = false;
-            this.xrLabel3.Text = "NO SALE INVOLVED ";
-            // 
-            // xrLabel4
-            // 
-            this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(516.5934F, 71.01669F);
-            this.xrLabel4.Multiline = true;
-            this.xrLabel4.Name = "xrLabel4";
-            this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
-            this.xrLabel4.SizeF = new System.Drawing.SizeF(142.4066F, 23F);
-            this.xrLabel4.Text = "Authorised signatory";
             // 
             // xrLabel5
             // 
@@ -853,7 +835,25 @@
             this.xrLabel5.SizeF = new System.Drawing.SizeF(142.4066F, 23F);
             this.xrLabel5.Text = "Receiver Sign";
             // 
-            // XtraReport1
+            // xrLabel4
+            // 
+            this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(516.5934F, 71.01669F);
+            this.xrLabel4.Multiline = true;
+            this.xrLabel4.Name = "xrLabel4";
+            this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel4.SizeF = new System.Drawing.SizeF(142.4066F, 23F);
+            this.xrLabel4.Text = "Authorised signatory";
+            // 
+            // xrLabel2
+            // 
+            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 22F);
+            this.xrLabel2.Multiline = true;
+            this.xrLabel2.Name = "xrLabel2";
+            this.xrLabel2.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel2.SizeF = new System.Drawing.SizeF(100F, 23F);
+            this.xrLabel2.Text = "NOTE:";
+            // 
+            // DeliveryNote
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
             this.TopMargin,
@@ -869,6 +869,7 @@
             this.DataSource = this.sqlDataSource1;
             this.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F);
             this.Margins = new DevExpress.Drawing.DXMargins(100F, 68F, 48.33335F, 50F);
+            this.Name = "DeliveryNote";
             this.PageHeight = 1169;
             this.PageWidth = 827;
             this.PaperKind = DevExpress.Drawing.Printing.DXPaperKind.A4;
