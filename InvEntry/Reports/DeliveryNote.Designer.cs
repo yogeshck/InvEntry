@@ -132,9 +132,11 @@
             this.xrLabel3.Multiline = true;
             this.xrLabel3.Name = "xrLabel3";
             this.xrLabel3.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel3.SizeF = new System.Drawing.SizeF(143.9158F, 23F);
+            this.xrLabel3.SizeF = new System.Drawing.SizeF(143.9158F, 33F);
             this.xrLabel3.StylePriority.UseFont = false;
-            this.xrLabel3.Text = "NO SALE INVOLVED ";
+            this.xrLabel3.StylePriority.UseTextAlignment = false;
+            this.xrLabel3.Text = "NO SALE INVOLVED in this transaction ";
+            this.xrLabel3.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
             // 
             // xrPictureBox2
             // 
@@ -829,12 +831,12 @@
             this.xrLabel5,
             this.xrLabel4,
             this.xrLabel2});
-            this.GroupFooter1.HeightF = 96.01669F;
+            this.GroupFooter1.HeightF = 127.1889F;
             this.GroupFooter1.Name = "GroupFooter1";
             // 
             // xrLabel5
             // 
-            this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(300.3738F, 71.01669F);
+            this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(300.3738F, 94.18893F);
             this.xrLabel5.Multiline = true;
             this.xrLabel5.Name = "xrLabel5";
             this.xrLabel5.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -843,7 +845,7 @@
             // 
             // xrLabel4
             // 
-            this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(516.5934F, 71.01669F);
+            this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(516.5934F, 94.18893F);
             this.xrLabel4.Multiline = true;
             this.xrLabel4.Name = "xrLabel4";
             this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -852,7 +854,7 @@
             // 
             // xrLabel2
             // 
-            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 22F);
+            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 63.01669F);
             this.xrLabel2.Multiline = true;
             this.xrLabel2.Name = "xrLabel2";
             this.xrLabel2.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
