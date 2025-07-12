@@ -25,5 +25,6 @@ namespace InvEntry.Reports
             else
                 e.Value = "NIL";
         }
+
     }
 }

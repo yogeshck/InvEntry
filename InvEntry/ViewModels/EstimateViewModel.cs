@@ -78,7 +78,7 @@ public partial class EstimateViewModel: ObservableObject
     public bool _estimateWithTax;
 
     [ObservableProperty]
-    private ObservableCollection<EstimateLine> selectedRows;
+    private ObservableCollection<EstimateLine> selectedRows = new();
 
     [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
@@ -448,7 +448,7 @@ public partial class EstimateViewModel: ObservableObject
 
             CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
 
-            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);0
+            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
         }
 
         Header.CustMobile = phoneNumber;
@@ -888,7 +888,7 @@ public partial class EstimateViewModel: ObservableObject
             CustMobile = Header.CustMobile,
             //  TransType = "OG Purchase",
             TransDate = DateTime.Now,
-            //   Uom = "Grams"
+            Uom = "Grams"
         };
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
@@ -1315,6 +1315,11 @@ public partial class EstimateViewModel: ObservableObject
 
     private decimal GetGSTPercent(string taxType = "SGST")
     {
+        if (!EstimateWithTax || _gstTaxRefList == null 
+            || Buyer?.Address == null 
+            || Company?.GstCode == null)
+            return 0M;
+
         if (EstimateWithTax)
         {
             var gstPercent = _gstTaxRefList.FirstOrDefault
