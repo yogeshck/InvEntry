@@ -448,7 +448,7 @@ public partial class EstimateViewModel: ObservableObject
 
             CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
 
-            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
+            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);0
         }
 
         Header.CustMobile = phoneNumber;
