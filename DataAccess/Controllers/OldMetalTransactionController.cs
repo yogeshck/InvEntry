@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -27,6 +28,14 @@ namespace DataAccess.Controllers
         public IEnumerable<OldMetalTransaction> Get()
         {
             return _oldMetalTransaction.GetAll();
+        }
+
+        // GET: api/<OldMetalTransactionController>/24-Sep-2024/25-Sep-2024
+        [HttpPost("filter")]
+        public IEnumerable<OldMetalTransaction> FilterTrans([FromBody] DateSearchOption criteria)
+        {
+            return _oldMetalTransaction.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
+                                                        x.TransDate.Value.Date <= criteria.To.Date);
         }
 
         // GET api/<OldMetalTransactionController>/5

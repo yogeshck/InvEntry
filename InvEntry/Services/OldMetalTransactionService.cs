@@ -1,4 +1,5 @@
 ﻿using InvEntry.Models;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace InvEntry.Services
         Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
 
         Task CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
+
+        Task<IEnumerable<OldMetalTransaction>> GetAll(DateSearchOption options);
     }
 
     public class OldMetalTransactionService : IOldMetalTransactionService
@@ -44,7 +47,6 @@ namespace InvEntry.Services
             await Task.WhenAll(list);
         }
 
-
         public async Task<OldMetalTransaction> GetOldMetalTransaction(string transNbr)
         {
             return await _mijmsApiService.Get<OldMetalTransaction>($"api/OldMetalTransaction/{transNbr}");
@@ -55,5 +57,11 @@ namespace InvEntry.Services
             await _mijmsApiService.Put($"api/OldMetalTransaction/", oldMetalTransaction);
         }
 
+        public async Task<IEnumerable<OldMetalTransaction>> GetAll(DateSearchOption options)
+        {
+            return await _mijmsApiService.PostEnumerable<OldMetalTransaction, DateSearchOption>($"api/OldMetalTransaction/filter", options);
+        }
+
     }
+
 }

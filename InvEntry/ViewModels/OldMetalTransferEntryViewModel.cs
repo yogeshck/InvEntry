@@ -133,10 +133,10 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     {
         var metalPrice = _settingsPageViewModel.GetPrice(metal);
 
-        if (metalPrice < 1)
+        if (metalPrice is null || metalPrice < 1)
         {
-            displayRateErrorMsg();
-            //metalPrice = -1;
+            //displayRateErrorMsg();
+            return 0;
         }
 
         todaysRate = (decimal)metalPrice;

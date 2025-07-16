@@ -72,6 +72,9 @@
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalTransferEntryView}"
                                                                 Content="Old Metal Transfer "
                                                                 HideMenuWhenSelected="True" />
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalTransactionListView}"
+                                                                Content="Old Metal List"
+                                                                HideMenuWhenSelected="True" />
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
