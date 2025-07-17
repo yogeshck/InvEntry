@@ -175,7 +175,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     private void displayRateErrorMsg()
     {
-        _messageBoxService.ShowMessage($"Todays Rate not updated in system, set the rate and start estimate....",
+        _messageBoxService.ShowMessage($"Todays Rate not updated in system, set the rate and start transfer....",
                                         "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
     }
 
@@ -507,6 +507,12 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
             return;
         }
 
+        if ( todaysRate < 1 )
+        {
+            displayRateErrorMsg();
+            return;
+        }
+
 /*      if (createCustomer)
         {
             Buyer = await _customerService.CreateCustomer(Buyer);
@@ -514,6 +520,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         Header.CustGkey = (int?)Buyer.GKey;
         Header.EstNotes = OMTransDesc;
+        Header.PaymentMode = "OM_TRANSFER";
 
         Header.Lines.ForEach(x =>
         {
@@ -585,7 +592,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         var printed = PrintHelper.Print(_reportFactoryService.CreateDeliveryNoteReport(Header.EstNbr, Header.GKey, Company));
 
         if (printed.HasValue && printed.Value)
-            _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);
+            _messageBoxService.ShowMessage("Delivery Note printed Successfully", "Delivery Note print", MessageButton.OK, MessageIcon.None);
 
         ResetOldMetalTrans();
     }

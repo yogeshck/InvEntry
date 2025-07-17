@@ -66,14 +66,14 @@
                                                  Content="Estimate "  HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
                                                  Content="Estimate List View" HideMenuWhenSelected="True"/>
-                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockTransferEntryView}"
+                    <!--    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockTransferEntryView}"
                                                                 Content="Stock Transfer "
-                                                                HideMenuWhenSelected="True" />
+                                                                HideMenuWhenSelected="True" />  -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalTransferEntryView}"
                                                                 Content="Old Metal Transfer "
                                                                 HideMenuWhenSelected="True" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalTransactionListView}"
-                                                                Content="Old Metal List"
+                                                                Content="Old Metal Transaction List"
                                                                 HideMenuWhenSelected="True" />
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
                     </dxwui:HamburgerSubMenu.Items>

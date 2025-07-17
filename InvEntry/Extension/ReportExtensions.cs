@@ -44,5 +44,11 @@ namespace InvEntry.Extension
             reportDialogService.ShowDialog(null, "Delivery Note (DN) Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
 
+        public static void PrintPreviewDeliveryNote(this IDialogService reportDialogService, string estimateHeader,
+                                                            int estGkey)
+        {
+            PrintPreviewDeliveryNote(reportDialogService, estimateHeader, estGkey, null);
+        }
+
     }
 }
