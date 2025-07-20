@@ -27,6 +27,7 @@
     <PackageReference Include="DevExpress.Wpf.Core" Version="24.2.4-pre-24357" />
     <PackageReference Include="DevExpress.Wpf.Printing" Version="24.2.4-pre-24357" />
 	<PackageReference Include="DevExpress.Wpf.Themes.All" Version="24.2.4-pre-24357" />
+	<PackageReference Include="Microsoft.CodeAnalysis" Version="4.14.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
