@@ -131,22 +131,10 @@
             this.oldSilverRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.oldSilverCaption = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell14 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.oldExTotalRow = new DevExpress.XtraReports.UI.XRTableRow();
-            this.oldTotalCaption = new DevExpress.XtraReports.UI.XRTableCell();
-            this.invTaxableAmount = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrLine3 = new DevExpress.XtraReports.UI.XRLine();
             this.xrLabel3 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel15 = new DevExpress.XtraReports.UI.XRLabel();
-            this.taxTable = new DevExpress.XtraReports.UI.XRTable();
-            this.cgstTableRow = new DevExpress.XtraReports.UI.XRTableRow();
-            this.cgstCaption = new DevExpress.XtraReports.UI.XRTableCell();
-            this.cgstAmount = new DevExpress.XtraReports.UI.XRTableCell();
-            this.sgstTableRow = new DevExpress.XtraReports.UI.XRTableRow();
-            this.sgstCaption = new DevExpress.XtraReports.UI.XRTableCell();
-            this.sgstAmount = new DevExpress.XtraReports.UI.XRTableCell();
-            this.igstTableRow = new DevExpress.XtraReports.UI.XRTableRow();
-            this.igstCaption = new DevExpress.XtraReports.UI.XRTableCell();
-            this.igstAmount = new DevExpress.XtraReports.UI.XRTableCell();
+            this.invTotalTable = new DevExpress.XtraReports.UI.XRTable();
             this.subTotalRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.subTotalCaption = new DevExpress.XtraReports.UI.XRTableCell();
             this.invAfterTaxTotal = new DevExpress.XtraReports.UI.XRTableCell();
@@ -204,6 +192,17 @@
             this.SilverSumryCount = new DevExpress.XtraReports.UI.CalculatedField();
             this.GroupFooter3 = new DevExpress.XtraReports.UI.GroupFooterBand();
             this.xrSubreport1 = new DevExpress.XtraReports.UI.XRSubreport();
+            this.NewTaxTable = new DevExpress.XtraReports.UI.XRTable();
+            this.TaxTblHdrRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.cgstHdr = new DevExpress.XtraReports.UI.XRTableCell();
+            this.sgstHdr = new DevExpress.XtraReports.UI.XRTableCell();
+            this.taxAmtRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.cgstAmount = new DevExpress.XtraReports.UI.XRTableCell();
+            this.sigstAmount = new DevExpress.XtraReports.UI.XRTableCell();
+            this.txblTbl = new DevExpress.XtraReports.UI.XRTable();
+            this.txblRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.txblCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.taxableAmt = new DevExpress.XtraReports.UI.XRTableCell();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -211,8 +210,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.customerTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.oldExTable)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.taxTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.invTotalTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.metalSumryTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NewTaxTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txblTbl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             // 
             // TopMargin
@@ -1030,13 +1031,15 @@
             // GroupFooter1
             // 
             this.GroupFooter1.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.txblTbl,
+            this.NewTaxTable,
             this.oldExTable,
             this.xrLine3,
             this.xrLabel3,
             this.xrLabel15,
-            this.taxTable,
+            this.invTotalTable,
             this.metalSumryTable});
-            this.GroupFooter1.HeightF = 184.0832F;
+            this.GroupFooter1.HeightF = 184.1663F;
             this.GroupFooter1.Name = "GroupFooter1";
             // 
             // oldExTable
@@ -1048,14 +1051,13 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "([OLD_GOLD_AMOUNT] > 0 || [OLD_SILVER_AMOUNT] > 0)")});
             this.oldExTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.oldExTable.ForeColor = System.Drawing.Color.Black;
-            this.oldExTable.LocationFloat = new DevExpress.Utils.PointFloat(297.8738F, 11.66662F);
+            this.oldExTable.LocationFloat = new DevExpress.Utils.PointFloat(281.427F, 11.66659F);
             this.oldExTable.Name = "oldExTable";
             this.oldExTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.xrTableRow6,
             this.oldGoldRow,
-            this.oldSilverRow,
-            this.oldExTotalRow});
-            this.oldExTable.SizeF = new System.Drawing.SizeF(176.8001F, 70.49999F);
+            this.oldSilverRow});
+            this.oldExTable.SizeF = new System.Drawing.SizeF(176.8001F, 56.89294F);
             this.oldExTable.StylePriority.UseBorders = false;
             this.oldExTable.StylePriority.UseFont = false;
             this.oldExTable.StylePriority.UseForeColor = false;
@@ -1162,47 +1164,6 @@
             this.xrTableCell14.TextFormatString = "{0:##,###,##0.00}";
             this.xrTableCell14.Weight = 0.80783965162513149D;
             // 
-            // oldExTotalRow
-            // 
-            this.oldExTotalRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.oldTotalCaption,
-            this.invTaxableAmount});
-            this.oldExTotalRow.Name = "oldExTotalRow";
-            this.oldExTotalRow.Weight = 1.3199999999999998D;
-            // 
-            // oldTotalCaption
-            // 
-            this.oldTotalCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.oldTotalCaption.Multiline = true;
-            this.oldTotalCaption.Name = "oldTotalCaption";
-            this.oldTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
-            this.oldTotalCaption.StylePriority.UseFont = false;
-            this.oldTotalCaption.StylePriority.UsePadding = false;
-            this.oldTotalCaption.StylePriority.UseTextAlignment = false;
-            this.oldTotalCaption.Text = "Taxable Amount";
-            this.oldTotalCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.oldTotalCaption.Weight = 1.0041964594530222D;
-            // 
-            // invTaxableAmount
-            // 
-            this.invTaxableAmount.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
-            | DevExpress.XtraPrinting.BorderSide.Right) 
-            | DevExpress.XtraPrinting.BorderSide.Bottom)));
-            this.invTaxableAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ESTL_TAX_TOTAL]-[OLD_GOLD_AMOUNT]-[OLD_SILVER_AMOUNT]\n")});
-            this.invTaxableAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.invTaxableAmount.Multiline = true;
-            this.invTaxableAmount.Name = "invTaxableAmount";
-            this.invTaxableAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
-            this.invTaxableAmount.StylePriority.UseBorders = false;
-            this.invTaxableAmount.StylePriority.UseFont = false;
-            this.invTaxableAmount.StylePriority.UsePadding = false;
-            this.invTaxableAmount.StylePriority.UseTextAlignment = false;
-            this.invTaxableAmount.Text = "0.00";
-            this.invTaxableAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.invTaxableAmount.TextFormatString = "{0:##,###,##0.00}";
-            this.invTaxableAmount.Weight = 0.80783965162513149D;
-            // 
             // xrLine3
             // 
             this.xrLine3.ForeColor = System.Drawing.Color.Gold;
@@ -1238,133 +1199,22 @@
             this.xrLabel15.Text = "xrLabel15";
             this.xrLabel15.TextAlignment = DevExpress.XtraPrinting.TextAlignment.TopLeft;
             // 
-            // taxTable
+            // invTotalTable
             // 
-            this.taxTable.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
+            this.invTotalTable.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
             | DevExpress.XtraPrinting.BorderSide.Right) 
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
-            this.taxTable.ForeColor = System.Drawing.Color.Black;
-            this.taxTable.LocationFloat = new DevExpress.Utils.PointFloat(565.2935F, 11.66662F);
-            this.taxTable.Name = "taxTable";
-            this.taxTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
-            this.cgstTableRow,
-            this.sgstTableRow,
-            this.igstTableRow,
+            this.invTotalTable.ForeColor = System.Drawing.Color.Black;
+            this.invTotalTable.LocationFloat = new DevExpress.Utils.PointFloat(550.0174F, 81.66659F);
+            this.invTotalTable.Name = "invTotalTable";
+            this.invTotalTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.subTotalRow,
             this.roundOffRow,
             this.discountRow,
             this.xrTableRow12});
-            this.taxTable.SizeF = new System.Drawing.SizeF(171.7065F, 153.6667F);
-            this.taxTable.StylePriority.UseBorders = false;
-            this.taxTable.StylePriority.UseForeColor = false;
-            // 
-            // cgstTableRow
-            // 
-            this.cgstTableRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.cgstCaption,
-            this.cgstAmount});
-            this.cgstTableRow.Name = "cgstTableRow";
-            this.cgstTableRow.Weight = 1.3199999999999998D;
-            // 
-            // cgstCaption
-            // 
-            this.cgstCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.cgstCaption.Multiline = true;
-            this.cgstCaption.Name = "cgstCaption";
-            this.cgstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
-            this.cgstCaption.StylePriority.UseFont = false;
-            this.cgstCaption.StylePriority.UsePadding = false;
-            this.cgstCaption.StylePriority.UseTextAlignment = false;
-            this.cgstCaption.Text = "CGST 1.50%";
-            this.cgstCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.cgstCaption.Weight = 0.77772792843099D;
-            // 
-            // cgstAmount
-            // 
-            this.cgstAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[CGST_AMOUNT]")});
-            this.cgstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.cgstAmount.Multiline = true;
-            this.cgstAmount.Name = "cgstAmount";
-            this.cgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
-            this.cgstAmount.StylePriority.UseFont = false;
-            this.cgstAmount.StylePriority.UsePadding = false;
-            this.cgstAmount.StylePriority.UseTextAlignment = false;
-            this.cgstAmount.Text = "cgstAmount";
-            this.cgstAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.cgstAmount.TextFormatString = "{0:##,###,##0.00}";
-            this.cgstAmount.Weight = 0.80783965162513149D;
-            // 
-            // sgstTableRow
-            // 
-            this.sgstTableRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.sgstCaption,
-            this.sgstAmount});
-            this.sgstTableRow.Name = "sgstTableRow";
-            this.sgstTableRow.Weight = 1.3199999999999998D;
-            // 
-            // sgstCaption
-            // 
-            this.sgstCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.sgstCaption.Name = "sgstCaption";
-            this.sgstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
-            this.sgstCaption.StylePriority.UseFont = false;
-            this.sgstCaption.StylePriority.UsePadding = false;
-            this.sgstCaption.StylePriority.UseTextAlignment = false;
-            this.sgstCaption.Text = "SGST 1.50%";
-            this.sgstCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.sgstCaption.Weight = 0.77772792843099D;
-            // 
-            // sgstAmount
-            // 
-            this.sgstAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[SGST_AMOUNT]")});
-            this.sgstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.sgstAmount.Name = "sgstAmount";
-            this.sgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
-            this.sgstAmount.StylePriority.UseFont = false;
-            this.sgstAmount.StylePriority.UsePadding = false;
-            this.sgstAmount.StylePriority.UseTextAlignment = false;
-            this.sgstAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.sgstAmount.TextFormatString = "{0:##,###,##0.00}";
-            this.sgstAmount.Weight = 0.80783965162513149D;
-            // 
-            // igstTableRow
-            // 
-            this.igstTableRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.igstCaption,
-            this.igstAmount});
-            this.igstTableRow.Name = "igstTableRow";
-            this.igstTableRow.Weight = 1.3199999999999998D;
-            // 
-            // igstCaption
-            // 
-            this.igstCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.igstCaption.Multiline = true;
-            this.igstCaption.Name = "igstCaption";
-            this.igstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
-            this.igstCaption.StylePriority.UseFont = false;
-            this.igstCaption.StylePriority.UsePadding = false;
-            this.igstCaption.StylePriority.UseTextAlignment = false;
-            this.igstCaption.Text = "IGST 3.00%";
-            this.igstCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.igstCaption.Weight = 0.77772792843099D;
-            // 
-            // igstAmount
-            // 
-            this.igstAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[IGST_AMOUNT]")});
-            this.igstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.igstAmount.Multiline = true;
-            this.igstAmount.Name = "igstAmount";
-            this.igstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
-            this.igstAmount.StylePriority.UseFont = false;
-            this.igstAmount.StylePriority.UsePadding = false;
-            this.igstAmount.StylePriority.UseTextAlignment = false;
-            this.igstAmount.Text = "igstAmount";
-            this.igstAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.igstAmount.TextFormatString = "{0:##,###,##0.00}";
-            this.igstAmount.Weight = 0.80783965162513149D;
+            this.invTotalTable.SizeF = new System.Drawing.SizeF(186.9826F, 87.80955F);
+            this.invTotalTable.StylePriority.UseBorders = false;
+            this.invTotalTable.StylePriority.UseForeColor = false;
             // 
             // subTotalRow
             // 
@@ -1409,6 +1259,8 @@
             this.roundOffRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
             this.roundOffCaption,
             this.roundOffAmount});
+            this.roundOffRow.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[ROUND_OFF] > 0")});
             this.roundOffRow.Name = "roundOffRow";
             this.roundOffRow.Weight = 1.3199999999999998D;
             // 
@@ -1853,16 +1705,16 @@
             this.xrLabel13,
             this.xrLabel14});
             this.ReportFooter.Font = new DevExpress.Drawing.DXFont("Arial", 7F);
-            this.ReportFooter.HeightF = 144.5001F;
+            this.ReportFooter.HeightF = 148.9171F;
             this.ReportFooter.Name = "ReportFooter";
             this.ReportFooter.StylePriority.UseFont = false;
             // 
             // xrPictureBox5
             // 
             this.xrPictureBox5.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox5.ImageSource"));
-            this.xrPictureBox5.LocationFloat = new DevExpress.Utils.PointFloat(335.1035F, 71.00007F);
+            this.xrPictureBox5.LocationFloat = new DevExpress.Utils.PointFloat(332.1035F, 71.00007F);
             this.xrPictureBox5.Name = "xrPictureBox5";
-            this.xrPictureBox5.SizeF = new System.Drawing.SizeF(43.84033F, 39.6667F);
+            this.xrPictureBox5.SizeF = new System.Drawing.SizeF(46F, 39F);
             this.xrPictureBox5.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
             // xrPictureBox4
@@ -1870,15 +1722,15 @@
             this.xrPictureBox4.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox4.ImageSource"));
             this.xrPictureBox4.LocationFloat = new DevExpress.Utils.PointFloat(378.9438F, 71.00007F);
             this.xrPictureBox4.Name = "xrPictureBox4";
-            this.xrPictureBox4.SizeF = new System.Drawing.SizeF(42.16135F, 39.6667F);
+            this.xrPictureBox4.SizeF = new System.Drawing.SizeF(46F, 39F);
             this.xrPictureBox4.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
             // xrPictureBox3
             // 
             this.xrPictureBox3.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox3.ImageSource"));
-            this.xrPictureBox3.LocationFloat = new DevExpress.Utils.PointFloat(420.804F, 72.00002F);
+            this.xrPictureBox3.LocationFloat = new DevExpress.Utils.PointFloat(425.804F, 72.00002F);
             this.xrPictureBox3.Name = "xrPictureBox3";
-            this.xrPictureBox3.SizeF = new System.Drawing.SizeF(44.67371F, 39.6667F);
+            this.xrPictureBox3.SizeF = new System.Drawing.SizeF(46F, 39F);
             this.xrPictureBox3.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
             // xrLabel1
@@ -1914,9 +1766,9 @@
             // xrPictureBox1
             // 
             this.xrPictureBox1.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox1.ImageSource"));
-            this.xrPictureBox1.LocationFloat = new DevExpress.Utils.PointFloat(289.0156F, 71.00007F);
+            this.xrPictureBox1.LocationFloat = new DevExpress.Utils.PointFloat(284.0156F, 71.00007F);
             this.xrPictureBox1.Name = "xrPictureBox1";
-            this.xrPictureBox1.SizeF = new System.Drawing.SizeF(46.08789F, 39.6667F);
+            this.xrPictureBox1.SizeF = new System.Drawing.SizeF(46F, 39F);
             this.xrPictureBox1.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
             // 
             // xrLabel4
@@ -2045,7 +1897,7 @@
             // xrLabel14
             // 
             this.xrLabel14.Font = new DevExpress.Drawing.DXFont("Times New Roman", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel14.LocationFloat = new DevExpress.Utils.PointFloat(304.2881F, 110.6668F);
+            this.xrLabel14.LocationFloat = new DevExpress.Utils.PointFloat(304.2881F, 111.6667F);
             this.xrLabel14.Multiline = true;
             this.xrLabel14.Name = "xrLabel14";
             this.xrLabel14.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -2088,7 +1940,7 @@
             this.xrLabel2,
             this.xrLabel16,
             this.xrSubreport1});
-            this.GroupFooter3.HeightF = 30F;
+            this.GroupFooter3.HeightF = 38.58368F;
             this.GroupFooter3.Level = 1;
             this.GroupFooter3.Name = "GroupFooter3";
             // 
@@ -2102,6 +1954,154 @@
             this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocNbr", this.pEstNbr));
             this.xrSubreport1.ReportSource = new InvEntry.Reports.DocRctSummary();
             this.xrSubreport1.SizeF = new System.Drawing.SizeF(207.1359F, 20F);
+            // 
+            // NewTaxTable
+            // 
+            this.NewTaxTable.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
+            | DevExpress.XtraPrinting.BorderSide.Right) 
+            | DevExpress.XtraPrinting.BorderSide.Bottom)));
+            this.NewTaxTable.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "([SGST_AMOUNT] > 0 && [CGST_AMOUNT] > 0 ) || ([IGST_AMOUNT] > 0)")});
+            this.NewTaxTable.LocationFloat = new DevExpress.Utils.PointFloat(550.0174F, 31.66662F);
+            this.NewTaxTable.Name = "NewTaxTable";
+            this.NewTaxTable.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
+            this.NewTaxTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
+            this.TaxTblHdrRow,
+            this.taxAmtRow});
+            this.NewTaxTable.SizeF = new System.Drawing.SizeF(186.9824F, 49.99999F);
+            this.NewTaxTable.StylePriority.UseBorders = false;
+            // 
+            // TaxTblHdrRow
+            // 
+            this.TaxTblHdrRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.cgstHdr,
+            this.sgstHdr});
+            this.TaxTblHdrRow.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[CGST_AMOUNT] > 0 && [SGST_AMOUNT] > 0")});
+            this.TaxTblHdrRow.Name = "TaxTblHdrRow";
+            this.TaxTblHdrRow.Weight = 1D;
+            // 
+            // cgstHdr
+            // 
+            this.cgstHdr.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([CGST_AMOUNT] > 0, \'CGST 1.5%\',\'\')"),
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[CGST_AMOUNT] > 0")});
+            this.cgstHdr.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.cgstHdr.Multiline = true;
+            this.cgstHdr.Name = "cgstHdr";
+            this.cgstHdr.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.cgstHdr.StylePriority.UseFont = false;
+            this.cgstHdr.StylePriority.UsePadding = false;
+            this.cgstHdr.StylePriority.UseTextAlignment = false;
+            this.cgstHdr.Text = "cgstHdr";
+            this.cgstHdr.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.cgstHdr.Weight = 1.1232293036631038D;
+            // 
+            // sgstHdr
+            // 
+            this.sgstHdr.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([SGST_AMOUNT] > 0, \'SGST 1.5%\',\'\')\n")});
+            this.sgstHdr.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.sgstHdr.Multiline = true;
+            this.sgstHdr.Name = "sgstHdr";
+            this.sgstHdr.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.sgstHdr.StylePriority.UseFont = false;
+            this.sgstHdr.StylePriority.UsePadding = false;
+            this.sgstHdr.StylePriority.UseTextAlignment = false;
+            this.sgstHdr.Text = "sgstHdr";
+            this.sgstHdr.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.sgstHdr.Weight = 1.1593618686882652D;
+            // 
+            // taxAmtRow
+            // 
+            this.taxAmtRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.cgstAmount,
+            this.sigstAmount});
+            this.taxAmtRow.Name = "taxAmtRow";
+            this.taxAmtRow.Weight = 1D;
+            // 
+            // cgstAmount
+            // 
+            this.cgstAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([CGST_AMOUNT] > 0, [CGST_AMOUNT], \n\tiif([IGST_AMOUNT] > 0, \'IGST 3.0%\',\'\')) ")});
+            this.cgstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.cgstAmount.Multiline = true;
+            this.cgstAmount.Name = "cgstAmount";
+            this.cgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.cgstAmount.StylePriority.UseFont = false;
+            this.cgstAmount.StylePriority.UsePadding = false;
+            this.cgstAmount.StylePriority.UseTextAlignment = false;
+            this.cgstAmount.Text = "cgstAmount";
+            this.cgstAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.cgstAmount.TextFormatString = "{0:##,###,##0.00}";
+            this.cgstAmount.Weight = 1.1232293036631038D;
+            // 
+            // sigstAmount
+            // 
+            this.sigstAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([SGST_AMOUNT] > 0, [SGST_AMOUNT],\n\tiif([IGST_AMOUNT] > 0, [IGST_AMOUNT],\'\'))\n" +
+                    "")});
+            this.sigstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.sigstAmount.Multiline = true;
+            this.sigstAmount.Name = "sigstAmount";
+            this.sigstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.sigstAmount.StylePriority.UseFont = false;
+            this.sigstAmount.StylePriority.UsePadding = false;
+            this.sigstAmount.StylePriority.UseTextAlignment = false;
+            this.sigstAmount.Text = "sigstAmount";
+            this.sigstAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.sigstAmount.Weight = 1.1593618686882652D;
+            // 
+            // txblTbl
+            // 
+            this.txblTbl.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
+            | DevExpress.XtraPrinting.BorderSide.Right) 
+            | DevExpress.XtraPrinting.BorderSide.Bottom)));
+            this.txblTbl.KeepTogether = true;
+            this.txblTbl.LocationFloat = new DevExpress.Utils.PointFloat(550.0174F, 11.66662F);
+            this.txblTbl.Name = "txblTbl";
+            this.txblTbl.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
+            this.txblTbl.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
+            this.txblRow});
+            this.txblTbl.SizeF = new System.Drawing.SizeF(186.9824F, 20F);
+            this.txblTbl.StylePriority.UseBorders = false;
+            // 
+            // txblRow
+            // 
+            this.txblRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.txblCaption,
+            this.taxableAmt});
+            this.txblRow.Name = "txblRow";
+            this.txblRow.Weight = 0.8D;
+            // 
+            // txblCaption
+            // 
+            this.txblCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.txblCaption.Multiline = true;
+            this.txblCaption.Name = "txblCaption";
+            this.txblCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.txblCaption.StylePriority.UseFont = false;
+            this.txblCaption.StylePriority.UsePadding = false;
+            this.txblCaption.StylePriority.UseTextAlignment = false;
+            this.txblCaption.Text = "Taxable Amount";
+            this.txblCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.txblCaption.Weight = 1.4242687447491325D;
+            // 
+            // taxableAmt
+            // 
+            this.taxableAmt.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ESTL_TAX_TOTAL]-[OLD_GOLD_AMOUNT]-[OLD_SILVER_AMOUNT]\n")});
+            this.taxableAmt.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.taxableAmt.Multiline = true;
+            this.taxableAmt.Name = "taxableAmt";
+            this.taxableAmt.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.taxableAmt.StylePriority.UseFont = false;
+            this.taxableAmt.StylePriority.UsePadding = false;
+            this.taxableAmt.StylePriority.UseTextAlignment = false;
+            this.taxableAmt.Text = "taxableAmt";
+            this.taxableAmt.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.taxableAmt.TextFormatString = "{0:##,###,##0.00}";
+            this.taxableAmt.Weight = 1.4798439323671944D;
             // 
             // XrtNewEstimate25
             // 
@@ -2139,8 +2139,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.customerTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.oldExTable)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.taxTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.invTotalTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.metalSumryTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NewTaxTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.txblTbl)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
 
         }
@@ -2207,16 +2209,7 @@
         private DevExpress.XtraReports.UI.XRTableCell totalRow;
         private DevExpress.XtraReports.UI.XRTableCell totalMetalWeight;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell21;
-        private DevExpress.XtraReports.UI.XRTable taxTable;
-        private DevExpress.XtraReports.UI.XRTableRow cgstTableRow;
-        private DevExpress.XtraReports.UI.XRTableCell cgstCaption;
-        private DevExpress.XtraReports.UI.XRTableCell cgstAmount;
-        private DevExpress.XtraReports.UI.XRTableRow sgstTableRow;
-        private DevExpress.XtraReports.UI.XRTableCell sgstCaption;
-        private DevExpress.XtraReports.UI.XRTableCell sgstAmount;
-        private DevExpress.XtraReports.UI.XRTableRow igstTableRow;
-        private DevExpress.XtraReports.UI.XRTableCell igstCaption;
-        private DevExpress.XtraReports.UI.XRTableCell igstAmount;
+        private DevExpress.XtraReports.UI.XRTable invTotalTable;
         private DevExpress.XtraReports.UI.XRTableRow subTotalRow;
         private DevExpress.XtraReports.UI.XRTableCell subTotalCaption;
         private DevExpress.XtraReports.UI.XRTableCell invAfterTaxTotal;
@@ -2283,9 +2276,6 @@
         private DevExpress.XtraReports.UI.XRTableRow oldSilverRow;
         private DevExpress.XtraReports.UI.XRTableCell oldSilverCaption;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell14;
-        private DevExpress.XtraReports.UI.XRTableRow oldExTotalRow;
-        private DevExpress.XtraReports.UI.XRTableCell oldTotalCaption;
-        private DevExpress.XtraReports.UI.XRTableCell invTaxableAmount;
         private DevExpress.XtraReports.UI.XRLabel xrLabel2;
         private DevExpress.XtraReports.UI.XRLabel xrLabel16;
         private DevExpress.XtraReports.UI.CalculatedField GoldSumryCount;
@@ -2295,5 +2285,16 @@
         private DevExpress.XtraReports.UI.XRPictureBox xrPictureBox5;
         private DevExpress.XtraReports.UI.XRPictureBox xrPictureBox4;
         private DevExpress.XtraReports.UI.XRPictureBox xrPictureBox3;
+        private DevExpress.XtraReports.UI.XRTable NewTaxTable;
+        private DevExpress.XtraReports.UI.XRTableRow TaxTblHdrRow;
+        private DevExpress.XtraReports.UI.XRTableCell cgstHdr;
+        private DevExpress.XtraReports.UI.XRTableCell sgstHdr;
+        private DevExpress.XtraReports.UI.XRTableRow taxAmtRow;
+        private DevExpress.XtraReports.UI.XRTableCell cgstAmount;
+        private DevExpress.XtraReports.UI.XRTableCell sigstAmount;
+        private DevExpress.XtraReports.UI.XRTable txblTbl;
+        private DevExpress.XtraReports.UI.XRTableRow txblRow;
+        private DevExpress.XtraReports.UI.XRTableCell txblCaption;
+        private DevExpress.XtraReports.UI.XRTableCell taxableAmt;
     }
 }
