@@ -1091,6 +1091,8 @@
             this.oldGoldRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
             this.oldGoldCaption,
             this.oldGoldAmount});
+            this.oldGoldRow.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[OLD_GOLD_AMOUNT] > 0")});
             this.oldGoldRow.Name = "oldGoldRow";
             this.oldGoldRow.Weight = 1.3199999999999998D;
             // 
@@ -1129,6 +1131,8 @@
             this.oldSilverRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
             this.oldSilverCaption,
             this.xrTableCell14});
+            this.oldSilverRow.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[OLD_SILVER_AMOUNT] > 0")});
             this.oldSilverRow.Name = "oldSilverRow";
             this.oldSilverRow.Weight = 1.3199999999999998D;
             // 
