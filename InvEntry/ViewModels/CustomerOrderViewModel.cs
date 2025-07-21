@@ -192,16 +192,6 @@ public partial class CustomerOrderViewModel : ObservableObject
         _ = InitializeAsync();
 
         SetHeader();
- 
-
-/*        PopulateProductCategoryList();
-        PopulateStateList();
-        PopulateUnboundLineDataMap();
-        PopulateMtblRefNameList();
-        PopulateMetalList();
-        PopulateOrderStatusList();
-     //   PopulateTaxList();
-        PopulateSalesPersonList();*/
 
         //PopulateUnboundHeaderDataMap();
     }
@@ -211,7 +201,8 @@ public partial class CustomerOrderViewModel : ObservableObject
         try
         {
             await SetThisCompany();
-            SetHeader(); // Not async – keep as is
+            SetHeader(); 
+
             await SetMasterLedger();
             await PopulateProductCategoryList();
             await PopulateStateList();
