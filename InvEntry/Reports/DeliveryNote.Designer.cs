@@ -106,6 +106,7 @@
             this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
             this.pEstHdrGkey = new DevExpress.XtraReports.Parameters.Parameter();
+            this.notes = new DevExpress.XtraReports.UI.XRLabel();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -806,6 +807,7 @@
             // GroupFooter1
             // 
             this.GroupFooter1.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.notes,
             this.xrLabel5,
             this.xrLabel4,
             this.xrLabel2});
@@ -832,11 +834,11 @@
             // 
             // xrLabel2
             // 
-            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 63.01669F);
+            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(0F, 63.01671F);
             this.xrLabel2.Multiline = true;
             this.xrLabel2.Name = "xrLabel2";
             this.xrLabel2.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel2.SizeF = new System.Drawing.SizeF(100F, 23F);
+            this.xrLabel2.SizeF = new System.Drawing.SizeF(55F, 23F);
             this.xrLabel2.Text = "NOTE:";
             // 
             // pEstHdrGkey
@@ -845,6 +847,19 @@
             this.pEstHdrGkey.Name = "pEstHdrGkey";
             this.pEstHdrGkey.Type = typeof(int);
             this.pEstHdrGkey.ValueInfo = "0";
+            // 
+            // notes
+            // 
+            this.notes.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[EST_NOTES]")});
+            this.notes.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
+            this.notes.LocationFloat = new DevExpress.Utils.PointFloat(55F, 63.01671F);
+            this.notes.Multiline = true;
+            this.notes.Name = "notes";
+            this.notes.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
+            this.notes.SizeF = new System.Drawing.SizeF(232.5F, 54.17222F);
+            this.notes.StylePriority.UseFont = false;
+            this.notes.Text = "notes";
             // 
             // DeliveryNote
             // 
@@ -952,5 +967,6 @@
         private DevExpress.XtraReports.UI.XRLabel xrLabel5;
         private DevExpress.XtraReports.UI.XRLabel xrLabel4;
         private DevExpress.XtraReports.Parameters.Parameter pEstHdrGkey;
+        private DevExpress.XtraReports.UI.XRLabel notes;
     }
 }
