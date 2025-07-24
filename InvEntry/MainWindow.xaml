@@ -119,6 +119,8 @@
                                                  Content="Daily Report Stock Summary List" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
                                                  Content="Product Stock Entry" HideMenuWhenSelected="True"/>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ImportDocViewPage}"
+                                                                Content="Util:Import" HideMenuWhenSelected="True" />
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerMenuNavigationButton Content="Price Setting"

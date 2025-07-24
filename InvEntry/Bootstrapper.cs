@@ -161,6 +161,7 @@ public sealed class Bootstrapper
                  .AddSingleton<CustomerOrderDBViewListViewModel>()
                  .AddSingleton<InvoiceProductSelectionViewModel>()
                  .AddSingleton<InvoiceViewModel>()
+                 .AddSingleton<ImportDocViewModel>()
                  .AddSingleton<ProductStockViewModel>()
                  .AddSingleton<MainWindowViewModel>()
                  .AddSingleton<CashReceiptViewModel>()
@@ -172,6 +173,7 @@ public sealed class Bootstrapper
                  .AddSingleton<ProductStockSummaryListViewModel>()
                  .AddSingleton<DailyStockSummaryListViewModel>()
                  .AddTransient<ReportDialogViewModel>()
+                 //.AddSingleton<ReviewPopupViewModel>()
                  .AddSingleton<SettingsPageViewModel>()
                  .AddSingleton<EstimateViewModel>()
                  .AddHttpClient("mijms", httpClient =>
