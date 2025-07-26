@@ -1,7 +1,6 @@
 ﻿using DevExpress.Mvvm;
 using DevExpress.Pdf;
 using Microsoft.Win32;
-using PdfiumViewer;
 using System;
 using System.Collections.ObjectModel;
 using System.Drawing.Imaging;
@@ -12,13 +11,14 @@ using System.Windows.Input;
 using InvEntry.Models;
 using Tesseract;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.Xpf.Bars;
 
 namespace InvEntry.ViewModels
 {
     public partial class ImportDocViewModel : ViewModelBase
     {
             
-        public InvoiceHeader Estimate { get; set; } = new();
+        public EstimateHeader Estimate { get; set; } = new();
 
         public ICommand DropPdfCommand => new DelegateCommand<DragEventArgs>(OnPdfDropped);
         public ICommand ReviewCommand => new DelegateCommand(OnReview);
@@ -35,41 +35,74 @@ namespace InvEntry.ViewModels
             }
         }
 
-        private void ExtractInvoiceFromPdf(string pdfPath)
+        [RelayCommand]
+        private void FileImportButton()
         {
-            string text = string.Empty;
-            using var doc = PdfiumViewer.PdfDocument.Load(pdfPath);
-            using var engine = new TesseractEngine("./tessdata", "eng", EngineMode.Default);
 
-            for (int i = 0; i < doc.PageCount; i++)
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                using var bmp = doc.Render(i, 300, 300, true);
-                using var stream = new MemoryStream();
-                bmp.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
-                stream.Position = 0;
+                Filter = "Pdf files (*.pdf)|*.pdf|All files (*.*)|*.*",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                Title = "Select a File to Import",
+            };
 
-                using var img = Pix.LoadFromMemory(stream.ToArray());
-                using var page = engine.Process(img);
-                text += page.GetText();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filePath = openFileDialog.FileName;
+                MessageBox.Show($"Selected file: {filePath}");
+                ExtractInvoiceFromPdf(filePath);
             }
 
-            ParseInvoiceText(text);
+        }
+
+        private void ExtractInvoiceFromPdf(string pdfPath)
+        {
+
+            string text = TryExtractTextWithDevExpress(pdfPath);
+
+         //  if (string.IsNullOrWhiteSpace(text))
+         //   {
+         //       text = ExtractTextWithOcr(pdfPath); // Fallback to OCR
+         //   }
+
+            ParseInvoiceText(text); // Your existing parsing logic
+        }
+
+        private string TryExtractTextWithDevExpress(string pdfPath)
+        {
+/*            using var processor = new DevExpress.Pdf.PdfDocument();      //PdfDocumentProcessor();
+            processor.LoadDocument(pdfPath);
+
+            string fullText = "";
+            for (int i = 1; i <= processor.Document.Pages.Count; i++)
+            {
+                fullText += processor.GetText(i);
+            }
+
+            return fullText;*/
+
+            using (var processor = new PdfDocumentProcessor())
+            {
+                processor.LoadDocument("your.pdf");
+                var text = processor.GetText(1);
+            }
+
         }
 
         private void ParseInvoiceText(string text)
         {
-            Estimate = new InvoiceHeader();
+            Estimate = new EstimateHeader();
             var lines = text.Split('\n');
 
             foreach (var line in lines)
             {
                 if (line.Contains("Estimate #"))
-                    Estimate.InvNbr = line.Split(':').LastOrDefault()?.Trim();
+                    Estimate.EstNbr = line.Split(':').LastOrDefault()?.Trim();
                 else if (line.Contains("DATE"))
                     DateTime.TryParse(line.Split(':').LastOrDefault(), out DateTime dt);
                    // Estimate.InvDate = dt;
                 else if (line.Contains("Mr/Ms/Mrs"))
-                    Estimate.InvNotes = line.Split(':').LastOrDefault()?.Trim();
+                    Estimate.EstNotes = line.Split(':').LastOrDefault()?.Trim();
                 else if (line.Contains("Grand Total"))
                     decimal.TryParse(line.Split().LastOrDefault()?.Replace(",", ""), out var total);
                //     Estimate.GrossRcbAmount = total;
@@ -78,7 +111,7 @@ namespace InvEntry.ViewModels
                     var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length >= 7)
                     {
-                        Estimate.Lines.Add(new InvoiceLine
+                        Estimate.Lines.Add(new EstimateLine
                         {
                             HsnCode = parts[0],
                             ProductName = parts[1],
@@ -104,10 +137,11 @@ namespace InvEntry.ViewModels
 
             if (vm.Confirmed)
             {
-                // API call placeholder
-                MessageBox.Show("Invoice confirmed. Send to API here.");
+                // API call placeholder -- need to implement actual API call logic
+                MessageBox.Show("Estimate confirmed. Send to API here.");
             }
         }
+
     }
 
 }

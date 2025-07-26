@@ -1,4 +1,7 @@
-﻿using System;
+﻿using DevExpress.Dialogs.Core.View;
+using DevExpress.Xpf.CodeView.Margins;
+using InvEntry.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +15,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using InvEntry.ViewModels;
 
 namespace InvEntry.Views
 {
@@ -21,6 +23,7 @@ namespace InvEntry.Views
     /// </summary>
     public partial class ImportInvoiceView : UserControl
     {
+
         public ImportInvoiceView()
         {
             InitializeComponent();

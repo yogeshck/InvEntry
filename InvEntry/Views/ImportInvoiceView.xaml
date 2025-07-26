@@ -28,19 +28,33 @@
         <StackPanel DockPanel.Dock="Top"
                     Margin="10">
             <TextBlock Text="Estimate #:" />
-            <TextBlock Text="{Binding Estimate.InvNbr}" />
+            <TextBlock Text="{Binding Estimate.EstNbr}" />
             <TextBlock Text="Customer:" />
             <TextBlock Text="Date:" />
-            <TextBlock Text="{Binding Estimate.InvDate}" />
+            <TextBlock Text="{Binding Estimate.EstDate}" />
             <TextBlock Text="Total:" />
             <TextBlock Text="0" />
         </StackPanel>
 
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Button Name="btnReset"
+                    Content="Import.."
+                    Width="100"
+                    Height="40"
+                    Command="{Binding FileImportButtonCommand}" />
+        </Grid>
+
+        
         <dxg:GridControl Name="gridControl2">
             <!---->
             <dxg:GridControl.View>
                 <dxg:CardView AllowDragDrop="True" />
             </dxg:GridControl.View>
+
         </dxg:GridControl>
 
         <dxg:GridControl ItemsSource="{Binding Estimate.Lines}"
