@@ -1,21 +1,26 @@
-﻿using PdfiumViewer;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Ghostscript.NET.Rasterizer;
+using InvEntry.Models;
+using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
-using InvEntry.Models;
 using Tesseract;
-using CommunityToolkit.Mvvm.ComponentModel;
-using DevExpress.Xpf.Core;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
+using System.Windows.Input;
 
 namespace InvEntry.ViewModels
 {
     public partial class ImportDocViewModel : ObservableObject
     {
         [ObservableProperty]
-        private EstimateHeader _Estimate;
+        private EstimateHeader _estimate;
 
         [RelayCommand]
         private void PdfDrop(DragEventArgs args)
@@ -25,7 +30,7 @@ namespace InvEntry.ViewModels
             string[] files = (string[])args.Data.GetData(DataFormats.FileDrop);
             string pdfPath = files.FirstOrDefault(x => x.EndsWith(".pdf"));
             if (!string.IsNullOrEmpty(pdfPath))
-                ExtractInvoiceFromPdf(pdfPath);
+                ExtractInvoiceWithOcr(pdfPath);
         }
 
         [RelayCommand]
@@ -43,44 +48,77 @@ namespace InvEntry.ViewModels
             {
                 string filePath = openFileDialog.FileName;
                 MessageBox.Show($"Selected file: {filePath}");
-                ExtractInvoiceFromPdf(filePath);
+                ExtractInvoiceWithOcr(filePath);
             }
 
         }
 
-        private void ExtractInvoiceFromPdf(string pdfPath)
+        public void ExtractInvoiceWithOcr(string pdfPath)
         {
-
-            string text = TryExtractTextWithDevExpress(pdfPath);
-
-         //  if (string.IsNullOrWhiteSpace(text))
-         //   {
-         //       text = ExtractTextWithOcr(pdfPath); // Fallback to OCR
-         //   }
-
-            ParseInvoiceText(text); // Your existing parsing logic
+            var images = ConvertPdfToImages(pdfPath);
+            var text = ExtractTextFromImages(images);
+            ParseInvoiceText(text);
         }
 
-        private string TryExtractTextWithDevExpress(string pdfPath)
+        public List<Bitmap> ConvertPdfToImages(string pdfPath)
         {
-/*            using var processor = new DevExpress.Pdf.PdfDocument();      //PdfDocumentProcessor();
-            processor.LoadDocument(pdfPath);
+            var bitmaps = new List<Bitmap>();
+            string gsPath = GetGhostscriptPath();
 
-            string fullText = "";
-            for (int i = 1; i <= processor.Document.Pages.Count; i++)
+            if (!File.Exists(gsPath))
             {
-                fullText += processor.GetText(i);
+                MessageBox.Show("Ghostscript not found. Please install Ghostscript 64-bit.");
+                return bitmaps;
             }
 
-            return fullText;*/
+            // Remove: GhostscriptRasterizer.GhostscriptDllPath = gsPath;
+            // Instead, use GhostscriptVersionInfo to specify the DLL path
+            var version = new Ghostscript.NET.GhostscriptVersionInfo(gsPath);
 
-            using (var processor = new PdfDocumentProcessor())
+            using var rasterizer = new GhostscriptRasterizer();
+            rasterizer.Open(pdfPath, version, false);
+
+            for (int pageNumber = 1; pageNumber <= rasterizer.PageCount; pageNumber++)
             {
-                processor.LoadDocument("your.pdf");
-                var text = processor.GetText(1);
-
-                return text;
+                var img = rasterizer.GetPage(300, pageNumber);
+                bitmaps.Add(new Bitmap(img));
             }
+
+            return bitmaps;
+        }
+
+        private string GetGhostscriptPath()
+        {
+            var baseDir = @"C:\\Program Files\\gs";
+            if (!Directory.Exists(baseDir)) return string.Empty;
+
+            var latest = Directory.GetDirectories(baseDir)
+                                  .OrderByDescending(d => d)
+                                  .FirstOrDefault();
+            var dllPath = Path.Combine(latest ?? "", "bin", "gsdll64.dll");
+            return dllPath;
+        }
+
+        public string ExtractTextFromImages(List<Bitmap> images)
+        {
+            var sb = new StringBuilder();
+
+            //using var engine = new TesseractEngine(Path.Combine
+                                 //       (AppDomain.CurrentDomain.BaseDirectory, "tessdata"), "eng", EngineMode.Default);
+            
+            using var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
+            foreach (var bmp in images)
+            {
+                using var ms = new MemoryStream();
+                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+                ms.Position = 0;
+
+                using var img = Pix.LoadFromMemory(ms.ToArray());
+                using var page = engine.Process(img);
+                sb.AppendLine(page.GetText());
+            }
+
+            return sb.ToString();
         }
 
         private void ParseInvoiceText(string text)
