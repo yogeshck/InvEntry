@@ -6,12 +6,12 @@ namespace InvEntry.ViewModels
 
     public partial class ReviewPopupViewModel : ObservableObject
     {
-        public InvoiceHeader Invoice { get; set; }
+        public EstimateHeader Estimate { get; set; }
         public bool Confirmed { get; set; }
 
-        public ReviewPopupViewModel(InvoiceHeader invoice)
+        public ReviewPopupViewModel(EstimateHeader estimate)
         {
-            Invoice = invoice;
+            Estimate = estimate;
         }
         
     }

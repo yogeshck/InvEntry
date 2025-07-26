@@ -28,10 +28,10 @@
             <StackPanel DockPanel.Dock="Top"
                     Margin="10">
                 <TextBlock Text="Estimate #:" />
-                <TextBlock Text="{Binding Estimate.InvNbr}" />
+                <TextBlock Text="{Binding Estimate.EstNbr}" />
                 <TextBlock Text="Customer:" />
                 <TextBlock Text="Date:" />
-                <TextBlock Text="{Binding Estimate.InvDate}" />
+                <TextBlock Text="{Binding Estimate.EstDate}" />
                 <TextBlock Text="Total:" />
                 <TextBlock Text="0" />
             </StackPanel>
