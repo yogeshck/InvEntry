@@ -25,6 +25,5 @@ namespace InvEntry.Views
         {
             InitializeComponent();
         }
-
     }
 }

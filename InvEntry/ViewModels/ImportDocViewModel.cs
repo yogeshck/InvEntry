@@ -1,38 +1,29 @@
-﻿using DevExpress.Mvvm;
-using DevExpress.Pdf;
-using Microsoft.Win32;
-using PdfiumViewer;
-using System;
-using System.Collections.ObjectModel;
-using System.Drawing.Imaging;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Input;
 using InvEntry.Models;
 using Tesseract;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using DevExpress.Xpf.Core;
 
 namespace InvEntry.ViewModels
 {
-    public partial class ImportDocViewModel : ViewModelBase
+    public partial class ImportDocViewModel : ObservableObject
     {
-            
-        public InvoiceHeader Estimate { get; set; } = new();
-
-        public ICommand DropPdfCommand => new DelegateCommand<DragEventArgs>(OnPdfDropped);
-        public ICommand ReviewCommand => new DelegateCommand(OnReview);
+        [ObservableProperty]
+        private InvoiceHeader _Estimate;
 
         [RelayCommand]
-        private void OnPdfDropped(DragEventArgs e)
+        private void PdfDrop(DragEventArgs args)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                string pdfPath = files.FirstOrDefault(x => x.EndsWith(".pdf"));
-                if (!string.IsNullOrEmpty(pdfPath))
-                    ExtractInvoiceFromPdf(pdfPath);
-            }
+            if (!args.Data.GetDataPresent(DataFormats.FileDrop)) return;
+
+            string[] files = (string[])args.Data.GetData(DataFormats.FileDrop);
+            string pdfPath = files.FirstOrDefault(x => x.EndsWith(".pdf"));
+            if (!string.IsNullOrEmpty(pdfPath))
+                ExtractInvoiceFromPdf(pdfPath);
         }
 
         private void ExtractInvoiceFromPdf(string pdfPath)
@@ -91,10 +82,9 @@ namespace InvEntry.ViewModels
                     }
                 }
             }
-
-            RaisePropertyChanged(() => Estimate);
         }
 
+        [RelayCommand]
         private void OnReview()
         {
             // Show Review Popup and Confirm Save

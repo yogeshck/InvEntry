@@ -22,50 +22,58 @@
               d:DesignHeight="450"
               HorizontalAlignment="Left"
               Width="1471"
-              Height="600">
-
-    <DockPanel>
-        <StackPanel DockPanel.Dock="Top"
+              Height="Auto">
+    <ScrollViewer>
+        <StackPanel>
+            <StackPanel DockPanel.Dock="Top"
                     Margin="10">
-            <TextBlock Text="Estimate #:" />
-            <TextBlock Text="{Binding Estimate.InvNbr}" />
-            <TextBlock Text="Customer:" />
-            <TextBlock Text="Date:" />
-            <TextBlock Text="{Binding Estimate.InvDate}" />
-            <TextBlock Text="Total:" />
-            <TextBlock Text="0" />
-        </StackPanel>
+                <TextBlock Text="Estimate #:" />
+                <TextBlock Text="{Binding Estimate.InvNbr}" />
+                <TextBlock Text="Customer:" />
+                <TextBlock Text="Date:" />
+                <TextBlock Text="{Binding Estimate.InvDate}" />
+                <TextBlock Text="Total:" />
+                <TextBlock Text="0" />
+            </StackPanel>
 
-        <dxg:GridControl Name="gridControl2">
-            <!---->
-            <dxg:GridControl.View>
-                <dxg:CardView AllowDragDrop="True" />
-            </dxg:GridControl.View>
-        </dxg:GridControl>
-
-        <dxg:GridControl ItemsSource="{Binding Estimate.Lines}"
-                         AutoGenerateColumns="None"
-                         AllowDrop="True">
-            <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="HsnCode"
+            <dxg:GridControl AllowDrop="True" Height="200">
+                <dxg:GridControl.View>
+                    <dxg:TableView AllowDrop="True">
+                        <dxmvvm:Interaction.Behaviors>
+                            <dxmvvm:EventToCommand EventName="Drop" Command="{Binding PdfDropCommand}" PassEventArgsToCommand="True"/>
+                        </dxmvvm:Interaction.Behaviors>
+                    </dxg:TableView>
+                </dxg:GridControl.View>
+                <dxmvvm:Interaction.Behaviors>
+                    <dxmvvm:EventToCommand EventName="Drop" Command="{Binding PdfDropCommand}" PassEventArgsToCommand="True"/>
+                </dxmvvm:Interaction.Behaviors>
+            </dxg:GridControl>
+            <dxg:GridControl ItemsSource="{Binding Estimate.Lines}"
+                         AutoGenerateColumns="None" Height="1000">
+                <dxg:GridControl.Columns>
+                    <dxg:GridColumn FieldName="HsnCode"
                                 Header="HSN" />
-                <dxg:GridColumn FieldName="ProductName"
+                    <dxg:GridColumn FieldName="ProductName"
                                 Header="Product" />
-                <dxg:GridColumn FieldName="ProductPurity"
+                    <dxg:GridColumn FieldName="ProductPurity"
                                 Header="Purity" />
-                <dxg:GridColumn FieldName="ProdQty"
+                    <dxg:GridColumn FieldName="ProdQty"
                                 Header="Qty" />
-                <dxg:GridColumn FieldName="ProdGrossWeight"
+                    <dxg:GridColumn FieldName="ProdGrossWeight"
                                 Header="Gross Wt" />
-                <dxg:GridColumn FieldName="ProdStoneWeight"
+                    <dxg:GridColumn FieldName="ProdStoneWeight"
                                 Header="Stone Wt" />
-                <dxg:GridColumn FieldName="ProdNetWeight"
+                    <dxg:GridColumn FieldName="ProdNetWeight"
                                 Header="Net Wt" />
-            </dxg:GridControl.Columns>
-        </dxg:GridControl>
+                </dxg:GridControl.Columns>
+                <dxg:GridControl.View>
+                    <dxg:TableView/>
+                </dxg:GridControl.View>
+            </dxg:GridControl>
 
-        <Button Content="Review and Save"
+            <Button Content="Review and Save"
                 Command="{Binding ReviewCommand}"
                 Margin="10" />
-    </DockPanel>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>
