@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Ghostscript.NET.Rasterizer;
 using InvEntry.Models;
+using InvEntry.Utils;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
-using Tesseract;
 using System.Windows.Input;
+using Tesseract;
 
 namespace InvEntry.ViewModels
 {
@@ -55,9 +56,26 @@ namespace InvEntry.ViewModels
 
         public void ExtractInvoiceWithOcr(string pdfPath)
         {
-            var images = ConvertPdfToImages(pdfPath);
-            var text = ExtractTextFromImages(images);
-            ParseInvoiceText(text);
+
+            var ocrReader = new PdfOcrReader("tessdata");
+            string rawText = ocrReader.ExtractTextFromPdf(pdfPath);
+
+
+           // var images = ConvertPdfToImages(pdfPath);
+           // var text = ExtractTextFromImages(images);
+           //---- ParseInvoiceText(text);
+
+            var (header, lines) = DocumentParser.ParseDocument<EstimateHeader, EstimateLine>(rawText, "estimate");
+
+            // header and lines are ready to bind or send via API
+
+            Estimate = new EstimateHeader();
+            Estimate.EstNbr = header.EstNbr;
+            Estimate.EstNotes = header.EstNotes;
+            Estimate.EstDate = header.EstDate;
+            Estimate.Lines = new ObservableCollection<EstimateLine>(lines);
+            //Estimate.Lines.Clear();
+
         }
 
         public List<Bitmap> ConvertPdfToImages(string pdfPath)
@@ -67,7 +85,7 @@ namespace InvEntry.ViewModels
 
             if (!File.Exists(gsPath))
             {
-                MessageBox.Show("Ghostscript not found. Please install Ghostscript 64-bit.");
+                MessageBox.Show("Contact Software Support / Admin");
                 return bitmaps;
             }
 
@@ -102,9 +120,6 @@ namespace InvEntry.ViewModels
         public string ExtractTextFromImages(List<Bitmap> images)
         {
             var sb = new StringBuilder();
-
-            //using var engine = new TesseractEngine(Path.Combine
-                                 //       (AppDomain.CurrentDomain.BaseDirectory, "tessdata"), "eng", EngineMode.Default);
             
             using var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
             foreach (var bmp in images)
@@ -128,13 +143,15 @@ namespace InvEntry.ViewModels
 
             foreach (var line in lines)
             {
-                if (line.Contains("Estimate #"))
+                if (line.Contains("MONIKAL"))
+                    Estimate.EstNotes = line.Split(':').LastOrDefault()?.Trim();
+                else if (line.Contains("Estimate #"))
                     Estimate.EstNbr = line.Split(':').LastOrDefault()?.Trim();
                 else if (line.Contains("DATE"))
                     DateTime.TryParse(line.Split(':').LastOrDefault(), out DateTime dt);
                    // Estimate.InvDate = dt;
-                else if (line.Contains("Mr/Ms/Mrs"))
-                    Estimate.EstNotes = line.Split(':').LastOrDefault()?.Trim();
+             //   else if (line.Contains("Mr/Ms/Mrs"))
+             //       Estimate.EstNotes = line.Split(':').LastOrDefault()?.Trim();
                 else if (line.Contains("Grand Total"))
                     decimal.TryParse(line.Split().LastOrDefault()?.Replace(",", ""), out var total);
                //     Estimate.GrossRcbAmount = total;

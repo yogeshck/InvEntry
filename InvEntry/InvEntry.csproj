@@ -77,6 +77,9 @@
 	<Content Include="tessdata\eng.traineddata">
 	 <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</Content>
+	<Content Include="Config\*.json">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 
   <ItemGroup>

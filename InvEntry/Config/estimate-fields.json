@@ -1,0 +1,50 @@
+﻿{
+  "HeaderFields": {
+    "EstNbr": {
+      "Keywords": [ "Estimate #" ],
+      "Required": true
+    },
+    "CustomerName": {
+      "Keywords": [ "Customer" ],
+      "Required": false
+    },
+    "InvDate": {
+      "Keywords": [ "Date" ],
+      "Required": false
+    },
+    "EstNotes": {
+      "Keywords": [ "Remarks", "MONIKAL" ],
+      "Required": false
+    },
+    "GrossRcbAmount": {
+      "Keywords": [ "Grand Total" ],
+      "Required": false
+    }
+  },
+  "LineItem": {
+    "StartsWith": [ "710", "711" ],
+    "Delimiter": "\\s+",
+    "Columns": {
+      "ProductCode": {
+        "Index": 0,
+        "Required": true
+      },
+      "Description": {
+        "Index": 1,
+        "Required": false
+      },
+      "Quantity": {
+        "Index": 2,
+        "Required": true
+      },
+      "Rate": {
+        "Index": 3,
+        "Required": false
+      },
+      "Amount": {
+        "Index": 4,
+        "Required": false
+      }
+    }
+  }
+}

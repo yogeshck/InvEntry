@@ -1,0 +1,7 @@
+﻿{
+  "EstimateNumber": "est_nbr",
+  "CustomerName": "cust_name",
+  "EstimateDate": "inv_date",
+  "Notes": "est_notes",
+  "GrossAmount": "gross_rcb_amount"
+}
