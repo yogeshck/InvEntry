@@ -1,7 +1,17 @@
 ﻿{
-  "EstimateNumber": "est_nbr",
-  "CustomerName": "cust_name",
-  "EstimateDate": "inv_date",
-  "Notes": "est_notes",
-  "GrossAmount": "gross_rcb_amount"
+  "HeaderMap": {
+    "EstimateNumber": "est_nbr",
+    "CustomerName": "cust_name",
+    "EstimateDate": "inv_date",
+    "Notes": "est_notes",
+    "GrossAmount": "gross_rcb_amount"
+  },
+  "LineItemMap": {
+    "SerialNumber": "sl_no",
+    "HsnCode": "hsn_code",
+    "ProductName": "product_name",
+    "Purity": "product_purity",
+    "Quantity": "prod_qty",
+    "GrossWeight": "prod_gross_weight"
+  }
 }

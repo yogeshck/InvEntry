@@ -51,19 +51,19 @@
             <dxg:GridControl ItemsSource="{Binding Estimate.Lines}"
                          AutoGenerateColumns="None" Height="1000">
                 <dxg:GridControl.Columns>
-                    <dxg:GridColumn FieldName="HsnCode"
+                    <dxg:GridColumn FieldName="Estimate.Lines.HsnCode"
                                 Header="HSN" />
-                    <dxg:GridColumn FieldName="ProductName"
+                    <dxg:GridColumn FieldName="Estimate.Lines.ProductName"
                                 Header="Product" />
-                    <dxg:GridColumn FieldName="ProductPurity"
+                    <dxg:GridColumn FieldName="Estimate.Lines.ProductPurity"
                                 Header="Purity" />
-                    <dxg:GridColumn FieldName="ProdQty"
+                    <dxg:GridColumn FieldName="Estimate.Lines.ProdQty"
                                 Header="Qty" />
-                    <dxg:GridColumn FieldName="ProdGrossWeight"
+                    <dxg:GridColumn FieldName="Estimate.Lines.ProdGrossWeight"
                                 Header="Gross Wt" />
-                    <dxg:GridColumn FieldName="ProdStoneWeight"
+                    <dxg:GridColumn FieldName="Estimate.Lines.ProdStoneWeight"
                                 Header="Stone Wt" />
-                    <dxg:GridColumn FieldName="ProdNetWeight"
+                    <dxg:GridColumn FieldName="Estimate.Lines.ProdNetWeight"
                                 Header="Net Wt" />
                 </dxg:GridControl.Columns>
                 <dxg:GridControl.View>

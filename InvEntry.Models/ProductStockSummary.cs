@@ -1,14 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace InvEntry.Models
+namespace InvEntry.Models;
+
+public partial class ProductStockSummary : BaseEntity
 {
-    public partial class ProductStockSummary : BaseEntity
-    {
 
         [ObservableProperty]
         public string? _category;
@@ -79,5 +74,5 @@ namespace InvEntry.Models
         [ObservableProperty]
         public DateTime? _modifiedOn;
 
-    }
+    
 }

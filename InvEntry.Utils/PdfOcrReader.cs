@@ -9,7 +9,7 @@ using Tesseract;
 namespace InvEntry.Utils
 {
     public class PdfOcrReader
-        {
+    {
             private readonly string _tessdataPath;
 
             public PdfOcrReader(string tessdataPath = "tessdata")
@@ -17,42 +17,51 @@ namespace InvEntry.Utils
                 _tessdataPath = tessdataPath;
             }
 
-            /// <summary>
-            /// Converts all pages of a PDF to OCR text using Tesseract.
-            /// </summary>
-            /// <param name="pdfPath">Full path to the PDF</param>
-            /// <returns>OCR extracted text</returns>
-            public string ExtractTextFromPdf(string pdfPath)
+        private string ExtractTextFromPdf(string pdfPath)
+        {
+            var text = new StringBuilder();
+
+            using var rasterizer = new GhostscriptRasterizer();
+            rasterizer.Open(pdfPath);
+
+            using var engine = new TesseractEngine("./tessdata", "eng", EngineMode.Default);
+
+            for (int i = 1; i <= rasterizer.PageCount; i++)
             {
-                if (!File.Exists(pdfPath))
-                    throw new FileNotFoundException("PDF not found", pdfPath);
+                using var img = rasterizer.GetPage(300, i);
+                if (img == null) continue;
 
-                var sb = new StringBuilder();
-
-                using var rasterizer = new GhostscriptRasterizer();
-                rasterizer.Open(pdfPath);
-
-                using var engine = new TesseractEngine(_tessdataPath, "eng", EngineMode.Default);
-
-                for (int i = 1; i <= rasterizer.PageCount; i++)
+                using var stream = new MemoryStream();
+                try
                 {
-                    using var img = rasterizer.GetPage(300, i);
-                    using var ms = new MemoryStream();
-                    img.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
-                    ms.Position = 0;
+                    img.Save(stream, System.Drawing.Imaging.ImageFormat.Bmp);
+                    stream.Position = 0;
 
-                    using var pix = Pix.LoadFromMemory(ms.ToArray());
+                    using var pix = Pix.LoadFromMemory(stream.ToArray());
                     using var page = engine.Process(pix);
-                    sb.AppendLine(page.GetText());
+                    text.AppendLine(page.GetText());
                 }
-
-                return sb.ToString();
+                catch (Exception ex)
+                {
+                    text.AppendLine($"[Error processing page {i}]: {ex.Message}");
+                }
             }
 
-            /// <summary>
-            /// Extracts text page-by-page (useful for logging or debugging)
-            /// </summary>
-            public List<string> ExtractPages(string pdfPath)
+            return text.ToString();
+        }
+
+
+
+
+        public async Task<string> ExtractTextAsync(string pdfPath)
+        {
+            return await Task.Run(() => ExtractTextFromPdf(pdfPath));
+        }
+
+        /// <summary>
+        /// Extracts text page-by-page (useful for logging or debugging)
+        /// </summary>
+        public List<string> ExtractPages(string pdfPath)
             {
                 var pages = new List<string>();
 

@@ -2,7 +2,7 @@
   "HeaderFields": {
     "EstNbr": {
       "Keywords": [ "Estimate #" ],
-      "Required": true
+      "Required": false
     },
     "CustomerName": {
       "Keywords": [ "Customer" ],
@@ -22,27 +22,31 @@
     }
   },
   "LineItem": {
-    "StartsWith": [ "710", "711" ],
+    "StartsWith": [ "1", "2" ],
     "Delimiter": "\\s+",
     "Columns": {
-      "ProductCode": {
+      "SlNo": {
         "Index": 0,
-        "Required": true
+        "Required": false
       },
-      "Description": {
+      "HsnCode": {
         "Index": 1,
         "Required": false
       },
-      "Quantity": {
-        "Index": 2,
-        "Required": true
-      },
-      "Rate": {
-        "Index": 3,
+      "ProductName": {
+        "Index": [ 2, 3 ],
         "Required": false
       },
-      "Amount": {
+      "Purity": {
         "Index": 4,
+        "Required": false
+      },
+      "Quantity": {
+        "Index": 5,
+        "Required": false
+      },
+      "GrossWeight": {
+        "Index": 6,
         "Required": false
       }
     }

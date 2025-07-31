@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Utils
 {
-        public class HeaderField
+       public class HeaderField
         {
             public List<string> Keywords { get; set; } = new();
             public bool Required { get; set; }
@@ -17,8 +17,18 @@ namespace InvEntry.Utils
 
         public class LineColumnField
         {
-            public int Index { get; set; }
+            public JsonElement Index { get; set; }  // Can be a number or array
             public bool Required { get; set; }
+
+            public List<int> GetIndices()
+            {
+                return Index.ValueKind switch
+                {
+                    JsonValueKind.Number => new List<int> { Index.GetInt32() },
+                    JsonValueKind.Array => Index.EnumerateArray().Select(e => e.GetInt32()).ToList(),
+                    _ => new List<int>()
+                };
+            }
         }
 
         public class LineItemConfig
@@ -102,17 +112,19 @@ namespace InvEntry.Utils
             private static void ParseLineItem<TLine>(string line, LineItemConfig config, List<TLine> output)
                 where TLine : new()
             {
-                var tokens = Regex.Split(line, config.Delimiter).Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
+                var tokens = TokenizeLine(line);
                 var item = new TLine();
 
                 foreach (var colMap in config.Columns)
                 {
                     var propName = colMap.Key;
                     var field = colMap.Value;
+                    var indices = field.GetIndices();
 
-                    if (field.Index < tokens.Length)
+                    if (indices.All(i => i < tokens.Length))
                     {
-                        SetPropertyValue(item, propName, tokens[field.Index]);
+                        var value = string.Join(" ", indices.Select(i => tokens[i]));
+                        SetPropertyValue(item, propName, value);
                     }
                     else if (field.Required)
                     {
@@ -121,6 +133,13 @@ namespace InvEntry.Utils
                 }
 
                 output.Add(item);
+            }
+
+            private static string[] TokenizeLine(string line)
+            {
+                // Match quoted strings or individual words
+                var matches = Regex.Matches(line, @"[\""].+?[\""]|\S+");
+                return matches.Select(m => m.Value.Trim('"')).ToArray();
             }
 
             private static void SetPropertyValue(object obj, string propName, string rawValue)
@@ -157,4 +176,6 @@ namespace InvEntry.Utils
                 }
             }
         }
-}
+    }
+
+
