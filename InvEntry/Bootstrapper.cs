@@ -6,6 +6,7 @@ using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
 using InvEntry.HostedServices;
 using InvEntry.IoC;
+using InvEntry.Managers;
 using InvEntry.Metadata;
 using InvEntry.Models;
 using InvEntry.Reports;
@@ -131,6 +132,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<ILedgerService, LedgerService>()
+                 .AddSingleton<IStockManager, StockManager>()
                  .AddSingleton<IMtblLedgersService, MtblLedgersService>()
                  .AddSingleton<IGrnService, GrnService>()
                  .AddSingleton<IEstimateService, EstimateService>()

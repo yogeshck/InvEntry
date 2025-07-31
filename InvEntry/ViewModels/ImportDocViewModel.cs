@@ -37,10 +37,15 @@ namespace InvEntry.ViewModels
 
       //  public ObservableCollection<ProductView> ProductViewList { get; set; } = new();
 
-        public ImportDocViewModel(IProductService productService, IProductStockSummaryService stockSumryService ) //, IStockManager stockManager)
+        public ImportDocViewModel(IProductService productService, 
+                                  IProductStockSummaryService stockSumryService,
+                                  IProductViewService productViewService,
+                                  IStockManager stockManager) //, IStockManager stockManager)
         {
             _productService = productService;
             _stockSumryService = stockSumryService;
+            _productViewService = productViewService;
+            _stockManager = stockManager;
        //     _stockManager = stockManager;
 
             PopulateProductViewList();
@@ -48,13 +53,19 @@ namespace InvEntry.ViewModels
             Estimate = new();
         }
 
-        [RelayCommand]
-        public async Task PopulateProductViewList()
+        private async void PopulateProductViewList()
         {
+
+            //ProductViewList.Clear();
+
             var list = await _productViewService.GetAll();
-            ProductViewList.Clear();
-            foreach (var item in list)
-                ProductViewList.Add(item);
+
+            if (list is not null)
+            {
+                ProductViewList = new(list);
+                //  foreach (var item in list)
+                //      ProductViewList.Add(item);
+            }
         }
 
         [RelayCommand]
@@ -106,7 +117,7 @@ namespace InvEntry.ViewModels
 
         }
 
-        public async Task UpdateStock()
+        private async void UpdateStock()
         {
             if (Estimate == null || Estimate.Lines == null) return;
 
@@ -122,8 +133,7 @@ namespace InvEntry.ViewModels
             }
         }
 
-        [RelayCommand]
-        public async Task ExtractInvoiceWithOcr(string SelectedFilePath)
+        private async void ExtractInvoiceWithOcr(string SelectedFilePath)
         {
             if (string.IsNullOrEmpty(SelectedFilePath))
                 return;
@@ -138,31 +148,24 @@ namespace InvEntry.ViewModels
         }
 
 
-        private string GetGhostscriptPath()
-        {
-            var baseDir = @"C:\\Program Files\\gs";
-            if (!Directory.Exists(baseDir)) return string.Empty;
-
-            var latest = Directory.GetDirectories(baseDir)
-                                  .OrderByDescending(d => d)
-                                  .FirstOrDefault();
-            var dllPath = Path.Combine(latest ?? "", "bin", "gsdll64.dll");
-            return dllPath;
-        }
-
         [RelayCommand]
-        private void OnReview()
+        private void Review()
         {
+
+            UpdateStock();
+
             // Show Review Popup and Confirm Save
-            var vm = new ReviewPopupViewModel(Estimate);
+        //    var vm = new ReviewPopupViewModel(Estimate);
         //    var view = new Views.ReviewPopupView { DataContext = vm };
         //    view.ShowDialog();
 
-            if (vm.Confirmed)
-            {
+        //    if (vm.Confirmed)
+        //    {
                 // API call placeholder -- need to implement actual API call logic
-                MessageBox.Show("Estimate confirmed. Send to API here.");
-            }
+        //        MessageBox.Show("Estimate confirmed. Send to API here.");
+
+        //        UpdateStock();
+        //    }
         }
 
     }
