@@ -44,6 +44,8 @@ namespace InvEntry.ViewModels
        //     _stockManager = stockManager;
 
             PopulateProductViewList();
+
+            Estimate = new();
         }
 
         [RelayCommand]
@@ -104,7 +106,6 @@ namespace InvEntry.ViewModels
 
         }
 
-        [RelayCommand]
         public async Task UpdateStock()
         {
             if (Estimate == null || Estimate.Lines == null) return;
