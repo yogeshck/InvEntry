@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
-using InvEntry.Models;
-using InvEntry.Models.Parsed;
+using InvEntry.Extension;
+using InvEntry.Managers;
 using InvEntry.Mappers;
+using InvEntry.Models;
+using InvEntry.Models.Extensions;
+using InvEntry.Models.Parsed;
 using InvEntry.Services;
 using InvEntry.Utils;
 using Microsoft.Win32;
@@ -13,8 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using InvEntry.Models.Extensions;
-using InvEntry.Managers;
 
 namespace InvEntry.ViewModels
 {
@@ -30,7 +31,9 @@ namespace InvEntry.ViewModels
         private readonly IProductViewService _productViewService;
         private readonly IProductStockSummaryService _stockSumryService;
         private readonly IProductService _productService;
-   //     private readonly IStockManager _stockManager;
+        private readonly IDialogService _dialogService;
+
+        //     private readonly IStockManager _stockManager;
 
         [ObservableProperty]
         private string? selectedFilePath;
@@ -40,13 +43,14 @@ namespace InvEntry.ViewModels
         public ImportDocViewModel(IProductService productService, 
                                   IProductStockSummaryService stockSumryService,
                                   IProductViewService productViewService,
-                                  IStockManager stockManager) //, IStockManager stockManager)
+                                  IStockManager stockManager,
+                                  IDialogService dialogService ) //, IStockManager stockManager)
         {
             _productService = productService;
             _stockSumryService = stockSumryService;
             _productViewService = productViewService;
             _stockManager = stockManager;
-       //     _stockManager = stockManager;
+            _dialogService = dialogService;
 
             PopulateProductViewList();
 
@@ -63,8 +67,6 @@ namespace InvEntry.ViewModels
             if (list is not null)
             {
                 ProductViewList = new(list);
-                //  foreach (var item in list)
-                //      ProductViewList.Add(item);
             }
         }
 
@@ -155,17 +157,36 @@ namespace InvEntry.ViewModels
             UpdateStock();
 
             // Show Review Popup and Confirm Save
-        //    var vm = new ReviewPopupViewModel(Estimate);
-        //    var view = new Views.ReviewPopupView { DataContext = vm };
-        //    view.ShowDialog();
+            var vm = new ReviewPopupViewModel(Estimate);
+            var view = new Views.ReviewPopupView { DataContext = vm };
 
-        //    if (vm.Confirmed)
-        //    {
-                // API call placeholder -- need to implement actual API call logic
-        //        MessageBox.Show("Estimate confirmed. Send to API here.");
+            var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product",
+                                                "ReviewPopupView", vm);
 
-        //        UpdateStock();
-        //    }
+            if (vm.Confirmed)
+            {
+            // API call placeholder -- need to implement actual API call logic
+                    MessageBox.Show("Estimate confirmed. Send to API here.");
+
+            //        UpdateStock();
+            }
+
+
+            /*    private ProductView? ProductStockSelection()
+        {
+
+            var vm = DISource.Resolve<InvoiceProductSelectionViewModel>();
+            vm.Category = ProductIdUI;
+
+            var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product",
+                                                            "InvoiceProductSelectionView", vm);
+
+            if (result == MessageResult.OK)
+            {
+                return vm.SelectedProduct;
+            }
+            return null;
+        }*/
         }
 
     }

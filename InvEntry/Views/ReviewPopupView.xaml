@@ -12,22 +12,23 @@
                  xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
                  xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
                  xmlns:ext="clr-namespace:InvEntry.Extension"
-                 d:DataContext="{ext:DISource Type=viewmodels:ReviewPopupViewModel}"
+                mc:Ignorable="d"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=viewmodels:ReviewPopupViewModel}"
                  DataContext="{ext:DISource Type=viewmodels:ReviewPopupViewModel}"
-                 mc:Ignorable="d"
-                 d:DesignHeight="450"
-                 d:DesignWidth="800"
+
              Height="500"
              Width="600">
     <DockPanel>
             <StackPanel Margin="10">
-                <TextBlock Text="Review Invoice Before Inserting"
+                <TextBlock Text="Review Items Before Updating"
                            FontWeight="Bold" />
-            <TextBlock Text="Estimate #: {Binding Estimate.InvNbr}" />
-            <TextBlock Text="Customer: {Binding Estimate.InvNotes}" />
+            <TextBlock Text="Estimate #: {Binding Estimate.EstNbr}" />
+            <TextBlock Text="Customer: {Binding Estimate.EstNotes}" />
             </StackPanel>
 
-            <dxg:GridControl ItemsSource="{Binding Invoice.Items}"
+            <dxg:GridControl ItemsSource="{Binding Estimate.Lines}"
                              AutoGenerateColumns="None"
                              Margin="10" />
 

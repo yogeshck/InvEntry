@@ -12,7 +12,7 @@
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
-             d:DataContext="{ext:DISource Type=viewmodels:DialogOldJewelVM}"
+             d:DataContext="{d:DesignInstance Type=viewmodels:DialogOldJewelVM}"
              DataContext="{ext:DISource Type=viewmodels:DialogOldJewelVM}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>

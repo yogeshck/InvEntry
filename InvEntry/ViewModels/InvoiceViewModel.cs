@@ -411,11 +411,31 @@ public partial class InvoiceViewModel : ObservableObject
 
             CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
 
+            customerCreditCheck(Buyer);
+
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
         }
 
         Header.CustMobile = phoneNumber;
+    }
+
+    private bool customerCreditCheck(Customer buyer)
+    {
+        if (buyer.CreditAvailed == "YES")
+        {
+            showCreditBalanceMsg();
+            return true;
+        }
+        else
+            return false;
+    }
+
+    private void showCreditBalanceMsg()
+    {
+        _messageBoxService.ShowMessage($"Customer has Credit Balance, Do you want to check the details......",
+                                        "Customer Credit Balance not found", MessageButton.OK, MessageIcon.Error);
+
     }
 
     [RelayCommand]
