@@ -33,10 +33,10 @@ namespace DataAccess.Controllers
         }
 */
         // GET api/<GrnLineSummaryController>/5
-        [HttpGet("{invHdrGkey}")]
-        public IActionResult GetByInvHdrGKey(int invHdrGkey)
+        [HttpGet("{hdrGkey}")]
+        public IEnumerable<InvoiceArReceipt> GetByInvHdrGKey(int hdrGkey)
         {
-            return Ok(_invoiceArReceipt.GetList(x => x.InvoiceGkey == invHdrGkey));
+            return _invoiceArReceipt.GetList(x => x.InvoiceGkey == hdrGkey);
 
         }
 

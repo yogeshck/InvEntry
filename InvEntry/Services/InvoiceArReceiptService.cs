@@ -1,4 +1,5 @@
 ﻿using InvEntry.Models;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace InvEntry.Services
         Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt);
 
         Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey);
+
     }
 
     public class InvoiceArReceiptService : IInvoiceArReceiptService
@@ -42,7 +44,7 @@ namespace InvEntry.Services
 
         public async Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey)
         {
-            return await _mijmsApiService.GetEnumerable<InvoiceArReceipt>($"api/InvoiceArReceipt/hdrGkey/{hdrGkey}");
+            return await _mijmsApiService.GetEnumerable<InvoiceArReceipt>($"api/InvoiceArReceipt/{hdrGkey}");
         }
 
         public async Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt)

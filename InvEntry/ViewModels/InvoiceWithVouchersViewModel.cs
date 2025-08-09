@@ -1,15 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -133,6 +128,15 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task SelectedARInvoice()
+    {
+        var invoiceARList = await _invoiceArReceiptService.GetByInvHdrGKey(SelectedInvoice.GKey);
+
+       // var grnHeader = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
+
+    }
+
+    [RelayCommand]
     private async Task SelectionInvoiceChanged()
     {
         if (SelectedInvoice is null) return;
@@ -142,9 +146,6 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         if (arReceiptsList is not null)
             InvReceipts = new(arReceiptsList);
 
-        //var grnLineListResult = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
-        //if (grnLineListResult is not null)
-        //    GrnLineList = new(grnLineListResult);
     }
 
     private async Task SaveAsync()

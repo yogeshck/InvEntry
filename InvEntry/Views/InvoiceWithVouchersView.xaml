@@ -199,11 +199,20 @@
                 </dxg:GridControl.View>
                 <dxg:GridControl.Columns>
                     <dxg:GridColumn FieldName="TransactionType"
-                                    Header="Type" />
+                                    Header="Type" 
+                                    Width="90"/>
+                    <dxg:GridColumn FieldName="InternalVoucherNbr"
+                                    Header="Doc Nbr"
+                                    Width="90" />
                     <dxg:GridColumn FieldName="AdjustedAmount"
-                                    Header="Amount" />
-                    <dxg:GridColumn FieldName="TransDesc"
-                                    Header="Description" />
+                                    Header="Adjusted"
+                                    Width="100">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings MaskType="Numeric"
+                                                  MaskUseAsDisplayFormat="True"
+                                                  Mask="C2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
                 </dxg:GridControl.Columns>
                 <!-- your voucher columns here -->
             </dxg:GridControl>
