@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.DataAccess.Native.Json;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Core.ConditionalFormatting.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Layout.Core;
@@ -20,8 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Input;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
@@ -157,6 +161,13 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     }
 
+    public static ValidationResult ValidateQty(decimal value, ValidationContext context)
+    {
+        return value <= 0
+            ? new ValidationResult("Qty must be greater than 0.")
+            : ValidationResult.Success;
+    }
+
     private async void PopulateReceipientList()
     {
         var branchToRefList = await _mtblReferencesService.GetReferenceList("STOCK_TRANSFER");
@@ -275,6 +286,9 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     private async Task FetchProduct()
     {
+
+        var canCreate = true;
+
         if (string.IsNullOrEmpty(OldMetalIdUI)) return;
 
         var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
@@ -291,6 +305,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         {
             _messageBoxService.ShowMessage($"No Product found for {OldMetalIdUI}, Please make sure it exists",
                 "Product not found", MessageButton.OK, MessageIcon.Error);
+            canCreate = false;
             return;
         }
 
@@ -299,34 +314,56 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         if (metalPrice < 1)
         {
             displayRateErrorMsg();
+            canCreate = false;
             return;
         }
 
-        EstimateLine estimateLine = new EstimateLine()
+        if (ProductGrossWeight <= 0)
         {
-            ProdQty = 1,
-            EstlBilledPrice = metalPrice,
-            EstlCgstPercent = Header.CgstPercent,
-            EstlSgstPercent = Header.SgstPercent,
-            EstlIgstPercent = Header.IgstPercent,
-            EstlStoneAmount = 0M,
-            TaxType = "GST"
+            _messageBoxService.ShowMessage($"Weight should be more than zero....",
+                                "Weight zero", MessageButton.OK, MessageIcon.Error);
+            canCreate = false; 
+            return;
+        }
 
-        };
+        if (canCreate)
+        {
+            EstimateLine estimateLine = new EstimateLine()
+            {
+                ProdQty = 1,
+                EstlBilledPrice = metalPrice,
+                EstlCgstPercent = Header.CgstPercent,
+                EstlSgstPercent = Header.SgstPercent,
+                EstlIgstPercent = Header.IgstPercent,
+                EstlStoneAmount = 0M,
+                TaxType = "GST"
 
-        estimateLine.SetProductDetails(OldMetalProduct);
+            };
 
-        //EvaluateFormula(estimateLine, isInit: true);
+            estimateLine.SetProductDetails(OldMetalProduct);
 
-        SetLineDetails(estimateLine);
+            //EvaluateFormula(estimateLine, isInit: true);
 
-        Header.Lines.Add(estimateLine);
+            SetLineDetails(estimateLine);
 
-        //OldMetalIdUI = string.Empty;
+            Header.Lines.Add(estimateLine);
 
-        EvaluateHeader();
+            //OldMetalIdUI = string.Empty;
 
+            EvaluateHeader();
+        }
     }
+
+/*    private bool CustomerCheck()
+    {
+        if (Buyer is null)
+        {
+            _messageBoxService.ShowMessage("Please enter customer details to proceed", "Missing Customer", MessageButton.OK, MessageIcon.Error);
+            return false;
+        }
+
+        return true;
+    }*/
 
     private void SetLineDetails(EstimateLine estLine)
     {
@@ -513,14 +550,14 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
             return;
         }
 
-/*      if (createCustomer)
+        if (ProductGrossWeight <= 0)
         {
-            Buyer = await _customerService.CreateCustomer(Buyer);
-        }*/
+            return;
+        }
 
         Header.CustGkey = (int?)Buyer.GKey;
         Header.EstNotes = OMTransDesc;
-        Header.PaymentMode = "OM_TRANSFER";
+        Header.PaymentMode = "OM_TRANSFER";   //Old Metal Transfer
 
         Header.Lines.ForEach(x =>
         {
@@ -569,6 +606,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     private bool CanCreateStockTransfer()
     {
+
         return string.IsNullOrEmpty(Header?.EstNbr);
     }
 

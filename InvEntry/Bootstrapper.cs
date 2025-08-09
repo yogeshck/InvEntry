@@ -162,6 +162,7 @@ public sealed class Bootstrapper
                  .AddSingleton<CustomerOrderListViewModel>()
                  .AddSingleton<CustomerOrderDBViewListViewModel>()
                  .AddSingleton<InvoiceProductSelectionViewModel>()
+                 .AddSingleton<InvoiceWithVouchersViewModel>()
                  .AddSingleton<InvoiceViewModel>()
                  .AddSingleton<ImportDocViewModel>()
                  .AddSingleton<ProductStockViewModel>()

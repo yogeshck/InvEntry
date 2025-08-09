@@ -11,11 +11,11 @@ namespace InvEntry.Services;
 
 public interface ICustomerService
 {
-    Task<Customer> GetCustomer(string productId);
+    Task<Customer> GetCustomer(string mobileNbr);
 
-    Task<Customer> CreateCustomer(Customer product);
+    Task<Customer> CreateCustomer(Customer customer);
 
-    Task UpdateCustomer(Customer product);
+    Task UpdateCustomer(Customer customer);
 }
 
 public class CustomerService : ICustomerService

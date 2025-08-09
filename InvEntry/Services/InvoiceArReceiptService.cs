@@ -10,11 +10,13 @@ namespace InvEntry.Services
 
     public interface IInvoiceArReceiptService    
     {
-        Task<InvoiceArReceipt> GetInvArReceipt(string voucherId);
+        Task<InvoiceArReceipt> GetInvArReceipt(string invoiceNbr);
 
         Task<InvoiceArReceipt> CreateInvArReceipt(InvoiceArReceipt invoiceArReceipt);
 
         Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt);
+
+        Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey);
     }
 
     public class InvoiceArReceiptService : IInvoiceArReceiptService
@@ -36,6 +38,11 @@ namespace InvEntry.Services
         public async Task<InvoiceArReceipt> GetInvArReceipt(string invoiceNbr)
         {
             return await _mijmsApiService.Get<InvoiceArReceipt>($"api/InvoiceArReceipt/{invoiceNbr}");
+        }
+
+        public async Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey)
+        {
+            return await _mijmsApiService.GetEnumerable<InvoiceArReceipt>($"api/InvoiceArReceipt/hdrGkey/{hdrGkey}");
         }
 
         public async Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt)

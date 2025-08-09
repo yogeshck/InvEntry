@@ -35,10 +35,39 @@ namespace DataAccess.Controllers
 
         // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
         [HttpPost("filter")]
-        public IEnumerable<InvoiceHeader> FilterHeader([FromBody] InvoiceSearchOption criteria)
+        public IEnumerable<InvoiceHeader> FilterHeader([FromBody] InvoiceSearchOption criteria)   //we can remove this later
         {
-            return _invoiceHeaderRepository.GetList(x => x.InvDate.HasValue && x.InvDate.Value.Date >= criteria.From.Date &&
-                                                        x.InvDate.Value.Date <= criteria.To.Date);
+            return _invoiceHeaderRepository.GetList(x => 
+                                                    (   x.InvDate.HasValue 
+                                                     && x.InvDate.Value.Date >= criteria.From.Date 
+                                                     && x.InvDate.Value.Date <= criteria.To.Date ));
+        }
+
+        // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
+        [HttpPost("outstanding")]
+        public IEnumerable<InvoiceHeader> GetOutstanding([FromBody] DateSearchOption criteria)
+        {
+            if (!string.IsNullOrEmpty(criteria.Filter1))        //search criteria >> customer mobile 
+            {
+                // Filter by customer mobile and only invoices with outstanding balance
+                return _invoiceHeaderRepository.GetList(x =>
+                    x.InvDate.HasValue &&
+                    x.InvDate.Value.Date >= criteria.From.Date &&
+                    x.InvDate.Value.Date <= criteria.To.Date &&
+                    x.CustMobile == criteria.Filter1 &&
+                    x.InvBalance > 0
+                ).OrderBy(x => x.InvDate);
+            }
+            else
+            {
+                // Filter all customers but only return invoices with balance due
+                return _invoiceHeaderRepository.GetList(x =>
+                    x.InvDate.HasValue &&
+                    x.InvDate.Value.Date >= criteria.From.Date &&
+                    x.InvDate.Value.Date <= criteria.To.Date &&
+                    x.InvBalance > 0
+                ).OrderBy(x => x.InvDate);
+            }
         }
 
         // GET api/<InvoiceController>/5
@@ -82,5 +111,8 @@ namespace DataAccess.Controllers
         {
             _invoiceHeaderRepository.Remove(Get(invNbr));
         }
+
+        //   return Ok(_productStkViewRepo.GetList(x => x.Category == category && x.BalanceWeight > 0));
+
     }
 }

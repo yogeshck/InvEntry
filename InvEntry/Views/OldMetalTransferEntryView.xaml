@@ -107,7 +107,8 @@
                         <dxe:ComboBoxEdit Height="42"
                                           FontWeight="ExtraBold"
                                           ItemsSource="{Binding ReceipientStrList}"
-                                          EditValue="{Binding SentTo}" />
+                                          EditValue="{Binding SentTo}"
+                                          IsTextEditable="False" />
                     </dxlc:LayoutItem>
 
                     <!-- PassEventArgsToCommand="True" /> -->
@@ -143,7 +144,8 @@
                         <dxe:ComboBoxEdit Height="42"
                                           FontWeight="ExtraBold"
                                           ItemsSource="{Binding OldMetalList}"
-                                          EditValue="{Binding OldMetalIdUI}">
+                                          EditValue="{Binding OldMetalIdUI}"
+                                          IsTextEditable="False">
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
 
