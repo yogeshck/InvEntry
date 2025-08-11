@@ -5,6 +5,7 @@ using InvEntry.Services;
 using InvEntry.Utils.Options;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -47,9 +48,9 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     private readonly IInvoiceService _invoiceService;
     private readonly IInvoiceArReceiptService _invoiceArReceiptService;
 
-    //public decimal TotalInvoiceAmount => (decimal)InvoiceItems.Sum(i => i.ProdQty * i.InvlBilledPrice);
-    //public decimal TotalVoucherAmount => (decimal)VoucherEntries.Sum(v => v.PaidAmount);
-    //public decimal BalanceAmount => TotalInvoiceAmount - TotalVoucherAmount;
+    public decimal TotalInvoiceAmount => (decimal)OsInvoices.Sum(i => i.GrossRcbAmount);
+    public decimal TotalVoucherAmount => (decimal)OsInvoices.Sum(v => v.RecdAmount);
+    public decimal BalanceAmount => (decimal)OsInvoices.Sum(v => v.InvBalance);
 
     //public List<InvoiceLine> Items => InvoiceItems.ToList();
 
@@ -74,33 +75,35 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
 
      //   SaveCommand = new AsyncRelayCommand(SaveAsync);
 
-     //   PropertyChanged += (_, e) =>
+    //    PropertyChanged += (_, e) =>
     //    {
-
      //       SearchOption.To = Today;
      //       SearchOption.From = Today.AddDays(-1);
     //        SearchOption.Filter1 = null; // SelectedCustomer.MobileNbr;
 
-           // Task.Run(RefreshInvoicesAsync).Wait();
+    //        Task.Run(RefreshInvoicesAsync).Wait();
 
             //if (e.PropertyName == nameof(SelectedCustomer))
              //   LoadOutstanding();
 
-            //OnPropertyChanged(nameof(TotalInvoiceAmount));
-            //OnPropertyChanged(nameof(TotalVoucherAmount));
-            //OnPropertyChanged(nameof(BalanceAmount));
-     //   };
+     //       OnPropertyChanged(nameof(TotalInvoiceAmount));
+    //        OnPropertyChanged(nameof(TotalVoucherAmount));
+    //        OnPropertyChanged(nameof(BalanceAmount));
+    //    };
     }
 
     [RelayCommand]
     private async Task RefreshInvoicesAsync()
-    { 
-        /*        var invoicesResult = await _invoiceService.GetAll(SearchOption);
-                if (invoicesResult is not null)
-                    Invoices = null;
-                Invoices = new(invoicesResult);*/
+    {
 
-        await LoadOutstanding();
+        var OsInvlist = await _invoiceService.GetOutStanding(SearchOption);
+
+        if (OsInvlist is not null)
+        {
+            OsInvoices = new(OsInvlist);
+
+        };
+
     }
 
     private async Task PopulateCustomerList()
@@ -110,20 +113,6 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
 
         //get customer details - by giving mobile number
        // await CustomerService.GetCustomer
-
-    }
-
-    private async Task LoadOutstanding()
-    {
-        //   if (SelectedCustomer != null)
-        //to do       CustomerOutstanding = await CustomerService.GetOutstanding(SelectedCustomer.CustomerId);
-
-        var list = await _invoiceService.GetOutStanding(SearchOption);
-
-        if (list is not null)
-        {
-            OsInvoices = new(list);
-        };
 
     }
 

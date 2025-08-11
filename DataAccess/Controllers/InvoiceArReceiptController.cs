@@ -36,8 +36,8 @@ namespace DataAccess.Controllers
         [HttpGet("{hdrGkey}")]
         public IEnumerable<InvoiceArReceipt> GetByInvHdrGKey(int hdrGkey)
         {
-            return _invoiceArReceipt.GetList(x => x.InvoiceGkey == hdrGkey);
-
+            return _invoiceArReceipt.GetList(x => x.InvoiceGkey == hdrGkey)
+                .OrderBy(x => x.SeqNbr);
         }
 
         // POST api/<ARInvoiceReceiptController>

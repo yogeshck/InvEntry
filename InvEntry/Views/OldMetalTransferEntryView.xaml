@@ -108,7 +108,7 @@
                                           FontWeight="ExtraBold"
                                           ItemsSource="{Binding ReceipientStrList}"
                                           EditValue="{Binding SentTo}"
-                                          IsTextEditable="False" />
+                                             />
                     </dxlc:LayoutItem>
 
                     <!-- PassEventArgsToCommand="True" /> -->

@@ -90,6 +90,22 @@
                 <dxg:GridColumn FieldName="FromLedgerName" Header="From A/c" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="ToLedgerName" Header="To A/c" ReadOnly="True" Width="100" />                
                 <dxg:GridColumn FieldName="TransDesc" Header="Desc" ReadOnly="True" Width="100" />
+
+                <dxg:GridColumn FieldName="Remarks">
+                    <dxe:TextEdit Height="100"
+                                  FontSize="16"
+                                  VerticalAlignment="Top"
+                                  HorizontalContentAlignment="Left"
+                                  VerticalContentAlignment="Top"
+                                  TextWrapping="Wrap"
+                                  AcceptsReturn="True"
+                                  MaxLength="50"
+                                  Padding="5"
+                                  EditValue="{Binding VoucherTransDesc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  EditValuePostMode="Immediate"
+                                  ToolTip="{Binding VoucherTransDesc}"/>
+                </dxg:GridColumn>
+                
                 <dxg:GridColumn FieldName="ObAmount" Header="Opening Cash" Width="100">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2" NullText="" />

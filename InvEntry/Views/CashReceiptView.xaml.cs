@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using DevExpress.Xpf.Core;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using DevExpress.Xpf.Editors;
+using System.Windows;
 
 namespace InvEntry.Views
 {
@@ -24,5 +14,21 @@ namespace InvEntry.Views
         {
             InitializeComponent();
         }
+
+        private void NotesTextEdit_EditValueChanged(object sender, DevExpress.Xpf.Editors.EditValueChangedEventArgs e)
+        {
+            var textEdit = sender as DevExpress.Xpf.Editors.TextEdit;
+            if (textEdit != null && textEdit.Text.Length >= 50)
+            {
+
+                DXMessageBox.Show(
+                    "Maximum 50 characters are allowed in Notes.",
+                    "Character Limit Reached",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+        }
+
     }
 }

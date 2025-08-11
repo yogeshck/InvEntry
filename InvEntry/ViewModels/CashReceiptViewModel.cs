@@ -6,6 +6,7 @@ using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
+using DevExpress.XtraRichEdit.Model;
 using DevExpress.XtraTreeList.Filtering.Provider;
 using InvEntry.Extension;
 using InvEntry.Models;
@@ -326,7 +327,6 @@ public partial class CashReceiptViewModel : ObservableObject
         sender.Focus();
     }
 
-
     [RelayCommand]
     private async Task SaveVoucherAsync()
     {
@@ -343,6 +343,8 @@ public partial class CashReceiptViewModel : ObservableObject
         Voucher.FromLedgerGkey = (await _mtblLedgersService.GetLedger(2000)).GKey;
         Voucher.ToLedgerGkey = MtblLedger.GKey;
         Voucher.VoucherType = SelectedLedger;
+        Voucher.TransDesc = VoucherTransDesc;
+        //Voucher.RefDocNbr = "RD";  //replace with ui user entered field.
 
         if (Voucher.GKey == 0)
         {
