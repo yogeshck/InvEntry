@@ -23,6 +23,9 @@ namespace InvEntry.Models
         private string? orderNbr;
 
         [ObservableProperty]
+        private string? orderRefNbr;
+
+        [ObservableProperty]
         private DateTime? orderDate;
 
         [ObservableProperty]

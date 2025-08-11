@@ -72,4 +72,6 @@ public partial class CustomerOrder
     public DateTime? ModifiedOn { get; set; }
 
     public int? TenantGkey { get; set; }
+
+    public string? OrderRefNbr { get; set; }
 }

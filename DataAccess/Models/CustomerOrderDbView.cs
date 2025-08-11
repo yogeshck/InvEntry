@@ -15,6 +15,8 @@ public partial class CustomerOrderDbView
 
     public DateTime? OrderDate { get; set; }
 
+    public string? OrderRefNbr { get; set; }
+
     public string? OrderType { get; set; }
 
     public DateTime? OrderDueDate { get; set; }

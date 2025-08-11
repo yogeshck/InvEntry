@@ -177,6 +177,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.OrderRefNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_REF_NBR");
             entity.Property(e => e.OrderStatusFlag).HasColumnName("ORDER_STATUS_FLAG");
             entity.Property(e => e.OrderTransferDate)
                 .HasPrecision(6)
@@ -248,6 +252,10 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("ORDER_NBR");
+            entity.Property(e => e.OrderRefNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ORDER_REF_NBR");
             entity.Property(e => e.OrderStatus)
                 .HasMaxLength(50)
                 .IsUnicode(false)

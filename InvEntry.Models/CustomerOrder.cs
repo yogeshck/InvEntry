@@ -120,6 +120,9 @@ public partial class CustomerOrder : BaseEntity
     private int? tenantGkey;
 
     [ObservableProperty]
+    private string? orderRefNbr;
+
+    [ObservableProperty]
     [property: JsonIgnore]
     private ObservableCollection<CustomerOrderLine>? lines;
 

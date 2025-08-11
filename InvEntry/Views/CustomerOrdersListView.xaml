@@ -20,7 +20,7 @@
                       DataContext="{ext:DISource Type=viewmodels:CustomerOrderDBViewListViewModel}"
     d:DesignHeight="450" HorizontalAlignment="Left" Width="1400">
 
-    <Grid Width="1300"
+    <Grid Width="1500"
           HorizontalAlignment="Left" ShowGridLines="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -75,7 +75,7 @@
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="700"
-                         Width="1600"
+                         Width="1800"
                          SelectedItem="{Binding SelectedOrder}"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Top">
@@ -87,7 +87,7 @@
                                 AllowGrouping="False"
                                 ShowGroupPanel="False"
                                 ShowAutoFilterRow="True"
-                                FontSize="13"
+                                FontSize="15"
                                 AutoWidth="False"
                                 ShowTotalSummary="True"
                                 EditorButtonShowMode="ShowOnlyInEditor"
@@ -116,6 +116,10 @@
                                 Header="Order Date"
                                 ReadOnly="True"
                                 Width="90" />
+                <dxg:GridColumn FieldName="OrderRefNbr"
+                                Header="Ord Ref #"
+                                ReadOnly="True"
+                                Width="100" />
                 <dxg:GridColumn FieldName="CustomerName"
                                 Header="Customer Name"
                                 ReadOnly="True"
