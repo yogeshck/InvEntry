@@ -13,6 +13,8 @@ public interface ICustomerService
 {
     Task<Customer> GetCustomer(string mobileNbr);
 
+    Task<List<Customer>> GetCustomers(List<string> mobileNumbers);
+
     Task<Customer> CreateCustomer(Customer customer);
 
     Task UpdateCustomer(Customer customer);
@@ -51,6 +53,15 @@ public class CustomerService : ICustomerService
         }
 
         return customer;
+    }
+
+    public Task<List<Customer>> GetCustomers(List<string> mobileNumbers)
+    {
+
+        var tasks = mobileNumbers.Select(GetCustomer).ToList();
+
+        return Task.WhenAll(tasks)
+            .ContinueWith(t => t.Result.Where(c => c != null).ToList());
     }
 
     public async Task UpdateCustomer(Customer customer)

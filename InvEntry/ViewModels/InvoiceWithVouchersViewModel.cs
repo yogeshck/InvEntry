@@ -4,6 +4,7 @@ using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace InvEntry.ViewModels;
 public partial class InvoiceWithVouchersViewModel : ObservableObject
 {
     [ObservableProperty]
-    public ObservableCollection<Customer> _customers;
+    public ObservableCollection<Customer> _osCustomers;
 
     [ObservableProperty]
     public ObservableCollection<InvoiceLine> _invoiceItems;
@@ -26,19 +27,19 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<InvoiceHeader> _osInvoices;
 
-    [ObservableProperty] 
-    private Customer selectedCustomer;
+    [ObservableProperty]
+    private Customer _selectedCustomer;
 
     [ObservableProperty]
     private InvoiceHeader _selectedInvoice;
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private DateTime invoiceDate = DateTime.Now;
 
     [ObservableProperty]
     private DateSearchOption _searchOption;
 
-    [ObservableProperty] 
+    [ObservableProperty]
     private decimal customerOutstanding;
 
     [ObservableProperty]
@@ -53,6 +54,7 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     public decimal BalanceAmount => (decimal)OsInvoices.Sum(v => v.InvBalance);
 
     //public List<InvoiceLine> Items => InvoiceItems.ToList();
+    public List<string> mobileNbrs = [];
 
     public ICommand SaveCommand { get; }
 
@@ -71,48 +73,58 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         SearchOption.From = Today.AddDays(-1);
         SearchOption.Filter1 = null;
 
+        OsInvoices = new();
+        mobileNbrs = new();
+        OsCustomers = new();
+
         Task.Run(RefreshInvoicesAsync).Wait();
 
-     //   SaveCommand = new AsyncRelayCommand(SaveAsync);
+        //   SaveCommand = new AsyncRelayCommand(SaveAsync);
 
-    //    PropertyChanged += (_, e) =>
-    //    {
-     //       SearchOption.To = Today;
-     //       SearchOption.From = Today.AddDays(-1);
-    //        SearchOption.Filter1 = null; // SelectedCustomer.MobileNbr;
+        //    PropertyChanged += (_, e) =>
+        //    {
+        //       SearchOption.To = Today;
+        //       SearchOption.From = Today.AddDays(-1);
+        //        SearchOption.Filter1 = null; // SelectedCustomer.MobileNbr;
 
-    //        Task.Run(RefreshInvoicesAsync).Wait();
+        //        Task.Run(RefreshInvoicesAsync).Wait();
 
-            //if (e.PropertyName == nameof(SelectedCustomer))
-             //   LoadOutstanding();
+        //if (e.PropertyName == nameof(SelectedCustomer))
+        //   LoadOutstanding();
 
-     //       OnPropertyChanged(nameof(TotalInvoiceAmount));
-    //        OnPropertyChanged(nameof(TotalVoucherAmount));
-    //        OnPropertyChanged(nameof(BalanceAmount));
-    //    };
+        //       OnPropertyChanged(nameof(TotalInvoiceAmount));
+        //        OnPropertyChanged(nameof(TotalVoucherAmount));
+        //        OnPropertyChanged(nameof(BalanceAmount));
+        //    };
     }
 
     [RelayCommand]
     private async Task RefreshInvoicesAsync()
     {
+        OsInvoices.Clear();
+        mobileNbrs.Clear();
 
         var OsInvlist = await _invoiceService.GetOutStanding(SearchOption);
 
         if (OsInvlist is not null)
         {
-            OsInvoices = new(OsInvlist);
+            foreach (var invoice in OsInvlist)
+            {
+                OsInvoices.Add(invoice);
+                mobileNbrs.Add(invoice.CustMobile);
+            }
+        }
 
-        };
-
-    }
-
-    private async Task PopulateCustomerList()
-    {
-        //We will implement later - pick all o/s customers list and show here
-        //now lets give one customer and fetch the details
-
-        //get customer details - by giving mobile number
-       // await CustomerService.GetCustomer
+        if (mobileNbrs.Count > 0)
+        {
+            OsCustomers.Clear();
+            var cust = await _customerService.GetCustomers(mobileNbrs);
+            
+                foreach ( var c in cust )
+                {
+                OsCustomers.Add(c);
+            }
+        }
 
     }
 
@@ -121,7 +133,7 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     {
         var invoiceARList = await _invoiceArReceiptService.GetByInvHdrGKey(SelectedInvoice.GKey);
 
-       // var grnHeader = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
+        // var grnHeader = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
 
     }
 
@@ -135,6 +147,15 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         if (arReceiptsList is not null)
             InvReceipts = new(arReceiptsList);
 
+       // SelectedCustomer = await _customerService.GetCustomer(SelectedInvoice.CustMobile);
+
+        foreach (var cust in OsCustomers)
+        {
+            if (cust.MobileNbr == SelectedInvoice.CustMobile)
+            {
+                SelectedCustomer = cust;
+            }
+        }
     }
 
     private async Task SaveAsync()
@@ -153,20 +174,20 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         {
             CustMobile = SelectedCustomer.CustomerName,
             InvDate = InvoiceDate,
-        //    GrossRcbAmount = TotalInvoiceAmount,
-        //    Lines = InvoiceItems
+            //    GrossRcbAmount = TotalInvoiceAmount,
+            //    Lines = InvoiceItems
         };
 
-/*        var vouchers = VoucherEntries.Select(v => new Voucher
-        {
-            VoucherType = v.VoucherType,
-            TransAmount = v.TransAmount,
-            TransDesc = v.TransDesc,
-            VoucherDate = DateTime.Now,
-            CustomerGkey = SelectedCustomer.GKey
-        }).ToList();*/
+        /*        var vouchers = VoucherEntries.Select(v => new Voucher
+                {
+                    VoucherType = v.VoucherType,
+                    TransAmount = v.TransAmount,
+                    TransDesc = v.TransDesc,
+                    VoucherDate = DateTime.Now,
+                    CustomerGkey = SelectedCustomer.GKey
+                }).ToList();*/
 
-       // await InvoiceService.SaveInvoiceWithVouchersAsync(invoice, vouchers);
+        // await InvoiceService.SaveInvoiceWithVouchersAsync(invoice, vouchers);
 
         MessageBox.Show("Invoice and vouchers saved.");
         InvoiceItems.Clear();

@@ -99,7 +99,7 @@
                     Margin="5"
                     Grid.Row="0">
             <dxe:ComboBoxEdit ItemsSource="{Binding Customers}"
-                              SelectedItem="{Binding SelectedCustomer}"
+                              SelectedItem="{Binding SelectedCustomer.MobileNbr}"
                               Width="150"
                               FontSize="15" />
             <dxe:DateEdit EditValue="{Binding SearchOption.From}"
@@ -215,13 +215,13 @@
                           FontWeight="Bold"
                           Width="400">
                     <StackPanel>
-                        <TextBlock Text="{Binding SelectedInvoice.CustMobile}"
+                        <TextBlock Text="{Binding SelectedCustomer.CustomerName}"
+                                   TextWrapping="Wrap"
+                                   FontSize="15" />
+                        <TextBlock Text="{Binding SelectedCustomer.MobileNbr}"
                                    FontWeight="Bold"
                                    FontSize="15" />
-                        <TextBlock Text="{Binding SelectedInvoice.AmountPayable}"
-                                   TextWrapping="Wrap"
-                                   FontSize="15"/>
-                        <TextBlock Text="{Binding SelectedInvoice.CustMobile}"
+                        <TextBlock Text="{Binding SelectedCustomer.Address.City}"
                                    FontSize="15" />
                     </StackPanel>
                 </GroupBox>
