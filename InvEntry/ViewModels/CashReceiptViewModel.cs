@@ -166,6 +166,7 @@ public partial class CashReceiptViewModel : ObservableObject
             new KeyValuePair<int, string>(3000, "RD")
         };*/
         FromLedgerList.Add("Advance Receipt");
+        FromLedgerList.Add("Credit Receipt");
         FromLedgerList.Add("Recurring Deposit");
 
     }
@@ -192,6 +193,7 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
 
+            // to check with user, do we need to create a user ????? if yes, we need to do -- logic later
             Payer = new();
             Payer.MobileNbr = customerPhoneNumber;
             Payer.Address.GstStateCode = Company.GstCode;

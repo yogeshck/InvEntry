@@ -102,7 +102,8 @@
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Mobile #"
                                      FontSize="14"
-                                     Margin="5">
+                                     Margin="5"
+                                     Height="42">
                         <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}"
                                       Name="CustomerMobileNbr">
                             <dxmvvm:Interaction.Behaviors>
@@ -117,7 +118,8 @@
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Name"
                                      FontSize="14"
-                                     Margin="5">
+                                     Margin="5"
+                                     Height="42">
                         <dxe:TextEdit EditValue="{Binding Payer.CustomerName}"
                                       IsReadOnly="{Binding CustomerReadOnly}"
                                       Name="CustomerNameUI"
@@ -129,10 +131,11 @@
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Address"
                                      FontSize="14"
-                                     Margin="5">
+                                     Margin="5"
+                                     Height="42">
                         <dxe:TextEdit EditValue="{Binding Payer.LedgerName}"
                                       IsReadOnly="{Binding CustomerReadOnly}"
-                                      CharacterCasing="Upper" />
+                                      CharacterCasing="Upper"/>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Ref#"
                                      FontSize="14"

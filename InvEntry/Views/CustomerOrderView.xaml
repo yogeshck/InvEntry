@@ -151,13 +151,22 @@
                                           HorizontalAlignment="Left"
                                           GroupBoxDisplayMode="Light"
                                           ItemLabelsAlignment="Local"
-                                          Orientation="Vertical">
+                                          Orientation="Vertical"  >
+
+                            <dxlc:LayoutGroup.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"
+                                               FontSize="16"
+                                               FontWeight="Bold" />
+                                </DataTemplate>
+                            </dxlc:LayoutGroup.HeaderTemplate>
+
                             <dxlc:LayoutGroup>
                                 <dxlc:LayoutItem Label="Mobile"
                                                  LabelPosition="Top"
                                                  HorizontalAlignment="Left">
                                     <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}"
-                                                  FontSize="16"
+                                                  FontSize="14"
                                                   Name="CustomerMobileNbr">
                                         <dxmvvm:Interaction.Behaviors>
                                             <dxmvvm:EventToCommand EventName="EditValueChanged"
@@ -256,6 +265,13 @@
                                               GroupBoxDisplayMode="Light"
                                               ItemLabelsAlignment="Local"
                                               Orientation="Vertical">
+                                <dxlc:LayoutGroup.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold" />
+                                    </DataTemplate>
+                                </dxlc:LayoutGroup.HeaderTemplate>
                                 <dxlc:LayoutGroup Orientation="Horizontal">
                                     <dxlc:LayoutItem Label=""
                                                      LabelPosition="Top"
@@ -285,6 +301,13 @@
                                               GroupBoxDisplayMode="Light"
                                               ItemLabelsAlignment="Local"
                                               Orientation="Vertical">
+                                <dxlc:LayoutGroup.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}"
+                                                   FontSize="14"
+                                                   FontWeight="Bold" />
+                                    </DataTemplate>
+                                </dxlc:LayoutGroup.HeaderTemplate>
                                 <dxlc:LayoutItem Label="Nbr."
                                                  Width="200"
                                                  FontSize="14">
@@ -407,6 +430,13 @@
 
                 <dxlc:LayoutGroup View="Tabs">
                     <dxlc:LayoutGroup Header="Order Line">
+                        <dxlc:LayoutGroup.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontSize="14"
+                                           FontWeight="Bold" />
+                            </DataTemplate>
+                        </dxlc:LayoutGroup.HeaderTemplate>
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False">
                                 <dxb:BarManager.Bars>
@@ -560,6 +590,13 @@
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup Header="Old Metal">
+                        <dxlc:LayoutGroup.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontSize="14"
+                                           FontWeight="Bold" />
+                            </DataTemplate>
+                        </dxlc:LayoutGroup.HeaderTemplate>
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False">
                                 <dxb:BarManager.Bars>
@@ -672,6 +709,13 @@
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup Header="Receipts">
+                        <dxlc:LayoutGroup.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontSize="14"
+                                           FontWeight="Bold" />
+                            </DataTemplate>
+                        </dxlc:LayoutGroup.HeaderTemplate>
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False">
                                 <dxb:BarManager.Bars>

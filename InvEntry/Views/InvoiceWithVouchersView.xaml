@@ -261,7 +261,7 @@
         </Grid>
 
         <!-- 3️⃣ Summary Row -->
-        <StackPanel Orientation="Horizontal"
+  <!--      <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Left"
                     Margin="45,5,0,5"
                     Grid.Row="2"
@@ -294,7 +294,7 @@
                     Width="100"
                     Height="30" />
         </StackPanel>
-
+-->
     </Grid>
 
 </UserControl>
