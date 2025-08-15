@@ -404,6 +404,7 @@
             // 
             // sqlDataSource1
             // 
+            this.sqlDataSource1.ConnectionName = "ReportDBCon01";
             this.sqlDataSource1.Name = "sqlDataSource1";
             customSqlQuery1.Name = "VOUCHER_1";
             queryParameter1.Name = "FromDtParam";

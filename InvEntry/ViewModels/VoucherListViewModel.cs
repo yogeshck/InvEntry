@@ -14,13 +14,9 @@ using System.Threading.Tasks;
 using DevExpress.Xpf.Printing;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 using InvEntry.Reports;
-using System.Windows;
-using System.Collections.Generic;
-using DevExpress.XtraPivotGrid.Data;
-using System.Windows.Documents;
-using DevExpress.Mvvm.Native;
 using System.Linq;
-using DevExpress.XtraGrid.Views.Items;
+using DevExpress.Xpf.Core;
+
 
 namespace InvEntry.ViewModels;
 
@@ -43,7 +39,7 @@ public partial class VoucherListViewModel: ObservableObject
     private ObservableCollection<string> _statementTypeOptionList;
 
     [ObservableProperty]
-    private Voucher _selectedVoucher;
+    private VoucherDbView _selectedVoucher;
 
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
@@ -163,17 +159,40 @@ public partial class VoucherListViewModel: ObservableObject
     
     }
 
-    /*    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
-    private void PrintInvoice()
+    [RelayCommand(CanExecute = nameof(CanPrintVoucher))]
+    private void PrintVoucher()
     {
-        _reportDialogService.PrintPreview(SelectedVoucher.??);
+        var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
+
+        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
+        _reportDialogService.PrintPreviewVoucher(SelectedVoucher.GKey);
+
+        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+
+        PrintPreviewVoucherCommand.NotifyCanExecuteChanged();
+        PrintVoucherCommand.NotifyCanExecuteChanged();
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
     }
 
-    private bool CanPrintInvoice()
+    private bool CanPrintVoucher()
     {
         return SelectedVoucher is not null;
-    }*/
+    }
 
+    [RelayCommand(CanExecute = nameof(CanPrintVoucher))]
+    private void PrintPreviewVoucher()
+    {
+        _reportDialogService.PrintPreviewVoucher(SelectedVoucher.GKey);
+        //ResetVoucher();
+    }
+
+    [RelayCommand]
+    private void SelectionChanged()
+    {
+        PrintVoucherCommand.NotifyCanExecuteChanged();
+    }
 
     //[RelayCommand]
     //private async Task SendToTally()

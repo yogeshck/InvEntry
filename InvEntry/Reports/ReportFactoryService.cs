@@ -38,6 +38,12 @@ public interface IReportFactoryService
     Task CreateDeliveryNoteReportPdf(string pEstimateNbr, int pEstHdrGkey,
                                                 OrgThisCompanyView orgThisCompany, string filePath);
 
+    XtraReport CreateVoucherReport();
+
+    XtraReport CreateVoucherReport(int pVoucherGkey, OrgThisCompanyView orgThisCompany);
+
+    Task CreateVoucherReportPdf(int pVoucherGkey,
+                                        OrgThisCompanyView orgThisCompany, string filePath);
 
     XtraReport CreateFinStatementReport();
 
@@ -122,6 +128,32 @@ public class ReportFactoryService : IReportFactoryService
                                             OrgThisCompanyView orgThisCompany, string filePath)
     {
         var report = CreateDeliveryNoteReport(pEstimateNbr, pEstHdrGkey, orgThisCompany);
+
+        await report.ExportToPdfAsync(filePath);
+
+    }
+
+    public XtraReport CreateVoucherReport()
+    {
+        return new VoucherPrint().AddDataSource(_appConfigName);
+
+    }
+
+
+    public XtraReport CreateVoucherReport(int pVoucherGkey, OrgThisCompanyView orgThisCompany)
+    {
+        var report = CreateVoucherReport();
+
+        report.Parameters["pVoucherGkey"].Value = pVoucherGkey;
+        report.CreateDocument();
+        return report;
+
+    }
+
+    public async Task CreateVoucherReportPdf(int pVoucherGkey,
+                                            OrgThisCompanyView orgThisCompany, string filePath)
+    {
+        var report = CreateVoucherReport(pVoucherGkey, orgThisCompany);
 
         await report.ExportToPdfAsync(filePath);
 

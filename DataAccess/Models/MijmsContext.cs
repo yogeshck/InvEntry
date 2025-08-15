@@ -2804,10 +2804,10 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("ob_amount");
             entity.Property(e => e.PaidAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("Paid Amount");
+                .HasColumnName("Paid_Amount");
             entity.Property(e => e.RecdAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("Recd Amount");
+                .HasColumnName("Recd_Amount");
             entity.Property(e => e.RefDocDate).HasColumnName("ref_doc_date");
             entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
             entity.Property(e => e.RefDocNbr)

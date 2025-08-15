@@ -20,7 +20,7 @@ namespace InvEntry.Extension
             reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
 
-        public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader, 
+        public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader,
                                                                     int estGkey, OrgThisCompanyView company)
         {
             var dialogVM = DISource.Resolve<ReportDialogViewModel>();
@@ -50,5 +50,20 @@ namespace InvEntry.Extension
             PrintPreviewDeliveryNote(reportDialogService, estimateHeader, estGkey, null);
         }
 
+        public static void PrintPreviewVoucher(this IDialogService reportDialogService,
+                                                    int vchGkey)
+        {
+            PrintPreviewVoucher(reportDialogService, vchGkey, null);
+        }
+
+        public static void PrintPreviewVoucher(this IDialogService reportDialogService,
+                                                    int vchGkey, OrgThisCompanyView company)
+        {
+            var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+            dialogVM.VoucherInit(vchGkey, company);
+
+            reportDialogService.ShowDialog(null, "Voucher Preview", $"{nameof(ReportDialogView)}", dialogVM);
+
+        }
     }
 }

@@ -38,6 +38,11 @@ namespace InvEntry.ViewModels
             Report = _reportFactoryService.CreateDeliveryNoteReport(pEstimateNbr, estGkey, company);
         }
 
+        public void VoucherInit(int vchGkey, OrgThisCompanyView company)
+        {
+            Report = _reportFactoryService.CreateVoucherReport(vchGkey, company);
+        }
+
         public void FinStmtPCInit(DateTime pFromDate, DateTime pToDate, string statementType)
         {
             Report = _reportFactoryService.CreateFinStatementReport(pFromDate, pToDate, statementType);
