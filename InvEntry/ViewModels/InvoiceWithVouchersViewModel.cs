@@ -119,9 +119,9 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         {
             OsCustomers.Clear();
             var cust = await _customerService.GetCustomers(mobileNbrs);
-            
-                foreach ( var c in cust )
-                {
+
+            foreach (var c in cust)
+            {
                 OsCustomers.Add(c);
             }
         }
@@ -147,7 +147,7 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         if (arReceiptsList is not null)
             InvReceipts = new(arReceiptsList);
 
-       // SelectedCustomer = await _customerService.GetCustomer(SelectedInvoice.CustMobile);
+        // SelectedCustomer = await _customerService.GetCustomer(SelectedInvoice.CustMobile);
 
         foreach (var cust in OsCustomers)
         {

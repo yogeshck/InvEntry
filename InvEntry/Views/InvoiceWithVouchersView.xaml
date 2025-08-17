@@ -21,10 +21,10 @@
              d:DesignHeight="450"
              d:DesignWidth="1100">
 
-    <Grid Width="1400"
+    <Grid Width="1450"
           HorizontalAlignment="Left">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="645" />
+            <ColumnDefinition Width="700" />
             <ColumnDefinition Width="300*" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
@@ -133,7 +133,7 @@
                 </dxmvvm:Interaction.Behaviors>
                 <dxg:GridControl.View>
                     <dxg:TableView ShowGroupPanel="False"
-                                   FontSize="15"
+                                   FontSize="14"
                                    AutoWidth="False" />
                 </dxg:GridControl.View>
 
@@ -145,7 +145,7 @@
                     <dxg:GridColumn FieldName="InvDate"
                                     Header="Date"
                                     ReadOnly="True"
-                                    Width="100" />
+                                    Width="90" />
                     <dxg:GridColumn FieldName="GrossRcbAmount"
                                     Header="Total Amount"
                                     Width="100">
@@ -166,7 +166,25 @@
                     </dxg:GridColumn>
                     <dxg:GridColumn FieldName="AmountPayable"
                                     Header="Receivable"
-                                    Width="120">
+                                    Width="100">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings MaskType="Numeric"
+                                                  MaskUseAsDisplayFormat="True"
+                                                  Mask="C2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="AdvanceAdj"
+                                    Header="Advance"
+                                    Width="100">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings MaskType="Numeric"
+                                                  MaskUseAsDisplayFormat="True"
+                                                  Mask="C2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="RdAmountAdj"
+                                    Header="R D"
+                                    Width="90">
                         <dxg:GridColumn.EditSettings>
                             <dxe:TextEditSettings MaskType="Numeric"
                                                   MaskUseAsDisplayFormat="True"
@@ -175,7 +193,7 @@
                     </dxg:GridColumn>
                     <dxg:GridColumn FieldName="RecdAmount"
                                     Header="Received"
-                                    Width="120">
+                                    Width="100">
                         <dxg:GridColumn.EditSettings>
                             <dxe:TextEditSettings MaskType="Numeric"
                                                   MaskUseAsDisplayFormat="True"
