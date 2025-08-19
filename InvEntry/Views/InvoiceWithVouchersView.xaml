@@ -8,107 +8,43 @@
              xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking"
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
              xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
              xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
+             xmlns:behavior="clr-namespace:InvEntry.Behavior"
+             mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceWithVouchersViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceWithVouchersViewModel}"
-             xmlns:vm="clr-namespace:InvEntry.ViewModels"
-             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
-             mc:Ignorable="d"
-             d:DesignHeight="450"
-             d:DesignWidth="1100">
+             d:DesignHeight="700"
+             d:DesignWidth="1400">
 
-    <Grid Width="1450"
-          HorizontalAlignment="Left">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="700" />
-            <ColumnDefinition Width="300*" />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <!-- Search bar -->
-            <RowDefinition Height="*" />
-            <!-- Main content -->
+            <!-- Search Panel -->
+            <RowDefinition Height="400" />
+            <!-- Main Content -->
             <RowDefinition Height="Auto" />
-            <!-- Summary -->
+            <!-- Adjustment Panel -->
         </Grid.RowDefinitions>
-        
 
-        <!--     <dxb:BarContainerControl Grid.ColumnSpan="3"
-                                 Margin="0,0,0,394"
-                                 Grid.RowSpan="2">
-            <dxb:MainMenuControl>
-                <dxb:BarEditItem   EditValue="{Binding SelectedCustomer}"
-                                   Content="Options"
-                                   EditWidth="150"
-                                   EditHeight="30">
-                    <dxb:BarEditItem.EditSettings>
-                        <dxe:ComboBoxEditSettings ItemsSource="{Binding Customers}" />
-                    </dxb:BarEditItem.EditSettings>
-                </dxb:BarEditItem>
-
-                <dxb:BarEditItem EditValue="{Binding SearchOption.From}"
-                                 EditWidth="120"
-                                 Content="From Date"
-                                 TextBlock.FontSize="18"
-                                 TextBlock.FontWeight="Bold">
-                    <dxb:BarEditItem.EditSettings>
-                        <dxe:DateEditSettings AllowDefaultButton="True" />
-                    </dxb:BarEditItem.EditSettings>
-                </dxb:BarEditItem>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.To}"
-                                 EditWidth="120"
-                                 Content="To Date">
-                    <dxb:BarEditItem.EditSettings>
-                        <dxe:DateEditSettings AllowDefaultButton="True"
-                                              MaxValue="{Binding Today}" />
-                    </dxb:BarEditItem.EditSettings>
-                </dxb:BarEditItem>
-                <dxb:BarButtonItem x:Name="btnRefresh"
-                                   Content="Refresh"
-                                   Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
-                                   GlyphSize="Large"
-                                   Command="{Binding RefreshInvoicesCommand}" />
-                <dxb:BarItemSeparator Margin="2,0,2,0" />
-                <dxb:BarButtonItem x:Name="btnPrintGrid"
-                                   GlyphSize="Large"
-                                   Content="Export"
-                                   Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
-                                   BarItemDisplayMode="ContentAndGlyph"
-                                   GlyphAlignment="Top" />
-                <dxb:BarItemSeparator Margin="2,0,2,0" />
-                <dxb:BarButtonItem x:Name="btnPrintEstimate"
-                                   Content="Print"
-                                   Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
-                                   GlyphSize="Large"
-                                   Alignment="Far"
-                                   BarItemDisplayMode="ContentAndGlyph"
-                                   GlyphAlignment="Top"
-                                   Command="{Binding PrintEstimateCommand}" />
-
-            </dxb:MainMenuControl>
-        </dxb:BarContainerControl> -->
-
-        <!-- 1️⃣ Search Panel -->
+        <!-- 🔍 Search Panel  <dxe:ComboBoxEdit  ItemsSource="{Binding Customers}"    SelectedItem="{Binding SelectedCustomer}" DisplayMember="CustomerName"-->
         <StackPanel Orientation="Horizontal"
-                    Margin="5"
-                    Grid.Row="0">
-            <dxe:ComboBoxEdit ItemsSource="{Binding Customers}"
-                              SelectedItem="{Binding SelectedCustomer.MobileNbr}"
-                              Width="150"
+                    Grid.Row="0"
+                    Margin="5">
+            <dxe:TextEdit EditValue="{Binding SearchOption.Filter1}"
+                              Width="200"
                               FontSize="15" />
             <dxe:DateEdit EditValue="{Binding SearchOption.From}"
                           Width="120"
-                          Margin="5,0"
+                          Margin="10,0"
                           FontSize="15" />
             <dxe:DateEdit EditValue="{Binding SearchOption.To}"
                           Width="120"
-                          Margin="5,0"
+                          Margin="10,0"
                           FontSize="15" />
             <Button Content="Refresh"
                     Command="{Binding RefreshInvoicesCommand}"
@@ -116,17 +52,22 @@
                     FontSize="15" />
         </StackPanel>
 
-        <Grid Grid.Row="1"
-              Grid.ColumnSpan="3">
+        <!-- 📄 Main Content -->
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />  <!-- Left: Invoice list -->
-                <ColumnDefinition Width="*" />   <!-- Right: Customer info + Receipts -->
+                <ColumnDefinition Width="3*" />
+                <!-- Invoices -->
+                <ColumnDefinition Width="3*" />
+                <!-- Customer + Receipts -->
             </Grid.ColumnDefinitions>
 
-            <!-- Left: Invoice header list -->
-            <dxg:GridControl ItemsSource="{Binding OsInvoices}"
+            <!-- 🧾 Invoice Grid -->
+            <dxg:GridControl Grid.Column="0"
+                             x:Name="OsInvoicesGrid"
+                             ItemsSource="{Binding OsInvoices}"
+                             SelectedItem="{Binding SelectedInvoice}"
                              AutoGenerateColumns="None"
-                             SelectedItem="{Binding SelectedInvoice}">
+                             FontSize="14">
                 <dxmvvm:Interaction.Behaviors>
                     <dxmvvm:EventToCommand EventName="SelectedItemChanged"
                                            Command="{Binding SelectionInvoiceChangedCommand}" />
@@ -134,57 +75,20 @@
                 <dxg:GridControl.View>
                     <dxg:TableView ShowGroupPanel="False"
                                    FontSize="14"
-                                   AutoWidth="False" />
+                                   AutoWidth="False"
+                                   AllowEditing="False" />
                 </dxg:GridControl.View>
 
                 <dxg:GridControl.Columns>
                     <dxg:GridColumn FieldName="InvNbr"
                                     Header="Invoice #"
-                                    ReadOnly="True"
                                     Width="70" />
                     <dxg:GridColumn FieldName="InvDate"
                                     Header="Date"
-                                    ReadOnly="True"
-                                    Width="90" />
-                    <dxg:GridColumn FieldName="GrossRcbAmount"
-                                    Header="Total Amount"
-                                    Width="100">
-                        <dxg:GridColumn.EditSettings>
-                            <dxe:TextEditSettings MaskType="Numeric"
-                                                  MaskUseAsDisplayFormat="True"
-                                                  Mask="C2" />
-                        </dxg:GridColumn.EditSettings>
-                    </dxg:GridColumn>
-                    <dxg:GridColumn FieldName="DiscountAmount"
-                                    Header="Discount"
-                                    Width="90">
-                        <dxg:GridColumn.EditSettings>
-                            <dxe:TextEditSettings MaskType="Numeric"
-                                                  MaskUseAsDisplayFormat="True"
-                                                  Mask="C2" />
-                        </dxg:GridColumn.EditSettings>
-                    </dxg:GridColumn>
+                                    Width="80" />
                     <dxg:GridColumn FieldName="AmountPayable"
                                     Header="Receivable"
-                                    Width="100">
-                        <dxg:GridColumn.EditSettings>
-                            <dxe:TextEditSettings MaskType="Numeric"
-                                                  MaskUseAsDisplayFormat="True"
-                                                  Mask="C2" />
-                        </dxg:GridColumn.EditSettings>
-                    </dxg:GridColumn>
-                    <dxg:GridColumn FieldName="AdvanceAdj"
-                                    Header="Advance"
-                                    Width="100">
-                        <dxg:GridColumn.EditSettings>
-                            <dxe:TextEditSettings MaskType="Numeric"
-                                                  MaskUseAsDisplayFormat="True"
-                                                  Mask="C2" />
-                        </dxg:GridColumn.EditSettings>
-                    </dxg:GridColumn>
-                    <dxg:GridColumn FieldName="RdAmountAdj"
-                                    Header="R D"
-                                    Width="90">
+                                    Width="120">
                         <dxg:GridColumn.EditSettings>
                             <dxe:TextEditSettings MaskType="Numeric"
                                                   MaskUseAsDisplayFormat="True"
@@ -193,7 +97,7 @@
                     </dxg:GridColumn>
                     <dxg:GridColumn FieldName="RecdAmount"
                                     Header="Received"
-                                    Width="100">
+                                    Width="120">
                         <dxg:GridColumn.EditSettings>
                             <dxe:TextEditSettings MaskType="Numeric"
                                                   MaskUseAsDisplayFormat="True"
@@ -202,7 +106,7 @@
                     </dxg:GridColumn>
                     <dxg:GridColumn FieldName="InvBalance"
                                     Header="Balance"
-                                    Width="100">
+                                    Width="120">
                         <dxg:GridColumn.EditSettings>
                             <dxe:TextEditSettings MaskType="Numeric"
                                                   MaskUseAsDisplayFormat="True"
@@ -216,74 +120,99 @@
                 </dxg:GridControl.Columns>
             </dxg:GridControl>
 
-            <!-- Right side -->
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <!-- Customer info -->
-                    <RowDefinition Height="*" />
-                    <!-- Receipts grid -->
-                </Grid.RowDefinitions>
-
-                <!-- Customer info group -->
+            <!-- 👤 Customer Info + 💳 Receipts -->
+            <StackPanel Grid.Column="1"
+                        Margin="10">
+                <!-- Customer Info -->
                 <GroupBox Header="Customer Information"
-                          Margin="5"
-                          Padding="5"
-                          FontSize="20"
+                          FontSize="16"
                           FontWeight="Bold"
-                          Width="400">
+                          Padding="10">
                     <StackPanel>
                         <TextBlock Text="{Binding SelectedCustomer.CustomerName}"
-                                   TextWrapping="Wrap"
-                                   FontSize="15" />
+                                   FontSize="14" />
                         <TextBlock Text="{Binding SelectedCustomer.MobileNbr}"
-                                   FontWeight="Bold"
-                                   FontSize="15" />
+                                   FontSize="14" />
                         <TextBlock Text="{Binding SelectedCustomer.Address.City}"
-                                   FontSize="15" />
+                                   FontSize="14" />
                     </StackPanel>
                 </GroupBox>
 
-                <!-- Receipts grid -->
-                <dxg:GridControl Grid.Row="1"
-                                 ItemsSource="{Binding InvReceipts}"
+                <!-- Receipts Grid -->
+                <dxg:GridControl ItemsSource="{Binding SelectedInvoice.ReceiptLines}"
                                  AutoGenerateColumns="None"
-                                 Width="500">
+                                 FontSize="13"
+                                 Margin="0,10,0,0"
+                                 Height="250">
                     <dxg:GridControl.View>
                         <dxg:TableView ShowGroupPanel="False"
-                                       FontSize="15"
-                                       AutoWidth="False" />
+                                       AllowEditing="False"
+                                       ShowTotalSummary="True" />
                     </dxg:GridControl.View>
-
                     <dxg:GridControl.Columns>
                         <dxg:GridColumn FieldName="TransactionType"
                                         Header="Type"
-                                        Width="120">
-                        </dxg:GridColumn>
+                                        Width="100" />
                         <dxg:GridColumn FieldName="InternalVoucherNbr"
                                         Header="Doc Nbr"
-                                        Width="90" />
+                                        Width="100" />
+                        <dxg:GridColumn FieldName="InternalVoucherDate"
+                                        Header="Doc Date"
+                                        Width="100" />
                         <dxg:GridColumn FieldName="AdjustedAmount"
-                                        Header="Adjusted"
+                                        Header="Amount"
                                         Width="100">
                             <dxg:GridColumn.EditSettings>
-                                <dxe:TextEditSettings MaskType="Numeric"
-                                                      MaskUseAsDisplayFormat="True"
-                                                      Mask="C2" />
+                                <dxe:TextEditSettings Mask="C2"
+                                                      MaskType="Numeric"
+                                                      MaskUseAsDisplayFormat="True" />
                             </dxg:GridColumn.EditSettings>
                         </dxg:GridColumn>
+                        <dxg:GridColumn FieldName="Remarks"
+                                        Header="Remarks"
+                                        Width="200" />
                     </dxg:GridControl.Columns>
-                    <!-- your voucher columns here -->
                 </dxg:GridControl>
-            </Grid>
+            </StackPanel>
         </Grid>
 
-        <!-- 3️⃣ Summary Row -->
-  <!--      <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Left"
-                    Margin="45,5,0,5"
+        <!-- ➕ Adjustment Panel -->
+        <GroupBox Header="Adjust Outstanding"
+                  Grid.Row="2"
+                  Margin="10">
+            <StackPanel Orientation="Horizontal">
+                <dxe:ComboBoxEdit ItemsSource="{Binding PaymentModeList}"
+                                  SelectedItem="{Binding SelectedPaymentType}"
+                                  Width="150"
+                                  FontSize="14" />
+                <dxe:TextEdit EditValue="{Binding AdjustmentAmount}"
+                              Mask="C2"
+                              MaskType="Numeric"
+                              MaskUseAsDisplayFormat="True"
+                              Width="100"
+                              Margin="10,0" 
+                              FontSize="14"/>
+                <dxe:DateEdit EditValue="{Binding PaidOn}"
+                              Width="120"
+                              Margin="10,0"
+                              FontSize="14" />
+                <TextBox Text="{Binding AdjustmentRemarks}"
+                         Width="200"
+                         Margin="10,0"
+                         FontSize="14" />
+                <Button Content="Apply Adjustment"
+                        Command="{Binding ApplyAdjustmentCommand}"
+                        Background="Green"
+                        Foreground="White"
+                        Width="150"
+                        Margin="10,0" />
+            </StackPanel>
+        </GroupBox>
+
+        <!-- 📊 Summary Panel -->
+        <!--   <StackPanel Orientation="Horizontal"
                     Grid.Row="2"
-                    Grid.Column="1">
+                    Margin="10">
             <TextBlock Text="Total Invoice: ₹"
                        FontWeight="Bold" />
             <TextBlock Text="{Binding TotalInvoiceAmount}"
@@ -296,11 +225,6 @@
             <TextBlock Text="Balance: ₹"
                        FontWeight="Bold"
                        Margin="20,0" />
-            <dxe:TextEdit MaskType="Numeric"
-                          Mask="C2"
-                          MaskUseAsDisplayFormat="True"
-                          EditValue="BalanceAmount"
-                          IsPrintingMode="True" />
             <TextBlock Text="{Binding BalanceAmount}"
                        Foreground="Red"
                        FontWeight="Bold"
@@ -309,10 +233,10 @@
                     Command="{Binding SaveCommand}"
                     Background="Green"
                     Foreground="White"
-                    Width="100"
-                    Height="30" />
-        </StackPanel>
--->
-    </Grid>
+                    Width="150"
+                    Height="30"
+                    Margin="20,0" />
+        </StackPanel> -->
 
+    </Grid>
 </UserControl>
