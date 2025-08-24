@@ -79,6 +79,9 @@ namespace InvEntry.Models
         [ObservableProperty]
         public string? _invoiceReceiptNbr;
 
+        public decimal? Debit => TransactionType != "Credit" ? AdjustedAmount : null;
+        public decimal? Credit => TransactionType == "Credit" ? AdjustedAmount : null;
+
     }
 
 }

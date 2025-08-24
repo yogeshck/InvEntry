@@ -15,6 +15,7 @@
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
+             xmlns:dxe1="clr-namespace:DevExpress.XtraEditors;assembly=DevExpress.XtraEditors.v24.2"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceWithVouchersViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceWithVouchersViewModel}"
@@ -36,8 +37,8 @@
                     Grid.Row="0"
                     Margin="5">
             <dxe:TextEdit EditValue="{Binding SearchOption.Filter1}"
-                              Width="200"
-                              FontSize="15" />
+                          Width="200"
+                          FontSize="15" />
             <dxe:DateEdit EditValue="{Binding SearchOption.From}"
                           Width="120"
                           Margin="10,0"
@@ -50,6 +51,14 @@
                     Command="{Binding RefreshInvoicesCommand}"
                     Margin="10,0"
                     FontSize="15" />
+            <!-- <dx:SimpleButton Content="Print"
+                              Command="{Binding PrintInvoiceCommand}"
+                              Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
+                              Margin="10,0"
+                              FontSize="15"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" /> -->
+
         </StackPanel>
 
         <!-- 📄 Main Content -->
@@ -141,14 +150,25 @@
                 <!-- Receipts Grid -->
                 <dxg:GridControl ItemsSource="{Binding SelectedInvoice.ReceiptLines}"
                                  AutoGenerateColumns="None"
-                                 FontSize="13"
+                                 FontSize="14"
                                  Margin="0,10,0,0"
                                  Height="250">
                     <dxg:GridControl.View>
                         <dxg:TableView ShowGroupPanel="False"
                                        AllowEditing="False"
-                                       ShowTotalSummary="True" />
+                                       ShowTotalSummary="True"
+                                       EnableSelectedRowAppearance="False"/>
                     </dxg:GridControl.View>
+                    <dxg:GridControl.TotalSummary>
+                        <!-- Sum of Debit column -->
+                        <dxg:GridSummaryItem FieldName="Debit"
+                                             SummaryType="Sum"
+                                             DisplayFormat="{}{0:c2}" />
+                        <!-- Sum of Credit column -->
+                        <dxg:GridSummaryItem FieldName="Credit"
+                                             SummaryType="Sum"
+                                             DisplayFormat="{}{0:c2}" />
+                    </dxg:GridControl.TotalSummary>
                     <dxg:GridControl.Columns>
                         <dxg:GridColumn FieldName="TransactionType"
                                         Header="Type"
@@ -158,20 +178,32 @@
                                         Width="100" />
                         <dxg:GridColumn FieldName="InternalVoucherDate"
                                         Header="Doc Date"
+                                        Width="100"
+                                        SortOrder="Ascending" />
+                        <dxg:GridColumn FieldName="TransDate"
+                                        Header="Recd on"
                                         Width="100" />
-                        <dxg:GridColumn FieldName="AdjustedAmount"
+                        <dxg:GridColumn FieldName="Debit"
                                         Header="Amount"
-                                        Width="100">
+                                        Width="150">
                             <dxg:GridColumn.EditSettings>
                                 <dxe:TextEditSettings Mask="C2"
                                                       MaskType="Numeric"
                                                       MaskUseAsDisplayFormat="True" />
                             </dxg:GridColumn.EditSettings>
                         </dxg:GridColumn>
-                        <dxg:GridColumn FieldName="Remarks"
-                                        Header="Remarks"
-                                        Width="200" />
+                        <dxg:GridColumn FieldName="Credit"
+                                        Header="Credit"
+                                        Width="100"
+                                        UnboundType="Decimal">
+                            <dxg:GridColumn.EditSettings>
+                                <dxe:TextEditSettings Mask="C2"
+                                                      MaskType="Numeric"
+                                                      MaskUseAsDisplayFormat="True" />
+                            </dxg:GridColumn.EditSettings>
+                        </dxg:GridColumn>
                     </dxg:GridControl.Columns>
+                    
                 </dxg:GridControl>
             </StackPanel>
         </Grid>
@@ -179,7 +211,9 @@
         <!-- ➕ Adjustment Panel -->
         <GroupBox Header="Adjust Outstanding"
                   Grid.Row="2"
-                  Margin="10">
+                  Margin="10"
+                  FontSize="14"
+                  FontWeight="Bold">
             <StackPanel Orientation="Horizontal">
                 <dxe:ComboBoxEdit ItemsSource="{Binding PaymentModeList}"
                                   SelectedItem="{Binding SelectedPaymentType}"
@@ -189,18 +223,15 @@
                               Mask="C2"
                               MaskType="Numeric"
                               MaskUseAsDisplayFormat="True"
-                              Width="100"
-                              Margin="10,0" 
-                              FontSize="14"/>
+                              Width="120"
+                              Margin="10,0"
+                              FontSize="14"
+                              HorizontalContentAlignment="Right" />
                 <dxe:DateEdit EditValue="{Binding PaidOn}"
                               Width="120"
                               Margin="10,0"
                               FontSize="14" />
-                <TextBox Text="{Binding AdjustmentRemarks}"
-                         Width="200"
-                         Margin="10,0"
-                         FontSize="14" />
-                <Button Content="Apply Adjustment"
+                <Button Content="Apply Receipt"
                         Command="{Binding ApplyAdjustmentCommand}"
                         Background="Green"
                         Foreground="White"
