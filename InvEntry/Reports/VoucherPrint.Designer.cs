@@ -227,14 +227,16 @@
             // 
             // xrLabel1
             // 
+            this.xrLabel1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Upper([trans_type])+ \' VOUCHER\'")});
             this.xrLabel1.Font = new DevExpress.Drawing.DXFont("Arial", 14F, ((DevExpress.Drawing.DXFontStyle)((DevExpress.Drawing.DXFontStyle.Bold | DevExpress.Drawing.DXFontStyle.Underline))));
-            this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(200.0934F, 1.194331F);
+            this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(172.5934F, 1.194305F);
             this.xrLabel1.Multiline = true;
             this.xrLabel1.Name = "xrLabel1";
             this.xrLabel1.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel1.SizeF = new System.Drawing.SizeF(186.3667F, 23F);
+            this.xrLabel1.SizeF = new System.Drawing.SizeF(242.2F, 23F);
             this.xrLabel1.StylePriority.UseFont = false;
-            this.xrLabel1.Text = "Payment Voucher";
+            this.xrLabel1.Text = "Voucher";
             // 
             // xrLabel7
             // 

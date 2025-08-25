@@ -272,12 +272,16 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
 
         }
         else
+        {
+            _messageBoxService.ShowMessage("Invalid Amount.", "Invalid AdjustmentAmount",
+                            MessageButton.OK, MessageIcon.None);
             return;
+        }
 
         ResetAdjPanel();
         await SelectionInvoiceChanged();
 
-        _messageBoxService.ShowMessage("Adjusted against outstanding Invoice amount. Successfully", "Outstanding Adjustment",
+        _messageBoxService.ShowMessage("Sucessfully adjusted against outstanding Invoice amount.", "Outstanding Adjustment",
                                     MessageButton.OK, MessageIcon.None);
     }
 
