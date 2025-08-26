@@ -365,6 +365,8 @@
             // 
             // xrLabel8
             // 
+            this.xrLabel8.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([trans_type]=\'Payment\',\'Pay to : \',\'Received from\')")});
             this.xrLabel8.LocationFloat = new DevExpress.Utils.PointFloat(10F, 10F);
             this.xrLabel8.Multiline = true;
             this.xrLabel8.Name = "xrLabel8";

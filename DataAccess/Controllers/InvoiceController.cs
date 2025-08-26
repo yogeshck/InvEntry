@@ -15,15 +15,15 @@ namespace DataAccess.Controllers
 
         private IRepositoryBase<InvoiceHeader> _invoiceHeaderRepository;
         private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
-    //    private IRepositoryBase<OrgCompany> _orgCompanyRepository;
+        //    private IRepositoryBase<OrgCompany> _orgCompanyRepository;
 
-        public InvoiceController(   IRepositoryBase<InvoiceHeader> invoiceHeaderRepository,
-                                    IRepositoryBase<VoucherType> voucherTypeRepo )  
-                                   // IRepositoryBase<OrgCompany> orgCompanyRepository        )
+        public InvoiceController(IRepositoryBase<InvoiceHeader> invoiceHeaderRepository,
+                                    IRepositoryBase<VoucherType> voucherTypeRepo)
+        // IRepositoryBase<OrgCompany> orgCompanyRepository        )
         {
             _invoiceHeaderRepository = invoiceHeaderRepository;
             _voucherTypeRepo = voucherTypeRepo;
-           // _orgCompanyRepository = orgCompanyRepository;
+            // _orgCompanyRepository = orgCompanyRepository;
         }
 
         // GET: api/<InvoiceController>
@@ -37,17 +37,18 @@ namespace DataAccess.Controllers
         [HttpPost("filter")]
         public IEnumerable<InvoiceHeader> FilterHeader([FromBody] InvoiceSearchOption criteria)   //we can remove this later
         {
-            return _invoiceHeaderRepository.GetList(x => 
-                                                    (   x.InvDate.HasValue 
-                                                     && x.InvDate.Value.Date >= criteria.From.Date 
-                                                     && x.InvDate.Value.Date <= criteria.To.Date ));
+            return _invoiceHeaderRepository.GetList(x =>
+                                                    (x.InvDate.HasValue
+                                                     && x.InvDate.Value.Date >= criteria.From.Date
+                                                     && x.InvDate.Value.Date <= criteria.To.Date));
         }
 
         // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
         [HttpPost("outstanding")]
         public IEnumerable<InvoiceHeader> GetOutstanding([FromBody] DateSearchOption criteria)
         {
-            if (!string.IsNullOrEmpty(criteria.Filter1))        //search criteria >> customer mobile 
+            if (!string.IsNullOrEmpty(criteria.Filter1) 
+                        && criteria.From != DateTime.MinValue && criteria.To != DateTime.MinValue)      //search criteria >> customer mobile 
             {
                 // Filter by customer mobile and only invoices with outstanding balance
                 return _invoiceHeaderRepository.GetList(x =>
@@ -58,13 +59,21 @@ namespace DataAccess.Controllers
                     x.InvBalance > 0
                 ).OrderBy(x => x.InvDate);
             }
-            else
+            else if (string.IsNullOrEmpty(criteria.Filter1))
             {
                 // Filter all customers but only return invoices with balance due
                 return _invoiceHeaderRepository.GetList(x =>
                     x.InvDate.HasValue &&
                     x.InvDate.Value.Date >= criteria.From.Date &&
                     x.InvDate.Value.Date <= criteria.To.Date &&
+                    x.InvBalance > 0
+                ).OrderBy(x => x.InvDate);
+            }
+            else
+            {
+                // Filter all customers but only return invoices with balance due
+                return _invoiceHeaderRepository.GetList(x =>
+                    x.CustMobile == criteria.Filter1 &&
                     x.InvBalance > 0
                 ).OrderBy(x => x.InvDate);
             }
@@ -90,7 +99,7 @@ namespace DataAccess.Controllers
 
             DocumentPrefixFormat = voucherType.DocNbrPrefix;
 
-            value.InvNbr = string.Format("{0}{1}",DocumentPrefixFormat, 
+            value.InvNbr = string.Format("{0}{1}", DocumentPrefixFormat,
                             voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
 
             _invoiceHeaderRepository.Add(value);

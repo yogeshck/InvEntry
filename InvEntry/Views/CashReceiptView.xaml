@@ -140,10 +140,12 @@
                     <dxlc:LayoutItem Label="Ref#"
                                      FontSize="14"
                                      Margin="5">
-                        <dxe:TextEdit Height="42"
-                                      FontSize="16"
-                                      EditValue="{Binding Voucher.RefDocNbr}"
-                                      CharacterCasing="Upper" />
+                        <dxe:ComboBoxEdit Height="42"
+                                          FontWeight="ExtraBold"
+                                          EditValue="{Binding SelectedInvoice}"
+                                          ItemsSource="{Binding OsInvoiceList}"
+                                          IsTextEditable="False">
+                        </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Amount"
                                      FontSize="14"

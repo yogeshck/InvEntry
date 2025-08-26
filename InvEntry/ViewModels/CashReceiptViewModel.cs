@@ -16,6 +16,7 @@ using InvEntry.Services;
 using InvEntry.Store;
 using InvEntry.Tally;
 using InvEntry.Utils;
+using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -62,6 +63,12 @@ public partial class CashReceiptViewModel : ObservableObject
     public bool _customerReadOnly;
 
     [ObservableProperty]
+    private DateSearchOption _searchOption;
+
+    [ObservableProperty]
+    private InvoiceHeader _selectedInvoice;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> _stateReferencesList;
 
     [ObservableProperty]
@@ -69,7 +76,10 @@ public partial class CashReceiptViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<string> _fromLedgerList;
-    
+
+    [ObservableProperty]
+    private ObservableCollection<string> _osInvoiceList;
+
     //private ObservableCollection<KeyValuePair<int,string>> fromLedgerList;
 
     private bool createCustomer = false;
@@ -80,6 +90,7 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IVoucherService _voucherService;
+    private readonly IInvoiceService _invoiceService;
     private readonly ILedgerService _ledgerService;
     private readonly IMtblLedgersService _mtblLedgersService;
 
@@ -90,7 +101,8 @@ public partial class CashReceiptViewModel : ObservableObject
                 IVoucherService voucherService,
                 ILedgerService ledgerService,
                 IMtblLedgersService mtblLedgersService,
-                IMtblReferencesService mtblReferencesService
+                IMtblReferencesService mtblReferencesService,
+                IInvoiceService invoiceService
                 )
     {
 
@@ -103,6 +115,7 @@ public partial class CashReceiptViewModel : ObservableObject
         _mtblLedgersService = mtblLedgersService;
         _voucherService = voucherService;
         _ledgerService = ledgerService;
+        _invoiceService = invoiceService;
 
         SetThisCompany();
         PopulateStateList();
@@ -160,12 +173,12 @@ public partial class CashReceiptViewModel : ObservableObject
     private void PopulateReferenceList()
     {
 
-      /*  var FromLedgerList = new List<KeyValuePair<int, string>>
-    {
-            new KeyValuePair<int, string>(2000, "Advance Receipt"),
-            new KeyValuePair<int, string>(3000, "RD")
-        };*/
-        FromLedgerList.Add("Advance Receipt");
+        /*  var FromLedgerList = new List<KeyValuePair<int, string>>
+      {
+              new KeyValuePair<int, string>(2000, "Advance Receipt"),
+              new KeyValuePair<int, string>(3000, "RD")
+          };*/
+        FromLedgerList.Add("Advance Receipt");    //Ensure respective voucher types added in master table
         FromLedgerList.Add("Credit Receipt");
         FromLedgerList.Add("Recurring Deposit");
 
@@ -219,6 +232,25 @@ public partial class CashReceiptViewModel : ObservableObject
 
         }
 
+        await FetchOutStandingAsync(customerPhoneNumber);
+    }
+
+    private async Task FetchOutStandingAsync(String CustMobile)
+    {
+
+        SearchOption = new();
+        SearchOption.Filter1 = CustMobile;
+
+        var OsInvlist = await _invoiceService.GetOutStanding(SearchOption);
+
+        if (OsInvlist is not null)
+        {
+            OsInvoiceList = new();
+            foreach (var invoice in OsInvlist)
+            {
+                OsInvoiceList.Add(invoice.InvNbr);
+            }
+        }
     }
 
     [RelayCommand]
@@ -256,7 +288,7 @@ public partial class CashReceiptViewModel : ObservableObject
             //await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
 
             LedgerHdr.BalanceAsOn = DateTime.Now;
-            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() + 
+            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() +
                                             Voucher.TransAmount.GetValueOrDefault();
 
             await _ledgerService.UpdateHeader(LedgerHdr);
@@ -272,7 +304,7 @@ public partial class CashReceiptViewModel : ObservableObject
             LedgerHdr.CurrentBalance = Voucher.TransAmount;
 
             LedgerHdr = await _ledgerService.CreateHeader(LedgerHdr);
-            
+
         }
 
     }
@@ -294,12 +326,12 @@ public partial class CashReceiptViewModel : ObservableObject
         await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
     }
 
-/*    private void SetVoucherType()
-    {
-        Voucher.TransType = "Receipt";
-        Voucher.VoucherType = "Advance";
+    /*    private void SetVoucherType()
+        {
+            Voucher.TransType = "Receipt";
+            Voucher.VoucherType = "Advance";
 
-    }*/
+        }*/
 
     [RelayCommand]
     private void ResetVoucher()
@@ -329,6 +361,36 @@ public partial class CashReceiptViewModel : ObservableObject
         sender.Focus();
     }
 
+    private InvoiceArReceipt CreateArReceipts(Voucher voucher)
+    {
+
+        InvoiceArReceipt arInvRct = new()
+        {
+            //VoucherDate = DateTime.Now
+        };
+
+        arInvRct.SeqNbr = SelectedInvoice.ReceiptLines.Count + 1;
+        arInvRct.CustGkey = SelectedInvoice.CustGkey;
+        arInvRct.InvoiceGkey = (int?)SelectedInvoice.GKey;
+        arInvRct.InvoiceNbr = SelectedInvoice.InvNbr;
+        arInvRct.InvoiceReceivableAmount = SelectedInvoice.InvBalance;
+        arInvRct.BalanceAfterAdj = SelectedInvoice.InvBalance - voucher.TransAmount;
+        arInvRct.TransactionType = SelectedLedger; // invoiceArReceipt.TransactionType;
+                                                        // arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
+        arInvRct.BalBeforeAdj = SelectedInvoice.InvBalance;
+        arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
+        arInvRct.InternalVoucherDate = voucher.VoucherDate;
+        arInvRct.InvoiceReceiptNbr = SelectedInvoice.InvNbr.Replace("B", "R");  //hard coded - future review 
+        arInvRct.Status = "Adj";
+
+        //var adjustedAmount = AdjustmentAmount; // getTransAmount(invoiceArReceipt.TransactionType);
+        arInvRct.AdjustedAmount = voucher.TransAmount; ;
+        //adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
+
+        return arInvRct;
+
+    }
+
     [RelayCommand]
     private async Task SaveVoucherAsync()
     {
@@ -345,6 +407,9 @@ public partial class CashReceiptViewModel : ObservableObject
         Voucher.FromLedgerGkey = (await _mtblLedgersService.GetLedger(2000)).GKey;
         Voucher.ToLedgerGkey = MtblLedger.GKey;
         Voucher.VoucherType = SelectedLedger;
+        Voucher.RefDocGkey = SelectedInvoice.GKey;
+        Voucher.RefDocNbr = SelectedInvoice.InvNbr;
+        Voucher.RefDocDate = SelectedInvoice.InvDate;
         Voucher.TransDesc = VoucherTransDesc;
         //Voucher.RefDocNbr = "RD";  //replace with ui user entered field.
 
@@ -352,7 +417,7 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             var voucher = await _voucherService.CreateVoucher(Voucher);
 
- // (voucher);
+            // (voucher);
 
             if (voucher != null)
             {
@@ -377,11 +442,14 @@ public partial class CashReceiptViewModel : ObservableObject
             await _voucherService.UpdateVoucher(Voucher);
         }
 
+        if (SelectedLedger == "Credit Receipt")
+            CreateArReceipts(Voucher);
+
         ProcessLedgerTransactions();
 
         ResetVoucher();
 
 
     }
-    
+
 }
