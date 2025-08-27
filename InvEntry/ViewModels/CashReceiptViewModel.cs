@@ -1,29 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
-using DevExpress.Mvvm.Native;
-using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
-using DevExpress.Xpf.Grid;
-using DevExpress.Xpf.Printing;
-using DevExpress.XtraRichEdit.Model;
-using DevExpress.XtraTreeList.Filtering.Provider;
 using InvEntry.Extension;
 using InvEntry.Models;
-using InvEntry.Models.Extensions;
-using InvEntry.Reports;
 using InvEntry.Services;
-using InvEntry.Store;
-using InvEntry.Tally;
-using InvEntry.Utils;
 using InvEntry.Utils.Options;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing.Text;
 using System.Linq;
-using System.Printing;
 using System.Threading.Tasks;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
@@ -40,6 +26,9 @@ public partial class CashReceiptViewModel : ObservableObject
 
     [ObservableProperty]
     private string _selectedLedger;
+
+    [ObservableProperty]
+    private string _selectedInv;
 
     [ObservableProperty]
     private MtblReference _customerState;
@@ -66,7 +55,10 @@ public partial class CashReceiptViewModel : ObservableObject
     private DateSearchOption _searchOption;
 
     [ObservableProperty]
-    private InvoiceHeader _selectedInvoice;
+    private InvoiceHeader _invoice;
+
+    [ObservableProperty]
+    private InvoiceArReceipt _invArReceipt;
 
     [ObservableProperty]
     private ObservableCollection<MtblReference> _stateReferencesList;
@@ -102,7 +94,8 @@ public partial class CashReceiptViewModel : ObservableObject
                 ILedgerService ledgerService,
                 IMtblLedgersService mtblLedgersService,
                 IMtblReferencesService mtblReferencesService,
-                IInvoiceService invoiceService
+                IInvoiceService invoiceService,
+                IInvoiceArReceiptService invoiceArReceiptService
                 )
     {
 
@@ -116,6 +109,7 @@ public partial class CashReceiptViewModel : ObservableObject
         _voucherService = voucherService;
         _ledgerService = ledgerService;
         _invoiceService = invoiceService;
+        _invoiceArReceiptService = invoiceArReceiptService;
 
         SetThisCompany();
         PopulateStateList();
@@ -250,6 +244,7 @@ public partial class CashReceiptViewModel : ObservableObject
             {
                 OsInvoiceList.Add(invoice.InvNbr);
             }
+
         }
     }
 
@@ -257,6 +252,234 @@ public partial class CashReceiptViewModel : ObservableObject
     private void VoucherPrintCommand()
     {
 
+    }
+
+    /*    private void SetVoucherType()
+        {
+            Voucher.TransType = "Receipt";
+            Voucher.VoucherType = "Advance";
+
+        }*/
+
+    [RelayCommand]
+    private void ResetVoucher()
+    {
+
+        LedgerHdr = new();
+        Voucher = new();
+        Payer = new();
+
+        Voucher.Mode = "Cash";
+        Voucher.VoucherDate = DateTime.Now;
+
+        Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
+        Voucher.TransType = "Receipt";
+        //Voucher.VoucherType = "Advance";  //hardcoded
+        Voucher.TransDesc = string.Empty;
+
+        VoucherTransDesc = string.Empty;
+        CustomerPhoneNumber = string.Empty;
+        createCustomer = false;
+
+    }
+
+    [RelayCommand]
+    private void Focus(TextEdit sender)
+    {
+        sender.Focus();
+    }
+
+    [RelayCommand]
+    private async Task SaveVoucherAsync()
+    {
+        //SetVoucherType();
+
+        if (createCustomer)
+        {
+            Payer = await _customerService.CreateCustomer(Payer);
+        }
+
+        ProcessLedger();
+
+        if (SelectedLedger == "Credit Receipt")
+        {
+            await FetchInvoice();
+        }
+
+        await ProcessVoucher();
+
+        if (SelectedLedger == "Credit Receipt")
+        {
+            await ProcessCreditReceiptAsync();
+        }
+
+        ProcessLedgerTransactions();
+
+        ResetVoucher();
+
+    }
+
+    private async Task FetchInvoice()
+    {
+        Invoice = new();
+
+        if (SelectedInv is not null)
+        {
+            Invoice = await _invoiceService.GetHeader(SelectedInv);
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    private async Task ProcessCreditReceiptAsync()
+    {
+        InvArReceipt = CreateArReceipts(Voucher);
+
+        InvBalanceCheck();
+
+        await SaveArReceipts(InvArReceipt);
+
+        await _invoiceService.UpdateHeader(Invoice);
+    }
+
+    private InvoiceArReceipt CreateArReceipts(Voucher voucher)
+    {
+
+        InvoiceArReceipt arInvRct = new()
+        {
+            //VoucherDate = DateTime.Now
+        };
+
+        arInvRct.SeqNbr = Invoice.ReceiptLines.Count + 1;
+        arInvRct.CustGkey = Invoice.CustGkey;
+        arInvRct.InvoiceGkey = (int?)Invoice.GKey;
+        arInvRct.InvoiceNbr = Invoice.InvNbr;
+        arInvRct.InvoiceReceivableAmount = Invoice.InvBalance;
+        arInvRct.BalanceAfterAdj = Invoice.InvBalance - voucher.TransAmount;
+        arInvRct.TransactionType = SelectedLedger; // invoiceArReceipt.TransactionType;
+                                                   // arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
+        arInvRct.ModeOfReceipt = "Cash";
+        arInvRct.BalBeforeAdj = Invoice.InvBalance;
+        arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
+        arInvRct.InternalVoucherDate = voucher.VoucherDate;
+        arInvRct.InvoiceReceiptNbr = Invoice.InvNbr.Replace("B", "R");  //hard coded - future review 
+        arInvRct.Status = "Adj";
+
+        //var adjustedAmount = AdjustmentAmount; // getTransAmount(invoiceArReceipt.TransactionType);
+        arInvRct.AdjustedAmount = voucher.TransAmount; ;
+        //adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
+
+        return arInvRct;
+
+    }
+
+    private void InvBalanceCheck()
+    {
+
+        if (Invoice == null) return;
+
+        if (Invoice.InvBalance <= 0)
+            //show message and return
+            return;
+
+        //partial and full payment
+        if (Invoice.InvBalance.GetValueOrDefault() >= Voucher.TransAmount)
+            Invoice.InvBalance = Invoice.InvBalance.GetValueOrDefault() - Voucher.TransAmount;
+
+        else if (Invoice.InvBalance.GetValueOrDefault() < Voucher.TransAmount)
+        {
+            Voucher.TransAmount = Voucher.TransAmount - Invoice.InvBalance.GetValueOrDefault();
+            Invoice.InvBalance = 0;
+
+            var result = _messageBoxService.ShowMessage(
+                                                            "Received Amount is more than the Invoice Amount, " +
+                                                            "Excess Amount of Rs. " +
+                                                            Voucher.TransAmount + " ?", "Invoice",
+                                                            MessageButton.YesNo,
+                                                            MessageIcon.Question,
+                                                            MessageResult.No
+                                                       );
+            //in this sceneario - supposed to create two voucher - one is for adjusting the invoice balance and another is for advance
+            // we should keep this balance as advance or display to adjust against other outstanding invoice.
+            //to be implemented
+
+            if (result == MessageResult.Yes)
+            {
+            }
+
+        }
+
+    }
+
+    private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
+    {
+        if (invoiceArReceipt.GKey == 0)
+        {
+            try
+            {
+                var voucherResult = await _invoiceArReceiptService.CreateInvArReceipt(invoiceArReceipt);
+
+                if (voucherResult != null)
+                {
+                    invoiceArReceipt = voucherResult;
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+        }
+        else
+        {
+            await _invoiceArReceiptService.UpdateInvArReceipt(invoiceArReceipt);
+        }
+
+    }
+
+    private async Task ProcessVoucher()
+    {
+        Voucher.CustomerGkey = Payer.GKey;
+        Voucher.FromLedgerGkey = (await _mtblLedgersService.GetLedger(2000)).GKey;
+        Voucher.ToLedgerGkey = MtblLedger.GKey;
+        Voucher.VoucherType = SelectedLedger;
+        Voucher.RefDocGkey = Invoice.GKey;
+        Voucher.RefDocNbr = Invoice.InvNbr;
+        Voucher.RefDocDate = Invoice.InvDate;
+        Voucher.TransDesc = VoucherTransDesc;
+        //Voucher.RefDocNbr = "RD";  //replace with ui user entered field.
+
+        if (Voucher.GKey == 0)
+        {
+            var voucher = await _voucherService.CreateVoucher(Voucher);
+
+            // (voucher);
+
+            if (voucher != null)
+            {
+                Voucher = voucher;
+                _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
+
+                /*                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+                                PrintPreviewInvoice();
+                                PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+                                PrintInvoiceCommand.NotifyCanExecuteChanged();
+                                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());*/
+
+            }
+            else
+            {
+                _messageBoxService.ShowMessage("Error creating Voucher", "Error", MessageButton.OK, MessageIcon.Error);
+                return;
+            }
+        }
+        else
+        {
+            await _voucherService.UpdateVoucher(Voucher);
+        }
     }
 
     private async void ProcessLedger() //(Voucher voucher)
@@ -324,132 +547,6 @@ public partial class CashReceiptViewModel : ObservableObject
         LedgerHdr.Transactions.Add(ledgerTrans);
 
         await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
-    }
-
-    /*    private void SetVoucherType()
-        {
-            Voucher.TransType = "Receipt";
-            Voucher.VoucherType = "Advance";
-
-        }*/
-
-    [RelayCommand]
-    private void ResetVoucher()
-    {
-
-        LedgerHdr = new();
-        Voucher = new();
-        Payer = new();
-
-        Voucher.Mode = "Cash";
-        Voucher.VoucherDate = DateTime.Now;
-
-        Voucher.TransDate = Voucher.VoucherDate;    // DateTime.Now;
-        Voucher.TransType = "Receipt";
-        //Voucher.VoucherType = "Advance";  //hardcoded
-        Voucher.TransDesc = string.Empty;
-
-        VoucherTransDesc = string.Empty;
-        CustomerPhoneNumber = string.Empty;
-        createCustomer = false;
-
-    }
-
-    [RelayCommand]
-    private void Focus(TextEdit sender)
-    {
-        sender.Focus();
-    }
-
-    private InvoiceArReceipt CreateArReceipts(Voucher voucher)
-    {
-
-        InvoiceArReceipt arInvRct = new()
-        {
-            //VoucherDate = DateTime.Now
-        };
-
-        arInvRct.SeqNbr = SelectedInvoice.ReceiptLines.Count + 1;
-        arInvRct.CustGkey = SelectedInvoice.CustGkey;
-        arInvRct.InvoiceGkey = (int?)SelectedInvoice.GKey;
-        arInvRct.InvoiceNbr = SelectedInvoice.InvNbr;
-        arInvRct.InvoiceReceivableAmount = SelectedInvoice.InvBalance;
-        arInvRct.BalanceAfterAdj = SelectedInvoice.InvBalance - voucher.TransAmount;
-        arInvRct.TransactionType = SelectedLedger; // invoiceArReceipt.TransactionType;
-                                                        // arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
-        arInvRct.BalBeforeAdj = SelectedInvoice.InvBalance;
-        arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
-        arInvRct.InternalVoucherDate = voucher.VoucherDate;
-        arInvRct.InvoiceReceiptNbr = SelectedInvoice.InvNbr.Replace("B", "R");  //hard coded - future review 
-        arInvRct.Status = "Adj";
-
-        //var adjustedAmount = AdjustmentAmount; // getTransAmount(invoiceArReceipt.TransactionType);
-        arInvRct.AdjustedAmount = voucher.TransAmount; ;
-        //adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
-
-        return arInvRct;
-
-    }
-
-    [RelayCommand]
-    private async Task SaveVoucherAsync()
-    {
-        //SetVoucherType();
-
-        if (createCustomer)
-        {
-            Payer = await _customerService.CreateCustomer(Payer);
-        }
-
-        ProcessLedger();
-
-        Voucher.CustomerGkey = Payer.GKey;
-        Voucher.FromLedgerGkey = (await _mtblLedgersService.GetLedger(2000)).GKey;
-        Voucher.ToLedgerGkey = MtblLedger.GKey;
-        Voucher.VoucherType = SelectedLedger;
-        Voucher.RefDocGkey = SelectedInvoice.GKey;
-        Voucher.RefDocNbr = SelectedInvoice.InvNbr;
-        Voucher.RefDocDate = SelectedInvoice.InvDate;
-        Voucher.TransDesc = VoucherTransDesc;
-        //Voucher.RefDocNbr = "RD";  //replace with ui user entered field.
-
-        if (Voucher.GKey == 0)
-        {
-            var voucher = await _voucherService.CreateVoucher(Voucher);
-
-            // (voucher);
-
-            if (voucher != null)
-            {
-                Voucher = voucher;
-                _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
-
-                /*                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
-                                PrintPreviewInvoice();
-                                PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-                                PrintInvoiceCommand.NotifyCanExecuteChanged();
-                                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());*/
-
-            }
-            else
-            {
-                _messageBoxService.ShowMessage("Error creating Voucher", "Error", MessageButton.OK, MessageIcon.Error);
-                return;
-            }
-        }
-        else
-        {
-            await _voucherService.UpdateVoucher(Voucher);
-        }
-
-        if (SelectedLedger == "Credit Receipt")
-            CreateArReceipts(Voucher);
-
-        ProcessLedgerTransactions();
-
-        ResetVoucher();
-
-
     }
 
 }

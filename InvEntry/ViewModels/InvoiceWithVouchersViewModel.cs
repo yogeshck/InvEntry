@@ -329,8 +329,8 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
 
         else if (SelectedInvoice.InvBalance.GetValueOrDefault() < AdjustmentAmount)
         {
-            SelectedInvoice.InvBalance = 0;
             AdjustmentAmount = AdjustmentAmount - SelectedInvoice.InvBalance.GetValueOrDefault();
+            SelectedInvoice.InvBalance = 0;
 
             var result = _messageBoxService.ShowMessage(
                                                             "Received Amount is more than the Invoice Amount, " +

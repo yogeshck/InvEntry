@@ -124,9 +124,6 @@
                                       IsReadOnly="{Binding CustomerReadOnly}"
                                       Name="CustomerNameUI"
                                       CharacterCasing="Upper">
-                            <dxmvvm:Interaction.Behaviors>
-                                <behavior:FocusTextEditBehavior />
-                            </dxmvvm:Interaction.Behaviors>
                         </dxe:TextEdit>
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Address"
@@ -135,15 +132,15 @@
                                      Height="42">
                         <dxe:TextEdit EditValue="{Binding Payer.LedgerName}"
                                       IsReadOnly="{Binding CustomerReadOnly}"
-                                      CharacterCasing="Upper"/>
+                                      CharacterCasing="Upper" />
                     </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Ref#"
                                      FontSize="14"
                                      Margin="5">
                         <dxe:ComboBoxEdit Height="42"
                                           FontWeight="ExtraBold"
-                                          EditValue="{Binding SelectedInvoice}"
                                           ItemsSource="{Binding OsInvoiceList}"
+                                          EditValue="{Binding SelectedInv}"
                                           IsTextEditable="False">
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
