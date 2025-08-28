@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace InvEntry.ViewModels;
 
@@ -34,6 +35,9 @@ public partial class CashReceiptViewModel : ObservableObject
 
     [ObservableProperty]
     private string _voucherTransDesc;
+
+    [ObservableProperty]
+    private string _transactionType;
 
     [ObservableProperty]
     private Customer _payer;
@@ -79,11 +83,14 @@ public partial class CashReceiptViewModel : ObservableObject
     [ObservableProperty]
     private InvoiceHeader _selectedInv;
 
+    [ObservableProperty]
+    private Visibility invoiceFieldVisibility = Visibility.Collapsed;
 
     //private ObservableCollection<KeyValuePair<int,string>> fromLedgerList;
 
     private bool createCustomer = false;
-
+    private bool creditReceipt = false;
+        
     private readonly ICustomerService _customerService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IInvoiceArReceiptService _invoiceArReceiptService;
@@ -93,7 +100,6 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly IInvoiceService _invoiceService;
     private readonly ILedgerService _ledgerService;
     private readonly IMtblLedgersService _mtblLedgersService;
-
 
     public CashReceiptViewModel(ICustomerService customerService,
                 IOrgThisCompanyViewService orgThisCompanyViewService,
@@ -162,7 +168,7 @@ public partial class CashReceiptViewModel : ObservableObject
         //var frLedgername = FromLedgerList.Select(x => x.Value == SelectedLedger);
 
         var accountCode = 1000;   // Advance Receipt
-        if (SelectedLedger.Equals("Recurring Deposit"))
+        if (TransactionType.Equals("Recurring Deposit"))
             accountCode = 3000;
 
         MtblLedger = new();
@@ -190,6 +196,9 @@ public partial class CashReceiptViewModel : ObservableObject
     private async Task FetchCustomer(EditValueChangedEventArgs args)
     {
         if (args.NewValue is not string customerPhoneNumber) return;
+
+        if (TransactionType == "Credit Receipt")
+            creditReceipt = true;
 
         customerPhoneNumber = customerPhoneNumber.Trim();
 
@@ -233,7 +242,8 @@ public partial class CashReceiptViewModel : ObservableObject
             //Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
         }
-        if (SelectedLedger == "Credit Receipt")
+
+        if (creditReceipt)
             await FetchOutStandingAsync(customerPhoneNumber);
     }
 
@@ -297,11 +307,18 @@ public partial class CashReceiptViewModel : ObservableObject
         //Voucher.VoucherType = "Advance";  //hardcoded
         Voucher.TransDesc = string.Empty;
 
+        SelectedInv = null;
         VoucherTransDesc = string.Empty;
         CustomerPhoneNumber = string.Empty;
         createCustomer = false;
-
+        creditReceipt = false;
     }
+
+    partial void OnTransactionTypeChanged(string value)
+    {
+        InvoiceFieldVisibility = value == "Credit Receipt" ? Visibility.Visible : Visibility.Collapsed;
+    }
+
 
     [RelayCommand]
     private void Focus(TextEdit sender)
@@ -328,7 +345,7 @@ public partial class CashReceiptViewModel : ObservableObject
 
         await ProcessVoucher();
 
-        if (SelectedLedger == "Credit Receipt")
+        if (creditReceipt)
         {
             await ProcessCreditReceiptAsync();
         }
@@ -378,7 +395,7 @@ public partial class CashReceiptViewModel : ObservableObject
         arInvRct.InvoiceNbr = Invoice.InvNbr;
         arInvRct.InvoiceReceivableAmount = Invoice.InvBalance;
         arInvRct.BalanceAfterAdj = Invoice.InvBalance - voucher.TransAmount;
-        arInvRct.TransactionType = SelectedLedger; // invoiceArReceipt.TransactionType;
+        arInvRct.TransactionType = TransactionType; // invoiceArReceipt.TransactionType;
                                                    // arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
         arInvRct.ModeOfReceipt = "Cash";
         arInvRct.BalBeforeAdj = Invoice.InvBalance;
@@ -465,11 +482,16 @@ public partial class CashReceiptViewModel : ObservableObject
         Voucher.CustomerGkey = Payer.GKey;
         Voucher.FromLedgerGkey = (await _mtblLedgersService.GetLedger(2000)).GKey;
         Voucher.ToLedgerGkey = MtblLedger.GKey;
-        Voucher.VoucherType = SelectedLedger;
-        Voucher.RefDocGkey = Invoice.GKey;
-        Voucher.RefDocNbr = Invoice.InvNbr;
-        Voucher.RefDocDate = Invoice.InvDate;
+        Voucher.VoucherType = TransactionType;
         Voucher.TransDesc = VoucherTransDesc;
+
+        if (creditReceipt)
+        {
+            Voucher.RefDocGkey = Invoice.GKey;
+            Voucher.RefDocNbr = Invoice.InvNbr;
+            Voucher.RefDocDate = Invoice.InvDate;
+        }
+
         //Voucher.RefDocNbr = "RD";  //replace with ui user entered field.
 
         if (Voucher.GKey == 0)

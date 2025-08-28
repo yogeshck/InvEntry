@@ -101,6 +101,7 @@ namespace DataAccess.Controllers
 
             value.InvNbr = string.Format("{0}{1}", DocumentPrefixFormat,
                             voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
+            value.CreatedOn = DateTime.Now;
 
             _invoiceHeaderRepository.Add(value);
             return value;
@@ -111,6 +112,7 @@ namespace DataAccess.Controllers
         public void Put(string invNbr, [FromBody] InvoiceHeader value)
         {
             value.InvNbr = invNbr;
+            value.ModifiedOn = DateTime.Now;   
             _invoiceHeaderRepository.Update(value);
         }
 

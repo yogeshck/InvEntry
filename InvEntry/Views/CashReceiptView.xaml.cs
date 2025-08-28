@@ -1,6 +1,8 @@
 ﻿using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Editors;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace InvEntry.Views
 {
@@ -33,9 +35,20 @@ namespace InvEntry.Views
         {
             InvoiceCombo?.ClosePopup();
             // Move focus to the amount field
-            AmountField?.Focus();
+            //AmountField?.Focus();
 
         }
+
+        private void InvoiceCombo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var combo = sender as ComboBoxEdit;
+            if (combo != null && !combo.IsPopupOpen)
+            {
+                combo.ShowPopup();
+                e.Handled = true;
+            }
+        }
+
 
     }
 }

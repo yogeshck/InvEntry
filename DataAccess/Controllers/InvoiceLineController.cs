@@ -35,6 +35,7 @@ namespace DataAccess.Controllers
         [HttpPost]
         public InvoiceLine Post([FromBody] InvoiceLine value)
         {
+            value.CreatedOn = DateTime.Now;
             _invoiceLineRepository.Add(value);
             return value;
         }
@@ -44,6 +45,7 @@ namespace DataAccess.Controllers
         public void Put(int invNbr, [FromBody] InvoiceLine value)
         {
             value.InvLineNbr = invNbr;
+            value.ModifiedOn = DateTime.Now;
             _invoiceLineRepository.Update(value);
         }
 
