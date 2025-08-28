@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using IDialogService = DevExpress.Mvvm.IDialogService;
 
 namespace InvEntry.ViewModels;
 
@@ -27,8 +26,8 @@ public partial class CashReceiptViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedLedger;
 
-    [ObservableProperty]
-    private string _selectedInv;
+/*    [ObservableProperty]
+    private string _selectedInv;*/
 
     [ObservableProperty]
     private MtblReference _customerState;
@@ -69,8 +68,17 @@ public partial class CashReceiptViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> _fromLedgerList;
 
+ //   [ObservableProperty]
+ //   private ObservableCollection<string> _osInvoiceList;
+
+    // List of invoices to bind to ComboBox
     [ObservableProperty]
-    private ObservableCollection<string> _osInvoiceList;
+    private ObservableCollection<InvoiceHeader> _osInvoicesList;
+
+    // Selected invoice from ComboBox
+    [ObservableProperty]
+    private InvoiceHeader _selectedInv;
+
 
     //private ObservableCollection<KeyValuePair<int,string>> fromLedgerList;
 
@@ -225,8 +233,8 @@ public partial class CashReceiptViewModel : ObservableObject
             //Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
         }
-
-        await FetchOutStandingAsync(customerPhoneNumber);
+        if (SelectedLedger == "Credit Receipt")
+            await FetchOutStandingAsync(customerPhoneNumber);
     }
 
     private async Task FetchOutStandingAsync(String CustMobile)
@@ -237,7 +245,9 @@ public partial class CashReceiptViewModel : ObservableObject
 
         var OsInvlist = await _invoiceService.GetOutStanding(SearchOption);
 
-        if (OsInvlist is not null)
+        OsInvoicesList = new(OsInvlist);
+
+/*        if (OsInvlist is not null)
         {
             OsInvoiceList = new();
             foreach (var invoice in OsInvlist)
@@ -245,8 +255,18 @@ public partial class CashReceiptViewModel : ObservableObject
                 OsInvoiceList.Add(invoice.InvNbr);
             }
 
+        }*/
+    }
+
+    partial void OnSelectedInvChanged(InvoiceHeader value)
+    {
+        if (value != null)
+        {
+            Invoice = value;
+            Voucher.TransAmount = value.InvBalance;
         }
     }
+
 
     [RelayCommand]
     private void VoucherPrintCommand()
@@ -301,10 +321,10 @@ public partial class CashReceiptViewModel : ObservableObject
 
         ProcessLedger();
 
-        if (SelectedLedger == "Credit Receipt")
-        {
-            await FetchInvoice();
-        }
+      //  if (SelectedLedger == "Credit Receipt")
+      //  {
+      //      await FetchInvoice();
+      //  }
 
         await ProcessVoucher();
 
@@ -319,7 +339,7 @@ public partial class CashReceiptViewModel : ObservableObject
 
     }
 
-    private async Task FetchInvoice()
+/*    private async Task FetchInvoice()
     {
         Invoice = new();
 
@@ -331,7 +351,7 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             return;
         }
-    }
+    }*/
 
     private async Task ProcessCreditReceiptAsync()
     {

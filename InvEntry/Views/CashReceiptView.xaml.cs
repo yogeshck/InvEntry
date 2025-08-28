@@ -1,7 +1,6 @@
 ﻿using DevExpress.Xpf.Core;
-using System.Windows.Controls;
-using DevExpress.Xpf.Editors;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace InvEntry.Views
 {
@@ -28,6 +27,14 @@ namespace InvEntry.Views
                     MessageBoxImage.Warning);
                 return;
             }
+        }
+
+        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            InvoiceCombo?.ClosePopup();
+            // Move focus to the amount field
+            AmountField?.Focus();
+
         }
 
     }

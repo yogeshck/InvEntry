@@ -134,7 +134,7 @@
                                       IsReadOnly="{Binding CustomerReadOnly}"
                                       CharacterCasing="Upper" />
                     </dxlc:LayoutItem>
-                    <dxlc:LayoutItem Label="Ref#"
+                    <!--       <dxlc:LayoutItem Label="Ref#"
                                      FontSize="14"
                                      Margin="5">
                         <dxe:ComboBoxEdit Height="42"
@@ -143,11 +143,121 @@
                                           EditValue="{Binding SelectedInv}"
                                           IsTextEditable="False">
                         </dxe:ComboBoxEdit>
+                    </dxlc:LayoutItem>   
+
+
+                    <dxlc:LayoutItem Label="Ref#"
+                                     FontSize="14"
+                                     Margin="5">
+                        <dxe:ComboBoxEdit x:Name="InvoiceCombo"
+                                          Height="42"
+                                          FontWeight="ExtraBold"
+                                          ItemsSource="{Binding OsInvoiceList}"
+                                          EditValue="{Binding SelectedInv}"
+                                          IsTextEditable="False">
+                            <dxe:ComboBoxEdit.PopupContentTemplate>
+                                <ControlTemplate>
+                                    <Border Background="#FFF"
+                                            CornerRadius="8"
+                                            Padding="10"
+                                            BorderBrush="#CCC"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="Select Invoice"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="16"
+                                                       Margin="0,0,0,8" />
+                                            <ListBox ItemsSource="{Binding OsInvoiceList}"
+                                                     BorderThickness="0"
+                                                     Background="Transparent">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Margin="2"
+                                                                Padding="8"
+                                                                Background="Transparent"
+                                                                CornerRadius="4"
+                                                                MouseLeftButtonUp="InvoiceItem_Click">
+                                                            <TextBlock Text="{Binding}"
+                                                                       FontSize="14" />
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsMouseOver"
+                                                                                 Value="True">
+                                                                            <Setter Property="Background"
+                                                                                    Value="#EEE" />
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </dxe:ComboBoxEdit.PopupContentTemplate>
+                        </dxe:ComboBoxEdit>
+                    </dxlc:LayoutItem>   -->
+
+
+                    <dxlc:LayoutItem Label="Ref#"
+                                     FontSize="14"
+                                     Margin="5">
+                        <dxe:ComboBoxEdit x:Name="InvoiceCombo"
+                                          Height="42"
+                                          FontWeight="ExtraBold"
+                                          ItemsSource="{Binding OsInvoicesList}"
+                                          EditValue="{Binding SelectedInv}"
+                                          IsTextEditable="False"
+                                          DisplayMember="InvNbr">
+                            <dxe:ComboBoxEdit.PopupContentTemplate>
+                                <ControlTemplate>
+                                    <Border Background="#FFF"
+                                            CornerRadius="8"
+                                            Padding="10"
+                                            BorderBrush="#CCC"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="Select Invoice"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="16"
+                                                       Margin="0,0,0,8" />
+                                            <ListBox ItemsSource="{Binding Path=ItemsSource, RelativeSource={RelativeSource AncestorType={x:Type dxe:ComboBoxEdit}}}"
+                                                     SelectedItem="{Binding Path=EditValue, RelativeSource={RelativeSource AncestorType={x:Type dxe:ComboBoxEdit}}, Mode=TwoWay}"
+                                                     SelectionChanged="ListBox_SelectionChanged"
+                                                     BorderThickness="0"
+                                                     Background="Transparent">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Margin="2"
+                                                                Padding="8"
+                                                                Background="Transparent"
+                                                                CornerRadius="4">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding InvNbr}"
+                                                                           FontWeight="Bold" />
+                                                                <TextBlock Text="{Binding InvDate, StringFormat='Date: {0:dd/MM/yyyy}'}" />
+                                                                <TextBlock Text="{Binding InvBalance, StringFormat='Amount: ₹{0:N2}'}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
+
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </dxe:ComboBoxEdit.PopupContentTemplate>
+                        </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
+
                     <dxlc:LayoutItem Label="Amount"
                                      FontSize="14"
                                      Margin="5">
-                        <dxe:TextEdit Height="42"
+                        <dxe:TextEdit x:Name="AmountField"
+                                      Height="42"
                                       FontSize="16"
                                       EditValue="{Binding Voucher.TransAmount}"
                                       MaskType="Numeric" />
