@@ -907,7 +907,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         Voucher.CustomerGkey = Header.CustGkey;
         Voucher.VoucherDate = DateTime.Now;
         Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = "Advance"; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
+        Voucher.VoucherType = "Advance Receipt"; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
         Voucher.Mode = advLdgrTrans.TransType;
         Voucher.TransDate =  DateTime.Now;
         Voucher.VoucherNbr = Header.OrderNbr;
