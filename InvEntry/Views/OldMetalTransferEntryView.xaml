@@ -80,10 +80,12 @@
             </dxb:BarContainerControl>
             
         <!-- Form Layout -->
-        <dxlc:LayoutControl Grid.Row="1"
-                            Width="400">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
 
-            <dxlc:LayoutGroup Orientation="Vertical"
+            <dxlc:LayoutControl Grid.Row="1"
+                                Width="400">
+
+                <dxlc:LayoutGroup Orientation="Vertical"
                                   View="GroupBox"
                                   Header="Voucher"
                                   Margin="5">
@@ -91,75 +93,105 @@
                     <dxlc:LayoutGroup Orientation="Vertical"
                                       View="Group">
 
-                    <dxlc:LayoutItem Label="From "
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:TextEdit Height="42"
-                                      FontSize="16"
-                                      CharacterCasing="Upper"
-                                      EditValue="{Binding FromBranch}"
-                                      IsReadOnly="True" />
-                    </dxlc:LayoutItem>
-
-                    <dxlc:LayoutItem Label="Transfer To"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:ComboBoxEdit Height="42"
-                                          FontWeight="ExtraBold"
-                                          ItemsSource="{Binding ReceipientStrList}"
-                                          EditValue="{Binding SentTo}"
-                                             />
-                    </dxlc:LayoutItem>
-
-                    <!-- PassEventArgsToCommand="True" /> -->
-                    <dxlc:LayoutItem Label="Transfer #"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:TextEdit Height="42"
-                                      FontSize="16"
-                                      CharacterCasing="Upper"
-                                      EditValue="{Binding Header.EstNbr}" 
-                                      IsReadOnly="True"/>
-                    </dxlc:LayoutItem>
-
-                    <dxlc:LayoutItem Label="Date"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:DateEdit Height="42"
-                                      IsReadOnly="False"
-                                      ShowBorder="False"
-                                      EditValue="{Binding Header.EstDate}">
-
-                            <dxe:DateEdit.StyleSettings>
-                                <dxe:DateEditNavigatorStyleSettings />
-                            </dxe:DateEdit.StyleSettings>
-
-                        </dxe:DateEdit>
-
-                    </dxlc:LayoutItem>
-
-                    <dxlc:LayoutItem Label="Item"
-                                     FontSize="14"
-                                     Margin="5">
-                        <dxe:ComboBoxEdit Height="42"
-                                          FontWeight="ExtraBold"
-                                          ItemsSource="{Binding OldMetalList}"
-                                          EditValue="{Binding OldMetalIdUI}"
-                                          IsTextEditable="False">
-                        </dxe:ComboBoxEdit>
-                    </dxlc:LayoutItem>
-
-                    <dxlc:LayoutItem Label="Gross Wt"
+                        <dxlc:LayoutItem Label="From "
+                                         FontSize="14"
                                          Margin="5">
-                        <dxe:TextEdit Style="{StaticResource NumberFormatWtStyle}"
-                                      EditValue="{Binding ProductGrossWeight}"
-                                      Height="42"
-                                      FontSize="16"
-                                      Margin="2" />
+                            <dxe:TextEdit Height="42"
+                                          FontSize="16"
+                                          CharacterCasing="Upper"
+                                          EditValue="{Binding FromBranch}"
+                                          IsReadOnly="True" />
+                        </dxlc:LayoutItem>
 
-                        <!--MaskType="Numeric" /> -->
+                        <dxlc:LayoutItem Label="Transfer To"
+                                         FontSize="14"
+                                         Margin="5">
+                            <dxe:ComboBoxEdit Height="42"
+                                              FontWeight="ExtraBold"
+                                              ItemsSource="{Binding ReceipientStrList}"
+                                              EditValue="{Binding SentTo}" />
+                        </dxlc:LayoutItem>
 
-                    </dxlc:LayoutItem>
+                        <!-- PassEventArgsToCommand="True" /> -->
+                        <dxlc:LayoutItem Label="Transfer #"
+                                         FontSize="14"
+                                         Margin="5">
+                            <dxe:TextEdit Height="42"
+                                          FontSize="16"
+                                          CharacterCasing="Upper"
+                                          EditValue="{Binding Header.EstNbr}"
+                                          IsReadOnly="True" />
+                        </dxlc:LayoutItem>
+
+                        <dxlc:LayoutItem Label="Date"
+                                         FontSize="14"
+                                         Margin="5">
+                            <dxe:DateEdit Height="42"
+                                          IsReadOnly="False"
+                                          ShowBorder="False"
+                                          EditValue="{Binding Header.EstDate}">
+
+                                <dxe:DateEdit.StyleSettings>
+                                    <dxe:DateEditNavigatorStyleSettings />
+                                </dxe:DateEdit.StyleSettings>
+
+                            </dxe:DateEdit>
+
+                        </dxlc:LayoutItem>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      Height="400">
+                            <ItemsControl ItemsSource="{Binding ItemEntries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal"
+                                                    Margin="5">
+                                            <TextBox Width="200"
+                                                     Text="{Binding Item}"
+                                                     FontSize="16" />
+                                            <TextBox Width="100"
+                                                     Text="{Binding Qty}"
+                                                     FontSize="16"
+                                                     Margin="10,0,0,0" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <Button Content="➕ Add Row"
+                                FontSize="18"
+                                Margin="10"
+                                Command="{Binding AddItemCommand}" />
+
+                        <dxlc:LayoutItem Label="Item"
+                                         FontSize="16"
+                                         Margin="8">
+                    <!--        <dxe:ComboBoxEdit Height="42"
+                                              FontWeight="ExtraBold"
+                                              ItemsSource="{Binding OldMetalList}"
+                                              EditValue="{Binding OldMetalIdUI}"
+                                              IsTextEditable="False">
+                            </dxe:ComboBoxEdit>  
+                            <dxe:MemoEdit Height="100"
+                                          FontSize="18"
+                                          AcceptsReturn="True"
+                                          Padding="8"
+                                          EditValue="{Binding OldMetalIdUI}" />  -->
+
+                        </dxlc:LayoutItem>
+
+                        <dxlc:LayoutItem Label="Gross Wt"
+                                         Margin="5">
+                            <dxe:TextEdit Style="{StaticResource NumberFormatWtStyle}"
+                                          EditValue="{Binding ProductGrossWeight}"
+                                          Height="42"
+                                          FontSize="16"
+                                          Margin="2" />
+
+                            <!--MaskType="Numeric" /> -->
+
+                        </dxlc:LayoutItem>
 
                         <dxlc:LayoutItem Label="Notes"
                                          Margin="5">
@@ -176,5 +208,6 @@
 
                 </dxlc:LayoutGroup>
             </dxlc:LayoutControl>
-        </Grid>
+        </ScrollViewer>
+    </Grid>
     </UserControl>

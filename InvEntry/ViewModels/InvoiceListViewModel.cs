@@ -28,6 +28,9 @@ public partial class InvoiceListViewModel : ObservableObject
     private InvoiceHeader _SelectedInvoice;
 
     [ObservableProperty]
+    private string _custMobileFilter;
+
+    [ObservableProperty]
     private DateTime _Today = DateTime.Today;
 
     public InvoiceListViewModel(IInvoiceService invoiceService, 
@@ -46,6 +49,8 @@ public partial class InvoiceListViewModel : ObservableObject
     [RelayCommand]
     private async Task RefreshInvoicesAsync()
     {
+
+        //options to be expanded - all / outstanding / by customer mobile / in between dates
         var invoicesResult = await _invoiceService.GetAll(SearchOption);
         if (invoicesResult is not null)
             Invoices = null;

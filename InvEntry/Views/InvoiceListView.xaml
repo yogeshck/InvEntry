@@ -19,7 +19,7 @@
                       d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceListViewModel}"
              d:DesignHeight="450" d:DesignWidth="1400">
-    <Grid Width="1100" HorizontalAlignment="Left">
+    <Grid Width="1200" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -38,6 +38,15 @@
                 <dxb:BarEditItem EditValue="{Binding SearchOption.To}" EditWidth="120" Content="To Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}" />
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
+                <dxb:BarEditItem   EditValue="{Binding SearchOption.Filter1}"
+                                   Content="Options"
+                                   EditWidth="150"
+                                   EditHeight="30">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:TextEditSettings  MaskType="RegEx"
+                                               Mask="[0-9 ]*" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh"
@@ -59,8 +68,8 @@
                          MinHeight="500"
                          Height="620"
                          MaxHeight="1100"
-                         MinWidth="700"
-                         Width="1400" SelectedItem="{Binding SelectedInvoice}"
+                         MinWidth="900"
+                         Width="1200" SelectedItem="{Binding SelectedInvoice}"
                          HorizontalAlignment="Left" VerticalAlignment="Top">
             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
@@ -77,6 +86,7 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="CustMobile" Header="Mobile#" ReadOnly="True" Width="90" />
                 <dxg:GridColumn FieldName="InvNbr" Header="Invoice #" ReadOnly="True" Width="100" />
                 <dxg:GridColumn FieldName="InvDate" Header="Invoice Date" ReadOnly="True" Width="90" />
                 <dxg:GridColumn FieldName="GrossRcbAmount" Header="Invoice Amount" Width="120">

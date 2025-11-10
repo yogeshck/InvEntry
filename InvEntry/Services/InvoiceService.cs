@@ -18,6 +18,8 @@ namespace InvEntry.Services
 
         Task<IEnumerable<InvoiceHeader>>  GetAll(DateSearchOption options);
 
+        //Task<IEnumerable<InvoiceHeader>> GetInvList(string custMobile);
+
         Task<IEnumerable<InvoiceHeader>> GetOutStanding(DateSearchOption options);
 
         Task CreateInvoiceLine(InvoiceLine line);
@@ -66,9 +68,28 @@ namespace InvEntry.Services
 
         public async Task<IEnumerable<InvoiceHeader>> GetAll(DateSearchOption options)
         {
-            return await _mijmsApiService.PostEnumerable<InvoiceHeader, DateSearchOption>($"api/invoice/filter", options);
+            //if outstanding only
+            //if (options.Filter1 == "OUTSTANDING")
+            //{
+            //    return await GetOutStanding(options);
+            //}
+            if (!string.IsNullOrEmpty(options.Filter1))  //customer mobile filter
+            {
+                return await _mijmsApiService.PostEnumerable<InvoiceHeader, DateSearchOption>($"api/invoice/getInvList", options); 
+            }
+            else
+            {
 
+                return await _mijmsApiService.PostEnumerable<InvoiceHeader, DateSearchOption>($"api/invoice/filter", options);
+            }
         }
+
+/*        public async Task<IEnumerable<InvoiceHeader>> GetInvList(DateSearchOption options)
+        {
+
+            return await _mijmsApiService.PostEnumerable<InvoiceHeader, DateSearchOption>($"api/invoice/getInvList", options); ;
+
+        }*/
 
         public async Task<IEnumerable<InvoiceHeader>> GetOutStanding(DateSearchOption options)
         {

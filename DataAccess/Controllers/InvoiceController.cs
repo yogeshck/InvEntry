@@ -43,6 +43,32 @@ namespace DataAccess.Controllers
                                                      && x.InvDate.Value.Date <= criteria.To.Date));
         }
 
+        // GET api/<InvoiceController>/5
+        [HttpPost("getInvList")]
+        public IEnumerable<InvoiceHeader> GetInvList([FromBody] DateSearchOption criteria)
+        {
+
+            if (!string.IsNullOrEmpty(criteria.Filter1)
+            && criteria.From != DateTime.MinValue && criteria.To != DateTime.MinValue)      //search criteria >> customer mobile 
+            {
+                // Filter by customer mobile and only invoices with outstanding balance
+                return _invoiceHeaderRepository.GetList(x =>
+                    x.InvDate.HasValue &&
+                    x.InvDate.Value.Date >= criteria.From.Date &&
+                    x.InvDate.Value.Date <= criteria.To.Date &&
+                    x.CustMobile == criteria.Filter1
+                ).OrderBy(x => x.InvDate);
+            }
+            else
+            {
+                // Filter all customers but only return invoices with balance due
+                return _invoiceHeaderRepository.GetList(x =>
+                    x.CustMobile == criteria.Filter1
+                ).OrderBy(x => x.InvDate);
+            }
+
+        }
+
         // GET: api/<InvoiceController>/24-Sep-2024/25-Sep-2024
         [HttpPost("outstanding")]
         public IEnumerable<InvoiceHeader> GetOutstanding([FromBody] DateSearchOption criteria)
