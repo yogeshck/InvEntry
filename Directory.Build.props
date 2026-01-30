@@ -1,0 +1,7 @@
+<Project>
+      <PropertyGroup>
+		  <DevExpressVersion>
+			  25.1.3
+		  </DevExpressVersion>
+      </PropertyGroup>
+</Project>

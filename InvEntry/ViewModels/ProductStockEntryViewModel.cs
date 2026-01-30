@@ -13,6 +13,7 @@ using InvEntry.Models.Extensions;
 using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Store;
+using InvEntry.Tally;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using IDialogService = DevExpress.Mvvm.IDialogService;
+
 
 namespace InvEntry.ViewModels
 {
@@ -39,12 +42,13 @@ namespace InvEntry.ViewModels
 
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
-        private readonly IProductService _productService;
+        private readonly IProductViewService _productViewService;
         private readonly IProductTransactionService _productTransactionService;
         private readonly IProductStockService _productStockService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
         private readonly IMtblReferencesService _mtblReferencesService;
+        private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
 
         [ObservableProperty]
         private ObservableCollection<string> _supplierReferencesList;
@@ -57,6 +61,9 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<GrnLine> _grnLineList;
+
+        [ObservableProperty]
+        private OrgThisCompanyView _company;
 
         [ObservableProperty]
         private Product _product;
@@ -74,31 +81,36 @@ namespace InvEntry.ViewModels
         private GrnHeader _SelectedGrn;
 
         private MtblReference mtblReference;
+        private bool isTagPrinted;  
 
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
         private Dictionary<string, Action<GrnLine, decimal?>> copyGRNLineExpression;
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
 
         public ProductStockEntryViewModel(  IGrnService grnService,
-                                            IProductService productService,
+                                            IProductViewService productViewService,
                                             IProductTransactionService productTransactionService,
                                             IProductStockService productStockService,
                                             IDialogService dialogService,
                                             IProductCategoryService productCategoryService,
+                                            IOrgThisCompanyViewService orgThisCompanyViewService,
                                             IMessageBoxService messageBoxService,
                                             IMtblReferencesService mtblReferencesService
                                             )
         {
             _grnService                 = grnService;
-            _productService             = productService;
+            _productViewService         = productViewService;
             _productStockService        = productStockService;
             _productTransactionService  = productTransactionService;
             _dialogService              = dialogService;
             _productCategoryService     = productCategoryService;
             _messageBoxService          = messageBoxService;
             _mtblReferencesService      = mtblReferencesService;
+            _orgThisCompanyViewService  = orgThisCompanyViewService;
 
-            _lineGrnLookup = new();
+    _lineGrnLookup = new();
+
+            SetThisCompany();
 
             PopulateMtblSupplierListAsync();
             PopulateOpenGRN();
@@ -107,6 +119,12 @@ namespace InvEntry.ViewModels
 
         }
 
+        private async void SetThisCompany()
+        {
+            Company = new();
+            Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+            //Header.TenantGkey = Company.TenantGkey;
+        }
 
         private async void PopulateMtblSupplierListAsync()
         {
@@ -133,7 +151,7 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
-        private void SelectionGrnSumryListChanged()
+        private async Task SelectionGrnSumryListChanged()
         {
 
             if (SelectedGrnLineSumry is null) return;
@@ -145,16 +163,49 @@ namespace InvEntry.ViewModels
                 return;
             }
 
+            var category = GrnLineSumryList.First().ProductCategory;
+
+            if (category == null) return;
+
+            mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", category);
+
+            if (mtblReference is null)
+            {
+                return;
+            }
+
+            var prdView = await _productViewService.GetProduct(category);
+
             GrnLineList = new();
 
             var count = SelectedGrnLineSumry.SuppliedQty;
             for (int i = 1; i <= count; i++)
             {
+                //Sequence number as product sky alongwith product code
+                //var sku = int.Parse(mtblReference.RefValue);
+                //sku++;
+
                 GrnLine grnLine = new();
 
                 grnLine.ProductId = SelectedGrnLineSumry.ProductCategory;
                 grnLine.ProductGkey = SelectedGrnLineSumry.ProductGkey;
                 grnLine.LineNbr = i;
+                grnLine.ProductDesc = prdView.Description;
+                grnLine.ProductPurity = prdView?.Purity;
+                grnLine.SuppVaPercent = prdView.VaPercent;
+
+                //grnLine.ProductSku = SelectedGrnLineSumry.ProductCategory;
+
+                var tagPurityCode = "";
+                if (grnLine.ProductPurity == "916")
+                    tagPurityCode = "2";
+                else if (grnLine.ProductPurity == "750")
+                    tagPurityCode = "8";
+
+                var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", grnLine.NetWeight);
+                grnLine.ProductSku = productSku;
+                
+                //string.Format("{0}{1}", mtblReference.RefDesc, ProductSku.ToString("D4"));
 
                 GrnLineList.Add(grnLine);
 
@@ -234,38 +285,48 @@ namespace InvEntry.ViewModels
 
             if (grnLines is null || !grnLines.Any() ) return;
 
-            var category = grnLines.First().ProductId;
+    //        var category = grnLines.First().ProductId;
                 
-            var mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", category);
+    //        var mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", category);
 
-            if (mtblReference is null)
-            {
-                return;
-            }
+    //        if (mtblReference is null)
+    //        {
+    //            return;
+    //        }
 
             grnLines.ForEach(x =>
             {
 
-                var sku = int.Parse(mtblReference.RefValue);
-                sku++;
+             //   var sku = int.Parse(mtblReference.RefValue);
+             //   sku++;
 
                 x.GrnHdrGkey = SelectedGrn.GKey;
                 x.Status = "Closed";
 
-                x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
+              //  x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
 
                 ProcessStockLines(x);
 
-                mtblReference.RefValue = sku.ToString();
+            //    mtblReference.RefValue = sku.ToString();
 
             });
 
-            await _mtblReferencesService.UpdateReference(mtblReference);
+            //if user maintains seq nbr for product sku - this nees to be executed - but in difference place - need to fix
+            //await _mtblReferencesService.UpdateReference(mtblReference);
 
             await _grnService.CreateGrnLine(grnLines);
 
         }
 
+        [RelayCommand]
+        private void PrintTag(GrnLine grnline)
+        {
+            if (grnline.NetWeight.HasValue)
+            {
+                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc, grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
+                grnline.ProductPurity, Company.CompanyName);//return Task.CompletedTask;
+            }
+        }
 
         [RelayCommand]
         private async Task Submit()
@@ -286,10 +347,11 @@ namespace InvEntry.ViewModels
                 {
                     await _productStockService.CreateProductStock(x);
 
-                    CreateProductTransaction(x);
+                    // CreateProductTransaction(x);  - hold this - selectedGrn - error need to fix
                 });
             }
 
+            //check should be introduced here to find any leftover line to be closed, if any do not set closed otherwise do
             SelectedGrn.Status = "Closed";
             await _grnService.UpdateHeader(SelectedGrn);
 
@@ -389,6 +451,15 @@ namespace InvEntry.ViewModels
             if (args.Row is GrnLine line)
             {
                 EvaluateFormula(line);
+
+                if ((nameof(GrnLine.GrossWeight).Equals(args.Column.FieldName) || nameof(GrnLine.StoneWeight).Equals(args.Column.FieldName) ) 
+                                    && line.NetWeight > 0 )
+                {
+                    var weight = decimal.Truncate(line.NetWeight.Value * 1000m).ToString("000000");
+
+                    var tProductSku = $"{line.ProductSku}{weight}";
+                    line.ProductSku = tProductSku;
+                }
             }
         }
 
@@ -406,7 +477,32 @@ namespace InvEntry.ViewModels
         {
             if (copyGRNLineSumryExpression is null) copyGRNLineSumryExpression = new();
 
-            copyGRNLineSumryExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val); 
+            copyGRNLineSumryExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val);
+        }
+
+        private void EvaluateGrnLine(GrnLine grnLine)
+        {
+            if (grnLine.StoneWeight.HasValue)
+                grnLine.NetWeight = grnLine.GrossWeight.GetValueOrDefault() - grnLine.StoneWeight.GetValueOrDefault();
+
+            grnLine.OrderedQty = 1;
+            grnLine.ReceivedQty = 1;
+            grnLine.SuppliedQty = 1;
+            grnLine.AcceptedQty = 1;
+            grnLine.RejectedQty = 0;
+
+/*            if (grnLine.NetWeight.HasValue)
+            {
+                int scaled = 0;
+                scaled = (int)(grnLine.NetWeight * 1000); // Removes decimal
+                string result = "";
+                result = scaled.ToString("D6"); // Ensure the string has 6 digits.
+
+                var prdSku = "";
+                prdSku = grnLine.ProductSku + result; // grnLine.NetWeight;
+                grnLine.ProductSku = prdSku;
+            }*/
+
         }
 
         private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
@@ -420,7 +516,10 @@ namespace InvEntry.ViewModels
                 var val = formula.Evaluate<T, decimal>(item, 0M);
 
                 if (item is GrnLine grnLine)
+                {
+                    EvaluateGrnLine(grnLine);
                     copyGRNLineExpression[formula.FieldName].Invoke(grnLine, val);
+                }
                 else if (item is GrnLineSummary grnLineSumry)
                     copyGRNLineSumryExpression[formula.FieldName].Invoke(grnLineSumry, val);
 

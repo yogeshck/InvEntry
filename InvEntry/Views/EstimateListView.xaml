@@ -16,7 +16,7 @@
                       xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
                       xmlns:behavior="clr-namespace:InvEntry.Behavior"
                       xmlns:ext="clr-namespace:InvEntry.Extension"
-                      xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"
+                      xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v25.1"
                       d:DataContext="{d:DesignInstance Type=viewmodels:EstimateListViewModel}"
                       DataContext="{ext:DISource Type=viewmodels:EstimateListViewModel}"
                       d:DesignHeight="450"

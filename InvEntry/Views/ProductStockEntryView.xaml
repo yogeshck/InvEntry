@@ -76,8 +76,8 @@
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
-                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
+                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="False    "
+                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor" RowMinHeight="30">
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
@@ -103,8 +103,8 @@
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView2" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
-                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
+                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="False"
+                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor" RowMinHeight="30">
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
@@ -125,9 +125,9 @@
                          Margin="0,10,0,0" HorizontalAlignment="Left" Width="1200" VerticalAlignment="Top">
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView3" AllowGrouping="False"
-                                ShowGroupPanel="False" ShowAutoFilterRow="True" 
+                                ShowGroupPanel="False" ShowAutoFilterRow="False" 
                                 AutoWidth="False" TotalSummaryPosition="Bottom"
-                                VerticalScrollbarVisibility="Auto" AllowEditing="True" EditorShowMode="MouseDown">
+                                VerticalScrollbarVisibility="Auto" AllowEditing="True" EditorShowMode="MouseDown" RowMinHeight="30">
                     <dxmvvm:Interaction.Behaviors>
                         <dxmvvm:EventToCommand EventName="CellValueChanged" 
                                                            Command="{Binding CellUpdateCommand}"
@@ -138,7 +138,7 @@
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="Ref" Header="Ref #" ReadOnly="True" Width="40" />
                 <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
-                <dxg:GridColumn FieldName="ProductCategory" Header="Sku" ReadOnly="True" Width="120" />
+                <dxg:GridColumn FieldName="ProductSku" Header="Sku" ReadOnly="True" Width="120" />
                 <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" AllowedTotalSummaries="Sum">
                     <dxg:GridColumn.EditSettings>
                         <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
@@ -159,6 +159,21 @@
                 <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="60" />
                 <dxg:GridColumn FieldName="AcceptedQty" Header="Acc Qty"  Width="60" />
                 <dxg:GridColumn FieldName="RejectedQty" Header="Rej Qty"  Width="60" ReadOnly="True" />
+
+                <!-- Submit Button Column -->
+                <dxg:GridColumn Header="Print" Width="80">
+                    <dxg:GridColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Print"
+                            Command="{Binding DataContext.PrintTagCommand, 
+                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                            CommandParameter="{Binding RowData.Row}" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center"/>
+                        </DataTemplate>
+                    </dxg:GridColumn.CellTemplate>
+                </dxg:GridColumn>
+
             </dxg:GridControl.Columns>
         </dxg:GridControl>
         <dx:SimpleButton Grid.Row="4" Grid.ColumnSpan="2" Content="Submit" Width="150" Height="25" 

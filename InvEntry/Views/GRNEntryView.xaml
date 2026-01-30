@@ -67,12 +67,12 @@
         </dxb:BarContainerControl>
         <dxlc:LayoutControl  Grid.ColumnSpan="2" Width="850"  Margin="0,50,-62,7" HorizontalAlignment="Left">
             <dxlc:LayoutGroup View="GroupBox" Orientation="Vertical" >
-                <dxlc:LayoutItem Label="Goods Receipt Note (GRN)" FontWeight="Bold" FontSize="16"/>
+                <dxlc:LayoutItem Label="Material Receipt Note (MRN)" FontWeight="Bold" FontSize="16"/>
                     <dxlc:LayoutGroup Orientation="Vertical">
                         <dxlc:LayoutGroup>
                             <dxlc:LayoutGroup View="GroupBox" Header="Supplier" Orientation="Vertical">
-                            <dxlc:LayoutItem Label="Supplier Name" Height="35"  >
-                             <!--   <dxg:LookUpEdit Width="290"  
+                            <!--  <dxlc:LayoutItem Label="Supplier Name" Height="35"  >
+                               <dxg:LookUpEdit Width="290"  
                                                 EditValue="{Binding SupplierId ,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                                                 ItemsSource="{Binding SupplierReferencesList}"
                                                 DisplayMember="RefValue" >
@@ -88,8 +88,8 @@
                                             </dxg:GridControl>
                                         </ControlTemplate>
                                     </dxg:LookUpEdit.PopupContentTemplate>
-                                </dxg:LookUpEdit> -->
-                            </dxlc:LayoutItem> 
+                                </dxg:LookUpEdit> 
+                            </dxlc:LayoutItem> -->
                                <dxlc:LayoutItem Label="Name" Height="35" >
                                     <dxg:LookUpEdit AllowRejectUnknownValues="True"  
                                                     ItemsSource="{Binding SupplierReferencesList}"  
@@ -130,7 +130,7 @@
                         </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                     <dxlc:LayoutGroup View="Tabs">
-                        <dxlc:LayoutGroup Header="GRN Item Details" >
+                        <dxlc:LayoutGroup Header="MRN Item Details" >
                             <dxlc:LayoutItem>
                                 <dxb:BarManager AllowCustomization="False" Height="300" >
                                     <dxb:BarManager.Bars>
@@ -197,7 +197,7 @@
                                         <dxg:GridControl.View>
                                             <dxg:TableView NewItemRowPosition="None" AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
-                                                       TotalSummaryPosition="Bottom">
+                                                       TotalSummaryPosition="Bottom" RowMinHeight="30">
                                                 <dxmvvm:Interaction.Behaviors>
                                                     <dxmvvm:EventToCommand EventName="CellValueChanged" 
                                                            Command="{Binding CellUpdateCommand}"

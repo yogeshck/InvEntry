@@ -15,8 +15,8 @@
              mc:Ignorable="d"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
-             xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v24.2"
-                      d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
+             xmlns:ext="clr-namespace:InvEntry.Extension" xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v25.1"
+             d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceListViewModel}"
              d:DesignHeight="450" d:DesignWidth="1400">
     <Grid Width="1200" HorizontalAlignment="Left">
