@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -94,6 +95,14 @@ namespace InvEntry.Models
         public string? _sizeUom;
 
         [ObservableProperty]
+        public int? _grnLineSumryGkey;
+
+        [ObservableProperty]
         public string? _productSku;
+
+        [ObservableProperty]
+        private bool _isPrinted = false;
+
+
     }
 }

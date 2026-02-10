@@ -50,6 +50,11 @@ namespace InvEntry.Services.Mock
             throw new NotImplementedException();
         }
 
+        public Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey, int hdrGkey)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<IEnumerable<GrnLineSummary>> GetBySumryHdrGkey(int hdrGkey)
         {
             List<GrnLineSummary> headerList = new();

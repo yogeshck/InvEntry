@@ -7,16 +7,24 @@ public class BarCodePrint
     private bool firstRec = true;
 
     public static bool ProcessBarCode(string productCode, string productName, decimal VApercent,
-                                    decimal productWeight, string productPurity, string companyName="MATHA")
+                                    decimal productWeight, decimal prdStoneWeight, string productPurity, 
+                                    string companyName="MATHA")
     {
 
         try
         {
 
-            var prdWeight = productWeight.ToString("F3");
+            var netWeight = productWeight.ToString("F3");
             var vaPercent = (int)VApercent + "%";
+            var stoneWeight = "";
+            
+            if (prdStoneWeight > 0)
+            {
+                stoneWeight = prdStoneWeight.ToString("F3");
+            }
 
-            string zplCommand = GenerateZPL(productCode, productName, vaPercent, prdWeight, productPurity, companyName);
+            string zplCommand = GenerateZPL(productCode, productName, vaPercent, netWeight, stoneWeight,
+                                            productPurity, companyName);
 
             if (RawPrinterHelper.SendZPLToPrinter(PrinterName, zplCommand, out var err))
             {
@@ -36,7 +44,7 @@ public class BarCodePrint
 
 
     private static string GenerateZPL(string productCode, string productName, string VaPercent,
-                                    string productWeight, string productPurity, string companyName)
+                                    string productWeight, string stoneWeight, string productPurity, string companyName)
     {
         /* return "^XA\n" +
     "^FO50,50\n" +
@@ -91,8 +99,17 @@ public class BarCodePrint
 
                 "^FO210,30\n" +
                 "^A0N,20,20\n" +
-                $"^FDGwt: {productWeight}^FS\n" +  // Rate
+                $"^FDGwt: {productWeight}^FS\n";
 
+        if (stoneWeight is not null)
+        {
+            zplCmd += 
+                "^FO210,50\n" +
+                "^A0N,20,20\n" +
+                $"^FDStone: {stoneWeight}^FS\n";
+        }
+        
+        zplCmd +=
                 "^FO210,70\n" +
                 "^A0N,20,20\n" +
                 $"^FDMC: {VaPercent}^FS\n" +  // Rate

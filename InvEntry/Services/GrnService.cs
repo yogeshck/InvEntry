@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace InvEntry.Services
 {
@@ -25,6 +26,8 @@ namespace InvEntry.Services
         Task CreateGrnLine(IEnumerable<GrnLine> line);
 
         Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey);
+
+        Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey, int hdrGkey);
 
         Task CreateGrnLineSummary(GrnLineSummary lineSumry);
 
@@ -87,7 +90,14 @@ namespace InvEntry.Services
 
         public async Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey)
         {
-            return await _mijmsApiService.GetEnumerable<GrnLine>($"api/grnline/GrnLineSummary/{lineSumryGkey}");
+            return await _mijmsApiService.GetEnumerable<GrnLine>($"api/grnline/lines/{lineSumryGkey}");
+        }
+
+        public async Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey, int hdrGkey)
+        {
+            return await _mijmsApiService.GetEnumerable<GrnLine>($"api/grnline/linesummary/{lineSumryGkey}/header/{hdrGkey}");
+
+            // linesummary /{ lineSummaryId}/ header /{ hdrId}            ")]
         }
 
         public async Task<IEnumerable<GrnLine>> GetByHdrGkey(int hdrGkey)
@@ -114,5 +124,21 @@ namespace InvEntry.Services
         {
             return await _mijmsApiService.GetEnumerable<GrnLineSummary>($"api/GrnLineSummary/{hdrGkey}");
         }
+
+
+        // GET api/grn/lines?hdrId=5
+/*        [HttpGet("lines")]
+        public async Task<IActionResult> GetLines([FromQuery] int? hdrId, [FromQuery] int? lineSummaryId)
+        {
+            if (hdrId.HasValue)
+                return Ok(_grnLineRepository.GetList(x => x.GrnHdrGkey == hdrId.Value));
+
+            if (lineSummaryId.HasValue)
+                return Ok(_grnLineRepository.GetList(x => x.LineSummaryGkey == lineSummaryId.Value));
+
+            return BadRequest("Please provide either hdrId or lineSummaryId.");
+        }*/
+
+
     }
 }

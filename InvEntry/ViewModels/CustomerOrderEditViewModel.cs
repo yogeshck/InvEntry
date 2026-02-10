@@ -78,9 +78,9 @@ public class CustomerOrderEditViewModel : ViewModelBase
     public int ProdQty { get; set; }
     public string SelectedStatus { get; set; }
 
-    public ICommand SaveCommand => new RelayCommand(Save);
+    //public ICommand SaveCommand => new RelayCommand(Save);
 
-    private void Save()
+    private void Save(object obj)
     {
         _orderLine.ProdQty = ProdQty;
         //_orderLine.OrderStatus = SelectedStatus;

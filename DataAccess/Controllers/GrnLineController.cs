@@ -37,6 +37,26 @@ namespace DataAccess.Controllers
             
         }
 
+        // GET api/<GrnController>/5
+        [HttpGet("line/{grnLineSumryGkey}")]
+        public async Task<IActionResult> GetByLineSumryGKey(int grnLineSumryGkey)
+        {
+            return Ok(_grnLineRepository.GetList(x => x.GrnLineSumryGkey == grnLineSumryGkey));
+
+        }
+
+        // GET api/grn/linesummary/5/header/10
+        [HttpGet("linesummary/{lineSummaryId}/header/{hdrId}")]
+        public async Task<IActionResult> GetByLineSumryAndHeaderId(int lineSummaryId, int hdrId)
+        {
+            var result = _grnLineRepository.GetList(
+                x => x.GrnLineSumryGkey == lineSummaryId && x.GrnHdrGkey == hdrId
+            );
+            return Ok(result);
+        }
+
+
+
         // POST api/<GrnController>
         [HttpPost]
         public GrnLine Post([FromBody] GrnLine value)

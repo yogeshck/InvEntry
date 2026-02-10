@@ -88,12 +88,16 @@
             this.invoiceNumber = new DevExpress.XtraReports.UI.XRTableCell();
             this.customerTable = new DevExpress.XtraReports.UI.XRTable();
             this.CusNameAddRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.xrTableCell22 = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell3 = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableRow4 = new DevExpress.XtraReports.UI.XRTableRow();
+            this.xrTableCell23 = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell13 = new DevExpress.XtraReports.UI.XRTableCell();
             this.customerContactNameRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.xrTableCell24 = new DevExpress.XtraReports.UI.XRTableCell();
             this.customerContactName = new DevExpress.XtraReports.UI.XRTableCell();
             this.customerAddressRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.xrTableCell25 = new DevExpress.XtraReports.UI.XRTableCell();
             this.customerAddress = new DevExpress.XtraReports.UI.XRTableCell();
             this.GroupFooter1 = new DevExpress.XtraReports.UI.GroupFooterBand();
             this.metalSumryTable = new DevExpress.XtraReports.UI.XRTable();
@@ -205,10 +209,6 @@
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
-            this.xrTableCell22 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell23 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell24 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell25 = new DevExpress.XtraReports.UI.XRTableCell();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -270,7 +270,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[Invoice].[INV_LINE_NBR]")});
             this.slno.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.slno.Name = "slno";
-            this.slno.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 5, 0, 100F);
+            this.slno.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 5F, 0F, 100F);
             this.slno.RowSpan = 2;
             this.slno.StylePriority.UseFont = false;
             this.slno.StylePriority.UsePadding = false;
@@ -286,7 +286,7 @@
             this.hsnCode.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.hsnCode.Multiline = true;
             this.hsnCode.Name = "hsnCode";
-            this.hsnCode.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.hsnCode.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.hsnCode.StylePriority.UseFont = false;
             this.hsnCode.StylePriority.UsePadding = false;
             this.hsnCode.Weight = 0.33878963399492756D;
@@ -297,7 +297,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[PRODUCT_NAME]")});
             this.productName.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.productName.Name = "productName";
-            this.productName.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.productName.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.productName.StylePriority.UseFont = false;
             this.productName.StylePriority.UsePadding = false;
             this.productName.Text = "ProductName";
@@ -310,7 +310,7 @@
             this.prodPurity.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.prodPurity.Multiline = true;
             this.prodPurity.Name = "prodPurity";
-            this.prodPurity.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.prodPurity.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.prodPurity.StylePriority.UseFont = false;
             this.prodPurity.StylePriority.UsePadding = false;
             this.prodPurity.StylePriority.UseTextAlignment = false;
@@ -325,7 +325,7 @@
             this.prodQty.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.prodQty.Multiline = true;
             this.prodQty.Name = "prodQty";
-            this.prodQty.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.prodQty.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.prodQty.StylePriority.UseFont = false;
             this.prodQty.StylePriority.UsePadding = false;
             this.prodQty.StylePriority.UseTextAlignment = false;
@@ -340,7 +340,7 @@
             this.prodGrossWt.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.prodGrossWt.Multiline = true;
             this.prodGrossWt.Name = "prodGrossWt";
-            this.prodGrossWt.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.prodGrossWt.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.prodGrossWt.StylePriority.UseFont = false;
             this.prodGrossWt.StylePriority.UsePadding = false;
             this.prodGrossWt.StylePriority.UseTextAlignment = false;
@@ -356,7 +356,7 @@
             this.prodStoneWt.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.prodStoneWt.Multiline = true;
             this.prodStoneWt.Name = "prodStoneWt";
-            this.prodStoneWt.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.prodStoneWt.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.prodStoneWt.StylePriority.UseFont = false;
             this.prodStoneWt.StylePriority.UsePadding = false;
             this.prodStoneWt.StylePriority.UseTextAlignment = false;
@@ -372,7 +372,7 @@
             this.prodStoneAmt.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.prodStoneAmt.Multiline = true;
             this.prodStoneAmt.Name = "prodStoneAmt";
-            this.prodStoneAmt.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
+            this.prodStoneAmt.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 5F, 0F, 100F);
             this.prodStoneAmt.StylePriority.UseFont = false;
             this.prodStoneAmt.StylePriority.UsePadding = false;
             this.prodStoneAmt.StylePriority.UseTextAlignment = false;
@@ -387,7 +387,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[INVL_STONE_AMOUNT]")});
             this.stoneAmt.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.stoneAmt.Name = "stoneAmt";
-            this.stoneAmt.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.stoneAmt.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.stoneAmt.RowSpan = 2;
             this.stoneAmt.StylePriority.UseFont = false;
             this.stoneAmt.StylePriority.UsePadding = false;
@@ -403,7 +403,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[INVL_TAXABLE_AMOUNT]")});
             this.lineTotal.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F, DevExpress.Drawing.DXFontStyle.Bold);
             this.lineTotal.Name = "lineTotal";
-            this.lineTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.lineTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.lineTotal.RowSpan = 2;
             this.lineTotal.StylePriority.UseFont = false;
             this.lineTotal.StylePriority.UseForeColor = false;
@@ -507,7 +507,7 @@
             this.lineDetHdrTable.Font = new DevExpress.Drawing.DXFont("Arial", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.lineDetHdrTable.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
             this.lineDetHdrTable.Name = "lineDetHdrTable";
-            this.lineDetHdrTable.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 5, 0, 100F);
+            this.lineDetHdrTable.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 5F, 0F, 100F);
             this.lineDetHdrTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.lineDetHdrTableRow});
             this.lineDetHdrTable.SizeF = new System.Drawing.SizeF(728F, 13.33333F);
@@ -535,7 +535,7 @@
             // quantityCaption
             // 
             this.quantityCaption.Name = "quantityCaption";
-            this.quantityCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.quantityCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.quantityCaption.StylePriority.UsePadding = false;
             this.quantityCaption.StylePriority.UseTextAlignment = false;
             this.quantityCaption.Text = "SN";
@@ -546,7 +546,7 @@
             // 
             this.hsnCaption.Multiline = true;
             this.hsnCaption.Name = "hsnCaption";
-            this.hsnCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 0, 0, 100F);
+            this.hsnCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 0F, 0F, 100F);
             this.hsnCaption.StylePriority.UsePadding = false;
             this.hsnCaption.StylePriority.UseTextAlignment = false;
             this.hsnCaption.Text = "HSN";
@@ -556,7 +556,7 @@
             // productNameCaption
             // 
             this.productNameCaption.Name = "productNameCaption";
-            this.productNameCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 0, 0, 100F);
+            this.productNameCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(5F, 0F, 0F, 0F, 100F);
             this.productNameCaption.StylePriority.UsePadding = false;
             this.productNameCaption.StylePriority.UseTextAlignment = false;
             this.productNameCaption.Text = "PRODUCT NAME";
@@ -567,7 +567,7 @@
             // 
             this.xrTableCell11.Multiline = true;
             this.xrTableCell11.Name = "xrTableCell11";
-            this.xrTableCell11.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.xrTableCell11.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.xrTableCell11.StylePriority.UsePadding = false;
             this.xrTableCell11.StylePriority.UseTextAlignment = false;
             this.xrTableCell11.Text = "Purity";
@@ -578,7 +578,7 @@
             // 
             this.xrTableCell10.Multiline = true;
             this.xrTableCell10.Name = "xrTableCell10";
-            this.xrTableCell10.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.xrTableCell10.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.xrTableCell10.StylePriority.UsePadding = false;
             this.xrTableCell10.StylePriority.UseTextAlignment = false;
             this.xrTableCell10.Text = "Qty";
@@ -589,7 +589,7 @@
             // 
             this.xrTableCell9.Multiline = true;
             this.xrTableCell9.Name = "xrTableCell9";
-            this.xrTableCell9.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.xrTableCell9.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.xrTableCell9.StylePriority.UsePadding = false;
             this.xrTableCell9.StylePriority.UseTextAlignment = false;
             this.xrTableCell9.Text = "Gross     Wt.";
@@ -600,7 +600,7 @@
             // 
             this.xrTableCell8.Multiline = true;
             this.xrTableCell8.Name = "xrTableCell8";
-            this.xrTableCell8.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.xrTableCell8.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.xrTableCell8.StylePriority.UsePadding = false;
             this.xrTableCell8.StylePriority.UseTextAlignment = false;
             this.xrTableCell8.Text = "Stone   Wt.";
@@ -611,7 +611,7 @@
             // 
             this.prodNetWt.Multiline = true;
             this.prodNetWt.Name = "prodNetWt";
-            this.prodNetWt.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.prodNetWt.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.prodNetWt.StylePriority.UsePadding = false;
             this.prodNetWt.StylePriority.UseTextAlignment = false;
             this.prodNetWt.Text = "Net        Wt.";
@@ -623,7 +623,7 @@
             // 
             this.xrTableCell1.Multiline = true;
             this.xrTableCell1.Name = "xrTableCell1";
-            this.xrTableCell1.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.xrTableCell1.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.xrTableCell1.StylePriority.UsePadding = false;
             this.xrTableCell1.StylePriority.UseTextAlignment = false;
             this.xrTableCell1.Text = "Stone    Amount";
@@ -633,7 +633,7 @@
             // lineTotalCaption
             // 
             this.lineTotalCaption.Name = "lineTotalCaption";
-            this.lineTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.lineTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.lineTotalCaption.StylePriority.UsePadding = false;
             this.lineTotalCaption.StylePriority.UseTextAlignment = false;
             this.lineTotalCaption.Text = "Taxable    Amount";
@@ -689,7 +689,7 @@
             // 
             this.invoiceDateCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invoiceDateCaption.Name = "invoiceDateCaption";
-            this.invoiceDateCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 10, 0, 0, 100F);
+            this.invoiceDateCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 10F, 0F, 0F, 100F);
             this.invoiceDateCaption.StylePriority.UseFont = false;
             this.invoiceDateCaption.StylePriority.UsePadding = false;
             this.invoiceDateCaption.StylePriority.UseTextAlignment = false;
@@ -732,7 +732,7 @@
             this.invoiceLabel.Name = "invoiceLabel";
             this.invoiceLabel.StylePriority.UseFont = false;
             this.invoiceLabel.StylePriority.UseTextAlignment = false;
-            this.invoiceLabel.Text = "TAX INVOICE";
+            this.invoiceLabel.Text = "VOUCHER #";
             this.invoiceLabel.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             this.invoiceLabel.Weight = 1.0513902674200124D;
             // 
@@ -768,6 +768,18 @@
             this.CusNameAddRow.Name = "CusNameAddRow";
             this.CusNameAddRow.Weight = 1D;
             // 
+            // xrTableCell22
+            // 
+            this.xrTableCell22.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.xrTableCell22.Multiline = true;
+            this.xrTableCell22.Name = "xrTableCell22";
+            this.xrTableCell22.StylePriority.UseFont = false;
+            this.xrTableCell22.StylePriority.UsePadding = false;
+            this.xrTableCell22.StylePriority.UseTextAlignment = false;
+            this.xrTableCell22.Text = "Customer Name & Address";
+            this.xrTableCell22.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.xrTableCell22.Weight = 1.9521106046762142D;
+            // 
             // xrTableCell3
             // 
             this.xrTableCell3.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
@@ -786,6 +798,20 @@
             this.xrTableCell13});
             this.xrTableRow4.Name = "xrTableRow4";
             this.xrTableRow4.Weight = 1D;
+            // 
+            // xrTableCell23
+            // 
+            this.xrTableCell23.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'Mr/Ms/Mrs : \'")});
+            this.xrTableCell23.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
+            this.xrTableCell23.Multiline = true;
+            this.xrTableCell23.Name = "xrTableCell23";
+            this.xrTableCell23.StylePriority.UseFont = false;
+            this.xrTableCell23.StylePriority.UsePadding = false;
+            this.xrTableCell23.StylePriority.UseTextAlignment = false;
+            this.xrTableCell23.Text = "xrTableCell23";
+            this.xrTableCell23.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.xrTableCell23.Weight = 0.78407704591555716D;
             // 
             // xrTableCell13
             // 
@@ -809,6 +835,18 @@
             this.customerContactNameRow.Name = "customerContactNameRow";
             this.customerContactNameRow.Weight = 1D;
             // 
+            // xrTableCell24
+            // 
+            this.xrTableCell24.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", " ")});
+            this.xrTableCell24.Multiline = true;
+            this.xrTableCell24.Name = "xrTableCell24";
+            this.xrTableCell24.StylePriority.UseFont = false;
+            this.xrTableCell24.StylePriority.UsePadding = false;
+            this.xrTableCell24.StylePriority.UseTextAlignment = false;
+            this.xrTableCell24.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.xrTableCell24.Weight = 0.78407704591555716D;
+            // 
             // customerContactName
             // 
             this.customerContactName.CanShrink = true;
@@ -830,6 +868,19 @@
             this.customerAddress});
             this.customerAddressRow.Name = "customerAddressRow";
             this.customerAddressRow.Weight = 1D;
+            // 
+            // xrTableCell25
+            // 
+            this.xrTableCell25.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'Mobile : \'")});
+            this.xrTableCell25.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
+            this.xrTableCell25.Multiline = true;
+            this.xrTableCell25.Name = "xrTableCell25";
+            this.xrTableCell25.StylePriority.UseFont = false;
+            this.xrTableCell25.StylePriority.UseTextAlignment = false;
+            this.xrTableCell25.Text = "xrTableCell25";
+            this.xrTableCell25.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.xrTableCell25.Weight = 0.78407704591555716D;
             // 
             // customerAddress
             // 
@@ -896,7 +947,7 @@
             this.metalCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.metalCaption.Multiline = true;
             this.metalCaption.Name = "metalCaption";
-            this.metalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.metalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.metalCaption.StylePriority.UseFont = false;
             this.metalCaption.StylePriority.UsePadding = false;
             this.metalCaption.StylePriority.UseTextAlignment = false;
@@ -909,7 +960,7 @@
             this.rateCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.rateCaption.Multiline = true;
             this.rateCaption.Name = "rateCaption";
-            this.rateCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.rateCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.rateCaption.StylePriority.UseFont = false;
             this.rateCaption.StylePriority.UsePadding = false;
             this.rateCaption.StylePriority.UseTextAlignment = false;
@@ -922,7 +973,7 @@
             this.weightCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.weightCaption.Multiline = true;
             this.weightCaption.Name = "weightCaption";
-            this.weightCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.weightCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.weightCaption.StylePriority.UseFont = false;
             this.weightCaption.StylePriority.UsePadding = false;
             this.weightCaption.StylePriority.UseTextAlignment = false;
@@ -935,7 +986,7 @@
             this.Total.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.Total.Multiline = true;
             this.Total.Name = "Total";
-            this.Total.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.Total.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.Total.StylePriority.UseFont = false;
             this.Total.StylePriority.UsePadding = false;
             this.Total.StylePriority.UseTextAlignment = false;
@@ -957,7 +1008,7 @@
             // 
             this.goldCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.goldCaption.Name = "goldCaption";
-            this.goldCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.goldCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.goldCaption.StylePriority.UseFont = false;
             this.goldCaption.StylePriority.UsePadding = false;
             this.goldCaption.StylePriority.UseTextAlignment = false;
@@ -971,7 +1022,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[GoldSumry].[BILLEDPRICE]")});
             this.goldPrice.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.goldPrice.Name = "goldPrice";
-            this.goldPrice.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.goldPrice.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.goldPrice.StylePriority.UseFont = false;
             this.goldPrice.StylePriority.UsePadding = false;
             this.goldPrice.StylePriority.UseTextAlignment = false;
@@ -986,7 +1037,7 @@
             this.goldWeight.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.goldWeight.Multiline = true;
             this.goldWeight.Name = "goldWeight";
-            this.goldWeight.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.goldWeight.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.goldWeight.StylePriority.UseFont = false;
             this.goldWeight.StylePriority.UsePadding = false;
             this.goldWeight.StylePriority.UseTextAlignment = false;
@@ -1002,7 +1053,7 @@
             this.xrTableCell18.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell18.Multiline = true;
             this.xrTableCell18.Name = "xrTableCell18";
-            this.xrTableCell18.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.xrTableCell18.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.xrTableCell18.StylePriority.UseFont = false;
             this.xrTableCell18.StylePriority.UsePadding = false;
             this.xrTableCell18.StylePriority.UseTextAlignment = false;
@@ -1026,7 +1077,7 @@
             this.silverCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.silverCaption.Multiline = true;
             this.silverCaption.Name = "silverCaption";
-            this.silverCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.silverCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.silverCaption.StylePriority.UseFont = false;
             this.silverCaption.StylePriority.UsePadding = false;
             this.silverCaption.StylePriority.UseTextAlignment = false;
@@ -1041,7 +1092,7 @@
             this.silverPrice.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.silverPrice.Multiline = true;
             this.silverPrice.Name = "silverPrice";
-            this.silverPrice.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.silverPrice.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.silverPrice.StylePriority.UseFont = false;
             this.silverPrice.StylePriority.UsePadding = false;
             this.silverPrice.StylePriority.UseTextAlignment = false;
@@ -1057,7 +1108,7 @@
             this.silverWeight.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.silverWeight.Multiline = true;
             this.silverWeight.Name = "silverWeight";
-            this.silverWeight.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.silverWeight.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.silverWeight.StylePriority.UseFont = false;
             this.silverWeight.StylePriority.UsePadding = false;
             this.silverWeight.StylePriority.UseTextAlignment = false;
@@ -1073,7 +1124,7 @@
             this.xrTableCell20.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell20.Multiline = true;
             this.xrTableCell20.Name = "xrTableCell20";
-            this.xrTableCell20.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.xrTableCell20.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.xrTableCell20.StylePriority.UseFont = false;
             this.xrTableCell20.StylePriority.UsePadding = false;
             this.xrTableCell20.StylePriority.UseTextAlignment = false;
@@ -1096,7 +1147,7 @@
             this.totalRow.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.totalRow.Multiline = true;
             this.totalRow.Name = "totalRow";
-            this.totalRow.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 0, 100F);
+            this.totalRow.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 0F, 100F);
             this.totalRow.StylePriority.UseFont = false;
             this.totalRow.StylePriority.UsePadding = false;
             this.totalRow.StylePriority.UseTextAlignment = false;
@@ -1111,7 +1162,7 @@
             this.totalMetalWeight.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.totalMetalWeight.Multiline = true;
             this.totalMetalWeight.Name = "totalMetalWeight";
-            this.totalMetalWeight.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.totalMetalWeight.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.totalMetalWeight.StylePriority.UseFont = false;
             this.totalMetalWeight.StylePriority.UsePadding = false;
             this.totalMetalWeight.StylePriority.UseTextAlignment = false;
@@ -1127,7 +1178,7 @@
             this.xrTableCell21.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrTableCell21.Multiline = true;
             this.xrTableCell21.Name = "xrTableCell21";
-            this.xrTableCell21.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.xrTableCell21.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.xrTableCell21.StylePriority.UseFont = false;
             this.xrTableCell21.StylePriority.UsePadding = false;
             this.xrTableCell21.StylePriority.UseTextAlignment = false;
@@ -1159,7 +1210,7 @@
             this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(505.1158F, 179.25F);
             this.xrLabel1.Multiline = true;
             this.xrLabel1.Name = "xrLabel1";
-            this.xrLabel1.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel1.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel1.SizeF = new System.Drawing.SizeF(129.613F, 30F);
             this.xrLabel1.StylePriority.UseFont = false;
             this.xrLabel1.Text = "Balance Amount";
@@ -1172,7 +1223,7 @@
             this.xrLabel15.LocationFloat = new DevExpress.Utils.PointFloat(0.002187093F, 126.3096F);
             this.xrLabel15.Multiline = true;
             this.xrLabel15.Name = "xrLabel15";
-            this.xrLabel15.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel15.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel15.SizeF = new System.Drawing.SizeF(458.2249F, 33.91663F);
             this.xrLabel15.StylePriority.UseFont = false;
             this.xrLabel15.StylePriority.UseTextAlignment = false;
@@ -1185,7 +1236,7 @@
             this.xrLabel3.LocationFloat = new DevExpress.Utils.PointFloat(0.002182007F, 108.3096F);
             this.xrLabel3.Multiline = true;
             this.xrLabel3.Name = "xrLabel3";
-            this.xrLabel3.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel3.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel3.SizeF = new System.Drawing.SizeF(122.0933F, 18F);
             this.xrLabel3.StylePriority.UseFont = false;
             this.xrLabel3.Text = "Amount in words : ";
@@ -1223,7 +1274,7 @@
             this.cgstCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.cgstCaption.Multiline = true;
             this.cgstCaption.Name = "cgstCaption";
-            this.cgstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.cgstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.cgstCaption.StylePriority.UseFont = false;
             this.cgstCaption.StylePriority.UsePadding = false;
             this.cgstCaption.StylePriority.UseTextAlignment = false;
@@ -1238,7 +1289,7 @@
             this.cgstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.cgstAmount.Multiline = true;
             this.cgstAmount.Name = "cgstAmount";
-            this.cgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.cgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.cgstAmount.StylePriority.UseFont = false;
             this.cgstAmount.StylePriority.UsePadding = false;
             this.cgstAmount.StylePriority.UseTextAlignment = false;
@@ -1259,7 +1310,7 @@
             // 
             this.sgstCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.sgstCaption.Name = "sgstCaption";
-            this.sgstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.sgstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.sgstCaption.StylePriority.UseFont = false;
             this.sgstCaption.StylePriority.UsePadding = false;
             this.sgstCaption.StylePriority.UseTextAlignment = false;
@@ -1273,7 +1324,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[SGST_AMOUNT]")});
             this.sgstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.sgstAmount.Name = "sgstAmount";
-            this.sgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.sgstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.sgstAmount.StylePriority.UseFont = false;
             this.sgstAmount.StylePriority.UsePadding = false;
             this.sgstAmount.StylePriority.UseTextAlignment = false;
@@ -1294,7 +1345,7 @@
             this.igstCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.igstCaption.Multiline = true;
             this.igstCaption.Name = "igstCaption";
-            this.igstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.igstCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.igstCaption.StylePriority.UseFont = false;
             this.igstCaption.StylePriority.UsePadding = false;
             this.igstCaption.StylePriority.UseTextAlignment = false;
@@ -1309,7 +1360,7 @@
             this.igstAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.igstAmount.Multiline = true;
             this.igstAmount.Name = "igstAmount";
-            this.igstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.igstAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.igstAmount.StylePriority.UseFont = false;
             this.igstAmount.StylePriority.UsePadding = false;
             this.igstAmount.StylePriority.UseTextAlignment = false;
@@ -1331,7 +1382,7 @@
             this.subTotalCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.subTotalCaption.Multiline = true;
             this.subTotalCaption.Name = "subTotalCaption";
-            this.subTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.subTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.subTotalCaption.StylePriority.UseFont = false;
             this.subTotalCaption.StylePriority.UsePadding = false;
             this.subTotalCaption.StylePriority.UseTextAlignment = false;
@@ -1346,7 +1397,7 @@
             this.invAfterTaxTotal.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8.5F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invAfterTaxTotal.Multiline = true;
             this.invAfterTaxTotal.Name = "invAfterTaxTotal";
-            this.invAfterTaxTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.invAfterTaxTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.invAfterTaxTotal.StylePriority.UseFont = false;
             this.invAfterTaxTotal.StylePriority.UsePadding = false;
             this.invAfterTaxTotal.StylePriority.UseTextAlignment = false;
@@ -1369,7 +1420,7 @@
             this.roundOffCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.roundOffCaption.Multiline = true;
             this.roundOffCaption.Name = "roundOffCaption";
-            this.roundOffCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.roundOffCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.roundOffCaption.StylePriority.UseFont = false;
             this.roundOffCaption.StylePriority.UsePadding = false;
             this.roundOffCaption.StylePriority.UseTextAlignment = false;
@@ -1384,7 +1435,7 @@
             this.roundOffAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.roundOffAmount.Multiline = true;
             this.roundOffAmount.Name = "roundOffAmount";
-            this.roundOffAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.roundOffAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.roundOffAmount.StylePriority.UseFont = false;
             this.roundOffAmount.StylePriority.UsePadding = false;
             this.roundOffAmount.StylePriority.UseTextAlignment = false;
@@ -1405,7 +1456,7 @@
             this.discountCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.discountCaption.Multiline = true;
             this.discountCaption.Name = "discountCaption";
-            this.discountCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.discountCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.discountCaption.StylePriority.UseFont = false;
             this.discountCaption.StylePriority.UsePadding = false;
             this.discountCaption.StylePriority.UseTextAlignment = false;
@@ -1420,7 +1471,7 @@
             this.discAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.discAmount.Multiline = true;
             this.discAmount.Name = "discAmount";
-            this.discAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.discAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.discAmount.StylePriority.UseFont = false;
             this.discAmount.StylePriority.UsePadding = false;
             this.discAmount.StylePriority.UseTextAlignment = false;
@@ -1442,7 +1493,7 @@
             this.xrTableCell19.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrTableCell19.Multiline = true;
             this.xrTableCell19.Name = "xrTableCell19";
-            this.xrTableCell19.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.xrTableCell19.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.xrTableCell19.StylePriority.UseFont = false;
             this.xrTableCell19.StylePriority.UsePadding = false;
             this.xrTableCell19.StylePriority.UseTextAlignment = false;
@@ -1457,7 +1508,7 @@
             this.invGrandTotal.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invGrandTotal.Multiline = true;
             this.invGrandTotal.Name = "invGrandTotal";
-            this.invGrandTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 5, 100F);
+            this.invGrandTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 5F, 100F);
             this.invGrandTotal.StylePriority.UseFont = false;
             this.invGrandTotal.StylePriority.UsePadding = false;
             this.invGrandTotal.StylePriority.UseTextAlignment = false;
@@ -1499,7 +1550,7 @@
             this.exTableCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.exTableCaption.Multiline = true;
             this.exTableCaption.Name = "exTableCaption";
-            this.exTableCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 5, 100F);
+            this.exTableCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
             this.exTableCaption.StylePriority.UseFont = false;
             this.exTableCaption.StylePriority.UsePadding = false;
             this.exTableCaption.StylePriority.UseTextAlignment = false;
@@ -1521,7 +1572,7 @@
             this.oldGoldCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.oldGoldCaption.Multiline = true;
             this.oldGoldCaption.Name = "oldGoldCaption";
-            this.oldGoldCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.oldGoldCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.oldGoldCaption.StylePriority.UseFont = false;
             this.oldGoldCaption.StylePriority.UsePadding = false;
             this.oldGoldCaption.StylePriority.UseTextAlignment = false;
@@ -1536,7 +1587,7 @@
             this.oldGoldAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.oldGoldAmount.Multiline = true;
             this.oldGoldAmount.Name = "oldGoldAmount";
-            this.oldGoldAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.oldGoldAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.oldGoldAmount.StylePriority.UseFont = false;
             this.oldGoldAmount.StylePriority.UsePadding = false;
             this.oldGoldAmount.StylePriority.UseTextAlignment = false;
@@ -1557,7 +1608,7 @@
             // 
             this.oldSilverCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.oldSilverCaption.Name = "oldSilverCaption";
-            this.oldSilverCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.oldSilverCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.oldSilverCaption.StylePriority.UseFont = false;
             this.oldSilverCaption.StylePriority.UsePadding = false;
             this.oldSilverCaption.StylePriority.UseTextAlignment = false;
@@ -1571,7 +1622,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OLD_SILVER_AMOUNT]")});
             this.xrTableCell14.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell14.Name = "xrTableCell14";
-            this.xrTableCell14.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.xrTableCell14.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.xrTableCell14.StylePriority.UseFont = false;
             this.xrTableCell14.StylePriority.UsePadding = false;
             this.xrTableCell14.StylePriority.UseTextAlignment = false;
@@ -1592,7 +1643,7 @@
             this.oldTotalCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.oldTotalCaption.Multiline = true;
             this.oldTotalCaption.Name = "oldTotalCaption";
-            this.oldTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.oldTotalCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.oldTotalCaption.StylePriority.UseFont = false;
             this.oldTotalCaption.StylePriority.UsePadding = false;
             this.oldTotalCaption.StylePriority.UseTextAlignment = false;
@@ -1610,7 +1661,7 @@
             this.invTaxableAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.invTaxableAmount.Multiline = true;
             this.invTaxableAmount.Name = "invTaxableAmount";
-            this.invTaxableAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 3, 0, 0, 100F);
+            this.invTaxableAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
             this.invTaxableAmount.StylePriority.UseBorders = false;
             this.invTaxableAmount.StylePriority.UseFont = false;
             this.invTaxableAmount.StylePriority.UsePadding = false;
@@ -1649,7 +1700,7 @@
             this.xrLabel16.LocationFloat = new DevExpress.Utils.PointFloat(80.08624F, 10.00005F);
             this.xrLabel16.Multiline = true;
             this.xrLabel16.Name = "xrLabel16";
-            this.xrLabel16.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel16.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel16.SizeF = new System.Drawing.SizeF(273.4554F, 18F);
             this.xrLabel16.StylePriority.UseFont = false;
             this.xrLabel16.StylePriority.UseTextAlignment = false;
@@ -1679,7 +1730,7 @@
             this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(0F, 10F);
             this.xrLabel4.Multiline = true;
             this.xrLabel4.Name = "xrLabel4";
-            this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel4.SizeF = new System.Drawing.SizeF(80.08616F, 18F);
             this.xrLabel4.StylePriority.UseFont = false;
             this.xrLabel4.Text = "Bank Details";
@@ -1690,7 +1741,7 @@
             this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(0F, 27.99998F);
             this.xrLabel5.Multiline = true;
             this.xrLabel5.Name = "xrLabel5";
-            this.xrLabel5.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel5.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel5.SizeF = new System.Drawing.SizeF(80.08621F, 18F);
             this.xrLabel5.StylePriority.UseFont = false;
             this.xrLabel5.StylePriority.UseTextAlignment = false;
@@ -1703,7 +1754,7 @@
             this.xrLabel6.LocationFloat = new DevExpress.Utils.PointFloat(0F, 45.99996F);
             this.xrLabel6.Multiline = true;
             this.xrLabel6.Name = "xrLabel6";
-            this.xrLabel6.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel6.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel6.SizeF = new System.Drawing.SizeF(80.08627F, 18.00001F);
             this.xrLabel6.StylePriority.UseFont = false;
             this.xrLabel6.StylePriority.UseTextAlignment = false;
@@ -1716,7 +1767,7 @@
             this.xrLabel7.LocationFloat = new DevExpress.Utils.PointFloat(0F, 64.00004F);
             this.xrLabel7.Multiline = true;
             this.xrLabel7.Name = "xrLabel7";
-            this.xrLabel7.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel7.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel7.SizeF = new System.Drawing.SizeF(80.08627F, 18F);
             this.xrLabel7.StylePriority.UseFont = false;
             this.xrLabel7.StylePriority.UseTextAlignment = false;
@@ -1729,7 +1780,7 @@
             this.xrLabel8.LocationFloat = new DevExpress.Utils.PointFloat(0F, 82.00002F);
             this.xrLabel8.Multiline = true;
             this.xrLabel8.Name = "xrLabel8";
-            this.xrLabel8.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel8.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel8.SizeF = new System.Drawing.SizeF(80.08631F, 17.99999F);
             this.xrLabel8.StylePriority.UseFont = false;
             this.xrLabel8.StylePriority.UseTextAlignment = false;
@@ -1744,7 +1795,7 @@
             this.xrLabel9.LocationFloat = new DevExpress.Utils.PointFloat(80.08624F, 27.99998F);
             this.xrLabel9.Multiline = true;
             this.xrLabel9.Name = "xrLabel9";
-            this.xrLabel9.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel9.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel9.SizeF = new System.Drawing.SizeF(181.5803F, 18F);
             this.xrLabel9.StylePriority.UseFont = false;
             this.xrLabel9.StylePriority.UseTextAlignment = false;
@@ -1759,7 +1810,7 @@
             this.xrLabel10.LocationFloat = new DevExpress.Utils.PointFloat(80.08624F, 45.99996F);
             this.xrLabel10.Multiline = true;
             this.xrLabel10.Name = "xrLabel10";
-            this.xrLabel10.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel10.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel10.SizeF = new System.Drawing.SizeF(181.5803F, 18.00001F);
             this.xrLabel10.StylePriority.UseFont = false;
             this.xrLabel10.StylePriority.UseTextAlignment = false;
@@ -1774,7 +1825,7 @@
             this.xrLabel11.LocationFloat = new DevExpress.Utils.PointFloat(80.08629F, 64.00004F);
             this.xrLabel11.Multiline = true;
             this.xrLabel11.Name = "xrLabel11";
-            this.xrLabel11.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel11.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel11.SizeF = new System.Drawing.SizeF(181.5802F, 18F);
             this.xrLabel11.StylePriority.UseFont = false;
             this.xrLabel11.StylePriority.UseTextAlignment = false;
@@ -1789,7 +1840,7 @@
             this.xrLabel12.LocationFloat = new DevExpress.Utils.PointFloat(80.08634F, 82.00002F);
             this.xrLabel12.Multiline = true;
             this.xrLabel12.Name = "xrLabel12";
-            this.xrLabel12.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel12.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel12.SizeF = new System.Drawing.SizeF(181.5802F, 17.99999F);
             this.xrLabel12.StylePriority.UseFont = false;
             this.xrLabel12.StylePriority.UseTextAlignment = false;
@@ -1802,7 +1853,7 @@
             this.xrLabel13.LocationFloat = new DevExpress.Utils.PointFloat(505.9031F, 10.00005F);
             this.xrLabel13.Multiline = true;
             this.xrLabel13.Name = "xrLabel13";
-            this.xrLabel13.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel13.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel13.SizeF = new System.Drawing.SizeF(217.0969F, 23F);
             this.xrLabel13.StylePriority.UseFont = false;
             this.xrLabel13.StylePriority.UseTextAlignment = false;
@@ -1815,7 +1866,7 @@
             this.xrLabel14.LocationFloat = new DevExpress.Utils.PointFloat(322.3795F, 252.9166F);
             this.xrLabel14.Multiline = true;
             this.xrLabel14.Name = "xrLabel14";
-            this.xrLabel14.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel14.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
             this.xrLabel14.SizeF = new System.Drawing.SizeF(145.8454F, 44.66666F);
             this.xrLabel14.StylePriority.UseFont = false;
             this.xrLabel14.StylePriority.UseTextAlignment = false;
@@ -1824,6 +1875,8 @@
             // 
             // xrPictureBox3
             // 
+            this.xrPictureBox3.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "Iif([CompanyDetails].[company_name] == \'MATHA JEWELLERY\', False, True)")});
             this.xrPictureBox3.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox3.ImageSource"));
             this.xrPictureBox3.LocationFloat = new DevExpress.Utils.PointFloat(0.002186775F, 112.1666F);
             this.xrPictureBox3.Name = "xrPictureBox3";
@@ -1868,7 +1921,7 @@
             this.rctSumCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.rctSumCaption.Multiline = true;
             this.rctSumCaption.Name = "rctSumCaption";
-            this.rctSumCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 5, 100F);
+            this.rctSumCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
             this.rctSumCaption.StylePriority.UseFont = false;
             this.rctSumCaption.StylePriority.UsePadding = false;
             this.rctSumCaption.StylePriority.UseTextAlignment = false;
@@ -1889,7 +1942,7 @@
             this.xrTableCell2.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell2.Multiline = true;
             this.xrTableCell2.Name = "xrTableCell2";
-            this.xrTableCell2.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 2, 0, 5, 100F);
+            this.xrTableCell2.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
             this.xrTableCell2.StylePriority.UseFont = false;
             this.xrTableCell2.StylePriority.UsePadding = false;
             this.xrTableCell2.StylePriority.UseTextAlignment = false;
@@ -1904,7 +1957,7 @@
             this.xrTableCell4.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell4.Multiline = true;
             this.xrTableCell4.Name = "xrTableCell4";
-            this.xrTableCell4.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 5, 100F);
+            this.xrTableCell4.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
             this.xrTableCell4.StylePriority.UseFont = false;
             this.xrTableCell4.StylePriority.UsePadding = false;
             this.xrTableCell4.StylePriority.UseTextAlignment = false;
@@ -1925,7 +1978,7 @@
             // 
             this.xrTableCell5.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell5.Name = "xrTableCell5";
-            this.xrTableCell5.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 2, 0, 5, 100F);
+            this.xrTableCell5.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
             this.xrTableCell5.StylePriority.UseFont = false;
             this.xrTableCell5.StylePriority.UsePadding = false;
             this.xrTableCell5.StylePriority.UseTextAlignment = false;
@@ -1939,7 +1992,7 @@
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[RD_AMOUNT_ADJ]")});
             this.xrTableCell6.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell6.Name = "xrTableCell6";
-            this.xrTableCell6.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 5, 100F);
+            this.xrTableCell6.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
             this.xrTableCell6.StylePriority.UseFont = false;
             this.xrTableCell6.StylePriority.UsePadding = false;
             this.xrTableCell6.StylePriority.UseTextAlignment = false;
@@ -1961,7 +2014,7 @@
             this.xrTableCell15.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell15.Multiline = true;
             this.xrTableCell15.Name = "xrTableCell15";
-            this.xrTableCell15.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 2, 0, 5, 100F);
+            this.xrTableCell15.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
             this.xrTableCell15.StylePriority.UseFont = false;
             this.xrTableCell15.StylePriority.UsePadding = false;
             this.xrTableCell15.StylePriority.UseTextAlignment = false;
@@ -1976,7 +2029,7 @@
             this.xrTableCell16.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.xrTableCell16.Multiline = true;
             this.xrTableCell16.Name = "xrTableCell16";
-            this.xrTableCell16.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 5, 100F);
+            this.xrTableCell16.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
             this.xrTableCell16.StylePriority.UseFont = false;
             this.xrTableCell16.StylePriority.UsePadding = false;
             this.xrTableCell16.StylePriority.UseTextAlignment = false;
@@ -1998,7 +2051,7 @@
             this.xrTableCell7.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrTableCell7.Multiline = true;
             this.xrTableCell7.Name = "xrTableCell7";
-            this.xrTableCell7.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 2, 0, 5, 100F);
+            this.xrTableCell7.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
             this.xrTableCell7.StylePriority.UseFont = false;
             this.xrTableCell7.StylePriority.UsePadding = false;
             this.xrTableCell7.StylePriority.UseTextAlignment = false;
@@ -2013,7 +2066,7 @@
             this.xrTableCell12.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrTableCell12.Multiline = true;
             this.xrTableCell12.Name = "xrTableCell12";
-            this.xrTableCell12.Padding = new DevExpress.XtraPrinting.PaddingInfo(0, 0, 0, 5, 100F);
+            this.xrTableCell12.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
             this.xrTableCell12.StylePriority.UseFont = false;
             this.xrTableCell12.StylePriority.UsePadding = false;
             this.xrTableCell12.StylePriority.UseTextAlignment = false;
@@ -2223,57 +2276,6 @@
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
-            // xrTableCell22
-            // 
-            this.xrTableCell22.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrTableCell22.Multiline = true;
-            this.xrTableCell22.Name = "xrTableCell22";
-            this.xrTableCell22.StylePriority.UseFont = false;
-            this.xrTableCell22.StylePriority.UsePadding = false;
-            this.xrTableCell22.StylePriority.UseTextAlignment = false;
-            this.xrTableCell22.Text = "Customer Name & Address";
-            this.xrTableCell22.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
-            this.xrTableCell22.Weight = 1.9521106046762142D;
-            // 
-            // xrTableCell23
-            // 
-            this.xrTableCell23.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'Mr/Ms/Mrs : \'")});
-            this.xrTableCell23.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
-            this.xrTableCell23.Multiline = true;
-            this.xrTableCell23.Name = "xrTableCell23";
-            this.xrTableCell23.StylePriority.UseFont = false;
-            this.xrTableCell23.StylePriority.UsePadding = false;
-            this.xrTableCell23.StylePriority.UseTextAlignment = false;
-            this.xrTableCell23.Text = "xrTableCell23";
-            this.xrTableCell23.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
-            this.xrTableCell23.Weight = 0.78407704591555716D;
-            // 
-            // xrTableCell24
-            // 
-            this.xrTableCell24.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", " ")});
-            this.xrTableCell24.Multiline = true;
-            this.xrTableCell24.Name = "xrTableCell24";
-            this.xrTableCell24.StylePriority.UseFont = false;
-            this.xrTableCell24.StylePriority.UsePadding = false;
-            this.xrTableCell24.StylePriority.UseTextAlignment = false;
-            this.xrTableCell24.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
-            this.xrTableCell24.Weight = 0.78407704591555716D;
-            // 
-            // xrTableCell25
-            // 
-            this.xrTableCell25.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'Mobile : \'")});
-            this.xrTableCell25.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
-            this.xrTableCell25.Multiline = true;
-            this.xrTableCell25.Name = "xrTableCell25";
-            this.xrTableCell25.StylePriority.UseFont = false;
-            this.xrTableCell25.StylePriority.UseTextAlignment = false;
-            this.xrTableCell25.Text = "xrTableCell25";
-            this.xrTableCell25.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
-            this.xrTableCell25.Weight = 0.78407704591555716D;
-            // 
             // XrNewInvoice24
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -2298,7 +2300,7 @@
             new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pInvNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
             this.pInvNbr});
-            this.Version = "24.2";
+            this.Version = "25.1";
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).EndInit();

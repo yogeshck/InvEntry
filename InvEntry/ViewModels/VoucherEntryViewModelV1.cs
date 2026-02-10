@@ -31,11 +31,11 @@ namespace InvEntry.ViewModels
         {
            //To do Customers = LoadCustomers(); // fetch from DB
             Vouchers = new ObservableCollection<Voucher>();
-            AddVoucherCommand = new RelayCommand(AddVoucher);
+         //   AddVoucherCommand = new RelayCommand(AddVoucher);
             SaveCommand = new AsyncRelayCommand(SaveVouchersAsync);
         }
 
-        private void AddVoucher()
+        private void AddVoucher(object obj)
         {
             Vouchers.Add(new Voucher { VoucherType = "Cash", TransAmount = 0 });
         }

@@ -91,6 +91,8 @@ namespace InvEntry.Models
         [ObservableProperty]
         public string? _category;
 
+        [ObservableProperty]
+        public bool _isBarcodePrinted;
 
     }
 }

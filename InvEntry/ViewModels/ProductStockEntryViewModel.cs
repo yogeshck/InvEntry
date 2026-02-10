@@ -3,26 +3,20 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
-using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
-using DevExpress.Xpf.Printing;
-using DevExpress.XtraLayout.Customization;
+using DevExpress.XtraGauges.Core.Styles;
 using InvEntry.Extension;
 using InvEntry.Models;
-using InvEntry.Models.Extensions;
-using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Store;
-using InvEntry.Tally;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Threading;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
 
@@ -80,8 +74,12 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private GrnHeader _SelectedGrn;
 
+        private WeighScaleReader _scaleReader;
+
         private MtblReference mtblReference;
-        private bool isTagPrinted;  
+        private bool isTagPrinted;
+        private bool isPrintEnabled = true;
+        private decimal _capturedWeight;
 
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
         private Dictionary<string, Action<GrnLine, decimal?>> copyGRNLineExpression;
@@ -108,7 +106,7 @@ namespace InvEntry.ViewModels
             _mtblReferencesService      = mtblReferencesService;
             _orgThisCompanyViewService  = orgThisCompanyViewService;
 
-    _lineGrnLookup = new();
+            _lineGrnLookup = new();
 
             SetThisCompany();
 
@@ -116,6 +114,10 @@ namespace InvEntry.ViewModels
             PopulateOpenGRN();
             PopulateUnboundLineDataMap();
             PopulateUnboundLineSummaryDataMap();
+
+           // var line = new GrnLine();
+            //StartScale(line);
+            //StartScale();
 
         }
 
@@ -137,8 +139,51 @@ namespace InvEntry.ViewModels
 
         private async void PopulateOpenGRN()
         {
+            //bring all 'Open' status grn headers
             var grnHdrList = await _grnService.GetBySupplier(SupplierID);
         }
+
+/*        [RelayCommand] //(CanExecute = nameof(CanStartScale))]
+        public void StartScale()   //GrnLine value)
+        {
+            Console.WriteLine("Scale started ");
+            _scaleReader = new WeighScaleReader();
+            _scaleReader.WeightCaptured += OnWeightCaptured;    
+            _scaleReader.Start("COM3"); // or whichever port
+            Console.WriteLine("Scale started listening on com3 ");
+        }*/
+
+/*        private bool CanStartScale(GrnLine value)
+        {
+
+            return value is not null;
+        }*/
+
+/*        private void OnWeightCaptured(decimal weight)
+        {
+            if (SelectedGrnLine is null)
+                          return;
+            
+            SelectedGrnLine.GrossWeight = weight;
+           // EvaluateGrnLine(SelectedGrnLine);
+        }*/
+
+/*        partial void OnSelectedGrnLineChanged(GrnLine value)
+        {
+
+          //  if ((nameof(GrnLine.GrossWeight).Equals(args.Column.FieldName) // || nameof(GrnLine.StoneWeight).Equals(args.Column.FieldName) ) 
+                                                                            //&& line.NetWeight > 0 )
+            {
+
+
+                OnWeightCaptured(_capturedWeight);
+            }
+        }*/
+
+/*        public void StopScale()
+        {
+            _scaleReader.Stop();
+        }*/
 
 
         [RelayCommand]
@@ -149,6 +194,93 @@ namespace InvEntry.ViewModels
             var grnHeader = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
 
         }
+
+
+        /*        private async void OnEditorActivated(ShowingEditorEventArgs e)
+                {
+                    if (e.Column.FieldName == "GrossWeight")
+                    {
+                        _scaleReader = new WeighScaleReader();
+                        _scaleReader.WeightCaptured += async weight =>
+                        {
+                            // Update the bound property directly
+                            var line = e.Row as GrnLine;
+                            if (line != null)
+                            {
+                                line.GrossWeight = weight;
+                            }
+                            await Task.Run(() => _scaleReader.Stop()); // stop after capture
+                        };
+                        await _scaleReader.StartAsync(); // non-blocking start
+                    }
+                }*/
+
+        [RelayCommand]
+        private async void OnEditorActivated(ShowingEditorEventArgs e)
+        {
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Awaiting ...input..."));
+
+            var waitVM = WaitIndicatorVM.ShowIndicator("Press... print button... reading weight.... .");
+
+            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
+            if (e.Column.FieldName == "GrossWeight")
+                    {
+                        var line = e.Row as GrnLine;
+                        if (line != null)
+                        {
+                            var reader = new WeighScaleReader();
+                            var weight = await reader.StartScaleAsync(); // await one stable value
+                            line.GrossWeight = weight;
+                        }
+                    }
+
+            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+
+
+
+
+        }
+
+
+
+        /*        private async void OnEditorActivated(ShowingEditorEventArgs e)
+                {
+                    if (e.Column.FieldName == "GrossWeight")
+                    {
+                        var line = e.Row as GrnLine;
+                        if (line != null)
+                        {
+                            var reader = new WeighScaleReader();
+                            var weight = await reader.StartScaleAsync(); // await one stable value
+
+                            // Update the bound property
+                            line.GrossWeight = weight;
+
+                            Dispatcher.Invoke(() =>
+                            {
+                                var view = e.Source as TableView; // or get via sender
+                                var rowHandle = view.FocusedRowHandle;
+                                view.SetCellValue(rowHandle, "GrossWeight", weight);
+                            });
+
+                        }
+                    }
+                }*/
+
+
+
+        private void OnCellValueChanged(CellValueChangedEventArgs e)
+        {
+            if (e.Column.FieldName == "GrossWeight" && e.Value != null)
+            {
+                if (decimal.TryParse(e.Value.ToString(), out var weight))
+                {
+                    // PrintWeightDetails(weight); // your processing logic
+                }
+            }
+        }
+
 
         [RelayCommand]
         private async Task SelectionGrnSumryListChanged()
@@ -163,7 +295,11 @@ namespace InvEntry.ViewModels
                 return;
             }
 
-            var category = GrnLineSumryList.First().ProductCategory;
+            //var category = GrnLineSumryList.First().ProductCategory;
+
+            var category = GrnLineSumryList.Where(x => x.GKey == SelectedGrnLineSumry.GKey)
+                            .Select(x => x.ProductCategory).FirstOrDefault();
+
 
             if (category == null) return;
 
@@ -176,10 +312,36 @@ namespace InvEntry.ViewModels
 
             var prdView = await _productViewService.GetProduct(category);
 
+            // check grn line has any records already in table
+            // if there populate the old records and then allow user to add new rec
+
             GrnLineList = new();
 
-            var count = SelectedGrnLineSumry.SuppliedQty;
-            for (int i = 1; i <= count; i++)
+            /*            return _invoiceHeaderRepository.GetList(x =>
+                               x.InvDate.HasValue &&
+                               x.InvDate.Value.Date >= criteria.From.Date &&    
+                               x.InvDate.Value.Date <= criteria.To.Date &&
+                               x.CustMobile == criteria.Filter1
+                           ).OrderBy(x => x.InvDate);*/
+            var grnLineRecCnt = 0;
+
+            var grnLineList_1 = await _grnService.GetByLineSumryGkey(SelectedGrnLineSumry.GKey, (int)SelectedGrnLineSumry.GrnHdrGkey);
+
+            if (grnLineList_1 is not null)
+                grnLineRecCnt = grnLineList_1.Count(x => x.ProductId == prdView.Id &&
+                                                        x.ProductSku != null);
+
+            if (grnLineRecCnt > 0)
+            //records already exist, then populate
+            {
+                grnLineRecCnt = (int)(SelectedGrnLineSumry.SuppliedQty - grnLineRecCnt);
+            }
+            else
+            {
+                grnLineRecCnt = (int)SelectedGrnLineSumry.SuppliedQty;
+            }
+
+            for (int i = 1; i <= grnLineRecCnt; i++)
             {
                 //Sequence number as product sky alongwith product code
                 //var sku = int.Parse(mtblReference.RefValue);
@@ -187,23 +349,25 @@ namespace InvEntry.ViewModels
 
                 GrnLine grnLine = new();
 
+                grnLine.GrnHdrGkey = SelectedGrnLineSumry.GrnHdrGkey;
                 grnLine.ProductId = SelectedGrnLineSumry.ProductCategory;
                 grnLine.ProductGkey = SelectedGrnLineSumry.ProductGkey;
                 grnLine.LineNbr = i;
                 grnLine.ProductDesc = prdView.Description;
                 grnLine.ProductPurity = prdView?.Purity;
-                grnLine.SuppVaPercent = prdView.VaPercent;
+                grnLine.SuppVaPercent = 18;// prdView.VaPercent;
+                grnLine.GrnLineSumryGkey = SelectedGrnLineSumry.GKey;
 
                 //grnLine.ProductSku = SelectedGrnLineSumry.ProductCategory;
 
-                var tagPurityCode = "";
+/*                var tagPurityCode = "";
                 if (grnLine.ProductPurity == "916")
                     tagPurityCode = "2";
                 else if (grnLine.ProductPurity == "750")
                     tagPurityCode = "8";
 
-                var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", grnLine.NetWeight);
-                grnLine.ProductSku = productSku;
+                var productSku = string.Format("{0}{1}{2}", mtblReference.RefDesc, tagPurityCode, "-"); //, grnLine.NetWeight);
+                grnLine.ProductSku = productSku;*/
                 
                 //string.Format("{0}{1}", mtblReference.RefDesc, ProductSku.ToString("D4"));
 
@@ -285,48 +449,104 @@ namespace InvEntry.ViewModels
 
             if (grnLines is null || !grnLines.Any() ) return;
 
-    //        var category = grnLines.First().ProductId;
-                
-    //        var mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", category);
-
-    //        if (mtblReference is null)
-    //        {
-    //            return;
-    //        }
-
-            grnLines.ForEach(x =>
+            grnLines.ForEach(async x =>
             {
+                if (x.NetWeight.HasValue && x.NetWeight > 0 && x.ProductSku is not null )
+                {                  
+                    x.GrnHdrGkey = SelectedGrn.GKey;
 
-             //   var sku = int.Parse(mtblReference.RefValue);
-             //   sku++;
-
-                x.GrnHdrGkey = SelectedGrn.GKey;
-                x.Status = "Closed";
-
-              //  x.ProductSku = string.Format("{0}{1}", mtblReference.RefDesc, sku.ToString("D4"));
-
-                ProcessStockLines(x);
-
-            //    mtblReference.RefValue = sku.ToString();
-
+/*                    if (x.ProductSku is null)
+                    {
+                        return;
+                    } else*/
+                    {
+                        x.Status = "Closed";
+                        ProcessStockLines(x);
+                        await _grnService.CreateGrnLine(grnLines);
+                    }
+                }
             });
 
             //if user maintains seq nbr for product sku - this nees to be executed - but in difference place - need to fix
             //await _mtblReferencesService.UpdateReference(mtblReference);
 
-            await _grnService.CreateGrnLine(grnLines);
+
 
         }
 
         [RelayCommand]
         private void PrintTag(GrnLine grnline)
         {
-            if (grnline.NetWeight.HasValue)
+
+
+            if (grnline.NetWeight > 0.00m)
             {
-                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc, grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
-                grnline.ProductPurity, Company.CompanyName);//return Task.CompletedTask;
+                // Get the current row handle
+                // int currentRowHandle = GridView.Ta;
+
+                var tagPurityCode = "";
+                if (grnline.ProductPurity == "916")
+                    tagPurityCode = "2";
+                else if (grnline.ProductPurity == "750")
+                    tagPurityCode = "8";
+
+                var weight = "";
+                weight = decimal.Truncate(grnline.NetWeight.Value * 1000m).ToString("000000");
+
+                var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", weight);
+                grnline.ProductSku = productSku;
+
+
+
+/*            var tProductSku = "";
+            tProductSku = $"{grnline.ProductSku}{weight}";
+            grnline.ProductSku = tProductSku;*/
+
+
+                var result = BarCodePrint.ProcessBarCode(   grnline.ProductSku, grnline.ProductDesc, 
+                                                            grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
+                                                            grnline.StoneWeight.Value,
+                                                            grnline.ProductPurity, Company.CompanyName);
+                //return Task.CompletedTask;
             }
+
+            // 2. Disable the button for this row
+            //grnline.IsPrintEnabled = false;
+
+
+            // Disable the print button for this row
+            //DisablePrintButton(currentRowHandle);
+
+            // Then move cursor
+            // MoveToNextRowAndColumn(tableView3, "seqNo");
+
+
+            //set isprinted to false
+
+            var nextSeq = SelectedGrnLine.LineNbr + 1;
+
+            if (GrnLineList.Any(x=> x.LineNbr == nextSeq))
+            {
+                SelectedGrnLine = GrnLineList.First(x => x.LineNbr == nextSeq);
+            } else
+            {
+                ;// StopScale();
+            }
+            
         }
+
+        /*        private void DisablePrintButton(int rowHandle)
+                {
+                    var row = gridView1.GetRow(rowHandle) as MyRowModel;
+                    if (row != null)
+                    {
+                        row.CanPrint = false; // mark as disabled
+                        gridView1.RefreshRow(rowHandle); // refresh UI
+                    }
+                }*/
+
+        // Move cursor to next row and specific column
+
 
         [RelayCommand]
         private async Task Submit()
@@ -363,6 +583,8 @@ namespace InvEntry.ViewModels
             GrnLineList.Clear();
             GrnLineSumryList.Clear();
             ProductStockList.Clear();
+
+            //StopScale();
 
             _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
                                 MessageButton.OK, MessageIcon.Exclamation);
@@ -438,6 +660,7 @@ namespace InvEntry.ViewModels
             productStock.IsProductSold = false;
             productStock.Category = grnLineStock.ProductId;
             productStock.ProductSku = grnLineStock.ProductSku;
+            productStock.IsBarcodePrinted = true;
 
             ProductStockList.Add(productStock);
 
@@ -450,16 +673,19 @@ namespace InvEntry.ViewModels
         {
             if (args.Row is GrnLine line)
             {
+
                 EvaluateFormula(line);
 
-                if ((nameof(GrnLine.GrossWeight).Equals(args.Column.FieldName) || nameof(GrnLine.StoneWeight).Equals(args.Column.FieldName) ) 
+/*                if ((nameof(GrnLine.GrossWeight).Equals(args.Column.FieldName) || nameof(GrnLine.StoneWeight).Equals(args.Column.FieldName) ) 
                                     && line.NetWeight > 0 )
                 {
-                    var weight = decimal.Truncate(line.NetWeight.Value * 1000m).ToString("000000");
+                    var weight = "";
+                    weight = decimal.Truncate(line.NetWeight.Value * 1000m).ToString("000000");
 
-                    var tProductSku = $"{line.ProductSku}{weight}";
+                    var tProductSku = "";
+                    tProductSku = $"{line.ProductSku}{weight}";
                     line.ProductSku = tProductSku;
-                }
+                }*/
             }
         }
 
@@ -526,4 +752,6 @@ namespace InvEntry.ViewModels
             }
         }
     }
+
+
 }

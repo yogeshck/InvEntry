@@ -15,6 +15,8 @@ public partial class MijmsContext : DbContext
     {
     }
 
+    public virtual DbSet<Charge> Charges { get; set; }
+
     public virtual DbSet<CustomerOrder> CustomerOrders { get; set; }
 
     public virtual DbSet<CustomerOrderDbView> CustomerOrderDbViews { get; set; }
@@ -23,13 +25,13 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<DailyRate> DailyRates { get; set; }
 
-    public virtual DbSet<DailySalesInvoiceReceiptDbview> DailySalesInvoiceReceiptDbviews { get; set; }
-
     public virtual DbSet<DailyStockSummary> DailyStockSummaries { get; set; }
 
     public virtual DbSet<EstimateHeader> EstimateHeaders { get; set; }
 
     public virtual DbSet<EstimateLine> EstimateLines { get; set; }
+
+    public virtual DbSet<GoldLedger> GoldLedgers { get; set; }
 
     public virtual DbSet<GrnHeader> GrnHeaders { get; set; }
 
@@ -99,6 +101,10 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<RepDailyStockSummary> RepDailyStockSummaries { get; set; }
 
+    public virtual DbSet<RepairDetail> RepairDetails { get; set; }
+
+    public virtual DbSet<RepairHeader> RepairHeaders { get; set; }
+
     public virtual DbSet<Test> Tests { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
@@ -109,10 +115,23 @@ public partial class MijmsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+        => optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Charge>(entity =>
+        {
+            entity.HasKey(e => e.ChargeId).HasName("PK__Charges__17FC361B0F812CDA");
+
+            entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.ChargeName).HasMaxLength(200);
+
+            entity.HasOne(d => d.RepairHeader).WithMany(p => p.Charges)
+                .HasForeignKey(d => d.RepairHeaderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Charges__RepairH__339FAB6E");
+        });
+
         modelBuilder.Entity<CustomerOrder>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -467,31 +486,6 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("PURITY");
         });
 
-        modelBuilder.Entity<DailySalesInvoiceReceiptDbview>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("DailySalesInvoiceReceiptDBView");
-
-            entity.Property(e => e.AdvanceAmt).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.Bank).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.Cash).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.Credit).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.CreditCard).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.DebitCard).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.DiscountAmt).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.Gpay).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.InvAmount).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.InvDate).HasPrecision(6);
-            entity.Property(e => e.InvNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Rd)
-                .HasColumnType("decimal(18, 2)")
-                .HasColumnName("RD");
-            entity.Property(e => e.Refund).HasColumnType("decimal(18, 2)");
-        });
-
         modelBuilder.Entity<DailyStockSummary>(entity =>
         {
             entity
@@ -785,6 +779,24 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.VaPercent)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("VA_PERCENT");
+        });
+
+        modelBuilder.Entity<GoldLedger>(entity =>
+        {
+            entity.HasKey(e => e.GoldLedgerId).HasName("PK__GoldLedg__D65EE3707EA4624F");
+
+            entity.ToTable("GoldLedger");
+
+            entity.Property(e => e.ExtraGoldCharged).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.GoldReceived).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.GoldReturned).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.NetWastage).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.Status).HasMaxLength(50);
+
+            entity.HasOne(d => d.RepairHeader).WithMany(p => p.GoldLedgers)
+                .HasForeignKey(d => d.RepairHeaderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__GoldLedge__Repai__367C1819");
         });
 
         modelBuilder.Entity<GrnHeader>(entity =>
@@ -2701,6 +2713,41 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("STOCK_TRANSFER_OUT");
             entity.Property(e => e.StockTransferOutQty).HasColumnName("STOCK_TRANSFER_OUT_QTY");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+        });
+
+        modelBuilder.Entity<RepairDetail>(entity =>
+        {
+            entity.HasKey(e => e.RepairDetailId).HasName("PK__RepairDe__BF6942F850FA591F");
+
+            entity.Property(e => e.DeliveredWeight).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.ExtraGoldUsed).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.ItemDescription).HasMaxLength(200);
+            entity.Property(e => e.Purity).HasMaxLength(50);
+            entity.Property(e => e.ReceivedWeight).HasColumnType("decimal(10, 3)");
+            entity.Property(e => e.Wastage).HasColumnType("decimal(10, 3)");
+
+            entity.HasOne(d => d.RepairHeader).WithMany(p => p.RepairDetails)
+                .HasForeignKey(d => d.RepairHeaderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__RepairDet__Repai__30C33EC3");
+        });
+
+        modelBuilder.Entity<RepairHeader>(entity =>
+        {
+            entity.HasKey(e => e.RepairHeaderId).HasName("PK__RepairHe__665EAD8C68D9A18D");
+
+            entity.ToTable("RepairHeader");
+
+            entity.Property(e => e.Advance).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.InvoiceNo).HasMaxLength(50);
+            entity.Property(e => e.JobNo).HasMaxLength(50);
+            entity.Property(e => e.NetPayable).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.PaymentMode).HasMaxLength(50);
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.TransactionRef).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Test>(entity =>
