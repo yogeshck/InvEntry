@@ -115,10 +115,6 @@ namespace InvEntry.ViewModels
             PopulateUnboundLineDataMap();
             PopulateUnboundLineSummaryDataMap();
 
-           // var line = new GrnLine();
-            //StartScale(line);
-            //StartScale();
-
         }
 
         private async void SetThisCompany()
@@ -143,30 +139,6 @@ namespace InvEntry.ViewModels
             var grnHdrList = await _grnService.GetBySupplier(SupplierID);
         }
 
-/*        [RelayCommand] //(CanExecute = nameof(CanStartScale))]
-        public void StartScale()   //GrnLine value)
-        {
-            Console.WriteLine("Scale started ");
-            _scaleReader = new WeighScaleReader();
-            _scaleReader.WeightCaptured += OnWeightCaptured;    
-            _scaleReader.Start("COM3"); // or whichever port
-            Console.WriteLine("Scale started listening on com3 ");
-        }*/
-
-/*        private bool CanStartScale(GrnLine value)
-        {
-
-            return value is not null;
-        }*/
-
-/*        private void OnWeightCaptured(decimal weight)
-        {
-            if (SelectedGrnLine is null)
-                          return;
-            
-            SelectedGrnLine.GrossWeight = weight;
-           // EvaluateGrnLine(SelectedGrnLine);
-        }*/
 
 /*        partial void OnSelectedGrnLineChanged(GrnLine value)
         {
@@ -180,10 +152,6 @@ namespace InvEntry.ViewModels
             }
         }*/
 
-/*        public void StopScale()
-        {
-            _scaleReader.Stop();
-        }*/
 
 
         [RelayCommand]
@@ -194,26 +162,6 @@ namespace InvEntry.ViewModels
             var grnHeader = await _grnService.GetByHdrGkey(SelectedGrn.GKey);
 
         }
-
-
-        /*        private async void OnEditorActivated(ShowingEditorEventArgs e)
-                {
-                    if (e.Column.FieldName == "GrossWeight")
-                    {
-                        _scaleReader = new WeighScaleReader();
-                        _scaleReader.WeightCaptured += async weight =>
-                        {
-                            // Update the bound property directly
-                            var line = e.Row as GrnLine;
-                            if (line != null)
-                            {
-                                line.GrossWeight = weight;
-                            }
-                            await Task.Run(() => _scaleReader.Stop()); // stop after capture
-                        };
-                        await _scaleReader.StartAsync(); // non-blocking start
-                    }
-                }*/
 
         [RelayCommand]
         private async void OnEditorActivated(ShowingEditorEventArgs e)
@@ -317,12 +265,6 @@ namespace InvEntry.ViewModels
 
             GrnLineList = new();
 
-            /*            return _invoiceHeaderRepository.GetList(x =>
-                               x.InvDate.HasValue &&
-                               x.InvDate.Value.Date >= criteria.From.Date &&    
-                               x.InvDate.Value.Date <= criteria.To.Date &&
-                               x.CustMobile == criteria.Filter1
-                           ).OrderBy(x => x.InvDate);*/
             var grnLineRecCnt = 0;
 
             var grnLineList_1 = await _grnService.GetByLineSumryGkey(SelectedGrnLineSumry.GKey, (int)SelectedGrnLineSumry.GrnHdrGkey);

@@ -15,7 +15,7 @@ namespace InvEntry.Models.Extensions
             //will be introduced when we use barcode
             line.ProdGrossWeight = 0;                           // product.GrossWeight;
             line.ProdStoneWeight = 0;                           // product.StoneWeight;
-            line.ProductSku = product.ProductSku;
+           //line.ProductSku = product.ProductSku;
             line.ProductGkey = product.GKey;
             line.ProductDesc = product.Description;
             line.ProductName = product.Name;

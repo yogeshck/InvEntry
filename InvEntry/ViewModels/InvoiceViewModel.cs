@@ -346,7 +346,7 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     //might be introduced when SKU implmeneted
-/*    private ProductView? ProductStockSelection()
+    private ProductView? ProductStockSelection()
     {
      
         var vm = DISource.Resolve<InvoiceProductSelectionViewModel>();
@@ -360,7 +360,7 @@ public partial class InvoiceViewModel : ObservableObject
             return vm.SelectedProduct; 
         } 
         return null;
-    }*/
+    }
 
     [RelayCommand]
     private async Task FetchCustomer(EditValueChangedEventArgs args)
@@ -456,7 +456,16 @@ public partial class InvoiceViewModel : ObservableObject
         //this code will be re-introduce once SKU/Barcode is implmeneted
         //var product = ProductStockSelection();
 
-        var productStk = await _productViewService.GetProduct(ProductIdUI);
+        ProductStock productSkuStock = new ProductStock();
+        productSkuStock = await _productStockService.GetProductStock(ProductIdUI);
+        if (productSkuStock is not null)
+        {
+            //isBarcodeTagEnabled = true;
+            ProductIdUI = productSkuStock.Category;
+        }
+
+        //this should be set as summary stock to avoid confusion
+        var productStk = await _productViewService.GetProduct(ProductIdUI);                  
 
         if (productStk is null)
         {
@@ -491,6 +500,16 @@ public partial class InvoiceViewModel : ObservableObject
         };
 
         invoiceLine.SetProductDetails(productStk);
+
+        if (productSkuStock is not null)
+        {
+            invoiceLine.ProductSku = productSkuStock.ProductSku;
+            invoiceLine.ProdQty = productSkuStock.StockQty;
+            invoiceLine.ProdGrossWeight = productSkuStock.GrossWeight;
+            invoiceLine.ProdStoneWeight = productSkuStock.StoneWeight;
+            invoiceLine.ProdNetWeight = productSkuStock.NetWeight;
+
+        }
 
         EvaluateFormula(invoiceLine, isInit: true);
 
