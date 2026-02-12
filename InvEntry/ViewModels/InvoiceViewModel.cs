@@ -754,7 +754,7 @@ public partial class InvoiceViewModel : ObservableObject
 
             await ProductStockSummaryUpdate(line);
 
-            //await ProductStockUpdate(line);  //Put in on-hold for time being - till we introduce barcode
+            await ProductStockUpdate(line);  //Put in on-hold for time being - till we introduce barcode
 
             //await CreateProductTransaction(line);
         }

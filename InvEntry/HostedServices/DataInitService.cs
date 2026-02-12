@@ -28,7 +28,42 @@ public class DataInitService : IHostedService
         _masterDataService = masterDataService;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _mutex = new Mutex(true, "InvEntryMainSingleInstanceMutex", out bool isNewInstance);
+
+        if (!isNewInstance)
+        {
+            DXMessageBox.Show(
+                "InvEntry is already running...",
+                "Info",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            _appLifeTime.StopApplication();
+            return;
+        }
+
+        var splashScreenViewModel = new DXSplashScreenViewModel()
+        {
+            Copyright = "All rights reserved",
+            IsIndeterminate = true,
+            Title = "InvEntry",
+            Status = "Loading..."
+        };
+
+        SplashScreenManager.CreateThemed(splashScreenViewModel, topmost: true).ShowOnStartup();
+
+        splashScreenViewModel.Status = "Loading Product Categories .....";
+
+        await _masterDataService.InitAsync();
+
+        SplashScreenManager.CloseAll();
+    }
+
+
+/*    public Task StartAsync(CancellationToken cancellationToken)
     {
         var splashScreenViewModel = new DXSplashScreenViewModel()
         {
@@ -75,7 +110,7 @@ public class DataInitService : IHostedService
         Task.Delay(250).Wait();
 
         return Task.CompletedTask;
-    }
+    }*/
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
