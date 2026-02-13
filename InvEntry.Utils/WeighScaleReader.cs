@@ -50,53 +50,6 @@ namespace InvEntry.Utils
             }
         }
 
-        /*      Working Code
-         *      public Task StartAsync(string comPort = "COM3")
-                {
-                    _cts = new CancellationTokenSource();
-
-                    _port = new SerialPort(comPort, 4800, Parity.None, 8, StopBits.One);
-                    _port.DataReceived += Port_DataReceived;
-                    _port.Open();
-
-                    return Task.CompletedTask;
-                }
-
-                private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
-                {
-                    try
-                    {
-                        string data = _port.ReadLine(); // e.g. "ST,+12.345 g"
-                        if (data.StartsWith("ST") || data.Contains("g")) // stable reading
-                        {
-                            decimal weight = ParseWeight(data);
-                            WeightCaptured?.Invoke(weight);
-
-                            // Once we have a stable weight, stop immediately
-                            Stop();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        // handle/log errors gracefully
-                    }
-                }
-
-                public void Stop()
-                {
-                    try
-                    {
-                        _cts?.Cancel();
-                        if (_port != null)
-                        {
-                            _port.DataReceived -= Port_DataReceived;
-                            if (_port.IsOpen) _port.Close();
-                            _port.Dispose();
-                        }
-                    }
-                    catch { }
-                }*/
-
         private decimal ParseWeight(string raw)
         {
             string cleaned = raw.Trim();

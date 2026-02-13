@@ -204,52 +204,27 @@
                                 <dxlc:LayoutItem Label="State"
                                                  LabelPosition="Top"
                                                  HorizontalAlignment="Left">
-                                    <dxg:LookUpEdit Width="225"
-                                                    Height="35"
-                                                    EditValue="{Binding CustomerState,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
-                                                    ItemsSource="{Binding StateReferencesList}"
-                                                    DisplayMember="RefValue"
-                                                    FontSize="15">
-                                        <dxg:LookUpEdit.PopupContentTemplate>
-                                            <ControlTemplate>
-                                                <dxg:GridControl Name="PART_GridControl"
-                                                                 AutoGenerateColumns="RemoveOld">
-                                                    <dxg:GridControl.Columns>
-                                                        <dxg:GridColumn FieldName="RefCode" />
-                                                        <dxg:GridColumn FieldName="RefValue" />
-                                                    </dxg:GridControl.Columns>
-                                                    <dxg:GridControl.View>
-                                                        <dxg:TableView AutoWidth="True" />
-                                                    </dxg:GridControl.View>
-                                                </dxg:GridControl>
-                                            </ControlTemplate>
-                                        </dxg:LookUpEdit.PopupContentTemplate>
-                                    </dxg:LookUpEdit>
+                                    <dxe:ComboBoxEdit
+                                            ItemsSource="{Binding StateReferencesList}"
+                                            EditValue ="{Binding CustomerState, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            IsTextEditable="False"
+                                            Width="200"
+                                            Height="35"
+                                            FontSize="15"/>
                                 </dxlc:LayoutItem>
+
                                 <dxlc:LayoutItem Label="Sales Person"
                                                  LabelPosition="Top"
                                                  HorizontalAlignment="Left">
-                                    <dxg:LookUpEdit Width="225"
-                                                    Height="35"
-                                                    EditValue="{Binding SalesPerson}"
-                                                    ItemsSource="{Binding SalesPersonReferencesList}"
-                                                    DisplayMember="RefValue"
-                                                    FontSize="15">
-                                        <dxg:LookUpEdit.PopupContentTemplate>
-                                            <ControlTemplate>
-                                                <dxg:GridControl Name="PART_GridControl"
-                                                                 AutoGenerateColumns="RemoveOld">
-                                                    <dxg:GridControl.Columns>
-                                                        <dxg:GridColumn FieldName="RefValue" />
-                                                    </dxg:GridControl.Columns>
-                                                    <dxg:GridControl.View>
-                                                        <dxg:TableView AutoWidth="True" />
-                                                    </dxg:GridControl.View>
-                                                </dxg:GridControl>
-                                            </ControlTemplate>
-                                        </dxg:LookUpEdit.PopupContentTemplate>
-                                    </dxg:LookUpEdit>
+                                    <dxe:ComboBoxEdit
+                                            ItemsSource="{Binding SalesPersonReferencesList}"
+                                            EditValue="{Binding SalesPerson, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            IsTextEditable="False"
+                                            Width="200"
+                                            Height="35"
+                                            FontSize="14"/>
                                 </dxlc:LayoutItem>
+
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
@@ -375,51 +350,24 @@
                                 </dxlc:LayoutGroup>
                                 <dxlc:LayoutGroup Orientation="Vertical">
 
-                                    <!--       <dxlc:LayoutItem Label="Status"   
-                                                 Width="260"
-                                                 HorizontalAlignment="Left"
-                                                 VerticalAlignment="Center">
-                                        <dxe:TextEdit EditValue="{Binding OrderStatusUI}"
-                                                      IsTabStop="False"
-                                                      Height="35"
-                                                      Width="150"
-                                                      FontSize="14" />
-                                </dxlc:LayoutItem>  -->
-
-                                    <dxlc:LayoutItem Label="Status"
-                                                     Width="260"
-                                                     HorizontalAlignment="Left"
-                                                     VerticalAlignment="Center">
-                                        <dxg:LookUpEdit Width="150"
-                                                        Height="35"
-                                                        FontSize="14"
-                                                        EditValue="{Binding OrderStatusUI}"
-                                                        ItemsSource="{Binding CustOrdStatusList}"
-                                                        DisplayMember="RefValue"
-                                                        ValueMember="RefValue">
-                                            <dxg:LookUpEdit.PopupContentTemplate>
-                                                <ControlTemplate>
-                                                    <dxg:GridControl Name="PART_GridControl"
-                                                                     AutoGenerateColumns="RemoveOld">
-                                                        <dxg:GridControl.Columns>
-                                                            <dxg:GridColumn FieldName="RefValue" />
-                                                        </dxg:GridControl.Columns>
-                                                        <dxg:GridControl.View>
-                                                            <dxg:TableView AutoWidth="True" />
-                                                        </dxg:GridControl.View>
-                                                    </dxg:GridControl>
-                                                </ControlTemplate>
-                                            </dxg:LookUpEdit.PopupContentTemplate>
-                                        </dxg:LookUpEdit>
+                                    <dxlc:LayoutItem Label="Status" Width="340">
+                                        <dxe:ComboBoxEdit
+                                            ItemsSource="{Binding CustOrdStatusList}"
+                                            EditValue="{Binding OrderStatusUI, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            IsTextEditable="False"
+                                            Width="200"
+                                            Height="35"
+                                            FontSize="14"/>
                                     </dxlc:LayoutItem>
+
                                     <dxlc:LayoutItem Label="Delivered on"
-                                                     Width="260"
+                                                     Width="300"
                                                      HorizontalAlignment="Left"
                                                      VerticalAlignment="Center">
                                         <dxe:DateEdit EditValue="{Binding Header.DeliveryDate}"
                                                       IsTabStop="False"
                                                       Height="35"
-                                                      Width="150"
+                                                      Width="200"
                                                       FontSize="14" />
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>

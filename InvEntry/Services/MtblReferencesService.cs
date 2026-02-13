@@ -14,6 +14,12 @@ namespace InvEntry.Services
 
         Task<MtblReference> GetReference(string refName, string refCode);
 
+        Task<MtblReference> GetReferenceByCode(string refName, string refCode);
+
+        Task<List<string>> GetReferenceByValueList(string refName, string refValue);
+
+       //s Task<MtblReference> GetReferenceByValue(string refName, string refValue);
+
         Task<MtblReference> CreatReference(MtblReference mtblReference);
 
         Task UpdateReference(MtblReference mtblReference);
@@ -55,6 +61,18 @@ namespace InvEntry.Services
             await _mijmsApiService.Put($"api/MtblReference/", mtblReference);
         }
 
+        public async Task<MtblReference> GetReferenceByCode(string refName, string refCode)
+        {
+            return await _mijmsApiService.Get<MtblReference>($"api/MtblReference/{refName}/{refCode}");
+        }
+
+        public async Task<List<string>> GetReferenceByValueList(string refName, string refValue)
+        {
+            var list = await GetReferenceList(refName);
+
+            return list?.Select(x => x.RefValue).ToList()
+                   ?? new List<string>();
+        }
 
     }
 }

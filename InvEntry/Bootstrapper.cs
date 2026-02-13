@@ -4,6 +4,7 @@ using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
+using InvEntry.Helpers;
 using InvEntry.HostedServices;
 using InvEntry.IoC;
 using InvEntry.Managers;
@@ -150,6 +151,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IVoucherService, VoucherService>()
                  .AddSingleton<IVoucherTypeService, VoucherTypeService>()
                  .AddTransient<INavigationService, FrameNavigationService>()
+                 .AddTransient<ReferenceLoader, ReferenceLoader>()
                  //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
                  .AddMockService()
                  .ConfigureFormulas()

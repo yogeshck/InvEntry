@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.CodeParser;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using InvEntry.Extension;
+using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
@@ -15,7 +17,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
@@ -27,7 +31,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private string _customerPhoneNumber;
 
     [ObservableProperty]
-    private MtblReference _customerState;
+    private string _customerState;
+    //private MtblReference _customerState;
 
     [ObservableProperty]
     private MtblReference _salesPerson;
@@ -81,16 +86,19 @@ public partial class CustomerOrderViewModel : ObservableObject
     private ObservableCollection<string> metalList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> custOrdStatusList; 
+    private ObservableCollection<string> _custOrdStatusList;
+   // private ObservableCollection<MtblReference> custOrdStatusList; 
 
     [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> salesPersonReferencesList;
+    private ObservableCollection<string> _salesPersonReferencesList;
+    //private ObservableCollection<MtblReference> salesPersonReferencesList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> stateReferencesList;
+    private ObservableCollection<string> _stateReferencesList;
+    //private ObservableCollection<MtblReference> stateReferencesList;
 
     [ObservableProperty]
     private string _searchText;
@@ -101,6 +109,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private bool createCustomer = false;
     private bool updateOrder = false;
     private bool invBalanceChk = false;
+
+    private readonly ReferenceLoader _referenceLoader;
 
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
@@ -124,6 +134,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<CustomerOrderLine, decimal?>> copyCustomerOrderLineExpression;
     private Dictionary<string, Action<CustomerOrder, decimal?>> copyCustomerOrderExpression;
+
+    public AsyncCommand LoadReferencesCommand { get; }
     //private Dictionary<int, string> orderStatus = new Dictionary<int, string>();
     //private Dictionary<string, MtblReference> dictionaryOrderStatus = new Dictionary<string, MtblReference>();
 
@@ -149,6 +161,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             IMtblLedgersService mtblLedgersService,
             SettingsPageViewModel settingsPageViewModel,
             IReportFactoryService reportFactoryService,
+            ReferenceLoader referenceLoader,
             [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
         // Assign dependencies
@@ -172,6 +185,8 @@ public partial class CustomerOrderViewModel : ObservableObject
         _mtblReferencesService = mtblReferencesService;
         _settingsPageViewModel = settingsPageViewModel;
 
+        _referenceLoader = referenceLoader;
+
         selectedRows = new();
         _customerReadOnly = false;
         _isBalance = true;
@@ -193,12 +208,15 @@ public partial class CustomerOrderViewModel : ObservableObject
             SetHeader(); 
 
             await SetMasterLedger();
+
+            _ = LoadReferencesAsync();
+
             await PopulateProductCategoryList();
-            await PopulateStateList();
+            //await PopulateStateList();
             await PopulateMtblRefNameList();
             await PopulateMetalList();
-            await PopulateOrderStatusList();
-            await PopulateSalesPersonList();
+            //await PopulateOrderStatusList();
+            //await PopulateSalesPersonList();
             PopulateUnboundLineDataMap();
         }
         catch (Exception ex)
@@ -235,13 +253,25 @@ public partial class CustomerOrderViewModel : ObservableObject
         OrderStatusUI = "OPEN";
     }
 
+    private async Task LoadReferencesAsync()
+    {
+
+        CustOrdStatusList = await _referenceLoader.LoadValuesAsync("CUST_ORD_STATUS");
+
+        StateReferencesList = await _referenceLoader.LoadValuesAsync("CUST_STATE");
+
+        SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
+
+
+    }
+
     private async Task PopulateProductCategoryList()
     {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
     }
 
-    private async Task PopulateStateList()
+/*    private async Task PopulateStateList()
     {
         var stateRefList = new List<MtblReference>();
 
@@ -261,9 +291,9 @@ public partial class CustomerOrderViewModel : ObservableObject
         StateReferencesList = new(stateRefList);
 
         // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
-    }
+    }*/
 
-    private async Task PopulateSalesPersonList()
+/*    private async Task PopulateSalesPersonList()
     {
         var salesPersonRefList = await _mtblReferencesService.GetReferenceList("SALES_PERSON");
 
@@ -278,7 +308,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
         SalesPersonReferencesList = new(salesPersonRefList);
 
-    }
+    }*/
 
     private void PopulateUnboundLineDataMap()
     {
@@ -310,26 +340,33 @@ public partial class CustomerOrderViewModel : ObservableObject
         MetalList = new(metalRefList.Select(x => x.RefValue));
     }
 
-    private async Task PopulateOrderStatusList()
+/*    OLD working code ---- private async Task PopulateOrderStatusList()
     {
         var ordStatusRefLst = await _mtblReferencesService.GetReferenceList("CUST_ORD_STATUS");
         CustOrdStatusList = new(ordStatusRefLst);
-    }
+    }*/
 
-    
-    private string GetOrderStatus(int? statusCode, string statusName)
+/*    public async Task PopulateOrderStatusList()
     {
-        var ordStatus = ""; 
+        CustOrdStatusList = new ObservableCollection<string>(
+             await _mtblReferencesService.GetReferenceByValueList("CUST_ORD_STATUS", ""));
+    }*/
+
+
+/*    private string GetOrderStatus(int? statusCode, string statusName)
+    {
+        var ordStatus = "";
 
         if (statusCode > 0)
         {
             ordStatus = CustOrdStatusList.FirstOrDefault(x => int.TryParse(x.RefCode, out var code) && code == statusCode).RefValue;
-        } else if (statusName is not null)
+        }
+        else if (statusName is not null)
         {
             ordStatus = CustOrdStatusList.FirstOrDefault(x => x.RefValue == statusName).RefCode;
         }
-            return ordStatus;
-    }
+        return ordStatus;
+    }*/
 
     private async Task PopulateOrderLines()
     {
@@ -509,7 +546,9 @@ public partial class CustomerOrderViewModel : ObservableObject
             Buyer.Address.District = Company.District;
 
             createCustomer = true;
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
+            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
+
+            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", Company.GstCode);
 
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
@@ -523,7 +562,8 @@ public partial class CustomerOrderViewModel : ObservableObject
                 Buyer.Address.GstStateCode = Company.GstCode;
             }
 
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", gstCode);
+            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
 
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
@@ -572,18 +612,11 @@ public partial class CustomerOrderViewModel : ObservableObject
         Header.OrderStatusFlag = Int32.Parse(GetOrderStatus(0, newValue));
     }*/
 
-    partial void OnCustomerStateChanged(MtblReference value)
+    partial void OnCustomerStateChanged(string value)
     {
         if (Buyer is null) return;
 
-        Buyer.GstStateCode = value.RefCode;
-
-        //>>    Header.CgstPercent = GetGSTPercent("CGST");
-        //>>    Header.SgstPercent = GetGSTPercent("SGST");
-        //>>    Header.IgstPercent = GetGSTPercent("IGST");
-
-        //Need to fetch based on pincode - future change
-        //>>    Header.GstLocBuyer = value.RefCode;
+        Buyer.GstStateCode = value;
 
         EvaluateForAllLines();
         //EvaluateHeader();
@@ -601,7 +634,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
-        OrderStatusUI = GetOrderStatus(Header.OrderStatusFlag, "");
+        //TO FIX OrderStatusUI = await GetOrderStatusAsync(Header.OrderStatusFlag, "");
     }
 
     private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
@@ -700,7 +733,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private async Task SaveNewOrderAsync()
     {
-        Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
+        //TO FIX    Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
 
         var headerResult = await _customerOrderService.CreateCustomerOrder(Header);
 
@@ -725,7 +758,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private async Task UpdateOrderAsync()
     {
-        Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
+        //TO FIX Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
         await _customerOrderService.UpdateHeader(Header);
     }
 
@@ -740,6 +773,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
             Header.CustGkey = Buyer?.GKey;
 
+
             AssignLineNumbers();
 
             if (IsNewOrder())
@@ -748,6 +782,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             }
             else
             {
+                await SetOrderStatusAsync();
                 await UpdateOrderAsync();
             }
 
@@ -767,19 +802,23 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
     }
 
-
-/*    
-    private async Task CreateCustomerOrderOld()
+    private async Task SetOrderStatusAsync()
     {
-            *//* Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
-            PrintPreviewInvoice();
-            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-            PrintInvoiceCommand.NotifyCanExecuteChanged();*//*
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+        Header.OrderStatusFlag = await _referenceLoader.GetCodeAsIntAsync("CUST_ORD_STATUS", OrderStatusUI);
+    }
 
-            ResetCustomerOrder();
-        }
-    }*/
+    /*    
+        private async Task CreateCustomerOrderOld()
+        {
+                *//* Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+                PrintPreviewInvoice();
+                PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+                PrintInvoiceCommand.NotifyCanExecuteChanged();*//*
+                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
+                ResetCustomerOrder();
+            }
+        }*/
 
     private bool CanCreateCustomerOrder()
     {
