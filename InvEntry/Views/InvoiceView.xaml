@@ -218,7 +218,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}" 
                                                   EditValue="{Binding Header.InvlTaxTotal}" Width="120"
                                                   HorizontalContentAlignment="Right"
-                                                  FontSize="12"
+                                                  FontSize="14"
                                                   IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
@@ -229,6 +229,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.OldGoldAmount}" 
                                                   Width="120"
+                                                  FontSize="14"
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
@@ -240,6 +241,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.OldSilverAmount}" 
                                                   Width="120"
+                                                  FontSize="14"                                                  
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
@@ -251,6 +253,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.InvlTaxableAmount}" 
                                                   Width="120"
+                                                  FontSize="14"                                                  
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True"/>
@@ -288,8 +291,8 @@
                                                  LabelTemplate="{StaticResource RsTemplate}">
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.SgstAmount}" Width="120"
+                                                  FontSize="14"                                                  
                                                   HorizontalContentAlignment="Right"
-                                                  FontSize="12"
                                                   IsReadOnly="True" />
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
@@ -299,6 +302,7 @@
                                                  LabelTemplate="{StaticResource RsTemplate}">
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.CgstAmount}" Width="120"
+                                                  FontSize="14"                                                  
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True" />
                                 </dxlc:LayoutItem>
@@ -309,6 +313,7 @@
                                                  LabelTemplate="{StaticResource RsTemplate}">
                                     <dxe:TextEdit   Style="{StaticResource NumberFormatStyle}"
                                                     EditValue="{Binding Header.IgstAmount}" Width="120"
+                                                  FontSize="14"                                                    
                                                 HorizontalContentAlignment="Right"
                                                 IsReadOnly="True" />
                                 </dxlc:LayoutItem>
@@ -319,6 +324,7 @@
                                                  LabelTemplate="{StaticResource RsTemplate}">
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.RoundOff}" Width="120"
+                                                  FontSize="14"                                                  
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
@@ -330,6 +336,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.GrossRcbAmount}" 
                                                   Width="120"
+                                                  FontSize="14"                                                  
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right" 
                                                   IsReadOnly="True"/>
@@ -350,6 +357,7 @@
                                                  LabelTemplate="{StaticResource RsTemplate}">
                                     <dxe:TextEdit
                                                   EditValue="{Binding Header.AdvanceAdj}" Width="120"
+                                                  FontSize="14"                                        
                                                   HorizontalContentAlignment="Right" >
                                         <dxmvvm:Interaction.Behaviors>
                                             <dxmvvm:EventToCommand EventName="EditValueChanged" 
@@ -364,6 +372,7 @@
                                                  LabelTemplate="{StaticResource RsTemplate}">
                                     <dxe:TextEdit 
                                                   EditValue="{Binding Header.RdAmountAdj}" Width="120"
+                                                  FontSize="14"                                        
                                                   HorizontalContentAlignment="Right" >
                                         <dxmvvm:Interaction.Behaviors>
                                             <dxmvvm:EventToCommand EventName="EditValueChanged" 
@@ -379,6 +388,7 @@
                                     <dxe:TextEdit   Style="{StaticResource NumberFormatStyle}"
                                                 EditValue="{Binding Header.RecdAmount}" 
                                                 Width="120"
+                                                  FontSize="14"                                                    
                                                 FontWeight="Bold"
                                                 HorizontalContentAlignment="Right" 
                                                 IsReadOnly="True"/>
@@ -389,12 +399,26 @@
                                 <dxlc:LayoutItem LabelTemplate="{StaticResource RsTemplate}" 
                                                  Label="Balance   " HorizontalAlignment="Left" Width="210"
                                                  VerticalAlignment="Center" >
-                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
+                                    <dxe:TextEdit 
                                                   EditValue="{Binding Header.InvBalance}" 
                                                   Width="120"
+                                                  FontSize="14"                                                  
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right"
-                                                  IsReadOnly="True"/>
+                                                  IsReadOnly="True">
+                                        <dxe:TextEdit.Style>
+                                            <Style TargetType="dxe:TextEdit"
+               BasedOn="{StaticResource NumberFormatStyle}">
+
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Header.InvBalance}" Value="1">
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+
+                                            </Style>
+                                        </dxe:TextEdit.Style>
+                                    </dxe:TextEdit>/>
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal" Visibility="{Binding IsRefund, 
@@ -405,6 +429,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.InvRefund}" 
                                                   Width="120"
+                                                  FontSize="14"                                                  
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right" 
                                                   IsReadOnly="True"/>

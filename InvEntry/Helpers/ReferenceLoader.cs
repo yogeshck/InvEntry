@@ -13,8 +13,7 @@ public class ReferenceLoader
     private readonly IMtblReferencesService _mtblReferencesService;
 
     // Cache per reference type
-    private readonly ConcurrentDictionary<string, List<MtblReference>> _cache
-        = new();
+    private readonly ConcurrentDictionary<string, List<MtblReference>> _cache = new();
 
     public ReferenceLoader(IMtblReferencesService mtblReferencesService)
     {
@@ -24,9 +23,8 @@ public class ReferenceLoader
     // -------------------------
     // LOAD FULL REFERENCE LIST
     // -------------------------
-    public async Task<ObservableCollection<MtblReference>> LoadAsync(
-        string refName,
-        IEnumerable<MtblReference>? fallback = null)
+    public async Task<ObservableCollection<MtblReference>> LoadAsync(string refName,
+                                                                        IEnumerable<MtblReference>? fallback = null)
     {
         var list = await GetOrLoadList(refName, fallback);
         return new ObservableCollection<MtblReference>(list);
@@ -35,9 +33,8 @@ public class ReferenceLoader
     // -------------------------
     // LOAD ONLY VALUES
     // -------------------------
-    public async Task<ObservableCollection<string>> LoadValuesAsync(
-        string refName,
-        IEnumerable<string>? fallback = null)
+    public async Task<ObservableCollection<string>> LoadValuesAsync(string refName,
+                                                                        IEnumerable<string>? fallback = null)
     {
         var list = await GetOrLoadList(refName);
 
@@ -71,6 +68,16 @@ public class ReferenceLoader
             .FirstOrDefault(x => x.RefValue == refValue)
             ?.RefCode;
     }
+    public async Task<string?> GetCodeAsNameAsync(string refName, string refCode)
+    {
+        var list = await GetOrLoadList(refName);
+
+        var refCodeStr = refCode.Trim();
+
+        return list
+            .FirstOrDefault(x => x.RefCode == refCodeStr)
+            ?.RefValue;
+    }
 
     public async Task<int?> GetCodeAsIntAsync(string refName, string refValue)
     {
@@ -85,9 +92,8 @@ public class ReferenceLoader
     // -------------------------
     // INTERNAL CACHE LOADER
     // -------------------------
-    private async Task<List<MtblReference>> GetOrLoadList(
-        string refName,
-        IEnumerable<MtblReference>? fallback = null)
+    private async Task<List<MtblReference>> GetOrLoadList(string refName,
+                                                            IEnumerable<MtblReference>? fallback = null)
     {
         if (_cache.TryGetValue(refName, out var cached))
             return cached;

@@ -34,8 +34,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private string _customerState;
     //private MtblReference _customerState;
 
-    [ObservableProperty]
-    private MtblReference _salesPerson;
+    //[ObservableProperty]
+    //private MtblReference _salesPerson;
 
     [ObservableProperty]
     private Customer _buyer;
@@ -87,13 +87,16 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<string> _custOrdStatusList;
-   // private ObservableCollection<MtblReference> custOrdStatusList; 
+    // private ObservableCollection<MtblReference> custOrdStatusList; 
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> mtblReferencesList;
+    private ObservableCollection<string> _paymentModeList;
 
-    [ObservableProperty]
-    private ObservableCollection<string> _salesPersonReferencesList;
+    //[ObservableProperty]
+    //private ObservableCollection<MtblReference> mtblReferencesList;
+
+    //[ObservableProperty]
+    //private ObservableCollection<string> _salesPersonReferencesList;
     //private ObservableCollection<MtblReference> salesPersonReferencesList;
 
     [ObservableProperty]
@@ -213,7 +216,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
             await PopulateProductCategoryList();
             //await PopulateStateList();
-            await PopulateMtblRefNameList();
+            //await PopulateMtblRefNameList();
             await PopulateMetalList();
             //await PopulateOrderStatusList();
             //await PopulateSalesPersonList();
@@ -260,8 +263,9 @@ public partial class CustomerOrderViewModel : ObservableObject
 
         StateReferencesList = await _referenceLoader.LoadValuesAsync("CUST_STATE");
 
-        SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
+        PaymentModeList = await _referenceLoader.LoadValuesAsync("PAYMENT_MODE");
 
+        //SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
 
     }
 
@@ -270,45 +274,6 @@ public partial class CustomerOrderViewModel : ObservableObject
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list.Select(x => x.Name));
     }
-
-/*    private async Task PopulateStateList()
-    {
-        var stateRefList = new List<MtblReference>();
-
-        var stateRefServiceList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
-
-        if (stateRefServiceList is null)
-        {
-            stateRefList.Add(new MtblReference() { RefValue = "Tamil Nadu", RefCode = "33" });
-            stateRefList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
-            stateRefList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
-        }
-        else
-        {
-            stateRefList.AddRange(stateRefServiceList);
-        }
-
-        StateReferencesList = new(stateRefList);
-
-        // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
-    }*/
-
-/*    private async Task PopulateSalesPersonList()
-    {
-        var salesPersonRefList = await _mtblReferencesService.GetReferenceList("SALES_PERSON");
-
-        if (salesPersonRefList is null)
-        {
-            SalesPersonReferencesList = new();
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" }); //Yet To fix
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Vinnila", RefCode = "32" });
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Anju", RefCode = "30" });
-            return;
-        }
-
-        SalesPersonReferencesList = new(salesPersonRefList);
-
-    }*/
 
     private void PopulateUnboundLineDataMap()
     {
@@ -406,7 +371,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
             await PopulateOrderLines();
             await FetchAssociatedCustomer();
-            EvaluateHeader();
+            await EvaluateHeader();
             SelectedRows = Header.Lines;
             EvaluateForAllLines();
         }
@@ -464,11 +429,11 @@ public partial class CustomerOrderViewModel : ObservableObject
         //FetchCustomer(CustomerPhoneNumber);
     }*/
 
-    private async Task PopulateMtblRefNameList()
+/*    private async Task PopulateMtblRefNameList()
     {
         var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
         MtblReferencesList = new(mtblRefList);
-    }
+    }*/
 
 
     [RelayCommand]
@@ -487,7 +452,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         Buyer = null;
         CustomerPhoneNumber = null;
         CustomerState = null;
-        SalesPerson = null;
+        //SalesPerson = null;
         CreateCustomerOrderCommand.NotifyCanExecuteChanged();
         //invBalanceChk = false;  //reset to false for next invoice
     }
@@ -570,7 +535,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         Header.CustMobileNbr = phoneNumber;
-        EvaluateHeader();
+        await EvaluateHeader();
     }
 
     [RelayCommand]
@@ -632,9 +597,9 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void EvaluateHeader()
+    private async Task EvaluateHeader()
     {
-        //TO FIX OrderStatusUI = await GetOrderStatusAsync(Header.OrderStatusFlag, "");
+       OrderStatusUI = await _referenceLoader.GetCodeAsNameAsync("CUST_ORD_STATUS", Header.OrderStatusFlag.ToString());
     }
 
     private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
@@ -659,7 +624,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CellUpdate(CellValueChangedEventArgs args)
+    private async void CellUpdate(CellValueChangedEventArgs args)
     {
         if (args.Row is CustomerOrderLine line)
         {
@@ -677,7 +642,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             EvaluateOldMetalTransactions(oldMetalTransaction);
         }
 
-        EvaluateHeader();
+        await EvaluateHeader();
     }
 
     [RelayCommand]
@@ -733,7 +698,8 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private async Task SaveNewOrderAsync()
     {
-        //TO FIX    Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
+
+        Header.OrderStatusFlag = await _referenceLoader.GetCodeAsIntAsync("CUST_ORD_STATUS", OrderStatusUI);
 
         var headerResult = await _customerOrderService.CreateCustomerOrder(Header);
 
@@ -758,7 +724,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private async Task UpdateOrderAsync()
     {
-        //TO FIX Header.OrderStatusFlag = int.Parse(GetOrderStatus(0, OrderStatusUI));
+        Header.OrderStatusFlag = await _referenceLoader.GetCodeAsIntAsync("CUST_ORD_STATUS", OrderStatusUI);
         await _customerOrderService.UpdateHeader(Header);
     }
 

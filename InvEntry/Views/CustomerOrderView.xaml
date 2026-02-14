@@ -30,6 +30,7 @@
             <Setter Property="Height"
                     Value="35" />
         </Style>
+        
     </UserControl.Resources>
     <Grid Margin="0,0,37,0">
         <Grid.RowDefinitions>
@@ -213,6 +214,7 @@
                                             FontSize="15"/>
                                 </dxlc:LayoutItem>
 
+                                <!--
                                 <dxlc:LayoutItem Label="Sales Person"
                                                  LabelPosition="Top"
                                                  HorizontalAlignment="Left">
@@ -224,7 +226,7 @@
                                             Height="35"
                                             FontSize="14"/>
                                 </dxlc:LayoutItem>
-
+                                -->
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
@@ -385,6 +387,9 @@
                                            FontWeight="Bold" />
                             </DataTemplate>
                         </dxlc:LayoutGroup.HeaderTemplate>
+                        <dxlc:LayoutGroup.Resources>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource LayoutTabHeaderStyle}" />
+                        </dxlc:LayoutGroup.Resources>
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False">
                                 <dxb:BarManager.Bars>
@@ -401,6 +406,7 @@
                                                 <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}" />
                                             </dxb:BarEditItem.EditSettings>
                                         </dxb:BarEditItem>
+                                        
                                         <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
                                                            Command="{Binding FetchProductCommand}"
                                                            GlyphSize="Large"
@@ -588,6 +594,7 @@
                                                     Value="Immediate" />
                                         </Style>
                                     </dxg:GridControl.Resources>
+
                                     <dxg:GridControl.Columns>
                                         <dxg:GridColumn FieldName="Metal"
                                                         Header="Metal">
@@ -595,6 +602,7 @@
                                                 <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalList}" />
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
+                                        
                                         <dxg:GridColumn FieldName="Purity"
                                                         Header="Purity"
                                                         ReadOnly="True" />
@@ -634,6 +642,7 @@
                                         <dxg:GridColumn FieldName="FinalPurchasePrice"
                                                         Header="Final Price" />
                                     </dxg:GridControl.Columns>
+                                        
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
                                                        AllowBestFit="True"
@@ -711,28 +720,14 @@
                                         <!-- <dxg:GridColumn FieldName="SeqNbr"
                                                         Header="SN"
                                                         Width="30" /> -->
+
                                         <dxg:GridColumn FieldName="TransType"
                                                         Header="Transaction">
                                             <dxg:GridColumn.EditSettings>
-                                                <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
-                                                                        DisplayMember="RefValue"
-                                                                        ValueMember="RefValue">
-                                                    <dxg:LookUpEditSettings.PopupContentTemplate>
-                                                        <ControlTemplate>
-                                                            <dxg:GridControl Name="PART_GridControl"
-                                                                             AutoGenerateColumns="RemoveOld">
-                                                                <dxg:GridControl.Columns>
-                                                                    <dxg:GridColumn FieldName="RefValue" />
-                                                                </dxg:GridControl.Columns>
-                                                                <dxg:GridControl.View>
-                                                                    <dxg:TableView AutoWidth="True" />
-                                                                </dxg:GridControl.View>
-                                                            </dxg:GridControl>
-                                                        </ControlTemplate>
-                                                    </dxg:LookUpEditSettings.PopupContentTemplate>
-                                                </dxg:LookUpEditSettings>
+                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding PaymentModeList}" />
                                             </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
+                                                       
                                         <dxg:GridColumn FieldName="TransactionAmount"
                                                         Header="Trans Amount (Rs)" />
                                         <!--   <dxg:GridColumn FieldName="BalanceAfterAdj"

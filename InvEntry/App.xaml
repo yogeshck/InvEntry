@@ -3,12 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
              xmlns:converter="clr-namespace:InvEntry.Converters" 
+             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxp="http://schemas.devexpress.com/winfx/2008/xaml/printing"
+             xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              StartupUri="MainWindow.xaml"
              DispatcherUnhandledException="Application_DispatcherUnhandledException"
              Exit="Application_Exit">
     <Application.Resources>
         <ResourceDictionary>
+
+            <Style TargetType="dxg:RowControl">
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="FontSize" Value="15"/>
+            </Style>
+
+            <Style TargetType="TextBlock" x:Key="LayoutTabHeaderStyle">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
+
             <dx:DialogService x:Key="ds"
                               DialogWindowStartupLocation="CenterOwner"
                               SetWindowOwner="True">
@@ -40,5 +53,6 @@
             <Image x:Key="goldSvg" Source="\Images\gold.svg" />
             <Image x:Key="silverSvg" Source="\Images\silver.svg" />
         </ResourceDictionary>
+
     </Application.Resources>
 </Application>

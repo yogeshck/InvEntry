@@ -78,8 +78,9 @@
             </dxmvvm:Interaction.Behaviors>
             <dxg:GridControl.View>
                 <dxg:TableView  x:Name="tableView" AllowBestFit="False" NavigationStyle="Row" AllowEditing="False"
-                               AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True" FontSize="15"
-                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor">
+                                AllowGrouping="False" ShowGroupPanel="False" ShowAutoFilterRow="True" FontSize="15"
+                                AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor"
+                                AllowPerPixelScrolling="False" >
                     <!--     <dxg:TableView.ColumnMenuCustomizations>
                         <dxb:RemoveAction ElementName="{x:Static dxg:DefaultColumnMenuItemNames.ColumnChooser}" />
                     </dxg:TableView.ColumnMenuCustomizations> -->
