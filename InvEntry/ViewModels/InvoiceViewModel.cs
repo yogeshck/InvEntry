@@ -5,9 +5,11 @@ using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.PivotGrid.Printing.TypedStyles;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Helper;
+using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
@@ -32,7 +34,8 @@ public partial class InvoiceViewModel : ObservableObject
     private string _customerPhoneNumber;
 
     [ObservableProperty]
-    private MtblReference _customerState;
+    private string _customerState;
+    //private MtblReference _customerState;
 
     [ObservableProperty]
     private MtblReference _salesPerson;
@@ -49,8 +52,10 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private InvoiceArReceipt _invoiceArReceipt;
 
-/*    [ObservableProperty]
-    private LedgersHeader _ledgerHeader;*/
+    private ProductStock ProductSkuStock;
+
+    /*    [ObservableProperty]
+        private LedgersHeader _ledgerHeader;*/
 
     [ObservableProperty]
     private string _productIdUI;
@@ -76,8 +81,8 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<InvoiceLine> selectedRows;
 
-/*    [ObservableProperty]
-    private ObservableCollection<ProductView> productStockList;*/
+    /*    [ObservableProperty]
+        private ObservableCollection<ProductView> productStockList;*/
 
     [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
@@ -86,13 +91,18 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<string> metalList;
 
     [ObservableProperty]
+    private ObservableCollection<string> _paymentModeList;
+
+    [ObservableProperty]
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> salesPersonReferencesList;
+    private ObservableCollection<string> _salesPersonReferencesList; 
+   // private ObservableCollection<MtblReference> salesPersonReferencesList;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> stateReferencesList;
+    private ObservableCollection<string> _stateReferencesList;
+    //    private ObservableCollection<MtblReference> stateReferencesList;
 
     [ObservableProperty]
     private DateSearchOption _searchOption;
@@ -101,6 +111,11 @@ public partial class InvoiceViewModel : ObservableObject
 
     private bool createCustomer = false;
     private bool invBalanceChk = false;
+    private bool InvLineChk = false;
+    private bool PayRctChk = false;
+    private bool IsBarCodeEnabled = false;
+
+    private readonly ReferenceLoader _referenceLoader;
 
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
@@ -155,6 +170,7 @@ public partial class InvoiceViewModel : ObservableObject
         IMtblLedgersService mtblLedgersService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
+        ReferenceLoader referenceLoader,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
 
@@ -177,6 +193,8 @@ public partial class InvoiceViewModel : ObservableObject
         _invoiceArReceiptService = invoiceArReceiptService;
         _mtblReferencesService = mtblReferencesService;
 
+        _referenceLoader = referenceLoader;
+
         //_productTransactionSummaryService = productTransactionSummaryService;
 
         selectedRows = new();
@@ -193,13 +211,15 @@ public partial class InvoiceViewModel : ObservableObject
         SetThisCompany();
         SetMasterLedger();
 
+        _ = LoadReferencesAsync();
+
         PopulateProductCategoryList();
-        PopulateStateList();
+        //PopulateStateList();
         PopulateUnboundLineDataMap();
         PopulateMtblRefNameList();
         PopulateMetalList();
         PopulateTaxList();
-        PopulateSalesPersonList();
+        //PopulateSalesPersonList();
 
         //PopulateUnboundHeaderDataMap();
     }
@@ -222,49 +242,25 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     private async void PopulateProductCategoryList()
-    { 
+    {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list
                                 .Where(x => !x.Name.StartsWith("OLD"))
                                 .Select(x => x.Name));
     }
 
-    private async void PopulateSalesPersonList()
+
+    private async Task LoadReferencesAsync()
     {
-        var salesPersonRefList = await _mtblReferencesService.GetReferenceList("SALES_PERSON");
 
-        if (salesPersonRefList is null)
-        {
-            SalesPersonReferencesList = new();
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Ebi", RefCode = "33" }); //Yet To fix
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Vinnila", RefCode = "32" });
-            SalesPersonReferencesList.Add(new MtblReference() { RefValue = "Anju", RefCode = "30" });
-            return;
-        }
+        //CustOrdStatusList = await _referenceLoader.LoadValuesAsync("CUST_ORD_STATUS");
 
-        SalesPersonReferencesList = new(salesPersonRefList);
+        StateReferencesList = await _referenceLoader.LoadValuesAsync("CUST_STATE");
 
-    }
+        PaymentModeList = await _referenceLoader.LoadValuesAsync("PAYMENT_MODE");
 
-    private async void PopulateStateList()
-    {
-        var stateRefList = new List<MtblReference>();
+       // SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
 
-        var stateRefServiceList = await _mtblReferencesService.GetReferenceList("CUST_STATE");
-
-        if (stateRefServiceList is null)
-        {
-            stateRefList.Add(new MtblReference() { RefValue = "Tamil Nadu", RefCode = "33" });
-            stateRefList.Add(new MtblReference() { RefValue = "Kerala", RefCode = "32" });
-            stateRefList.Add(new MtblReference() { RefValue = "Karnataka", RefCode = "30" });
-        } else
-        {
-            stateRefList.AddRange(stateRefServiceList);
-        }
-
-        StateReferencesList = new(stateRefList);
-
-        // CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode.Equals(Company.GstCode));
     }
 
     private async void PopulateTaxList()
@@ -300,7 +296,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlTaxableAmount)}", (item, val) => item.InvlTaxableAmount = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.ProdNetWeight)}", (item, val) => item.ProdNetWeight = val);
-        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlGrossAmt)}", (item, val) => item.InvlGrossAmt  = val * (item.Metal.Equals("DIAMOND") ? 100 : 1));
+        copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlGrossAmt)}", (item, val) => item.InvlGrossAmt = val * (item.Metal.Equals("DIAMOND") ? 100 : 1));
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.VaAmount)}", (item, val) => item.VaAmount = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlCgstAmount)}", (item, val) => item.InvlCgstAmount = val);
         copyInvoiceExpression.Add($"{nameof(InvoiceLine.InvlSgstAmount)}", (item, val) => item.InvlSgstAmount = val);
@@ -318,18 +314,18 @@ public partial class InvoiceViewModel : ObservableObject
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
     }
 
-    partial void OnCustomerStateChanged(MtblReference value)
+    partial void OnCustomerStateChanged(string value)            //MtblReference value)
     {
         if (Buyer is null) return;
 
-        Buyer.GstStateCode = value.RefCode;
+        Buyer.GstStateCode = value;
 
         Header.CgstPercent = GetGSTPercent("CGST");
         Header.SgstPercent = GetGSTPercent("SGST");
         Header.IgstPercent = GetGSTPercent("IGST");
 
         //Need to fetch based on pincode - future change
-        Header.GstLocBuyer = value.RefCode;
+        Header.GstLocBuyer = value;
 
         EvaluateForAllLines();
         EvaluateHeader();
@@ -348,17 +344,17 @@ public partial class InvoiceViewModel : ObservableObject
     //might be introduced when SKU implmeneted
     private ProductView? ProductStockSelection()
     {
-     
+
         var vm = DISource.Resolve<InvoiceProductSelectionViewModel>();
         vm.Category = ProductIdUI;
 
-        var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product", 
+        var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product",
                                                         "InvoiceProductSelectionView", vm);
 
         if (result == MessageResult.OK)
         {
-            return vm.SelectedProduct; 
-        } 
+            return vm.SelectedProduct;
+        }
         return null;
     }
 
@@ -395,7 +391,8 @@ public partial class InvoiceViewModel : ObservableObject
             Buyer.Address.District = Company.District;
 
             createCustomer = true;
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
+            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
+            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", Company.GstCode);
 
             Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
         }
@@ -409,7 +406,8 @@ public partial class InvoiceViewModel : ObservableObject
                 Buyer.Address.GstStateCode = Company.GstCode;
             }
 
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", gstCode);
 
             customerCreditCheck(Buyer);
 
@@ -456,16 +454,22 @@ public partial class InvoiceViewModel : ObservableObject
         //this code will be re-introduce once SKU/Barcode is implmeneted
         //var product = ProductStockSelection();
 
-        ProductStock productSkuStock = new ProductStock();
-        productSkuStock = await _productStockService.GetProductStock(ProductIdUI);
-        if (productSkuStock is not null)
+        //ProductStock productSkuStock = new ProductStock();
+
+        ProductSkuStock = new ();
+        ProductSkuStock = await _productStockService.GetProductStock(ProductIdUI);
+        if (ProductSkuStock is not null)
         {
-            //isBarcodeTagEnabled = true;
-            ProductIdUI = productSkuStock.Category;
+            IsBarCodeEnabled = true;
+            ProductIdUI = ProductSkuStock.Category;
+        }
+        else
+        {
+            IsBarCodeEnabled = false;
         }
 
         //this should be set as summary stock to avoid confusion
-        var productStk = await _productViewService.GetProduct(ProductIdUI);                  
+        var productStk = await _productViewService.GetProduct(ProductIdUI);
 
         if (productStk is null)
         {
@@ -501,13 +505,13 @@ public partial class InvoiceViewModel : ObservableObject
 
         invoiceLine.SetProductDetails(productStk);
 
-        if (productSkuStock is not null)
+        if (ProductSkuStock is not null)
         {
-            invoiceLine.ProductSku = productSkuStock.ProductSku;
-            invoiceLine.ProdQty = productSkuStock.StockQty;
-            invoiceLine.ProdGrossWeight = productSkuStock.GrossWeight;
-            invoiceLine.ProdStoneWeight = productSkuStock.StoneWeight;
-            invoiceLine.ProdNetWeight = productSkuStock.NetWeight;
+            invoiceLine.ProductSku = ProductSkuStock.ProductSku;
+            invoiceLine.ProdQty = ProductSkuStock.StockQty;
+            invoiceLine.ProdGrossWeight = ProductSkuStock.GrossWeight;
+            invoiceLine.ProdStoneWeight = ProductSkuStock.StoneWeight;
+            invoiceLine.ProdNetWeight = ProductSkuStock.NetWeight;
 
         }
 
@@ -545,7 +549,7 @@ public partial class InvoiceViewModel : ObservableObject
     {
         _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
                                         "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
-        
+
     }
 
     private async Task EvaluateOldMetalTransactionLineAsync(OldMetalTransaction oldMetalTransaction)
@@ -599,10 +603,10 @@ public partial class InvoiceViewModel : ObservableObject
         OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
         {
             CustGkey = Header.CustGkey,
-            CustMobile = Header.CustMobile,  
-          //  TransType = "OG Purchase",
+            CustMobile = Header.CustMobile,
+            //  TransType = "OG Purchase",
             TransDate = DateTime.Now,
-         //   Uom = "Grams"
+            //   Uom = "Grams"
         };
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
@@ -654,10 +658,31 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
+    private bool CanCreateInvoice()
+    {
+        return string.IsNullOrEmpty(Header?.InvNbr);
+
+    }
+
     [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
     private async Task CreateInvoice()
     {
         LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
+
+        //validate to fit to save invoice
+        if (!InvLineChk)
+        {
+            _messageBoxService.ShowMessage("Please enter Invoice details and then Save, ", "Missing Invoice Details", MessageButton.OK, MessageIcon.Error);
+
+            return;
+        }
+
+        if (!PayRctChk)
+        {
+            _messageBoxService.ShowMessage("No Customer Payment details entered....", "Missing Customer Payment Details", MessageButton.OK, MessageIcon.Error);
+
+            return;
+        }
 
         invBalanceChk = true;  //is this a right place to fix
         var isSuccess = ProcessInvBalance();
@@ -666,9 +691,9 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (!string.IsNullOrEmpty(Header.InvNbr))
         {
-            var result = _messageBoxService.ShowMessage("Invoice already exists, Do you want to print preview the invoice ?", "Invoice", 
-                                                            MessageButton.OKCancel, 
-                                                            MessageIcon.Question, 
+            var result = _messageBoxService.ShowMessage("Invoice already exists, Do you want to print preview the invoice ?", "Invoice",
+                                                            MessageButton.OKCancel,
+                                                            MessageIcon.Question,
                                                             MessageResult.Cancel);
 
             if (result == MessageResult.OK)
@@ -680,7 +705,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
-            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", 
+            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info",
                                                 MessageButton.OK, MessageIcon.Hand);
             return;
         }
@@ -724,10 +749,10 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
-            if ( (Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0) )
+            if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
                 await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);
 
-            _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created", 
+            _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created",
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
@@ -765,13 +790,19 @@ public partial class InvoiceViewModel : ObservableObject
 
         var productStk = await _productStockService.GetProductStock(line.ProductSku);
 
+        if (productStk is null)
+        {
+            IsBarCodeEnabled = false;
+            return;
+        }
+
         productStk.SoldWeight = line.ProdGrossWeight;
         productStk.BalanceWeight = 0;
         productStk.SoldQty = line.ProdQty;
         productStk.StockQty = 0;
         productStk.Status = "Sold";
         productStk.IsProductSold = true;
-         
+
         await _productStockService.UpdateProductStock(productStk);
 
     }
@@ -848,100 +879,95 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-   /* private async void createProductTransactionSummary(ProductTransaction productTransaction)
-    {
+    /* private async void createProductTransactionSummary(ProductTransaction productTransaction)
+     {
 
-        ProductTransactionSummary productTransSumry = new();
+         ProductTransactionSummary productTransSumry = new();
 
-        //Fetch last records of the day to set ob, cb etc
-        SearchOption = new();
-        SearchOption.To = DateTime.Today;
-        SearchOption.From = DateTime.Today;
-        SearchOption.Filter1 ??= productTransaction.ProductCategory;
+         //Fetch last records of the day to set ob, cb etc
+         SearchOption = new();
+         SearchOption.To = DateTime.Today;
+         SearchOption.From = DateTime.Today;
+         SearchOption.Filter1 ??= productTransaction.ProductCategory;
 
-        var prodTransSumry = await _productTransactionSummaryService.GetAll(SearchOption);
+         var prodTransSumry = await _productTransactionSummaryService.GetAll(SearchOption);
 
-        productTransSumry = prodTransSumry.FirstOrDefault();
+         productTransSumry = prodTransSumry.FirstOrDefault();
 
-        if (productTransSumry != null)
-        {
-            // then add up with the existing total
+         if (productTransSumry != null)
+         {
+             // then add up with the existing total
 
-            productTransSumry.StockOutQty = productTransSumry.StockOutQty.GetValueOrDefault() 
-                                                + productTransaction.TransactionQty.GetValueOrDefault();
-            productTransSumry.ClosingQty = productTransSumry.ClosingQty.GetValueOrDefault() 
-                                                - productTransaction.TransactionQty.GetValueOrDefault();
+             productTransSumry.StockOutQty = productTransSumry.StockOutQty.GetValueOrDefault() 
+                                                 + productTransaction.TransactionQty.GetValueOrDefault();
+             productTransSumry.ClosingQty = productTransSumry.ClosingQty.GetValueOrDefault() 
+                                                 - productTransaction.TransactionQty.GetValueOrDefault();
 
-            productTransSumry.StockOutGrossWeight = productTransSumry.StockOutGrossWeight.GetValueOrDefault() 
-                                                                    + productTransaction.TransactionGrossWeight.GetValueOrDefault();
-            productTransSumry.StockOutStoneWeight = productTransSumry.StockOutStoneWeight.GetValueOrDefault()
-                                                                    + productTransaction.TransactionStoneWeight.GetValueOrDefault();
-            productTransSumry.StockOutNetWeight = productTransSumry.StockOutNetWeight.GetValueOrDefault() 
-                                                                    + productTransaction.TransactionNetWeight.GetValueOrDefault();
+             productTransSumry.StockOutGrossWeight = productTransSumry.StockOutGrossWeight.GetValueOrDefault() 
+                                                                     + productTransaction.TransactionGrossWeight.GetValueOrDefault();
+             productTransSumry.StockOutStoneWeight = productTransSumry.StockOutStoneWeight.GetValueOrDefault()
+                                                                     + productTransaction.TransactionStoneWeight.GetValueOrDefault();
+             productTransSumry.StockOutNetWeight = productTransSumry.StockOutNetWeight.GetValueOrDefault() 
+                                                                     + productTransaction.TransactionNetWeight.GetValueOrDefault();
 
-            productTransSumry.ClosingGrossWeight = productTransSumry.ClosingGrossWeight.GetValueOrDefault()
-                                                                - productTransaction.TransactionGrossWeight.GetValueOrDefault();
-            productTransSumry.ClosingStoneWeight = productTransSumry.ClosingStoneWeight.GetValueOrDefault()
-                                                                - productTransaction.TransactionStoneWeight.GetValueOrDefault();
-            productTransSumry.ClosingNetWeight = productTransSumry.ClosingNetWeight.GetValueOrDefault()
-                                                                - productTransaction.TransactionNetWeight.GetValueOrDefault();
+             productTransSumry.ClosingGrossWeight = productTransSumry.ClosingGrossWeight.GetValueOrDefault()
+                                                                 - productTransaction.TransactionGrossWeight.GetValueOrDefault();
+             productTransSumry.ClosingStoneWeight = productTransSumry.ClosingStoneWeight.GetValueOrDefault()
+                                                                 - productTransaction.TransactionStoneWeight.GetValueOrDefault();
+             productTransSumry.ClosingNetWeight = productTransSumry.ClosingNetWeight.GetValueOrDefault()
+                                                                 - productTransaction.TransactionNetWeight.GetValueOrDefault();
 
-            await _productTransactionSummaryService.UpdateProductTransactionSummary(productTransSumry);
-        }
-        else
-        {
-            //create new record for the day if not found for todays 
-            //get the last transaction of specific category to get opening balance
-            ProductTransactionSummary prodTransSumryPrevious = new();
+             await _productTransactionSummaryService.UpdateProductTransactionSummary(productTransSumry);
+         }
+         else
+         {
+             //create new record for the day if not found for todays 
+             //get the last transaction of specific category to get opening balance
+             ProductTransactionSummary prodTransSumryPrevious = new();
 
-            productTransSumry = new();
+             productTransSumry = new();
 
-            var prodTransSumryPrev = await _productTransactionSummaryService
-                                                        .GetLastProductTranSumryByCategory(productTransaction.ProductCategory);
-            if (prodTransSumryPrev != null) 
-                prodTransSumryPrevious = prodTransSumryPrev;
+             var prodTransSumryPrev = await _productTransactionSummaryService
+                                                         .GetLastProductTranSumryByCategory(productTransaction.ProductCategory);
+             if (prodTransSumryPrev != null) 
+                 prodTransSumryPrevious = prodTransSumryPrev;
 
-            productTransSumry.TransactionDate = DateTime.Now;
-            productTransSumry.ProductCategory = productTransaction.ProductCategory;
-            productTransSumry.ProductSku = productTransaction.ProductSku;
-
-
-            productTransSumry.StockInGrossWeight = 0;   //only stock entry
-            productTransSumry.StockInStoneWeight = 0;
-            productTransSumry.StockInNetWeight = 0;
-
-            productTransSumry.StockOutGrossWeight = productTransaction.TransactionGrossWeight;
-            productTransSumry.StockOutStoneWeight = productTransaction.TransactionStoneWeight;
-            productTransSumry.StockOutNetWeight = productTransaction.TransactionNetWeight;
-
-            //Opening
-            productTransSumry.OpeningQty    = (prodTransSumryPrevious.ClosingQty ?? 0);
-            productTransSumry.StockInQty    = 0;
-            productTransSumry.StockOutQty   = productTransaction.TransactionQty.GetValueOrDefault();
-            productTransSumry.ClosingQty    = productTransSumry.OpeningQty.GetValueOrDefault() 
-                                                        - productTransaction.TransactionQty.GetValueOrDefault();
-
-            productTransSumry.OpeningGrossWeight = (prodTransSumryPrevious.ClosingGrossWeight ?? 0);
-            productTransSumry.OpeningStoneWeight = (prodTransSumryPrevious.ClosingStoneWeight ?? 0);
-            productTransSumry.OpeningNetWeight = (prodTransSumryPrevious.ClosingNetWeight ?? 0);
-
-            productTransSumry.ClosingGrossWeight = productTransSumry.OpeningGrossWeight.GetValueOrDefault()
-                                                                    - productTransaction.TransactionGrossWeight;
-            productTransSumry.ClosingStoneWeight = productTransSumry.OpeningStoneWeight.GetValueOrDefault()
-                                                                    - productTransaction.TransactionStoneWeight;
-            productTransSumry.ClosingNetWeight = productTransSumry.OpeningNetWeight.GetValueOrDefault()
-                                                                    - productTransaction.TransactionNetWeight;
-
-            await _productTransactionSummaryService.CreateProductTransactionSummary(productTransSumry);
-        }
-
-    }*/
+             productTransSumry.TransactionDate = DateTime.Now;
+             productTransSumry.ProductCategory = productTransaction.ProductCategory;
+             productTransSumry.ProductSku = productTransaction.ProductSku;
 
 
-    private bool CanCreateInvoice()
-    {
-        return string.IsNullOrEmpty(Header?.InvNbr);
-    }
+             productTransSumry.StockInGrossWeight = 0;   //only stock entry
+             productTransSumry.StockInStoneWeight = 0;
+             productTransSumry.StockInNetWeight = 0;
+
+             productTransSumry.StockOutGrossWeight = productTransaction.TransactionGrossWeight;
+             productTransSumry.StockOutStoneWeight = productTransaction.TransactionStoneWeight;
+             productTransSumry.StockOutNetWeight = productTransaction.TransactionNetWeight;
+
+             //Opening
+             productTransSumry.OpeningQty    = (prodTransSumryPrevious.ClosingQty ?? 0);
+             productTransSumry.StockInQty    = 0;
+             productTransSumry.StockOutQty   = productTransaction.TransactionQty.GetValueOrDefault();
+             productTransSumry.ClosingQty    = productTransSumry.OpeningQty.GetValueOrDefault() 
+                                                         - productTransaction.TransactionQty.GetValueOrDefault();
+
+             productTransSumry.OpeningGrossWeight = (prodTransSumryPrevious.ClosingGrossWeight ?? 0);
+             productTransSumry.OpeningStoneWeight = (prodTransSumryPrevious.ClosingStoneWeight ?? 0);
+             productTransSumry.OpeningNetWeight = (prodTransSumryPrevious.ClosingNetWeight ?? 0);
+
+             productTransSumry.ClosingGrossWeight = productTransSumry.OpeningGrossWeight.GetValueOrDefault()
+                                                                     - productTransaction.TransactionGrossWeight;
+             productTransSumry.ClosingStoneWeight = productTransSumry.OpeningStoneWeight.GetValueOrDefault()
+                                                                     - productTransaction.TransactionStoneWeight;
+             productTransSumry.ClosingNetWeight = productTransSumry.OpeningNetWeight.GetValueOrDefault()
+                                                                     - productTransaction.TransactionNetWeight;
+
+             await _productTransactionSummaryService.CreateProductTransactionSummary(productTransSumry);
+         }
+
+     }*/
+
 
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
@@ -949,7 +975,7 @@ public partial class InvoiceViewModel : ObservableObject
         var printed = PrintHelper.Print(_reportFactoryService.CreateInvoiceReport(Header.InvNbr));
 
         if (printed.HasValue && printed.Value)
-            _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print", 
+            _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print",
                                                 MessageButton.OK, MessageIcon.None);
     }
 
@@ -1047,6 +1073,11 @@ public partial class InvoiceViewModel : ObservableObject
             arInvRctLine.ModeOfReceipt = "Bank";
         }
 
+        if (arInvRctLine.ModeOfReceipt is not null)
+        {
+            PayRctChk = true;
+        }
+
         EvaluateHeader();
 
     }
@@ -1095,7 +1126,8 @@ public partial class InvoiceViewModel : ObservableObject
             Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
             Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
 
-        } else
+        }
+        else
         {
             Header.CgstAmount = 0;
             Header.SgstAmount = 0;
@@ -1114,7 +1146,7 @@ public partial class InvoiceViewModel : ObservableObject
         roundOff = Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
                         Header.GrossRcbAmount.GetValueOrDefault();
 
-        Header.RoundOff = roundOff; 
+        Header.RoundOff = roundOff;
 
         Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
 
@@ -1209,82 +1241,82 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
-/*    private async void ProcessAdvance()
-    {
-        //check customer has already ledger entry
-        LedgerHeader = await _ledgerService.GetHeader(MtblLedger.GKey, Buyer.GKey);   //hard coded to be fixed
-
-        //{
-        //    _messageBoxService.ShowMessage($"Available Advance Balance is  {ProductIdUI}, Please make sure it exists",
-        //        "Product not found", MessageButton.OK, MessageIcon.Error);
-        //    return;
-        //}
-
-        if (LedgerHeader is not null)
+    /*    private async void ProcessAdvance()
         {
+            //check customer has already ledger entry
+            LedgerHeader = await _ledgerService.GetHeader(MtblLedger.GKey, Buyer.GKey);   //hard coded to be fixed
 
-            if ((LedgerHeader.CurrentBalance < 1) || (LedgerHeader.CurrentBalance < Header.AdvanceAdj.GetValueOrDefault()))
-             {
-                _messageBoxService.ShowMessage($"Available Advance Balance is Rs.  {LedgerHeader.CurrentBalance} only...",
-                            "Insufficient Balance", MessageButton.OK, MessageIcon.Error);
-                return;
+            //{
+            //    _messageBoxService.ShowMessage($"Available Advance Balance is  {ProductIdUI}, Please make sure it exists",
+            //        "Product not found", MessageButton.OK, MessageIcon.Error);
+            //    return;
+            //}
+
+            if (LedgerHeader is not null)
+            {
+
+                if ((LedgerHeader.CurrentBalance < 1) || (LedgerHeader.CurrentBalance < Header.AdvanceAdj.GetValueOrDefault()))
+                 {
+                    _messageBoxService.ShowMessage($"Available Advance Balance is Rs.  {LedgerHeader.CurrentBalance} only...",
+                                "Insufficient Balance", MessageButton.OK, MessageIcon.Error);
+                    return;
+                }
+
+                LedgerHeader.CurrentBalance = LedgerHeader.CurrentBalance.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault();
+
+                LedgersTransactions ledgerTrans = new();
+
+                ledgerTrans.DrCr = "Cr";
+                ledgerTrans.TransactionAmount = Header.AdvanceAdj;
+                ledgerTrans.DocumentNbr = Header.InvNbr;
+                ledgerTrans.DocumentDate = Header.InvDate;
+                ledgerTrans.LedgerHdrGkey = LedgerHeader.GKey;
+                ledgerTrans.TransactionDate = DateTime.Now;
+                ledgerTrans.Status = true;
+
+                LedgerHeader.Transactions.Add(ledgerTrans);
+
+                await _ledgerService.CreateLedgersTransactions(LedgerHeader.Transactions);
+
+                if (LedgerHeader.CurrentBalance < 0)
+                    LedgerHeader.CurrentBalance = 0;
+
+                await _ledgerService.UpdateHeader(LedgerHeader);
+            }
+            else
+            {
+
+                LedgerHeader = new();
+
+                LedgerHeader.MtblLedgersGkey = MtblLedger.GKey;
+                LedgerHeader.CustGkey = Header.CustGkey;
+                LedgerHeader.BalanceAsOn = DateTime.Now;
+
+                LedgerHeader.CurrentBalance = 0; // Header.AdvanceAdj.GetValueOrDefault();
+
+                if (LedgerHeader.CurrentBalance < 0)
+                    LedgerHeader.CurrentBalance = 0;
+
+                LedgerHeader = await _ledgerService.CreateHeader(LedgerHeader);
+
+                LedgersTransactions ledgerTrans = new();
+
+                ledgerTrans.DrCr = "Cr";
+                ledgerTrans.TransactionAmount = Header.AdvanceAdj.GetValueOrDefault();
+                ledgerTrans.DocumentNbr = Header.InvNbr;
+                ledgerTrans.DocumentDate = Header.InvDate;
+                ledgerTrans.LedgerHdrGkey = LedgerHeader.GKey;
+                ledgerTrans.TransactionDate = DateTime.Now;
+                ledgerTrans.Status = true;
+
+                LedgerHeader.Transactions.Add(ledgerTrans);
+
+                await _ledgerService.CreateLedgersTransactions(LedgerHeader.Transactions);
+
+
             }
 
-            LedgerHeader.CurrentBalance = LedgerHeader.CurrentBalance.GetValueOrDefault() - Header.AdvanceAdj.GetValueOrDefault();
-
-            LedgersTransactions ledgerTrans = new();
-
-            ledgerTrans.DrCr = "Cr";
-            ledgerTrans.TransactionAmount = Header.AdvanceAdj;
-            ledgerTrans.DocumentNbr = Header.InvNbr;
-            ledgerTrans.DocumentDate = Header.InvDate;
-            ledgerTrans.LedgerHdrGkey = LedgerHeader.GKey;
-            ledgerTrans.TransactionDate = DateTime.Now;
-            ledgerTrans.Status = true;
-
-            LedgerHeader.Transactions.Add(ledgerTrans);
-
-            await _ledgerService.CreateLedgersTransactions(LedgerHeader.Transactions);
-
-            if (LedgerHeader.CurrentBalance < 0)
-                LedgerHeader.CurrentBalance = 0;
-
-            await _ledgerService.UpdateHeader(LedgerHeader);
-        }
-        else
-        {
-
-            LedgerHeader = new();
-
-            LedgerHeader.MtblLedgersGkey = MtblLedger.GKey;
-            LedgerHeader.CustGkey = Header.CustGkey;
-            LedgerHeader.BalanceAsOn = DateTime.Now;
-
-            LedgerHeader.CurrentBalance = 0; // Header.AdvanceAdj.GetValueOrDefault();
-
-            if (LedgerHeader.CurrentBalance < 0)
-                LedgerHeader.CurrentBalance = 0;
-
-            LedgerHeader = await _ledgerService.CreateHeader(LedgerHeader);
-
-            LedgersTransactions ledgerTrans = new();
-
-            ledgerTrans.DrCr = "Cr";
-            ledgerTrans.TransactionAmount = Header.AdvanceAdj.GetValueOrDefault();
-            ledgerTrans.DocumentNbr = Header.InvNbr;
-            ledgerTrans.DocumentDate = Header.InvDate;
-            ledgerTrans.LedgerHdrGkey = LedgerHeader.GKey;
-            ledgerTrans.TransactionDate = DateTime.Now;
-            ledgerTrans.Status = true;
-
-            LedgerHeader.Transactions.Add(ledgerTrans);
-
-            await _ledgerService.CreateLedgersTransactions(LedgerHeader.Transactions);
-
-
-        }
-
-    }*/
+        }*/
 
     private void SetReceipts(String str)
     {
@@ -1297,7 +1329,7 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.ModeOfReceipt = str;
         arInvRct.SeqNbr = noOfLines + 1;
         var adjustedAmount = getTransAmount(str);
-        arInvRct.AdjustedAmount = adjustedAmount; 
+        arInvRct.AdjustedAmount = adjustedAmount;
 
         Header.ReceiptLines.Add(arInvRct);
     }
@@ -1305,7 +1337,7 @@ public partial class InvoiceViewModel : ObservableObject
     private async void ProcessReceipts()
     {
         //For each Receipts row - seperate Voucher has to be created
-        foreach(var receipts in Header.ReceiptLines)
+        foreach (var receipts in Header.ReceiptLines)
         {
             if (receipts is null) return;
 
@@ -1321,7 +1353,7 @@ public partial class InvoiceViewModel : ObservableObject
     private async Task ProcessOldMetalTransaction()
     {
 
-        foreach(var omTrans in Header.OldMetalTransactions)
+        foreach (var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichInvHeaderDetails(Header);
             omTrans.EnrichProductDetails(OldMetalProduct);
@@ -1338,19 +1370,19 @@ public partial class InvoiceViewModel : ObservableObject
             //VoucherDate = DateTime.Now
         };
 
-        arInvRct.SeqNbr                     = invoiceArReceipt.SeqNbr;
-        arInvRct.CustGkey                   = invoiceArReceipt.CustGkey;
-        arInvRct.InvoiceGkey                = (int?)Header.GKey;
-        arInvRct.InvoiceNbr                 = Header.InvNbr;
-        arInvRct.InvoiceReceivableAmount    = invoiceArReceipt.InvoiceReceivableAmount;
-        arInvRct.BalanceAfterAdj            = invoiceArReceipt.BalanceAfterAdj;
-        arInvRct.TransactionType            = invoiceArReceipt.TransactionType;
-        arInvRct.ModeOfReceipt              = invoiceArReceipt.ModeOfReceipt;
-        arInvRct.BalBeforeAdj               = invoiceArReceipt.BalBeforeAdj;
-        arInvRct.InternalVoucherNbr         = voucher.VoucherNbr;
-        arInvRct.InternalVoucherDate        = voucher.VoucherDate;
-        arInvRct.InvoiceReceiptNbr          = Header.InvNbr.Replace("B", "R");  //hard coded - future review 
-        arInvRct.Status                     = "Adj";
+        arInvRct.SeqNbr = invoiceArReceipt.SeqNbr;
+        arInvRct.CustGkey = invoiceArReceipt.CustGkey;
+        arInvRct.InvoiceGkey = (int?)Header.GKey;
+        arInvRct.InvoiceNbr = Header.InvNbr;
+        arInvRct.InvoiceReceivableAmount = invoiceArReceipt.InvoiceReceivableAmount;
+        arInvRct.BalanceAfterAdj = invoiceArReceipt.BalanceAfterAdj;
+        arInvRct.TransactionType = invoiceArReceipt.TransactionType;
+        arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
+        arInvRct.BalBeforeAdj = invoiceArReceipt.BalBeforeAdj;
+        arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
+        arInvRct.InternalVoucherDate = voucher.VoucherDate;
+        arInvRct.InvoiceReceiptNbr = Header.InvNbr.Replace("B", "R");  //hard coded - future review 
+        arInvRct.Status = "Adj";
 
         var adjustedAmount = getTransAmount(invoiceArReceipt.TransactionType);
         arInvRct.AdjustedAmount = adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
@@ -1389,15 +1421,15 @@ public partial class InvoiceViewModel : ObservableObject
 
     private decimal? getTransAmount(string transType)
     {
-       return transType switch
-       {
-           var s when s.Equals("Recurring Deposit", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
-           var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
-           var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
-           var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
-           var s when s.Equals("Advance Adj", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
-           _ => 0M
-       };
+        return transType switch
+        {
+            var s when s.Equals("Recurring Deposit", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
+            var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
+            var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
+            var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
+            var s when s.Equals("Advance Adj", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+            _ => 0M
+        };
 
     }
 
@@ -1414,12 +1446,13 @@ public partial class InvoiceViewModel : ObservableObject
                     invoiceArReceipt = voucherResult;
                 }
 
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
             }
 
-         }
+        }
         else
         {
             await _invoiceArReceiptService.UpdateInvArReceipt(invoiceArReceipt);
@@ -1437,8 +1470,8 @@ public partial class InvoiceViewModel : ObservableObject
             if (voucherResult != null)
             {
                 voucher = voucherResult;
-              //  _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
-              //      MessageButton.OK, MessageIcon.Exclamation);
+                //  _messageBoxService.ShowMessage("Voucher Created Successfully", "Voucher Created",
+                //      MessageButton.OK, MessageIcon.Exclamation);
             }
         }
         else
@@ -1464,9 +1497,12 @@ public partial class InvoiceViewModel : ObservableObject
         SetThisCompany();
         //SetMasterLedger();
         Buyer = null;
+        //Header = null;
         CustomerPhoneNumber = null;
-        CustomerState = null;
+        CustomerState = Company.State;
         SalesPerson = null;
+        InvLineChk = false;
+        PayRctChk = false;
         CreateInvoiceCommand.NotifyCanExecuteChanged();
         invBalanceChk = false;  //reset to false for next invoice
     }
@@ -1480,14 +1516,14 @@ public partial class InvoiceViewModel : ObservableObject
             return;
 
         List<int> indexs = new List<int>();
-       foreach(var row in SelectedRows)
-       {
-            indexs.Add(Header.Lines.IndexOf(row));
-       }
-
-        indexs.ForEach(x => 
+        foreach (var row in SelectedRows)
         {
-            if(x >= 0)
+            indexs.Add(Header.Lines.IndexOf(row));
+        }
+
+        indexs.ForEach(x =>
+        {
+            if (x >= 0)
             {
                 Header.Lines.RemoveAt(x);
             }
@@ -1524,8 +1560,8 @@ public partial class InvoiceViewModel : ObservableObject
         {
             InvDate = DateTime.Now,
             IsTaxApplicable = true,
-       //     GstLocSeller = Company.GstCode,
-        //    TenantGkey = Company.TenantGkey
+            //     GstLocSeller = Company.GstCode,
+            //    TenantGkey = Company.TenantGkey
         };
     }
 
@@ -1543,21 +1579,21 @@ public partial class InvoiceViewModel : ObservableObject
         var gstPercent = _gstTaxRefList.FirstOrDefault
             (x => x.RefCode.Equals(taxType, StringComparison.OrdinalIgnoreCase));
 
-        if (taxType.Equals("IGST",StringComparison.OrdinalIgnoreCase))
+        if (taxType.Equals("IGST", StringComparison.OrdinalIgnoreCase))
         {
             if (Buyer.Address.GstStateCode != Company.GstCode &&
-                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent)   )
-                {
-                    return igstPercent;
-                }
+                decimal.TryParse(gstPercent.RefValue.ToString(), out var igstPercent))
+            {
+                return igstPercent;
+            }
             return 0M;
         }
 
-        if (Buyer.Address.GstStateCode == Company.GstCode && 
+        if (Buyer.Address.GstStateCode == Company.GstCode &&
             decimal.TryParse(gstPercent.RefValue.ToString(), out var result))
-            {
-                return result;
-            }
+        {
+            return result;
+        }
         return 0M;
     }
 
@@ -1580,7 +1616,13 @@ public partial class InvoiceViewModel : ObservableObject
             var val = formula.Evaluate<T, decimal>(item, 0M);
 
             if (item is InvoiceLine invLine)
+            {
                 copyInvoiceExpression[formula.FieldName].Invoke(invLine, val);
+                if (invLine.ProdNetWeight > 0)
+                {
+                    InvLineChk = true;
+                }
+            }
         }
     }
 
@@ -1609,7 +1651,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     private bool CustomerCheck()
     {
-        if(Buyer is null)
+        if (Buyer is null)
         {
             _messageBoxService.ShowMessage("Please enter customer details to proceed", "Missing Customer", MessageButton.OK, MessageIcon.Error);
             return false;

@@ -201,6 +201,7 @@
                                     </dxlc:LayoutItem>
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
+                            
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem Label="State"
                                                  LabelPosition="Top"
@@ -228,6 +229,7 @@
                                 </dxlc:LayoutItem>
                                 -->
                             </dxlc:LayoutGroup>
+                            
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
                     </dxlc:LayoutGroup>
@@ -694,11 +696,13 @@
                                                            GlyphAlignment="Right" />
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
+
                                 <dxg:GridControl ItemsSource="{Binding Header.AdvanceReceiptLines}"
                                                  DeleteKeyBehavior="DeleteFocusedRow"
                                                  MaxHeight="600"
                                                  MinHeight="400"
                                                  HorizontalAlignment="Left">
+                                    
                                     <dxg:GridControl.Resources>
                                         <Style x:Key="boldHeader"
                                                TargetType="dxg:BaseGridHeader">
@@ -716,6 +720,7 @@
                                                     Value="Immediate" />
                                         </Style>
                                     </dxg:GridControl.Resources>
+                                    
                                     <dxg:GridControl.Columns>
                                         <!-- <dxg:GridColumn FieldName="SeqNbr"
                                                         Header="SN"
@@ -752,6 +757,7 @@
                                         </dxg:TableView>
                                     </dxg:GridControl.View>
                                 </dxg:GridControl>
+                                
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>

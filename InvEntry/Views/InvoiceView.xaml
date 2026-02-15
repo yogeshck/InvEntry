@@ -162,44 +162,33 @@
                                 </dxlc:LayoutGroup>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal">
-                                <dxlc:LayoutItem Label="State" LabelPosition="Top" HorizontalAlignment="Left" >
-                                    <dxg:LookUpEdit Width="225" Height="35"
-                                                    EditValue="{Binding CustomerState,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
-                                                ItemsSource="{Binding StateReferencesList}"
-                                                DisplayMember="RefValue" >
-                                        <dxg:LookUpEdit.PopupContentTemplate>
-                                            <ControlTemplate>
-                                                <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
-                                                    <dxg:GridControl.Columns>
-                                                        <dxg:GridColumn FieldName="RefCode"/>
-                                                        <dxg:GridColumn FieldName="RefValue"/>
-                                                    </dxg:GridControl.Columns>
-                                                    <dxg:GridControl.View>
-                                                        <dxg:TableView AutoWidth="True"/>
-                                                    </dxg:GridControl.View>
-                                                </dxg:GridControl>
-                                            </ControlTemplate>
-                                        </dxg:LookUpEdit.PopupContentTemplate>
-                                    </dxg:LookUpEdit>
+
+                                    <dxlc:LayoutItem Label="State"
+                                                 LabelPosition="Top"
+                                                 HorizontalAlignment="Left">
+                                        <dxe:ComboBoxEdit
+                                            ItemsSource="{Binding StateReferencesList}"
+                                            EditValue ="{Binding CustomerState, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            IsTextEditable="False"
+                                            Width="200"
+                                            Height="35"
+                                            FontSize="15"/>
+                                    </dxlc:LayoutItem>
+
+                                    <!--
+                                <dxlc:LayoutItem Label="Sales Person"
+                                                 LabelPosition="Top"
+                                                 HorizontalAlignment="Left">
+                                    <dxe:ComboBoxEdit
+                                            ItemsSource="{Binding SalesPersonReferencesList}"
+                                            EditValue="{Binding SalesPerson, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            IsTextEditable="False"
+                                            Width="200"
+                                            Height="35"
+                                            FontSize="14"/>
                                 </dxlc:LayoutItem>
-                                <dxlc:LayoutItem Label="Sales Person" LabelPosition="Top" HorizontalAlignment="Left" >
-                                    <dxg:LookUpEdit Width="225" Height="35" EditValue="{Binding SalesPerson}" 
-                                                ItemsSource="{Binding SalesPersonReferencesList}"
-                                                DisplayMember="RefValue" >
-                                        <dxg:LookUpEdit.PopupContentTemplate>
-                                            <ControlTemplate>
-                                                <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
-                                                    <dxg:GridControl.Columns>
-                                                        <dxg:GridColumn FieldName="RefValue"/>
-                                                    </dxg:GridControl.Columns>
-                                                    <dxg:GridControl.View>
-                                                        <dxg:TableView AutoWidth="True"/>
-                                                    </dxg:GridControl.View>
-                                                </dxg:GridControl>
-                                            </ControlTemplate>
-                                        </dxg:LookUpEdit.PopupContentTemplate>
-                                    </dxg:LookUpEdit>
-                                </dxlc:LayoutItem>
+                                -->
+
                             </dxlc:LayoutGroup>
                         </dxlc:LayoutGroup>
                         <dxlc:GroupSeparator />
@@ -336,7 +325,7 @@
                                     <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.GrossRcbAmount}" 
                                                   Width="120"
-                                                  FontSize="14"                                                  
+                                                  FontSize="15"                                                  
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right" 
                                                   IsReadOnly="True"/>
@@ -399,26 +388,14 @@
                                 <dxlc:LayoutItem LabelTemplate="{StaticResource RsTemplate}" 
                                                  Label="Balance   " HorizontalAlignment="Left" Width="210"
                                                  VerticalAlignment="Center" >
-                                    <dxe:TextEdit 
+                                    <dxe:TextEdit Style="{StaticResource NumberFormatStyle}"
                                                   EditValue="{Binding Header.InvBalance}" 
                                                   Width="120"
-                                                  FontSize="14"                                                  
+                                                  FontSize="15"     Foreground="Red"     Background="White"                                        
                                                   FontWeight="Bold"
                                                   HorizontalContentAlignment="Right"
                                                   IsReadOnly="True">
-                                        <dxe:TextEdit.Style>
-                                            <Style TargetType="dxe:TextEdit"
-               BasedOn="{StaticResource NumberFormatStyle}">
-
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Header.InvBalance}" Value="1">
-                                                        <Setter Property="Foreground" Value="Red"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-
-                                            </Style>
-                                        </dxe:TextEdit.Style>
-                                    </dxe:TextEdit>/>
+                                    </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
                             <dxlc:LayoutGroup Orientation="Horizontal" Visibility="{Binding IsRefund, 
@@ -633,6 +610,7 @@
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
+                    
                     <dxlc:LayoutGroup Header="Receipts">
                         <dxlc:LayoutItem>
                             <dxb:BarManager AllowCustomization="False" >
@@ -649,6 +627,7 @@
                                                  Content="Delete" GlyphAlignment="Right"/>
                                     </dxb:Bar>
                                 </dxb:BarManager.Bars>
+                                
                                 <dxg:GridControl ItemsSource="{Binding Header.ReceiptLines}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
                                          MaxHeight="600" MinHeight="400" HorizontalAlignment="Left" FontSize="13">
@@ -665,8 +644,9 @@
                                         </Style>
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="SeqNbr" Header="SN" Width="30" />
-                                        <dxg:GridColumn FieldName="TransactionType" Header="Transaction" >
+                                        <!--<dxg:GridColumn FieldName="SeqNbr" Header="SN" Width="30" />
+
+                                                <dxg:GridColumn FieldName="TransactionType" Header="Transaction" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
                                                  DisplayMember="RefValue"
@@ -685,10 +665,21 @@
                                                     </dxg:LookUpEditSettings.PopupContentTemplate>
                                                 </dxg:LookUpEditSettings>
                                             </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn> -->
+
+                                        <dxg:GridColumn FieldName="TransactionType"
+                                                        Header="Transaction">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding PaymentModeList}"
+                                                                          IsTextEditable="False"/>
+                                            </dxg:GridColumn.EditSettings>
                                         </dxg:GridColumn>
-                                        <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" />
-                                        <dxg:GridColumn FieldName="BalanceAfterAdj" Header="Balance Amount (Rs)" />
+
+                                        <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" Width="200" />
+                                        <dxg:GridColumn FieldName="BalanceAfterAdj" Header="Balance Amount (Rs)" Width="200"/>
                                     </dxg:GridControl.Columns>
+
+                                    <!-- 
                                     <dxg:GridControl.View>
                                         <dxg:TableView AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
@@ -705,10 +696,30 @@
                                             </dxg:TableView.RowCellMenuCustomizations>
                                         </dxg:TableView>
                                     </dxg:GridControl.View>
+-->
+                                    <dxg:GridControl.View>
+                                        <dxg:TableView AllowGrouping="False"
+                     AllowBestFit="True" ShowGroupPanel="False" 
+                            TotalSummaryPosition="Bottom">
+                                            <dxmvvm:Interaction.Behaviors>
+                                                <dxmvvm:EventToCommand EventName="CellValueChanged"
+                                                           Command="{Binding CellUpdateCommand}"
+                                                           PassEventArgsToCommand="True"/>
+                                            </dxmvvm:Interaction.Behaviors>
+                                            <dxg:TableView.RowCellMenuCustomizations>
+                                                <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
+                                                           Command="{Binding DataContext.DeleteSingleRowCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                                           Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
+                                            </dxg:TableView.RowCellMenuCustomizations>
+                                        </dxg:TableView>
+                                    </dxg:GridControl.View>
+
                                 </dxg:GridControl>
+                                
                             </dxb:BarManager>
                         </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
+
                 </dxlc:LayoutGroup>
 
 
