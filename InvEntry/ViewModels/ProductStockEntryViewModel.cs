@@ -4,7 +4,9 @@ using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Grid;
+using DevExpress.Xpf.Printing;
 using DevExpress.XtraGauges.Core.Styles;
+using DevExpress.XtraRichEdit.Forms;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
@@ -80,6 +82,9 @@ namespace InvEntry.ViewModels
         private bool isTagPrinted;
         private bool isPrintEnabled = true;
         private decimal _capturedWeight;
+        private bool isManualMode;
+
+        private WeighScaleReaderAuto reader;
 
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
         private Dictionary<string, Action<GrnLine, decimal?>> copyGRNLineExpression;
@@ -107,6 +112,9 @@ namespace InvEntry.ViewModels
             _orgThisCompanyViewService = orgThisCompanyViewService;
 
             _lineGrnLookup = new();
+
+            /*            reader = new();
+                        reader.StartAuto();*/
 
             SetThisCompany();
 
@@ -187,15 +195,16 @@ namespace InvEntry.ViewModels
 
             var waitVM = WaitIndicatorVM.ShowIndicator("Press... print button... reading weight.... .");
 
-            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
             if (e.Column.FieldName == "GrossWeight")
             {
+
+                SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
                 var line = e.Row as GrnLine;
                 if (line != null)
                 {
-                    var reader = new WeighScaleReader();
-                    var weight = await reader.StartScaleAsync(); // await one stable value
+                    var reader = new WeighScaleReaderAuto();
+                    var weight = await reader.StartManualAsync();                //.StartScaleAsync(); // await one stable value
                     if (weight < 0)
                     {
                         //display error message
@@ -204,14 +213,24 @@ namespace InvEntry.ViewModels
                     }
                     else
                     {
-                        line.GrossWeight = weight;
+                        if (isManualMode)
+                        {
+                            line.GrossWeight = weight;
+                        }
+                        else
+                        {
+                            line.GrossWeight = weight;
+                            line.StoneWeight = 0;
+                            line.NetWeight = line.GrossWeight;
+                        }
 
                     }
                 }
 
                 SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
-
+                if (!isManualMode)
+                    _ = PrintTagAsync(line);
             }
 
         }
@@ -268,6 +287,26 @@ namespace InvEntry.ViewModels
                 GrnLineList = new(grnLines);
                 return;
             }
+
+            var result = _messageBoxService.ShowMessage(
+                "Do you want to print in AUTO mode?",
+                "Confirmation",
+                MessageButton.YesNoCancel,
+                MessageIcon.Question);
+
+            if (result == MessageResult.Yes)
+            {
+                isManualMode = false;
+            }
+            else if (result == MessageResult.No)
+            {
+                isManualMode = true;
+            }
+            else if (result == MessageResult.Cancel)
+            {
+                return;
+            }
+
 
             //var category = GrnLineSumryList.First().ProductCategory;
 
@@ -429,7 +468,7 @@ namespace InvEntry.ViewModels
                                         } else*/
                     {
                         x.Status = "Closed";
-                        ProcessStockLines(x);
+                        ProcessStockLinesAsync(x);
                         await _grnService.CreateGrnLine(grnLines);
                     }
                 }
@@ -443,7 +482,7 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
-        private void PrintTag(GrnLine grnline)
+        private async Task PrintTagAsync(GrnLine grnline)
         {
 
 
@@ -471,10 +510,10 @@ namespace InvEntry.ViewModels
                             grnline.ProductSku = tProductSku;*/
 
 
-                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
-                                                            grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
-                                                            grnline.StoneWeight.Value,
-                                                            grnline.ProductPurity, Company.CompanyName);
+                /*                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
+                                                                            grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
+                                                                            grnline.StoneWeight.Value,
+                                                                            grnline.ProductPurity, Company.CompanyName);*/
                 //return Task.CompletedTask;
             }
 
@@ -502,6 +541,21 @@ namespace InvEntry.ViewModels
                 ;// StopScale();
             }
 
+            if (grnline.NetWeight.HasValue && grnline.NetWeight > 0 && grnline.ProductSku is not null)
+            {
+                grnline.GrnHdrGkey = SelectedGrn.GKey;
+
+                /*                    if (x.ProductSku is null)
+                                    {
+                                        return;
+                                    } else*/
+                {
+                    grnline.Status = "Closed";
+                    ProcessStockLinesAsync(grnline);
+                    await _grnService.CreateGrnLine(grnline);
+                }
+            }
+
         }
 
         /*        private void DisablePrintButton(int rowHandle)
@@ -526,19 +580,21 @@ namespace InvEntry.ViewModels
                 return;
             }
 
-            await SavingGrnLinesList();
+            // saving immediate no need below line
+            // await SavingGrnLinesList();
+            _lineGrnLookup.Clear();
 
 
-            if (ProductStockList is not null)
-            {
+            //  if (ProductStockList is not null)
+            //  {
 
-                ProductStockList.ForEach(async x =>
-                {
-                    await _productStockService.CreateProductStock(x);
+            //      ProductStockList.ForEach(async x =>
+            //      {
+            //          await _productStockService.CreateProductStock(x);
 
-                    // CreateProductTransaction(x);  - hold this - selectedGrn - error need to fix
-                });
-            }
+            // CreateProductTransaction(x);  - hold this - selectedGrn - error need to fix
+            //     });
+            //  }
 
             //check should be introduced here to find any leftover line to be closed, if any do not set closed otherwise do
             SelectedGrn.Status = "Closed";
@@ -606,7 +662,7 @@ namespace InvEntry.ViewModels
             await _productTransactionService.CreateProductTransaction(productTransaction);
         }
 
-        private void ProcessStockLines(GrnLine grnLineStock)
+        private async Task ProcessStockLinesAsync(GrnLine grnLineStock)
         {
 
             if (ProductStockList is null)
@@ -632,11 +688,11 @@ namespace InvEntry.ViewModels
             productStock.ProductSku = grnLineStock.ProductSku;
             productStock.IsBarcodePrinted = true;
 
-            ProductStockList.Add(productStock);
+            // ProductStockList.Add(productStock);
+            //save to db immediate - if list has 100 or more nos, it takes lots of time
+            await _productStockService.CreateProductStock(productStock);
 
         }
-
-
 
         [RelayCommand]
         private void CellUpdate(CellValueChangedEventArgs args)
