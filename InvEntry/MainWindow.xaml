@@ -53,6 +53,9 @@
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:InvoiceEntryPage}"
                                                                 Content="Invoice Entry"
                                                                 HideMenuWhenSelected="True" />
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:OldMetalPurchasePage}"
+                                                                Content="Old Metal Purchase"
+                                                                HideMenuWhenSelected="True" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:OSVoucherView}"
                                                                 Content="OutStanding Entry"
                                                                 HideMenuWhenSelected="True" />

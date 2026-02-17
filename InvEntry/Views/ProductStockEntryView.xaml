@@ -17,7 +17,9 @@
              d:DataContext="{d:DesignInstance Type=viewmodels:ProductStockEntryViewModel}"
              DataContext="{ext:DISource Type=viewmodels:ProductStockEntryViewModel}"
              mc:Ignorable="d"  HorizontalAlignment="Left" >
+    
     <Grid HorizontalAlignment="Left" Width="1200" Margin="10">
+        
         <Grid.Resources>
             <Style x:Key="NumberFormatStyle" TargetType="dxe:TextEditSettings">
                 <Setter Property="MaskType" Value="Numeric" />
@@ -67,6 +69,7 @@
                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"/>
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
+        
         <!-- -->
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnHdrList}" AutoGenerateColumns="None"
                           SelectedItem="{Binding SelectedGrn}" VerticalAlignment="Top"
@@ -81,6 +84,7 @@
                                 AutoWidth="False" ShowTotalSummary="True" EditorButtonShowMode="ShowOnlyInEditor" RowMinHeight="30">
                 </dxg:TableView>
             </dxg:GridControl.View>
+            
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="SupplierId" Header="Supp" ReadOnly="True" Width="70" />
                 <dxg:GridColumn FieldName="GrnNbr" Header="Grn #" ReadOnly="True" Width="70" />
@@ -139,10 +143,15 @@
                         <dxmvvm:EventToCommand EventName="ShowingEditor"
                                Command="{Binding EditorActivatedCommand}"
                                PassEventArgsToCommand="True"/>
+                        <dxmvvm:EventToCommand EventName="ValidateCell"
+                                Command="{Binding ValidateCellCommand}"
+                                PassEventArgsToCommand="True"/>
+
 
                     </dxmvvm:Interaction.Behaviors>
                 </dxg:TableView>
             </dxg:GridControl.View>
+            
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="Ref" Header="Ref #" ReadOnly="True" Width="40" />
                 <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
@@ -187,8 +196,10 @@
 
             </dxg:GridControl.Columns>
         </dxg:GridControl>
+        
         <dx:SimpleButton Grid.Row="4" Grid.ColumnSpan="2" Content="Submit" Width="150" Height="25" 
                          Background="#FFE9EBEC" Command="{Binding SubmitCommand}"/>
 
     </Grid>
+    
 </UserControl>

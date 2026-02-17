@@ -14,8 +14,15 @@ namespace InvEntry.Utils
 
         public async Task<decimal> StartScaleAsync(string comPort = "COM3")
         {
-            _port = new SerialPort(comPort, 4800, Parity.None, 8, StopBits.One);
-            _port.Open();
+            try
+            {
+                _port = new SerialPort(comPort, 4800, Parity.None, 8, StopBits.One);
+                _port.Open();
+            }
+            catch
+            {
+                return -1;
+            }
 
             // Run the read loop in background
             return await Task.Run(() =>

@@ -5,7 +5,6 @@ using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
-using DevExpress.Xpf.PivotGrid.Printing.TypedStyles;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Helper;
