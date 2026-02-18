@@ -732,7 +732,7 @@
             this.invoiceLabel.Name = "invoiceLabel";
             this.invoiceLabel.StylePriority.UseFont = false;
             this.invoiceLabel.StylePriority.UseTextAlignment = false;
-            this.invoiceLabel.Text = "VOUCHER #";
+            this.invoiceLabel.Text = "TAX INVOICE #";
             this.invoiceLabel.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             this.invoiceLabel.Weight = 1.0513902674200124D;
             // 

@@ -1,8 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Models;
+using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Tally;
 using InvEntry.Tally.Model;
@@ -10,12 +13,10 @@ using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using DevExpress.Xpf.Printing;
-using IDialogService = DevExpress.Mvvm.IDialogService;
-using InvEntry.Reports;
+using System.Data.SqlClient;
 using System.Linq;
-using DevExpress.Xpf.Core;
+using System.Threading.Tasks;
+using IDialogService = DevExpress.Mvvm.IDialogService;
 
 
 namespace InvEntry.ViewModels;
@@ -119,19 +120,6 @@ public partial class VoucherListViewModel: ObservableObject
 
             foreach (var voucher in vouchersResult)
             {
-//                TempView = new();
-
-/*                if (voucher.TransType == "Receipt")
-                {
-                    voucher.RecdAmount = voucher.TransAmount;
-                    voucher.PaidAmount = 0;
-                } 
-                else if (voucher.TransType == "Payment")
-                {
-                    voucher.PaidAmount = voucher.TransAmount;
-                    voucher.RecdAmount = 0;
-                }*/
-
             //    voucher.FromLedgerName
              //   = MasterLedgerList?.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey).LedgerName;
 
@@ -148,8 +136,8 @@ public partial class VoucherListViewModel: ObservableObject
     {
         //var printed = PrintHelper.Print(_reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To));
 
-        var report = _reportFactoryService.CreateFinStatementReport(SearchOption.From, 
-                                                SearchOption.To, 
+        var report = _reportFactoryService.CreateFinStatementReport((DateTime)SearchOption.From,
+                                                (DateTime)SearchOption.To, 
                                                 SearchOption.Filter1);
 
  //       PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
@@ -222,4 +210,79 @@ public partial class VoucherListViewModel: ObservableObject
     //    await _xmlService.SendToTally(tallyMessageBuilder.Build());
     //    //await _xmlService.SendToTally(tallyXmlMsg);
     //}
+
+
+public class VoucherEntry
+{
+    public int Gkey { get; set; }
+    public int SeqNbr { get; set; }
+    public string CustomerGkey { get; set; }
+    public string TransType { get; set; }
+    public string VoucherType { get; set; }
+    public string Mode { get; set; }
+    public decimal TransAmount { get; set; }
+    public string VoucherNbr { get; set; }
+    public DateTime VoucherDate { get; set; }
+    public string RefDocNbr { get; set; }
+    public DateTime? RefDocDate { get; set; }
+    public string TransDesc { get; set; }
+    public DateTime TransDate { get; set; }
+    public decimal Recd_Amount { get; set; }
+    public decimal Paid_Amount { get; set; }
+    public string FromLedgerName { get; set; }
+    public string ToLedgerName { get; set; }
+    public decimal ObAmount { get; set; }
+    public decimal CbAmount { get; set; }
+    public string FundTransferMode { get; set; }
+    public int? FundTransferRefGkey { get; set; }
+    public DateTime? FundTransferDate { get; set; }
+}
+
+public class VoucherViewModel : ViewModelBase
+{
+    public ObservableCollection<VoucherEntry> VoucherEntries { get; }
+        = new ObservableCollection<VoucherEntry>();
+
+    public async Task LoadDataAsync(string connectionString)
+    {
+        VoucherEntries.Clear();
+
+        using (var conn = new SqlConnection(connectionString))
+        using (var cmd = new SqlCommand("SELECT * FROM dbo.VIEW_VOUCHER_RECEIPT_PAYMENT", conn))
+        {
+            await conn.OpenAsync();
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    VoucherEntries.Add(new VoucherEntry
+                    {
+                        Gkey = reader.GetInt32(reader.GetOrdinal("gkey")),
+                        SeqNbr = reader.GetInt32(reader.GetOrdinal("seq_nbr")),
+                        CustomerGkey = reader["customer_gkey"].ToString(),
+                        TransType = reader["trans_type"].ToString(),
+                        VoucherType = reader["voucher_type"].ToString(),
+                        Mode = reader["mode"].ToString(),
+                        TransAmount = reader.GetDecimal(reader.GetOrdinal("trans_amount")),
+                        VoucherNbr = reader["voucher_nbr"].ToString(),
+                        VoucherDate = reader.GetDateTime(reader.GetOrdinal("voucher_date")),
+                        RefDocNbr = reader["ref_doc_nbr"].ToString(),
+                        RefDocDate = reader["ref_doc_date"] as DateTime?,
+                        TransDesc = reader["trans_desc"].ToString(),
+                        TransDate = reader.GetDateTime(reader.GetOrdinal("trans_date")),
+                        Recd_Amount = reader.GetDecimal(reader.GetOrdinal("Recd_Amount")),
+                        Paid_Amount = reader.GetDecimal(reader.GetOrdinal("Paid_Amount")),
+                        FromLedgerName = reader["FROM_LEDGER_NAME"].ToString(),
+                        ToLedgerName = reader["TO_LEDGER_NAME"].ToString(),
+                        ObAmount = reader.GetDecimal(reader.GetOrdinal("ob_amount")),
+                        CbAmount = reader.GetDecimal(reader.GetOrdinal("cb_amount")),
+                        FundTransferMode = reader["fund_transfer_mode"].ToString(),
+                        FundTransferRefGkey = reader["fund_transfer_ref_gkey"] as int?,
+                        FundTransferDate = reader["fund_transfer_date"] as DateTime?
+                    });
+                }
+            }
+        }
+    }
+}
 }

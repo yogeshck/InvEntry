@@ -7,6 +7,7 @@
              xmlns:dxp="http://schemas.devexpress.com/winfx/2008/xaml/printing"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"             
              xmlns:conv="clr-namespace:InvEntry.Converters"
              StartupUri="MainWindow.xaml"
              DispatcherUnhandledException="Application_DispatcherUnhandledException"
@@ -16,7 +17,7 @@
 
             <Style TargetType="dxg:RowControl">
                 <Setter Property="Height" Value="40"/>
-                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="FontSize" Value="14"/>
             </Style>
 
             <Style TargetType="TextBlock" x:Key="LayoutTabHeaderStyle">
@@ -32,6 +33,27 @@
                 <Setter Property="ShowGroupPanel" Value="False"/>
                 <Setter Property="TotalSummaryPosition" Value="Bottom"/>
                 <Setter Property="NewItemRowPosition" Value="Bottom"/>
+            </Style>
+
+            <!-- Style for all text-based editors -->
+            <Style TargetType="{x:Type dxe:TextEdit}">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+
+            <!-- Style for DateEdit -->
+            <Style TargetType="{x:Type dxe:DateEdit}">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+
+            <!-- Style for ComboBoxEdit -->
+            <Style TargetType="{x:Type dxe:ComboBoxEdit}">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
             </Style>
 
             <Style TargetType="dx:DXMessageBox">
@@ -51,7 +73,7 @@
                         <Setter Property="ResizeMode" Value="NoResize"/>
                         <Setter Property="Topmost" Value="True"/>
                         <Setter Property="WindowKind" Value="Auto"/>
-                        <Setter Property="FontSize" Value="18"/>
+                        <Setter Property="FontSize" Value="14"/>
                     </Style>
                 </dx:DialogService.DialogStyle>
             </dx:DialogService>

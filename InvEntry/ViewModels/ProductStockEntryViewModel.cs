@@ -83,6 +83,7 @@ namespace InvEntry.ViewModels
         private bool isPrintEnabled = true;
         private decimal _capturedWeight;
         private bool isManualMode;
+        private int productSkuSeq;
 
         private WeighScaleReaderAuto reader;
 
@@ -323,6 +324,8 @@ namespace InvEntry.ViewModels
                 return;
             }
 
+            productSkuSeq = int.Parse(mtblReference.RefValue);
+
             var prdView = await _productViewService.GetProduct(category);
 
             // check grn line has any records already in table
@@ -348,11 +351,13 @@ namespace InvEntry.ViewModels
                 grnLineRecCnt = (int)SelectedGrnLineSumry.SuppliedQty;
             }
 
+            var tempSku = productSkuSeq;
+
             for (int i = 1; i <= grnLineRecCnt; i++)
             {
-                //Sequence number as product sky alongwith product code
-                //var sku = int.Parse(mtblReference.RefValue);
-                //sku++;
+                //Sequence number as product sku alongwith product code
+
+                tempSku++;
 
                 GrnLine grnLine = new();
 
@@ -367,14 +372,14 @@ namespace InvEntry.ViewModels
 
                 //grnLine.ProductSku = SelectedGrnLineSumry.ProductCategory;
 
-                /*                var tagPurityCode = "";
-                                if (grnLine.ProductPurity == "916")
-                                    tagPurityCode = "2";
-                                else if (grnLine.ProductPurity == "750")
-                                    tagPurityCode = "8";
+                var tagPurityCode = "";
+                if (grnLine.ProductPurity == "916")
+                    tagPurityCode = "2";
+                else if (grnLine.ProductPurity == "750")
+                    tagPurityCode = "8";
 
-                                var productSku = string.Format("{0}{1}{2}", mtblReference.RefDesc, tagPurityCode, "-"); //, grnLine.NetWeight);
-                                grnLine.ProductSku = productSku;*/
+                var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", tempSku.ToString("D4")); //, grnLine.NetWeight);
+                grnLine.ProductSku = productSku;
 
                 //string.Format("{0}{1}", mtblReference.RefDesc, ProductSku.ToString("D4"));
 
@@ -399,7 +404,6 @@ namespace InvEntry.ViewModels
             if (GrnLineList is not null && GrnLineList.Any() && SelectedGrnLineSumry is not null)
             {
                 //"Do you want discard?"
-
 
                 _lineGrnLookup[SelectedGrnLineSumry.GKey] = GrnLineList;
             }
@@ -468,14 +472,14 @@ namespace InvEntry.ViewModels
                                         } else*/
                     {
                         x.Status = "Closed";
-                        ProcessStockLinesAsync(x);
+                        _ = ProcessStockLinesAsync(x);
                         await _grnService.CreateGrnLine(grnLines);
                     }
                 }
             });
 
             //if user maintains seq nbr for product sku - this nees to be executed - but in difference place - need to fix
-            //await _mtblReferencesService.UpdateReference(mtblReference);
+            await _mtblReferencesService.UpdateReference(mtblReference);
 
 
 
@@ -488,44 +492,13 @@ namespace InvEntry.ViewModels
 
             if (grnline.NetWeight > 0.00m)
             {
-                // Get the current row handle
-                // int currentRowHandle = GridView.Ta;
 
-                var tagPurityCode = "";
-                if (grnline.ProductPurity == "916")
-                    tagPurityCode = "2";
-                else if (grnline.ProductPurity == "750")
-                    tagPurityCode = "8";
-
-                var weight = "";
-                weight = decimal.Truncate(grnline.NetWeight.Value * 1000m).ToString("000000");
-
-                var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", weight);
-                grnline.ProductSku = productSku;
-
-
-
-                /*            var tProductSku = "";
-                            tProductSku = $"{grnline.ProductSku}{weight}";
-                            grnline.ProductSku = tProductSku;*/
-
-
-                /*                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
+                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
                                                                             grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
                                                                             grnline.StoneWeight.Value,
-                                                                            grnline.ProductPurity, Company.CompanyName);*/
+                                                                            grnline.ProductPurity, Company.CompanyName);
                 //return Task.CompletedTask;
             }
-
-            // 2. Disable the button for this row
-            //grnline.IsPrintEnabled = false;
-
-
-            // Disable the print button for this row
-            //DisablePrintButton(currentRowHandle);
-
-            // Then move cursor
-            // MoveToNextRowAndColumn(tableView3, "seqNo");
 
 
             //set isprinted to false
@@ -551,9 +524,15 @@ namespace InvEntry.ViewModels
                                     } else*/
                 {
                     grnline.Status = "Closed";
-                    ProcessStockLinesAsync(grnline);
+                    _ = ProcessStockLinesAsync(grnline);
                     await _grnService.CreateGrnLine(grnline);
                 }
+
+                productSkuSeq = productSkuSeq + 1;
+                mtblReference.RefValue = productSkuSeq.ToString();
+                //if user maintains seq nbr for product sku - this nees to be executed - but in difference place - need to fix
+                await _mtblReferencesService.UpdateReference(mtblReference);
+
             }
 
         }
@@ -583,18 +562,6 @@ namespace InvEntry.ViewModels
             // saving immediate no need below line
             // await SavingGrnLinesList();
             _lineGrnLookup.Clear();
-
-
-            //  if (ProductStockList is not null)
-            //  {
-
-            //      ProductStockList.ForEach(async x =>
-            //      {
-            //          await _productStockService.CreateProductStock(x);
-
-            // CreateProductTransaction(x);  - hold this - selectedGrn - error need to fix
-            //     });
-            //  }
 
             //check should be introduced here to find any leftover line to be closed, if any do not set closed otherwise do
             SelectedGrn.Status = "Closed";
@@ -702,16 +669,6 @@ namespace InvEntry.ViewModels
 
                 EvaluateFormula(line);
 
-                /*                if ((nameof(GrnLine.GrossWeight).Equals(args.Column.FieldName) || nameof(GrnLine.StoneWeight).Equals(args.Column.FieldName) ) 
-                                                    && line.NetWeight > 0 )
-                                {
-                                    var weight = "";
-                                    weight = decimal.Truncate(line.NetWeight.Value * 1000m).ToString("000000");
-
-                                    var tProductSku = "";
-                                    tProductSku = $"{line.ProductSku}{weight}";
-                                    line.ProductSku = tProductSku;
-                                }*/
             }
         }
 
@@ -742,18 +699,6 @@ namespace InvEntry.ViewModels
             grnLine.SuppliedQty = 1;
             grnLine.AcceptedQty = 1;
             grnLine.RejectedQty = 0;
-
-            /*            if (grnLine.NetWeight.HasValue)
-                        {
-                            int scaled = 0;
-                            scaled = (int)(grnLine.NetWeight * 1000); // Removes decimal
-                            string result = "";
-                            result = scaled.ToString("D6"); // Ensure the string has 6 digits.
-
-                            var prdSku = "";
-                            prdSku = grnLine.ProductSku + result; // grnLine.NetWeight;
-                            grnLine.ProductSku = prdSku;
-                        }*/
 
         }
 

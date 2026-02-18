@@ -101,7 +101,8 @@ public class BarCodePrint
                 "^A0N,20,20\n" +
                 $"^FDGwt: {productWeight}^FS\n";
 
-        if (stoneWeight is not null)
+        //if (stoneWeight is not null )
+        if (stoneWeight.Length > 0)
         {
             zplCmd += 
                 "^FO210,50\n" +

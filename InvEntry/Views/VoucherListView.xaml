@@ -88,7 +88,7 @@
                          Height="500"
                          MaxHeight="900"
                          MinWidth="800"
-                         Width="1400"
+                         Width="1450"
                          SelectedItem="{Binding SelectedVoucher}"
                          HorizontalAlignment="Left"
                          VerticalAlignment="Top">
@@ -162,7 +162,16 @@
                         <dxe:TextEditSettings MaskType="Numeric" MaskUseAsDisplayFormat="True" Mask="C2"/>
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn> -->
-                <dxg:GridColumn FieldName="RecdAmount"
+
+                <dxg:GridColumn FieldName="RecdAmount" Header="Receipt Amount" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:TextEditSettings MaskType="Numeric"
+                              MaskUseAsDisplayFormat="True"
+                              Mask="C2"
+                              HorizontalContentAlignment="Right" />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+         <!--       <dxg:GridColumn FieldName="RecdAmount"
                                 Header="Received"
                                 Width="100">
                     <dxg:GridColumn.EditSettings>
@@ -170,7 +179,7 @@
                                               MaskUseAsDisplayFormat="True"
                                               Mask="C2" />
                     </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>
+                </dxg:GridColumn> -->
                 <dxg:GridColumn FieldName="PaidAmount"
                                 Header="Payment"
                                 Width="100">

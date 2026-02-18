@@ -28,6 +28,8 @@ public interface IReportFactoryService
 
     XtraReport CreateEstimateReport(string pEstimateNbr, int estGkey, OrgThisCompanyView orgThisCompany);
 
+    XtraReport CreateOMPurchaseReport(string pDocRefNbr); // int estGkey, OrgThisCompanyView orgThisCompany);
+
     Task CreateEstimateReportPdf(string pEstimateNbr, int pEstHdrGkey,
                                                 OrgThisCompanyView orgThisCompany, string filePath);
 
@@ -86,6 +88,23 @@ public class ReportFactoryService : IReportFactoryService
         var report = CreateInvoiceReport(pInvoiceNbr);
 
         await report.ExportToPdfAsync(filePath);
+    }
+
+    public XtraReport CreateOMPurchaseReport(string pDocRefNbr)
+    {
+        var report = CreateOMPurchaseReport(pDocRefNbr);
+
+        //await report.ExportToPdfAsync(filePath);
+        report.Parameters["pRefDocNbr"].Value = pDocRefNbr;
+        
+        report.CreateDocument();
+        return report;
+    }
+
+    public XtraReport CreateOMPurchaseReport()
+    {
+        return new OldMetalPurchase().AddDataSource(_appConfigName);  //XtraEstimate().AddDataSource(_appConfigName);   
+                                                                      //XrNewEstimate24().AddDataSource(_appConfigName);
     }
 
     public XtraReport CreateEstimateReport()

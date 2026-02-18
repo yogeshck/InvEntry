@@ -33,28 +33,34 @@
         </Grid.ColumnDefinitions>-->
         <dxb:BarContainerControl>
             <dxb:MainMenuControl>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.From}"
-                                 EditWidth="120"
-                                 Content="From Date"
+
+                <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date"              
                                  TextBlock.FontSize="18"
                                  TextBlock.FontWeight="Bold">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-                <dxb:BarEditItem EditValue="{Binding SearchOption.To}"
-                                 EditWidth="120"
-                                 Content="To Date">
+                <dxb:BarEditItem EditValue="{Binding SearchOption.To}" EditWidth="120" Content="To Date">
                     <dxb:BarEditItem.EditSettings>
-                        <dxe:DateEditSettings AllowDefaultButton="True"
-                                              MaxValue="{Binding Today}" />
+                        <dxe:DateEditSettings AllowDefaultButton="True" MaxValue="{Binding Today}" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
+                <dxb:BarEditItem   EditValue="{Binding SearchOption.Filter1}"
+                                   Content="Options"
+                                   EditWidth="150"
+                                   EditHeight="30">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:TextEditSettings  MaskType="RegEx"
+                                               Mask="[0-9 ]*" />
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
+
                 <dxb:BarButtonItem x:Name="btnRefresh"
                                    Content="Refresh"
                                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                                    GlyphSize="Large"
-                                   Command="{Binding RefreshOldMetalTransCommand}" /> 
+                                   Command="{Binding RefreshOldMetalTransCommand}" />
                 <dxb:BarItemSeparator Margin="2,0,2,0" />
                 <dxb:BarButtonItem x:Name="btnPrintGrid"
                                    GlyphSize="Large"
@@ -165,7 +171,7 @@
                                               MaskUseAsDisplayFormat="True" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
-                
+
                 <dxg:GridColumn FieldName="FinalPurchasePrice"
                                 Header="Price"
                                 Width="120">

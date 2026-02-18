@@ -58,7 +58,7 @@
                          Height="620"
                          MaxHeight="1100"
                          MinWidth="400"
-                         Width="800"     
+                         Width="1200"     
                          HorizontalAlignment="Left" VerticalAlignment="Top">
             <!--  SelectedItem="{Binding SelectedEstimate}"             <dxmvvm:Interaction.Behaviors>
                 <dxmvvm:EventToCommand EventName="SelectedItemChanged"
@@ -75,14 +75,14 @@
                 </dxg:TableView>
             </dxg:GridControl.View>
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="GrnNbr" Header="GRN #" ReadOnly="True" Width="70" />
+                <dxg:GridColumn FieldName="GrnNbr" Header="GRN #" ReadOnly="True" Width="110" />
                 <dxg:GridColumn FieldName="GrnDate" Header="GRN Date" ReadOnly="True" Width="90" />
                 <dxg:GridColumn FieldName="SupplierId" Header="Supp" Width="100"/>
                 <dxg:GridColumn FieldName="DocumentType" Header="Doc Type" Width="100"/>
                 <dxg:GridColumn FieldName="ItemReceivedDate" Header="Item Recd On" Width="100"/>
                 <dxg:GridColumn FieldName="LineNbr" Header="Line#" Width="100"/>
                 <dxg:GridColumn FieldName="ProductCategory" Header="Category" Width="100"/>
-                <dxg:GridColumn FieldName="SuppliedQty" Header="Qty" Width="100"/>                
+                <dxg:GridColumn FieldName="SuppliedQty" Header="Qty" Width="60"/>                
                 <dxg:GridColumn FieldName="GrossWeight" Header="Gross" Width="100"/>
                 <dxg:GridColumn FieldName="StoneWeight" Header="Stone" Width="100"/>
                 <dxg:GridColumn FieldName="NetWeight" Header="Net" Width="100"/>

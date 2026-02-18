@@ -1,5 +1,6 @@
 ﻿using DevExpress.Mvvm;
 using InvEntry.Models;
+using InvEntry.Tally;
 using InvEntry.ViewModels;
 using InvEntry.Views;
 using System;
@@ -29,11 +30,31 @@ namespace InvEntry.Extension
             reportDialogService.ShowDialog(null, "Estimate Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
 
+        public static void PrintPreviewOMPurchase(this IDialogService reportDialogService, string omTransNbr,
+                                                            int estGkey, OrgThisCompanyView company)
+        {
+            var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+            dialogVM.OMTransInit(omTransNbr); //, estGkey, company);
+
+            reportDialogService.ShowDialog(null, "Old Metal Purchase Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        }
+
         public static void PrintPreviewEstimate(this IDialogService reportDialogService, string estimateHeader,
                                                                     int estGkey)
         {
             PrintPreviewEstimate(reportDialogService, estimateHeader, estGkey, null);
         }
+
+        public static void PrintPreviewOMPurchase(this IDialogService reportDialogService, string docRefNbr)
+                                                            
+        {
+            PrintPreviewOMPurchase(reportDialogService, docRefNbr);
+            var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+            dialogVM.OMTransInit(docRefNbr); // estGkey, company);
+
+            reportDialogService.ShowDialog(null, "Delivery Note (DN) Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        }
+        
 
         public static void PrintPreviewDeliveryNote(this IDialogService reportDialogService, string estimateHeader,
                                                             int estGkey, OrgThisCompanyView company)

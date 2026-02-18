@@ -59,7 +59,17 @@ public partial class OldMetalTransactionListViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintDeliveryNote))]
     private void PrintDeliveryNote()
     {
-        _reportDialogService.PrintPreviewDeliveryNote(SelectedTransaction.DocRefNbr, (int)SelectedTransaction.DocRefGkey, null);
+
+/*        if (SelectedTransaction.TransType.Equals("OG Purchase"))
+        {
+            _reportDialogService.PrintPreviewOMPurchase(SelectedTransaction.DocRefNbr);
+        }
+        else*/
+        {
+            _reportDialogService.PrintPreviewDeliveryNote(SelectedTransaction.DocRefNbr, (int)SelectedTransaction.DocRefGkey, null);
+
+        }
+
 
         //PrintPreviewEstimate(SelectedEstimate.EstNbr);
     }

@@ -33,6 +33,11 @@ namespace InvEntry.ViewModels
             Report = _reportFactoryService.CreateEstimateReport(pEstimateNbr, estGkey, company);
         }
 
+        public void OMTransInit(string pRefDocNbr) // int estGkey, OrgThisCompanyView company)
+        {
+            Report = _reportFactoryService.CreateOMPurchaseReport(pRefDocNbr);
+        }
+
         public void DNInit(string pEstimateNbr, int estGkey, OrgThisCompanyView company)
         {
             Report = _reportFactoryService.CreateDeliveryNoteReport(pEstimateNbr, estGkey, company);
