@@ -96,8 +96,8 @@ public partial class InvoiceViewModel : ObservableObject
     private ObservableCollection<MtblReference> mtblReferencesList;
 
     [ObservableProperty]
-    private ObservableCollection<string> _salesPersonReferencesList; 
-   // private ObservableCollection<MtblReference> salesPersonReferencesList;
+    private ObservableCollection<string> _salesPersonReferencesList;
+    // private ObservableCollection<MtblReference> salesPersonReferencesList;
 
     [ObservableProperty]
     private ObservableCollection<string> _stateReferencesList;
@@ -258,7 +258,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         PaymentModeList = await _referenceLoader.LoadValuesAsync("PAYMENT_MODE");
 
-       // SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
+        // SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
 
     }
 
@@ -455,7 +455,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         //ProductStock productSkuStock = new ProductStock();
 
-        ProductSkuStock = new ();
+        ProductSkuStock = new();
         ProductSkuStock = await _productStockService.GetProductStock(ProductIdUI);
         if (ProductSkuStock is not null)
         {
@@ -1077,8 +1077,31 @@ public partial class InvoiceViewModel : ObservableObject
             PayRctChk = true;
         }
 
+        if (arInvRctLine.ModeOfReceipt == "Bank")
+        {
+
+            ShowTransactionDetailsPopup(InvoiceArReceipt);
+
+        }
+
         EvaluateHeader();
 
+    }
+
+    private InvoiceArReceipt? ShowTransactionDetailsPopup(InvoiceArReceipt arInvRctLine) 
+    {
+
+        var vm = DISource.Resolve<ReceiptAccountingViewModel>();
+       // vm.Category = ProductIdUI;
+
+        var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product",
+                                                        "ReceiptAccountingView", vm);
+
+        if (result == MessageResult.OK)
+        {
+            return arInvRctLine; //  vm.SelectedProduct;
+        }
+        return null;
     }
 
     private decimal FilterReceiptTransactions(string transType)

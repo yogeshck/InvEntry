@@ -84,12 +84,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MiBarCodeLib">
-      <HintPath>..\..\..\Dev\Try\MiBarCodeLib\MiBarCodeLib\bin\Debug\net9.0\MiBarCodeLib.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>

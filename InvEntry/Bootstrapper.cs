@@ -175,6 +175,7 @@ public sealed class Bootstrapper
                  .AddSingleton<OldMetalTransferEntryViewModel>()
                  .AddSingleton<ProductStockEntryViewModel>()
                  .AddSingleton<ProductStockSummaryListViewModel>()
+                 .AddSingleton<ReceiptAccountingViewModel>()
                  .AddSingleton<ProductStockViewModel>()
                  .AddSingleton<SettingsPageViewModel>()
                  .AddSingleton<VoucherEntryViewModel>()

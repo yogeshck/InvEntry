@@ -140,7 +140,6 @@
        "VOUCHER"."fund_transfer_date"
   from "dbo"."VOUCHER" "VOUCHER"
 where  "VOUCHER"."ref_doc_nbr" = @paramDocNbr 
-and        "VOUCHER"."ref_doc_gkey" = @paramDocGkey
 and        "VOUCHER"."voucher_type" not in ('Discount','Credit')</value>
   </data>
   <data name="customSqlQuery2.Sql" xml:space="preserve">

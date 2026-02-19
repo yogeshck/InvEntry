@@ -175,21 +175,6 @@
             this.xrLabel14 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrPictureBox3 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.GroupFooter2 = new DevExpress.XtraReports.UI.GroupFooterBand();
-            this.pymtSumryTable = new DevExpress.XtraReports.UI.XRTable();
-            this.xrTableRow9 = new DevExpress.XtraReports.UI.XRTableRow();
-            this.rctSumCaption = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableRow1 = new DevExpress.XtraReports.UI.XRTableRow();
-            this.xrTableCell2 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell4 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableRow2 = new DevExpress.XtraReports.UI.XRTableRow();
-            this.xrTableCell5 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell6 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableRow8 = new DevExpress.XtraReports.UI.XRTableRow();
-            this.xrTableCell15 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell16 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableRow3 = new DevExpress.XtraReports.UI.XRTableRow();
-            this.xrTableCell7 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell12 = new DevExpress.XtraReports.UI.XRTableCell();
             this.gstinTable = new DevExpress.XtraReports.UI.XRTable();
             this.gstinRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.xrTableCell17 = new DevExpress.XtraReports.UI.XRTableCell();
@@ -209,6 +194,7 @@
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.xrSubreport1 = new DevExpress.XtraReports.UI.XRSubreport();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -217,7 +203,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.metalSumryTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.taxTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.oldExTable)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pymtSumryTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
@@ -426,7 +411,7 @@
             // pInvNbr
             // 
             this.pInvNbr.Name = "pInvNbr";
-            this.pInvNbr.ValueInfo = "C-00001";
+            this.pInvNbr.ValueInfo = "Bc-11229";
             // 
             // sqlDataSource1
             // 
@@ -1886,194 +1871,13 @@
             // GroupFooter2
             // 
             this.GroupFooter2.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
-            this.pymtSumryTable});
-            this.GroupFooter2.HeightF = 103.0836F;
+            this.xrSubreport1});
+            this.GroupFooter2.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.GroupFooter2.HeightF = 80F;
+            this.GroupFooter2.KeepTogether = true;
             this.GroupFooter2.Level = 1;
             this.GroupFooter2.Name = "GroupFooter2";
-            // 
-            // pymtSumryTable
-            // 
-            this.pymtSumryTable.Borders = ((DevExpress.XtraPrinting.BorderSide)((((DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top) 
-            | DevExpress.XtraPrinting.BorderSide.Right) 
-            | DevExpress.XtraPrinting.BorderSide.Bottom)));
-            this.pymtSumryTable.ForeColor = System.Drawing.Color.Black;
-            this.pymtSumryTable.LocationFloat = new DevExpress.Utils.PointFloat(0F, 0F);
-            this.pymtSumryTable.Name = "pymtSumryTable";
-            this.pymtSumryTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
-            this.xrTableRow9,
-            this.xrTableRow1,
-            this.xrTableRow2,
-            this.xrTableRow8,
-            this.xrTableRow3});
-            this.pymtSumryTable.SizeF = new System.Drawing.SizeF(207.1359F, 102.3336F);
-            this.pymtSumryTable.StylePriority.UseBorders = false;
-            this.pymtSumryTable.StylePriority.UseForeColor = false;
-            // 
-            // xrTableRow9
-            // 
-            this.xrTableRow9.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.rctSumCaption});
-            this.xrTableRow9.Name = "xrTableRow9";
-            this.xrTableRow9.Weight = 1.3199999999999998D;
-            // 
-            // rctSumCaption
-            // 
-            this.rctSumCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.rctSumCaption.Multiline = true;
-            this.rctSumCaption.Name = "rctSumCaption";
-            this.rctSumCaption.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
-            this.rctSumCaption.StylePriority.UseFont = false;
-            this.rctSumCaption.StylePriority.UsePadding = false;
-            this.rctSumCaption.StylePriority.UseTextAlignment = false;
-            this.rctSumCaption.Text = "Receipt Summary";
-            this.rctSumCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
-            this.rctSumCaption.Weight = 1.4459538843062429D;
-            // 
-            // xrTableRow1
-            // 
-            this.xrTableRow1.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.xrTableCell2,
-            this.xrTableCell4});
-            this.xrTableRow1.Name = "xrTableRow1";
-            this.xrTableRow1.Weight = 1.3199999999999998D;
-            // 
-            // xrTableCell2
-            // 
-            this.xrTableCell2.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell2.Multiline = true;
-            this.xrTableCell2.Name = "xrTableCell2";
-            this.xrTableCell2.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
-            this.xrTableCell2.StylePriority.UseFont = false;
-            this.xrTableCell2.StylePriority.UsePadding = false;
-            this.xrTableCell2.StylePriority.UseTextAlignment = false;
-            this.xrTableCell2.Text = "Advance Amount   ";
-            this.xrTableCell2.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell2.Weight = 0.75044082448383564D;
-            // 
-            // xrTableCell4
-            // 
-            this.xrTableCell4.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ADVANCE_ADJ]")});
-            this.xrTableCell4.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell4.Multiline = true;
-            this.xrTableCell4.Name = "xrTableCell4";
-            this.xrTableCell4.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
-            this.xrTableCell4.StylePriority.UseFont = false;
-            this.xrTableCell4.StylePriority.UsePadding = false;
-            this.xrTableCell4.StylePriority.UseTextAlignment = false;
-            this.xrTableCell4.Text = "0.00";
-            this.xrTableCell4.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell4.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell4.Weight = 0.69551305982240708D;
-            // 
-            // xrTableRow2
-            // 
-            this.xrTableRow2.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.xrTableCell5,
-            this.xrTableCell6});
-            this.xrTableRow2.Name = "xrTableRow2";
-            this.xrTableRow2.Weight = 1.3199999999999998D;
-            // 
-            // xrTableCell5
-            // 
-            this.xrTableCell5.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell5.Name = "xrTableCell5";
-            this.xrTableCell5.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
-            this.xrTableCell5.StylePriority.UseFont = false;
-            this.xrTableCell5.StylePriority.UsePadding = false;
-            this.xrTableCell5.StylePriority.UseTextAlignment = false;
-            this.xrTableCell5.Text = "RD Amount";
-            this.xrTableCell5.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell5.Weight = 0.75044082448383564D;
-            // 
-            // xrTableCell6
-            // 
-            this.xrTableCell6.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[RD_AMOUNT_ADJ]")});
-            this.xrTableCell6.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell6.Name = "xrTableCell6";
-            this.xrTableCell6.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
-            this.xrTableCell6.StylePriority.UseFont = false;
-            this.xrTableCell6.StylePriority.UsePadding = false;
-            this.xrTableCell6.StylePriority.UseTextAlignment = false;
-            this.xrTableCell6.Text = "$0.00";
-            this.xrTableCell6.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell6.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell6.Weight = 0.69551305982240708D;
-            // 
-            // xrTableRow8
-            // 
-            this.xrTableRow8.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.xrTableCell15,
-            this.xrTableCell16});
-            this.xrTableRow8.Name = "xrTableRow8";
-            this.xrTableRow8.Weight = 1.3199999999999998D;
-            // 
-            // xrTableCell15
-            // 
-            this.xrTableCell15.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell15.Multiline = true;
-            this.xrTableCell15.Name = "xrTableCell15";
-            this.xrTableCell15.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
-            this.xrTableCell15.StylePriority.UseFont = false;
-            this.xrTableCell15.StylePriority.UsePadding = false;
-            this.xrTableCell15.StylePriority.UseTextAlignment = false;
-            this.xrTableCell15.Text = "Received Amount";
-            this.xrTableCell15.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell15.Weight = 0.75044082448383564D;
-            // 
-            // xrTableCell16
-            // 
-            this.xrTableCell16.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[RECD_AMOUNT]")});
-            this.xrTableCell16.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell16.Multiline = true;
-            this.xrTableCell16.Name = "xrTableCell16";
-            this.xrTableCell16.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
-            this.xrTableCell16.StylePriority.UseFont = false;
-            this.xrTableCell16.StylePriority.UsePadding = false;
-            this.xrTableCell16.StylePriority.UseTextAlignment = false;
-            this.xrTableCell16.Text = "xrTableCell16";
-            this.xrTableCell16.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell16.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell16.Weight = 0.69551305982240708D;
-            // 
-            // xrTableRow3
-            // 
-            this.xrTableRow3.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.xrTableCell7,
-            this.xrTableCell12});
-            this.xrTableRow3.Name = "xrTableRow3";
-            this.xrTableRow3.Weight = 1.3199999999999998D;
-            // 
-            // xrTableCell7
-            // 
-            this.xrTableCell7.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrTableCell7.Multiline = true;
-            this.xrTableCell7.Name = "xrTableCell7";
-            this.xrTableCell7.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 2F, 0F, 5F, 100F);
-            this.xrTableCell7.StylePriority.UseFont = false;
-            this.xrTableCell7.StylePriority.UsePadding = false;
-            this.xrTableCell7.StylePriority.UseTextAlignment = false;
-            this.xrTableCell7.Text = "Grand Total";
-            this.xrTableCell7.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell7.Weight = 0.75044082448383564D;
-            // 
-            // xrTableCell12
-            // 
-            this.xrTableCell12.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ADVANCE_ADJ]\n+[RD_AMOUNT_ADJ]+\n+[RECD_AMOUNT]")});
-            this.xrTableCell12.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrTableCell12.Multiline = true;
-            this.xrTableCell12.Name = "xrTableCell12";
-            this.xrTableCell12.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 0F, 0F, 5F, 100F);
-            this.xrTableCell12.StylePriority.UseFont = false;
-            this.xrTableCell12.StylePriority.UsePadding = false;
-            this.xrTableCell12.StylePriority.UseTextAlignment = false;
-            this.xrTableCell12.Text = "0.00";
-            this.xrTableCell12.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell12.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell12.Weight = 0.69551305982240708D;
+            this.GroupFooter2.StylePriority.UseFont = false;
             // 
             // gstinTable
             // 
@@ -2276,6 +2080,15 @@
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
+            // xrSubreport1
+            // 
+            this.xrSubreport1.LocationFloat = new DevExpress.Utils.PointFloat(1.610235F, 0F);
+            this.xrSubreport1.Name = "xrSubreport1";
+            this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocNbr", null, "Invoice.INV_NBR"));
+            this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocHdrGkey", null, "Invoice.GKEY"));
+            this.xrSubreport1.ReportSource = new InvEntry.Reports.DocRctSummary();
+            this.xrSubreport1.SizeF = new System.Drawing.SizeF(100F, 23F);
+            // 
             // XrNewInvoice24
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -2309,7 +2122,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.metalSumryTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.taxTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.oldExTable)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pymtSumryTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gstinTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
@@ -2403,22 +2215,6 @@
         private DevExpress.XtraReports.UI.XRLabel xrLabel12;
         private DevExpress.XtraReports.UI.XRLabel xrLabel13;
         private DevExpress.XtraReports.UI.XRLabel xrLabel14;
-        private DevExpress.XtraReports.UI.GroupFooterBand GroupFooter2;
-        private DevExpress.XtraReports.UI.XRTable pymtSumryTable;
-        private DevExpress.XtraReports.UI.XRTableRow xrTableRow9;
-        private DevExpress.XtraReports.UI.XRTableCell rctSumCaption;
-        private DevExpress.XtraReports.UI.XRTableRow xrTableRow1;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell2;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell4;
-        private DevExpress.XtraReports.UI.XRTableRow xrTableRow2;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell5;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell6;
-        private DevExpress.XtraReports.UI.XRTableRow xrTableRow8;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell15;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell16;
-        private DevExpress.XtraReports.UI.XRTableRow xrTableRow3;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell7;
-        private DevExpress.XtraReports.UI.XRTableCell xrTableCell12;
         private DevExpress.XtraReports.UI.XRLine xrLine4;
         private DevExpress.XtraReports.UI.XRLine xrLine1;
         private DevExpress.XtraReports.UI.XRTable gstinTable;
@@ -2483,5 +2279,7 @@
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell23;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell24;
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell25;
+        private DevExpress.XtraReports.UI.XRSubreport xrSubreport1;
+        DevExpress.XtraReports.UI.GroupFooterBand GroupFooter2;
     }
 }
