@@ -691,6 +691,7 @@
 
                                         <dxg:GridColumn FieldName="AdjustedAmount" Header="Trans Amount (Rs)" Width="200" />
                                         <dxg:GridColumn FieldName="BalanceAfterAdj" Header="Balance Amount (Rs)" Width="200"/>
+                                        <dxg:GridColumn FieldName="ExternalTransactionId" Header="Transaction Ref" Width="200"/>
                                     </dxg:GridControl.Columns>
 
                                     <!-- 

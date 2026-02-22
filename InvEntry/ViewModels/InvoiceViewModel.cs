@@ -1077,12 +1077,16 @@ public partial class InvoiceViewModel : ObservableObject
             PayRctChk = true;
         }
 
-        if (arInvRctLine.ModeOfReceipt == "Bank" && arInvRctLine.AdjustedAmount > 0 )
+/*        if (arInvRctLine.AdjustedAmount > 0 && arInvRctLine.ExternalTransactionId is null)
         {
+            if (arInvRctLine.ModeOfReceipt == "Bank" || arInvRctLine.ModeOfReceipt == "GPAY")
+            {
+                _messageBoxService.ShowMessage("Please enter transaction reference ", "Transaction Ref",
+                                                    MessageButton.OK, MessageIcon.None);
+                //arInvRctLine = ShowTransactionDetailsPopup(arInvRctLine);
 
-            arInvRctLine = ShowTransactionDetailsPopup(arInvRctLine);
-
-        }
+            }
+        }*/
 
         EvaluateHeader();
 
@@ -1278,12 +1282,12 @@ public partial class InvoiceViewModel : ObservableObject
         }
         if (Header.AdvanceAdj > 0)
         {
-            SetReceipts("Advance Adj");
+            SetReceipts("Advance");
 
         }
         if (Header.RdAmountAdj > 0)
         {
-            SetReceipts("Recurring Deposit");
+            SetReceipts("R.D.");
         }
     }
 
@@ -1475,11 +1479,11 @@ public partial class InvoiceViewModel : ObservableObject
     {
         return transType switch
         {
-            var s when s.Equals("Recurring Deposit", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
+            var s when s.Equals("R.D.", StringComparison.OrdinalIgnoreCase) => Header.RdAmountAdj,
             var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
             var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
             var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
-            var s when s.Equals("Advance Adj", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+            var s when s.Equals("Advance", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
             _ => 0M
         };
 

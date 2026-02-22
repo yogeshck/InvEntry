@@ -82,6 +82,7 @@
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo6 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo6 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
             this.TopMargin = new DevExpress.XtraReports.UI.TopMarginBand();
+            this.xrLabel21 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLine2 = new DevExpress.XtraReports.UI.XRLine();
             this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.vendorTable = new DevExpress.XtraReports.UI.XRTable();
@@ -184,6 +185,10 @@
             this.xrTableCell16 = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell18 = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell20 = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrTableRow1 = new DevExpress.XtraReports.UI.XRTableRow();
+            this.xrTableCell21 = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrTableCell27 = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrTableCell28 = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrLabel18 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel1 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
@@ -192,9 +197,12 @@
             this.exTableCaption = new DevExpress.XtraReports.UI.XRTableCell();
             this.oldGoldRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.oldGoldCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.oldGoldAmount = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrTableCell17 = new DevExpress.XtraReports.UI.XRTableCell();
             this.oldSilverRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.oldSilverCaption = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrTableCell14 = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrTableCell26 = new DevExpress.XtraReports.UI.XRTableCell();
             this.invTotalTable = new DevExpress.XtraReports.UI.XRTable();
             this.subTotalRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.subTotalCaption = new DevExpress.XtraReports.UI.XRTableCell();
@@ -220,6 +228,7 @@
             this.txblCaption = new DevExpress.XtraReports.UI.XRTableCell();
             this.taxableAmt = new DevExpress.XtraReports.UI.XRTableCell();
             this.ReportFooter = new DevExpress.XtraReports.UI.ReportFooterBand();
+            this.xrPictureBox6 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.xrLine5 = new DevExpress.XtraReports.UI.XRLine();
             this.xrLabel14 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel13 = new DevExpress.XtraReports.UI.XRLabel();
@@ -238,15 +247,6 @@
             this.xrPictureBox4 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.xrPictureBox5 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
-            this.xrPictureBox6 = new DevExpress.XtraReports.UI.XRPictureBox();
-            this.xrTableRow1 = new DevExpress.XtraReports.UI.XRTableRow();
-            this.xrTableCell21 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell27 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell28 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrLabel21 = new DevExpress.XtraReports.UI.XRLabel();
-            this.xrTableCell17 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.xrTableCell26 = new DevExpress.XtraReports.UI.XRTableCell();
-            this.oldGoldAmount = new DevExpress.XtraReports.UI.XRTableCell();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -270,6 +270,21 @@
             this.TopMargin.HeightF = 148.0833F;
             this.TopMargin.Name = "TopMargin";
             this.TopMargin.SnapLinePadding = new DevExpress.XtraPrinting.PaddingInfo(10F, 10F, 10F, 0F, 100F);
+            // 
+            // xrLabel21
+            // 
+            this.xrLabel21.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'GSTIN - \'+[ORG_THIS_COMPANY_VIEW].[GST_NBR]")});
+            this.xrLabel21.Font = new DevExpress.Drawing.DXFont("Arial", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.xrLabel21.LocationFloat = new DevExpress.Utils.PointFloat(478F, 124.9667F);
+            this.xrLabel21.Multiline = true;
+            this.xrLabel21.Name = "xrLabel21";
+            this.xrLabel21.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
+            this.xrLabel21.SizeF = new System.Drawing.SizeF(261.9999F, 2F);
+            this.xrLabel21.StylePriority.UseFont = false;
+            this.xrLabel21.StylePriority.UseTextAlignment = false;
+            this.xrLabel21.Text = "xrLabel21";
+            this.xrLabel21.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             // 
             // xrLine2
             // 
@@ -1612,6 +1627,55 @@
             this.xrTableCell20.TextFormatString = "{0:##,###,##0.00}";
             this.xrTableCell20.Weight = 0.81840275273068586D;
             // 
+            // xrTableRow1
+            // 
+            this.xrTableRow1.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.xrTableCell21,
+            this.xrTableCell27,
+            this.xrTableCell28});
+            this.xrTableRow1.Name = "xrTableRow1";
+            this.xrTableRow1.Weight = 1D;
+            // 
+            // xrTableCell21
+            // 
+            this.xrTableCell21.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.xrTableCell21.Multiline = true;
+            this.xrTableCell21.Name = "xrTableCell21";
+            this.xrTableCell21.StylePriority.UseFont = false;
+            this.xrTableCell21.StylePriority.UseTextAlignment = false;
+            this.xrTableCell21.Text = "Total";
+            this.xrTableCell21.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.xrTableCell21.Weight = 1.1928673734390758D;
+            // 
+            // xrTableCell27
+            // 
+            this.xrTableCell27.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([INVOICE_HEADERGoldSumry].[GTOTNETWT],0)+\nIsNull([INVOICE_HEADERGold18Sumr" +
+                    "y].[G18TOTNETWT],0)+\nIsNull([INVOICE_HEADERSilverSumry].[STOTNETWT],0)")});
+            this.xrTableCell27.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.xrTableCell27.Multiline = true;
+            this.xrTableCell27.Name = "xrTableCell27";
+            this.xrTableCell27.StylePriority.UseFont = false;
+            this.xrTableCell27.StylePriority.UseTextAlignment = false;
+            this.xrTableCell27.Text = "xrTableCell27";
+            this.xrTableCell27.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.xrTableCell27.Weight = 0.50652320541331575D;
+            // 
+            // xrTableCell28
+            // 
+            this.xrTableCell28.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([INVOICE_HEADERGoldSumry].[GLINETOTAL],0)+\nIsNull([INVOICE_HEADERGold18Sum" +
+                    "ry].[G18LINETOTAL],0)+\nIsNull([INVOICE_HEADERSilverSumry].[SLINETOTAL],0)")});
+            this.xrTableCell28.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.xrTableCell28.Multiline = true;
+            this.xrTableCell28.Name = "xrTableCell28";
+            this.xrTableCell28.StylePriority.UseFont = false;
+            this.xrTableCell28.StylePriority.UseTextAlignment = false;
+            this.xrTableCell28.Text = "xrTableCell28";
+            this.xrTableCell28.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.xrTableCell28.TextFormatString = "{0:##,###,##0.00}";
+            this.xrTableCell28.Weight = 0.81840275273068586D;
+            // 
             // xrLabel18
             // 
             this.xrLabel18.Borders = DevExpress.XtraPrinting.BorderSide.Bottom;
@@ -1728,6 +1792,38 @@
             this.oldGoldCaption.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             this.oldGoldCaption.Weight = 0.47451701835646309D;
             // 
+            // oldGoldAmount
+            // 
+            this.oldGoldAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OldMetalGoldQuery].[NetWeightTotalG]")});
+            this.oldGoldAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.oldGoldAmount.Multiline = true;
+            this.oldGoldAmount.Name = "oldGoldAmount";
+            this.oldGoldAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
+            this.oldGoldAmount.StylePriority.UseFont = false;
+            this.oldGoldAmount.StylePriority.UsePadding = false;
+            this.oldGoldAmount.StylePriority.UseTextAlignment = false;
+            this.oldGoldAmount.Text = "0.00";
+            this.oldGoldAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.oldGoldAmount.TextFormatString = "{0:#0.000}";
+            this.oldGoldAmount.Weight = 0.46351059617868889D;
+            // 
+            // xrTableCell17
+            // 
+            this.xrTableCell17.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OLD_GOLD_AMOUNT]")});
+            this.xrTableCell17.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.xrTableCell17.Multiline = true;
+            this.xrTableCell17.Name = "xrTableCell17";
+            this.xrTableCell17.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
+            this.xrTableCell17.StylePriority.UseFont = false;
+            this.xrTableCell17.StylePriority.UsePadding = false;
+            this.xrTableCell17.StylePriority.UseTextAlignment = false;
+            this.xrTableCell17.Text = "xrTableCell17";
+            this.xrTableCell17.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.xrTableCell17.TextFormatString = "{0:##,###,##0.00}";
+            this.xrTableCell17.Weight = 0.697447661335745D;
+            // 
             // oldSilverRow
             // 
             this.oldSilverRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
@@ -1764,6 +1860,22 @@
             this.xrTableCell14.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
             this.xrTableCell14.TextFormatString = "{0:#0.000}";
             this.xrTableCell14.Weight = 0.46351059617868889D;
+            // 
+            // xrTableCell26
+            // 
+            this.xrTableCell26.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OLD_SILVER_AMOUNT]")});
+            this.xrTableCell26.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.xrTableCell26.Multiline = true;
+            this.xrTableCell26.Name = "xrTableCell26";
+            this.xrTableCell26.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
+            this.xrTableCell26.StylePriority.UseFont = false;
+            this.xrTableCell26.StylePriority.UsePadding = false;
+            this.xrTableCell26.StylePriority.UseTextAlignment = false;
+            this.xrTableCell26.Text = "xrTableCell26";
+            this.xrTableCell26.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.xrTableCell26.TextFormatString = "{0:##,###,##0.00}";
+            this.xrTableCell26.Weight = 0.697447661335745D;
             // 
             // invTotalTable
             // 
@@ -2115,6 +2227,16 @@
             this.ReportFooter.HeightF = 298.7505F;
             this.ReportFooter.Name = "ReportFooter";
             // 
+            // xrPictureBox6
+            // 
+            this.xrPictureBox6.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "Iif([ORG_THIS_COMPANY_VIEW].[company_name] == \'MATHA JEWELLERY\', False, True)")});
+            this.xrPictureBox6.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox6.ImageSource"));
+            this.xrPictureBox6.LocationFloat = new DevExpress.Utils.PointFloat(2.000148F, 111.6667F);
+            this.xrPictureBox6.Name = "xrPictureBox6";
+            this.xrPictureBox6.SizeF = new System.Drawing.SizeF(149.1667F, 183.4167F);
+            this.xrPictureBox6.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
+            // 
             // xrLine5
             // 
             this.xrLine5.ForeColor = System.Drawing.Color.Gold;
@@ -2329,128 +2451,6 @@
             this.calculatedField1.FieldType = DevExpress.XtraReports.UI.FieldType.String;
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
-            // 
-            // xrPictureBox6
-            // 
-            this.xrPictureBox6.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "Iif([ORG_THIS_COMPANY_VIEW].[company_name] == \'MATHA JEWELLERY\', False, True)")});
-            this.xrPictureBox6.ImageSource = new DevExpress.XtraPrinting.Drawing.ImageSource("img", resources.GetString("xrPictureBox6.ImageSource"));
-            this.xrPictureBox6.LocationFloat = new DevExpress.Utils.PointFloat(2.000148F, 111.6667F);
-            this.xrPictureBox6.Name = "xrPictureBox6";
-            this.xrPictureBox6.SizeF = new System.Drawing.SizeF(149.1667F, 183.4167F);
-            this.xrPictureBox6.Sizing = DevExpress.XtraPrinting.ImageSizeMode.ZoomImage;
-            // 
-            // xrTableRow1
-            // 
-            this.xrTableRow1.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
-            this.xrTableCell21,
-            this.xrTableCell27,
-            this.xrTableCell28});
-            this.xrTableRow1.Name = "xrTableRow1";
-            this.xrTableRow1.Weight = 1D;
-            // 
-            // xrTableCell21
-            // 
-            this.xrTableCell21.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrTableCell21.Multiline = true;
-            this.xrTableCell21.Name = "xrTableCell21";
-            this.xrTableCell21.StylePriority.UseFont = false;
-            this.xrTableCell21.StylePriority.UseTextAlignment = false;
-            this.xrTableCell21.Text = "Total";
-            this.xrTableCell21.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell21.Weight = 1.1928673734390758D;
-            // 
-            // xrTableCell27
-            // 
-            this.xrTableCell27.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([INVOICE_HEADERGoldSumry].[GTOTNETWT],0)+\nIsNull([INVOICE_HEADERGold18Sumr" +
-                    "y].[G18TOTNETWT],0)+\nIsNull([INVOICE_HEADERSilverSumry].[STOTNETWT],0)")});
-            this.xrTableCell27.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrTableCell27.Multiline = true;
-            this.xrTableCell27.Name = "xrTableCell27";
-            this.xrTableCell27.StylePriority.UseFont = false;
-            this.xrTableCell27.StylePriority.UseTextAlignment = false;
-            this.xrTableCell27.Text = "xrTableCell27";
-            this.xrTableCell27.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell27.Weight = 0.50652320541331575D;
-            // 
-            // xrTableCell28
-            // 
-            this.xrTableCell28.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "IsNull([INVOICE_HEADERGoldSumry].[GLINETOTAL],0)+\nIsNull([INVOICE_HEADERGold18Sum" +
-                    "ry].[G18LINETOTAL],0)+\nIsNull([INVOICE_HEADERSilverSumry].[SLINETOTAL],0)")});
-            this.xrTableCell28.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrTableCell28.Multiline = true;
-            this.xrTableCell28.Name = "xrTableCell28";
-            this.xrTableCell28.StylePriority.UseFont = false;
-            this.xrTableCell28.StylePriority.UseTextAlignment = false;
-            this.xrTableCell28.Text = "xrTableCell28";
-            this.xrTableCell28.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell28.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell28.Weight = 0.81840275273068586D;
-            // 
-            // xrLabel21
-            // 
-            this.xrLabel21.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'GSTIN - \'+[ORG_THIS_COMPANY_VIEW].[GST_NBR]")});
-            this.xrLabel21.Font = new DevExpress.Drawing.DXFont("Arial", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel21.LocationFloat = new DevExpress.Utils.PointFloat(478F, 124.9667F);
-            this.xrLabel21.Multiline = true;
-            this.xrLabel21.Name = "xrLabel21";
-            this.xrLabel21.Padding = new DevExpress.XtraPrinting.PaddingInfo(2F, 2F, 0F, 0F, 100F);
-            this.xrLabel21.SizeF = new System.Drawing.SizeF(261.9999F, 2F);
-            this.xrLabel21.StylePriority.UseFont = false;
-            this.xrLabel21.StylePriority.UseTextAlignment = false;
-            this.xrLabel21.Text = "xrLabel21";
-            this.xrLabel21.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            // 
-            // xrTableCell17
-            // 
-            this.xrTableCell17.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OLD_GOLD_AMOUNT]")});
-            this.xrTableCell17.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell17.Multiline = true;
-            this.xrTableCell17.Name = "xrTableCell17";
-            this.xrTableCell17.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
-            this.xrTableCell17.StylePriority.UseFont = false;
-            this.xrTableCell17.StylePriority.UsePadding = false;
-            this.xrTableCell17.StylePriority.UseTextAlignment = false;
-            this.xrTableCell17.Text = "xrTableCell17";
-            this.xrTableCell17.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell17.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell17.Weight = 0.697447661335745D;
-            // 
-            // xrTableCell26
-            // 
-            this.xrTableCell26.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OLD_SILVER_AMOUNT]")});
-            this.xrTableCell26.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.xrTableCell26.Multiline = true;
-            this.xrTableCell26.Name = "xrTableCell26";
-            this.xrTableCell26.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
-            this.xrTableCell26.StylePriority.UseFont = false;
-            this.xrTableCell26.StylePriority.UsePadding = false;
-            this.xrTableCell26.StylePriority.UseTextAlignment = false;
-            this.xrTableCell26.Text = "xrTableCell26";
-            this.xrTableCell26.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.xrTableCell26.TextFormatString = "{0:##,###,##0.00}";
-            this.xrTableCell26.Weight = 0.697447661335745D;
-            // 
-            // oldGoldAmount
-            // 
-            this.oldGoldAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OldMetalGoldQuery].[NetWeightTotalG]")});
-            this.oldGoldAmount.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
-            this.oldGoldAmount.Multiline = true;
-            this.oldGoldAmount.Name = "oldGoldAmount";
-            this.oldGoldAmount.Padding = new DevExpress.XtraPrinting.PaddingInfo(0F, 3F, 0F, 0F, 100F);
-            this.oldGoldAmount.StylePriority.UseFont = false;
-            this.oldGoldAmount.StylePriority.UsePadding = false;
-            this.oldGoldAmount.StylePriority.UseTextAlignment = false;
-            this.oldGoldAmount.Text = "0.00";
-            this.oldGoldAmount.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.oldGoldAmount.TextFormatString = "{0:#0.000}";
-            this.oldGoldAmount.Weight = 0.46351059617868889D;
             // 
             // InvPrint25
             // 
