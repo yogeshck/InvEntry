@@ -71,7 +71,8 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateInvoiceReport()
     {
-        return new XrNewInvoice24().AddDataSource(_appConfigName);        // XtraInvoice();
+        return new InvPrint25().AddDataSource(_appConfigName);
+//            XrNewInvoice24().AddDataSource(_appConfigName);        // XtraInvoice();
     }
 
     public XtraReport CreateInvoiceReport(string pInvoiceNbr)
