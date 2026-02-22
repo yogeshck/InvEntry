@@ -175,6 +175,7 @@
             this.xrLabel14 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrPictureBox3 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.GroupFooter2 = new DevExpress.XtraReports.UI.GroupFooterBand();
+            this.xrSubreport1 = new DevExpress.XtraReports.UI.XRSubreport();
             this.gstinTable = new DevExpress.XtraReports.UI.XRTable();
             this.gstinRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.xrTableCell17 = new DevExpress.XtraReports.UI.XRTableCell();
@@ -194,7 +195,6 @@
             this.vendorEmail = new DevExpress.XtraReports.UI.XRTableCell();
             this.xrPictureBox2 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
-            this.xrSubreport1 = new DevExpress.XtraReports.UI.XRSubreport();
             ((System.ComponentModel.ISupportInitialize)(this.detailTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
@@ -1879,6 +1879,15 @@
             this.GroupFooter2.Name = "GroupFooter2";
             this.GroupFooter2.StylePriority.UseFont = false;
             // 
+            // xrSubreport1
+            // 
+            this.xrSubreport1.LocationFloat = new DevExpress.Utils.PointFloat(1.610235F, 0F);
+            this.xrSubreport1.Name = "xrSubreport1";
+            this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocNbr", null, "Invoice.INV_NBR"));
+            this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocHdrGkey", null, "Invoice.GKEY"));
+            this.xrSubreport1.ReportSource = new InvEntry.Reports.DocRctSummary();
+            this.xrSubreport1.SizeF = new System.Drawing.SizeF(100F, 23F);
+            // 
             // gstinTable
             // 
             this.gstinTable.Font = new DevExpress.Drawing.DXFont("Times New Roman", 9F);
@@ -2079,15 +2088,6 @@
             this.calculatedField1.Expression = "[INVL_PAYABLE_AMT]";
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
-            // 
-            // xrSubreport1
-            // 
-            this.xrSubreport1.LocationFloat = new DevExpress.Utils.PointFloat(1.610235F, 0F);
-            this.xrSubreport1.Name = "xrSubreport1";
-            this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocNbr", null, "Invoice.INV_NBR"));
-            this.xrSubreport1.ParameterBindings.Add(new DevExpress.XtraReports.UI.ParameterBinding("pDocHdrGkey", null, "Invoice.GKEY"));
-            this.xrSubreport1.ReportSource = new InvEntry.Reports.DocRctSummary();
-            this.xrSubreport1.SizeF = new System.Drawing.SizeF(100F, 23F);
             // 
             // XrNewInvoice24
             // 

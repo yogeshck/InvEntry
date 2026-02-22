@@ -1077,10 +1077,10 @@ public partial class InvoiceViewModel : ObservableObject
             PayRctChk = true;
         }
 
-        if (arInvRctLine.ModeOfReceipt == "Bank")
+        if (arInvRctLine.ModeOfReceipt == "Bank" && arInvRctLine.AdjustedAmount > 0 )
         {
 
-            ShowTransactionDetailsPopup(InvoiceArReceipt);
+            arInvRctLine = ShowTransactionDetailsPopup(arInvRctLine);
 
         }
 
@@ -1088,10 +1088,34 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
-    private InvoiceArReceipt? ShowTransactionDetailsPopup(InvoiceArReceipt arInvRctLine) 
+    private InvoiceArReceipt? ShowTransactionDetailsPopup(InvoiceArReceipt arInvRctLine)
+    {
+        var vm = new ReceiptAccountingViewModel(); // pass model directly
+
+        var result = _dialogService.ShowDialog(MessageButton.OKCancel,
+                                               "Product",
+                                               "ReceiptAccountingView",
+                                               vm);
+
+        if (result == MessageResult.OK)
+        {
+            arInvRctLine.BankName = vm.BankName;
+            arInvRctLine.ExternalTransactionId = vm.ExtTransactionRefId;
+            arInvRctLine.ExternalTransactionDate = DateTime.Now;
+            arInvRctLine.OtherReference = vm.ChequeNumber;
+            
+
+            return arInvRctLine;
+        }
+
+        return null;
+
+    }
+
+/*    private InvoiceArReceipt? ShowTransactionDetailsPopup(InvoiceArReceipt arInvRctLine) 
     {
 
-        var vm = DISource.Resolve<ReceiptAccountingViewModel>();
+        var vm = DISource.Resolve<ReceiptAccountingViewModel>(arInvRctLine);
        // vm.Category = ProductIdUI;
 
         var result = _dialogService.ShowDialog(MessageButton.OKCancel, "Product",
@@ -1102,7 +1126,7 @@ public partial class InvoiceViewModel : ObservableObject
             return arInvRctLine; //  vm.SelectedProduct;
         }
         return null;
-    }
+    }*/
 
     private decimal FilterReceiptTransactions(string transType)
     {
@@ -1405,6 +1429,10 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRct.InternalVoucherDate = voucher.VoucherDate;
         arInvRct.InvoiceReceiptNbr = Header.InvNbr.Replace("B", "R");  //hard coded - future review 
         arInvRct.Status = "Adj";
+        arInvRct.BankName = invoiceArReceipt.BankName;
+        arInvRct.ExternalTransactionId = invoiceArReceipt.ExternalTransactionId;
+        arInvRct.ExternalTransactionDate = DateTime.Now;
+        arInvRct.OtherReference = invoiceArReceipt.OtherReference;
 
         var adjustedAmount = getTransAmount(invoiceArReceipt.TransactionType);
         arInvRct.AdjustedAmount = adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
@@ -1432,7 +1460,9 @@ public partial class InvoiceViewModel : ObservableObject
         Voucher.RefDocNbr = Header.InvNbr;
         Voucher.RefDocDate = Header.InvDate;
         Voucher.RefDocGkey = Header.GKey;
-        Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
+        Voucher.TransDesc = invoiceArReceipt.TransactionType + "/ " + invoiceArReceipt.ExternalTransactionId + "/ " +
+                            invoiceArReceipt.OtherReference + "/ " + invoiceArReceipt.BankName;
+        //Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
 
         var transAmount = getTransAmount(invoiceArReceipt.TransactionType);
         Voucher.TransAmount = transAmount == 0 ? invoiceArReceipt.AdjustedAmount : transAmount;

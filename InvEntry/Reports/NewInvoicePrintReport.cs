@@ -6,9 +6,9 @@ using System.Drawing;
 
 namespace InvEntry.Reports
 {
-    public partial class NewInvoiceReport : DevExpress.XtraReports.UI.XtraReport
+    public partial class NewInvoicePrintReport : DevExpress.XtraReports.UI.XtraReport
     {
-        public NewInvoiceReport()
+        public NewInvoicePrintReport()
         {
             InitializeComponent();
         }

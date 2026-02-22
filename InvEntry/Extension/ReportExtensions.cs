@@ -30,6 +30,7 @@ namespace InvEntry.Extension
             reportDialogService.ShowDialog(null, "Estimate Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
 
+        //Customer Purchase
         public static void PrintPreviewOMPurchase(this IDialogService reportDialogService, string omTransNbr,
                                                             int estGkey, OrgThisCompanyView company)
         {
@@ -45,6 +46,7 @@ namespace InvEntry.Extension
             PrintPreviewEstimate(reportDialogService, estimateHeader, estGkey, null);
         }
 
+        //Delivery Note
         public static void PrintPreviewOMPurchase(this IDialogService reportDialogService, string docRefNbr)
                                                             
         {

@@ -37,10 +37,10 @@ namespace InvEntry.ViewModels
         }
 
 
-        public ReceiptAccountingViewModel(InvoiceArReceipt invArRct)
+        public ReceiptAccountingViewModel()
         {
             //nvArRct
-            Validate(invArRct);
+            Validate();
         }
 
         [RelayCommand]
@@ -52,14 +52,14 @@ namespace InvEntry.ViewModels
 
         }
 
-        public void Validate(InvoiceArReceipt invArRct)
+        public void Validate()
         {
             _errors.Clear();
 
-            if (invArRct.TransactionType == "UPI" && string.IsNullOrWhiteSpace(ExtTransactionRefId))
+ /*           if (invArRct.TransactionType == "UPI" && string.IsNullOrWhiteSpace(ExtTransactionRefId))
             {
                 AddError(nameof(ExtTransactionRefId), "Transaction Id is required for UPI.");
-            }
+            }*/
 
 /*            if (TransactionType == "Bank")
             {

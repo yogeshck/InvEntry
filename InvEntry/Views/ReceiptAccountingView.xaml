@@ -1,35 +1,46 @@
 ﻿<UserControl x:Class="InvEntry.Views.ReceiptAccountingView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
-             xmlns:local="clr-namespace:InvEntry.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             mc:Ignorable="d"
+             d:DesignHeight="350" d:DesignWidth="400">
+
+    <!-- ✅ Resources go here -->
+    <UserControl.Resources>
+        <dx:BooleanToVisibilityConverter x:Key="DxBoolToVisibilityConverter"/>
+    </UserControl.Resources>
+
     <Grid>
-        
-        <dx:DXDialog 
-             Title="Transaction Details" Height="300" Width="400"
-             WindowStartupLocation="CenterOwner">
-            <StackPanel Margin="20">
-                <!-- UPI -->
-                <TextBlock Text="Transaction Id (UPI)" Visibility="{Binding IsUPI, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <TextBox Text="{Binding ExtTransactionRefId}" Visibility="{Binding IsUPI, Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <StackPanel Margin="20">
+            <!-- UPI -->
+            <TextBlock Text="Transaction Id (UPI)"
+                       Visibility="{Binding IsUPI, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
+            <TextBox Text="{Binding ExtTransactionRefId}"
+                     Visibility="{Binding IsUPI, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
 
-                <!-- Bank -->
-                <TextBlock Text="Cheque Number" Visibility="{Binding IsBank, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <TextBox Text="{Binding ChequeNumber}" Visibility="{Binding IsBank, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <!-- Bank -->
+            <TextBlock Text="Cheque Number"
+                       Visibility="{Binding IsBank, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
+            <TextBox Text="{Binding ChequeNumber}"
+                     Visibility="{Binding IsBank, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
 
-                <TextBlock Text="Bank Name" Visibility="{Binding IsBank, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <TextBox Text="{Binding BankName}" Visibility="{Binding IsBank, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <TextBlock Text="Bank Name"
+                       Visibility="{Binding IsBank, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
+            <TextBox Text="{Binding BankName}"
+                     Visibility="{Binding IsBank, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
 
-                <TextBlock Text="IFSC Code" Visibility="{Binding IsBank, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                <TextBox Text="{Binding IFSCCode}" Visibility="{Binding IsBank, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <TextBlock Text="IFSC Code"
+                       Visibility="{Binding IsBank, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
+            <TextBox Text="{Binding IFSCCode}"
+                     Visibility="{Binding IsBank, Converter={StaticResource DxBoolToVisibilityConverter}}"/>
 
-                <Button Content="Save" Command="{Binding SaveCommand}" Margin="0,20,0,0"/>
-            </StackPanel>
-        </dx:DXDialog>
+            <Button Content="Save"
+                    Command="{Binding SaveCommand}"
+                    Margin="0,20,0,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>
-
+    
