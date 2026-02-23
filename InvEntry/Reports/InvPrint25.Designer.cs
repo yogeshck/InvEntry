@@ -34,27 +34,9 @@
             DevExpress.DataAccess.Sql.QueryParameter queryParameter1 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery2 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter2 = new DevExpress.DataAccess.Sql.QueryParameter();
-            DevExpress.DataAccess.Sql.SelectQuery selectQuery1 = new DevExpress.DataAccess.Sql.SelectQuery();
-            DevExpress.DataAccess.Sql.Column column1 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression1 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Table table1 = new DevExpress.DataAccess.Sql.Table();
-            DevExpress.DataAccess.Sql.Column column2 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression2 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Column column3 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression3 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Column column4 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression4 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Column column5 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression5 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Column column6 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression6 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Column column7 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression7 = new DevExpress.DataAccess.Sql.ColumnExpression();
-            DevExpress.DataAccess.Sql.Column column8 = new DevExpress.DataAccess.Sql.Column();
-            DevExpress.DataAccess.Sql.ColumnExpression columnExpression8 = new DevExpress.DataAccess.Sql.ColumnExpression();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery3 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
-            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery4 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter3 = new DevExpress.DataAccess.Sql.QueryParameter();
+            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery4 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery5 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter4 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery6 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
@@ -69,6 +51,8 @@
             DevExpress.DataAccess.Sql.QueryParameter queryParameter9 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery11 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter10 = new DevExpress.DataAccess.Sql.QueryParameter();
+            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery12 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
+            DevExpress.DataAccess.Sql.QueryParameter queryParameter11 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo1 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo1 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo2 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
@@ -694,113 +678,88 @@
             customSqlQuery2.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter2});
             customSqlQuery2.Sql = resources.GetString("customSqlQuery2.Sql");
-            columnExpression1.ColumnName = "CUST_NAME";
-            table1.Name = "ORG_CUSTOMER_ADDRESS_VIEW";
-            columnExpression1.Table = table1;
-            column1.Expression = columnExpression1;
-            columnExpression2.ColumnName = "ADD_LINE1";
-            columnExpression2.Table = table1;
-            column2.Expression = columnExpression2;
-            columnExpression3.ColumnName = "ADD_LINE2";
-            columnExpression3.Table = table1;
-            column3.Expression = columnExpression3;
-            columnExpression4.ColumnName = "ADD_LINE3";
-            columnExpression4.Table = table1;
-            column4.Expression = columnExpression4;
-            columnExpression5.ColumnName = "AREA";
-            columnExpression5.Table = table1;
-            column5.Expression = columnExpression5;
-            columnExpression6.ColumnName = "CITY";
-            columnExpression6.Table = table1;
-            column6.Expression = columnExpression6;
-            columnExpression7.ColumnName = "MOBILE_NBR";
-            columnExpression7.Table = table1;
-            column7.Expression = columnExpression7;
-            columnExpression8.ColumnName = "CUST_GKEY";
-            columnExpression8.Table = table1;
-            column8.Expression = columnExpression8;
-            selectQuery1.Columns.Add(column1);
-            selectQuery1.Columns.Add(column2);
-            selectQuery1.Columns.Add(column3);
-            selectQuery1.Columns.Add(column4);
-            selectQuery1.Columns.Add(column5);
-            selectQuery1.Columns.Add(column6);
-            selectQuery1.Columns.Add(column7);
-            selectQuery1.Columns.Add(column8);
-            selectQuery1.MetaSerializable = "<Meta X=\"397\" Y=\"20\" Width=\"234\" Height=\"204\" />";
-            selectQuery1.Name = "ORG_CUSTOMER_ADDRESS_VIEW";
-            selectQuery1.Tables.Add(table1);
-            customSqlQuery3.MetaSerializable = "<Meta X=\"1479\" Y=\"20\" Width=\"199\" Height=\"384\" />";
-            customSqlQuery3.Name = "ORG_THIS_COMPANY_VIEW";
-            customSqlQuery3.Sql = resources.GetString("customSqlQuery3.Sql");
-            customSqlQuery4.MetaSerializable = "<Meta X=\"1062\" Y=\"20\" Width=\"198\" Height=\"184\" />";
-            customSqlQuery4.Name = "INVOICE_AR_RECEIPTS";
-            queryParameter3.Name = "paramInvNbr2";
+            customSqlQuery3.MetaSerializable = "<Meta X=\"2082\" Y=\"20\" Width=\"234\" Height=\"204\" />";
+            customSqlQuery3.Name = "ORG_CUSTOMER_ADDRESS_VIEW";
+            queryParameter3.Name = "paramInvNbrAdd";
             queryParameter3.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter3.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
-            customSqlQuery4.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
+            customSqlQuery3.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter3});
+            customSqlQuery3.Sql = resources.GetString("customSqlQuery3.Sql");
+            customSqlQuery4.MetaSerializable = "<Meta X=\"1479\" Y=\"20\" Width=\"199\" Height=\"384\" />";
+            customSqlQuery4.Name = "ORG_THIS_COMPANY_VIEW";
             customSqlQuery4.Sql = resources.GetString("customSqlQuery4.Sql");
-            customSqlQuery5.MetaSerializable = "<Meta X=\"1698\" Y=\"20\" Width=\"108\" Height=\"204\" />";
-            customSqlQuery5.Name = "GoldSumry";
-            queryParameter4.Name = "paramInvNbr5";
+            customSqlQuery5.MetaSerializable = "<Meta X=\"1062\" Y=\"20\" Width=\"198\" Height=\"184\" />";
+            customSqlQuery5.Name = "INVOICE_AR_RECEIPTS";
+            queryParameter4.Name = "paramInvNbr2";
             queryParameter4.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter4.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery5.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter4});
             customSqlQuery5.Sql = resources.GetString("customSqlQuery5.Sql");
-            customSqlQuery6.MetaSerializable = "<Meta X=\"1826\" Y=\"20\" Width=\"108\" Height=\"204\" />";
-            customSqlQuery6.Name = "Gold18Sumry";
-            queryParameter5.Name = "paramInvNbr18K";
+            customSqlQuery6.MetaSerializable = "<Meta X=\"1698\" Y=\"20\" Width=\"108\" Height=\"204\" />";
+            customSqlQuery6.Name = "GoldSumry";
+            queryParameter5.Name = "paramInvNbr5";
             queryParameter5.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter5.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery6.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter5});
             customSqlQuery6.Sql = resources.GetString("customSqlQuery6.Sql");
-            customSqlQuery7.MetaSerializable = "<Meta X=\"1954\" Y=\"20\" Width=\"108\" Height=\"204\" />";
-            customSqlQuery7.Name = "SilverSumry";
-            queryParameter6.Name = "paramInvNbr6";
+            customSqlQuery7.MetaSerializable = "<Meta X=\"1826\" Y=\"20\" Width=\"108\" Height=\"204\" />";
+            customSqlQuery7.Name = "Gold18Sumry";
+            queryParameter6.Name = "paramInvNbr18K";
             queryParameter6.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter6.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery7.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter6});
             customSqlQuery7.Sql = resources.GetString("customSqlQuery7.Sql");
-            customSqlQuery8.Name = "CompBankDet";
-            queryParameter7.Name = "paramInvNbr7";
+            customSqlQuery8.MetaSerializable = "<Meta X=\"1954\" Y=\"20\" Width=\"108\" Height=\"204\" />";
+            customSqlQuery8.Name = "SilverSumry";
+            queryParameter7.Name = "paramInvNbr6";
             queryParameter7.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter7.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery8.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter7});
             customSqlQuery8.Sql = resources.GetString("customSqlQuery8.Sql");
-            customSqlQuery9.Name = "InvRctSumry";
-            queryParameter8.Name = "paramInvNbrRct";
+            customSqlQuery9.MetaSerializable = "<Meta X=\"2336\" Y=\"20\" Width=\"159\" Height=\"184\" />";
+            customSqlQuery9.Name = "CompBankDet";
+            queryParameter8.Name = "paramInvNbr7";
             queryParameter8.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter8.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery9.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter8});
             customSqlQuery9.Sql = resources.GetString("customSqlQuery9.Sql");
-            customSqlQuery10.Name = "OldMetalGoldQuery";
-            queryParameter9.Name = "paramInvNbrOM";
+            customSqlQuery10.MetaSerializable = "<Meta X=\"2515\" Y=\"20\" Width=\"107\" Height=\"64\" />";
+            customSqlQuery10.Name = "InvRctSumry";
+            queryParameter9.Name = "paramInvNbrRct";
             queryParameter9.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter9.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery10.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter9});
-            customSqlQuery10.Sql = "select sum(NET_WEIGHT) \"NetWeightTotalG\"\r\n  from \"dbo\".\"OLD_METAL_TRANSACTION\" \"O" +
-    "LD_METAL_TRANSACTION\"\r\n where \"OLD_METAL_TRANSACTION\".\"DOC_REF_NBR\" = @paramInvN" +
-    "brOM\r\n   and metal = \'GOLD\'";
-            customSqlQuery11.Name = "OldMetalSilverQuery";
-            queryParameter10.Name = "paramInvNbrSilver";
+            customSqlQuery10.Sql = resources.GetString("customSqlQuery10.Sql");
+            customSqlQuery11.MetaSerializable = "<Meta X=\"2642\" Y=\"20\" Width=\"145\" Height=\"64\" />";
+            customSqlQuery11.Name = "OldMetalGoldQuery";
+            queryParameter10.Name = "paramInvNbrOM";
             queryParameter10.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter10.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
             customSqlQuery11.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter10});
-            customSqlQuery11.Sql = "select sum(NET_WEIGHT) \"NetWeightSTotal\"\r\n  from \"dbo\".\"OLD_METAL_TRANSACTION\" \"O" +
+            customSqlQuery11.Sql = "select sum(NET_WEIGHT) \"NetWeightTotalG\"\r\n  from \"dbo\".\"OLD_METAL_TRANSACTION\" \"O" +
+    "LD_METAL_TRANSACTION\"\r\n where \"OLD_METAL_TRANSACTION\".\"DOC_REF_NBR\" = @paramInvN" +
+    "brOM\r\n   and metal = \'GOLD\'";
+            customSqlQuery12.MetaSerializable = "<Meta X=\"2807\" Y=\"20\" Width=\"154\" Height=\"64\" />";
+            customSqlQuery12.Name = "OldMetalSilverQuery";
+            queryParameter11.Name = "paramInvNbrSilver";
+            queryParameter11.Type = typeof(global::DevExpress.DataAccess.Expression);
+            queryParameter11.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
+            customSqlQuery12.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
+            queryParameter11});
+            customSqlQuery12.Sql = "select sum(NET_WEIGHT) \"NetWeightSTotal\"\r\n  from \"dbo\".\"OLD_METAL_TRANSACTION\" \"O" +
     "LD_METAL_TRANSACTION\"\r\n where \"OLD_METAL_TRANSACTION\".\"DOC_REF_NBR\" = @paramInvN" +
     "brSilver\r\n   and metal = \'SILVER\'";
             this.sqlDataSource1.Queries.AddRange(new DevExpress.DataAccess.Sql.SqlQuery[] {
             customSqlQuery1,
             customSqlQuery2,
-            selectQuery1,
             customSqlQuery3,
             customSqlQuery4,
             customSqlQuery5,
@@ -809,35 +768,36 @@
             customSqlQuery8,
             customSqlQuery9,
             customSqlQuery10,
-            customSqlQuery11});
+            customSqlQuery11,
+            customSqlQuery12});
             masterDetailInfo1.DetailQueryName = "INVOICE_HEADER";
             relationColumnInfo1.NestedKeyColumn = "GKEY";
             relationColumnInfo1.ParentKeyColumn = "INVOICE_HDR_GKEY";
             masterDetailInfo1.KeyColumns.Add(relationColumnInfo1);
             masterDetailInfo1.MasterQueryName = "INVOICE_LINE";
-            masterDetailInfo2.DetailQueryName = "ORG_CUSTOMER_ADDRESS_VIEW";
-            relationColumnInfo2.NestedKeyColumn = "CUST_GKEY";
-            relationColumnInfo2.ParentKeyColumn = "CUST_GKEY";
+            masterDetailInfo2.DetailQueryName = "INVOICE_AR_RECEIPTS";
+            relationColumnInfo2.NestedKeyColumn = "invoice_gkey";
+            relationColumnInfo2.ParentKeyColumn = "GKEY";
             masterDetailInfo2.KeyColumns.Add(relationColumnInfo2);
             masterDetailInfo2.MasterQueryName = "INVOICE_HEADER";
-            masterDetailInfo3.DetailQueryName = "INVOICE_AR_RECEIPTS";
-            relationColumnInfo3.NestedKeyColumn = "invoice_gkey";
+            masterDetailInfo3.DetailQueryName = "GoldSumry";
+            relationColumnInfo3.NestedKeyColumn = "INVOICE_HDR_GKEY";
             relationColumnInfo3.ParentKeyColumn = "GKEY";
             masterDetailInfo3.KeyColumns.Add(relationColumnInfo3);
             masterDetailInfo3.MasterQueryName = "INVOICE_HEADER";
-            masterDetailInfo4.DetailQueryName = "GoldSumry";
+            masterDetailInfo4.DetailQueryName = "Gold18Sumry";
             relationColumnInfo4.NestedKeyColumn = "INVOICE_HDR_GKEY";
             relationColumnInfo4.ParentKeyColumn = "GKEY";
             masterDetailInfo4.KeyColumns.Add(relationColumnInfo4);
             masterDetailInfo4.MasterQueryName = "INVOICE_HEADER";
-            masterDetailInfo5.DetailQueryName = "Gold18Sumry";
+            masterDetailInfo5.DetailQueryName = "SilverSumry";
             relationColumnInfo5.NestedKeyColumn = "INVOICE_HDR_GKEY";
             relationColumnInfo5.ParentKeyColumn = "GKEY";
             masterDetailInfo5.KeyColumns.Add(relationColumnInfo5);
             masterDetailInfo5.MasterQueryName = "INVOICE_HEADER";
-            masterDetailInfo6.DetailQueryName = "SilverSumry";
-            relationColumnInfo6.NestedKeyColumn = "INVOICE_HDR_GKEY";
-            relationColumnInfo6.ParentKeyColumn = "GKEY";
+            masterDetailInfo6.DetailQueryName = "ORG_CUSTOMER_ADDRESS_VIEW";
+            relationColumnInfo6.NestedKeyColumn = "CUST_GKEY";
+            relationColumnInfo6.ParentKeyColumn = "CUST_GKEY";
             masterDetailInfo6.KeyColumns.Add(relationColumnInfo6);
             masterDetailInfo6.MasterQueryName = "INVOICE_HEADER";
             this.sqlDataSource1.Relations.AddRange(new DevExpress.DataAccess.Sql.MasterDetailInfo[] {
