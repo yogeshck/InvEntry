@@ -171,6 +171,7 @@ public sealed class Bootstrapper
                  .AddSingleton<InvoiceViewModel>()
                  .AddSingleton<InvoiceWithVouchersViewModel>()
                  .AddSingleton<MainWindowViewModel>()
+                 .AddSingleton<OldMetalPurchaseViewModel>()
                  .AddSingleton<OldMetalTransactionListViewModel>()
                  .AddSingleton<OldMetalTransferEntryViewModel>()
                  .AddSingleton<ProductStockEntryViewModel>()

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="InvEntry.Views.OldMetalPurchase"
+﻿<UserControl x:Class="InvEntry.Views.OldMetalPurchaseView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -13,61 +13,65 @@
              xmlns:dxdo="http://schemas.devexpress.com/winfx/2008/xaml/docking"
              xmlns:local="clr-namespace:InvEntry.Views"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+             xmlns:ext="clr-namespace:InvEntry.Extension"
+             xmlns:behavior="clr-namespace:InvEntry.Behavior"
+             d:DataContext="{d:DesignInstance Type=viewmodels:OldMetalPurchaseViewModel}"
+             DataContext="{ext:DISource Type=viewmodels:OldMetalPurchaseViewModel}"
              mc:Ignorable="d"
              d:DesignHeight="450"
              d:DesignWidth="800"
              HorizontalAlignment="Left"
              Width="1471">
     <UserControl.Resources>
-        <sys:String x:Key="Invl">InvoiceLine</sys:String>
+        <sys:String x:Key="OMPurchase">Old Metal Purchase</sys:String>
         <Style TargetType="dxe:TextEdit">
             <Setter Property="Width" Value="150"/>
             <Setter Property="Height" Value="35"/>
         </Style>
     </UserControl.Resources>
-    
-   <Grid Margin="0,0,37,0">
-       
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-       
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-       
-            <dxb:BarContainerControl>
-                <dxb:MainMenuControl Width="1200" HorizontalAlignment="Left">
-                    <dxb:BarButtonItem x:Name="btnReset" Content="Reset Invoice"
+
+    <Grid Margin="0,0,37,0">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <dxb:BarContainerControl>
+            <dxb:MainMenuControl Width="1200" HorizontalAlignment="Left">
+                <dxb:BarButtonItem x:Name="btnReset" Content="Reset Old Purchase"
                    BarItemDisplayMode="ContentAndGlyph"
                    GlyphAlignment="Top"
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"
                     Command="{Binding ResetInvoiceCommand}"/>
-                    <dxb:BarItemSeparator/>
-                    <dxb:BarButtonItem x:Name="btnPrint" 
+                <dxb:BarItemSeparator/>
+                <dxb:BarButtonItem x:Name="btnPrint" 
                                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                                    GlyphSize="Large"
                                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top" Command="{Binding PrintInvoiceCommand}"/>
-                    <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
+                <dxb:BarButtonItem x:Name="btnPrintPreview" Content="Print Preview" Glyph="{dx:DXImage 'Images/XAF/Action_Printing_Preview_32x32.png'}" 
                                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
-                                   GlyphSize="Large" Command="{Binding PrintPreviewInvoiceCommand}"/>
-                    <dxb:BarItemSeparator/>
-                <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
+                                   GlyphSize="Large" Command="{Binding PrintPreviewPurchaseCommand}"/>
+                <dxb:BarItemSeparator/>
+                <dxb:BarButtonItem x:Name="Save" Content="Save"
                                     BarItemDisplayMode="ContentAndGlyph"
                                     GlyphAlignment="Top"
                                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
-                                    GlyphSize="Large" Command="{Binding CreateInvoiceCommand}"/>
+                                    GlyphSize="Large" Command="{Binding CreatePurchaseCommand}"/>
                 <dxb:BarStaticItem Alignment="Far" ItemWidth="10"/>
-                </dxb:MainMenuControl>
-                
-            </dxb:BarContainerControl>
+            </dxb:MainMenuControl>
+
+        </dxb:BarContainerControl>
 
         <dxlc:LayoutControl AllowItemSizing="True" 
                             StretchContentVertically="False" 
                             StretchContentHorizontally="False"
-                            Grid.Row="1">
+                            Grid.Row="1" Margin="0,0,474,0">
             <dxlc:LayoutControl.Resources>
                 <Style x:Key="labelStyle" TargetType="dxlc:LayoutItemLabel">
                     <Setter Property="FontWeight" Value="Bold"/>
@@ -116,12 +120,12 @@
 
                     <dxlc:LayoutGroup Orientation="Vertical">
 
-                        <dxlc:LayoutGroup View="GroupBox" Header="Invoice">
+                        <dxlc:LayoutGroup View="GroupBox" Header="Old Purchase" >
                             <dxlc:LayoutItem Label="Number" FontSize="14">
-                                <Label Content="{Binding Header.InvNbr}" FontWeight="ExtraBlack"/>
+                                <Label Content="{Binding OmHeader.TransNbr}" FontWeight="ExtraBlack"/>
                             </dxlc:LayoutItem>
                             <dxlc:LayoutItem Label="Date" FontSize="14">
-                                <dxe:DateEdit EditValue="{Binding Header.InvDate}" IsReadOnly="True"/>
+                                <dxe:DateEdit EditValue="{Binding OmHeader.TransDate}" IsReadOnly="True"/>
                             </dxlc:LayoutItem>
                         </dxlc:LayoutGroup>
 
@@ -132,7 +136,7 @@
                                 <dxlc:LayoutItem Label="Mobile" LabelPosition="Top" HorizontalAlignment="Left">
                                     <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
                                         <dxmvvm:Interaction.Behaviors>
-                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerCommand}"
+                                            <dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding FetchCustomerDetailsCommand}"
                                                            PassEventArgsToCommand="True"/>
                                             <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding FocusCommand}"
                                                            CommandParameter="{Binding ElementName=CustomerMobileNbr}"/>
@@ -191,158 +195,99 @@
 
                 </dxlc:LayoutGroup>
             </dxlc:LayoutGroup>
-        </dxlc:LayoutControl>
 
-        <dxlc:LayoutGroup Header="Old Metal">
-            <dxlc:LayoutItem>
-                <dxb:BarManager AllowCustomization="False" >
-                    <dxb:BarManager.Bars>
-                        <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
+
+            <dxlc:LayoutGroup View="Tabs">
+                <dxlc:LayoutGroup Header="Line Details">
+
+                    <dxlc:LayoutGroup Header="Old Metal">
+                        <dxlc:LayoutItem>
+                            <dxb:BarManager AllowCustomization="False" >
+                                <dxb:BarManager.Bars>
+                                    <dxb:Bar AllowCollapse="False" AllowQuickCustomization="False" AllowRemove="False"
                                              AllowCustomizationMenu="False" ShowDragWidget="False">
-                            <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
+                                        <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}" 
                                                  Command="{Binding EvaluateOldMetalTransactionCommand}" GlyphSize="Large" 
                                                  GlyphAlignment="Right" 
                                                    BarItemDisplayMode="ContentAndGlyph"/>
-                            <dxb:BarItemSeparator/>
-                            <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
+                                        <dxb:BarItemSeparator/>
+                                        <dxb:BarButtonItem Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}" 
                                                  Command="{Binding DeleteRowsCommand}" GlyphSize="Large" 
                                                  Content="Delete" GlyphAlignment="Right"/>
-                        </dxb:Bar>
-                    </dxb:BarManager.Bars>
-                    <dxg:GridControl ItemsSource="{Binding Header.OldMetalTransactions}" 
+                                    </dxb:Bar>
+                                </dxb:BarManager.Bars>
+                                <dxg:GridControl ItemsSource="{Binding OmHeader}" 
                                          DeleteKeyBehavior="DeleteFocusedRow"
                                          MaxHeight="600" MinHeight="400" HorizontalAlignment="Left" FontSize="13">
-                        <dxg:GridControl.Resources>
-                            <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
-                                <Setter Property="FontWeight" Value="Bold"/>
-                            </Style>
-                            <Style TargetType="dxg:GridColumn">
-                                <Setter Property="HeaderStyle" Value="{StaticResource boldHeader}"/>
-                            </Style>
-                            <Style TargetType="dxe:TextEdit">
-                                <Setter Property="Width" Value="Auto"/>
-                                <Setter Property="EditValuePostMode" Value="Immediate"/>
-                            </Style>
-                        </dxg:GridControl.Resources>
-                        <dxg:GridControl.Columns>
-                            <dxg:GridColumn FieldName="Metal" Header="Metal" Width="150">
-                                <dxg:GridColumn.EditSettings>
-                                    <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalList}"/>
-                                </dxg:GridColumn.EditSettings>
-                            </dxg:GridColumn>
-                            <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" Width="100" />
-                            <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />
-                            <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" >
-                                <dxg:GridColumn.EditSettings>
-                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
-                                </dxg:GridColumn.EditSettings>
-                            </dxg:GridColumn>
-                            <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight">
-                                <dxg:GridColumn.EditSettings>
-                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
-                                </dxg:GridColumn.EditSettings>
-                            </dxg:GridColumn>
-                            <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" >
-                                <dxg:GridColumn.EditSettings>
-                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
-                                </dxg:GridColumn.EditSettings>
-                            </dxg:GridColumn>
-                            <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True">
-                                <dxg:GridColumn.EditSettings>
-                                    <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
-                                </dxg:GridColumn.EditSettings>
-                            </dxg:GridColumn>
-                            <dxg:GridColumn FieldName="Uom" Header="Uom" ReadOnly="True"/>
-                            <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
-                            <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />
-                        </dxg:GridControl.Columns>
-                        <dxg:GridControl.View>
-                            <dxg:TableView AllowGrouping="False"
+                                    <dxg:GridControl.Resources>
+                                        <Style x:Key="boldHeader" TargetType="dxg:BaseGridHeader">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </Style>
+                                        <Style TargetType="dxg:GridColumn">
+                                            <Setter Property="HeaderStyle" Value="{StaticResource boldHeader}"/>
+                                        </Style>
+                                        <Style TargetType="dxe:TextEdit">
+                                            <Setter Property="Width" Value="Auto"/>
+                                            <Setter Property="EditValuePostMode" Value="Immediate"/>
+                                        </Style>
+                                    </dxg:GridControl.Resources>
+                                    <dxg:GridControl.Columns>
+                                        <dxg:GridColumn FieldName="Metal" Header="Metal" Width="150">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalList}"/>
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="Purity" Header="Purity" ReadOnly="True" Width="100" />
+                                        <dxg:GridColumn FieldName="TransactedRate" Header="Rate" />
+                                        <dxg:GridColumn FieldName="GrossWeight" Header="Gross Weight" >
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="StoneWeight" Header="Stone Weight">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="WastageWeight" Header="Wastage Weight" >
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="NetWeight" Header="Net Weight" ReadOnly="True">
+                                            <dxg:GridColumn.EditSettings>
+                                                <dxe:TextEditSettings Style="{StaticResource NumberFormatWtStyle}" />
+                                            </dxg:GridColumn.EditSettings>
+                                        </dxg:GridColumn>
+                                        <dxg:GridColumn FieldName="Uom" Header="Uom" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="TotalProposedPrice" Header="Proposed Price" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="FinalPurchasePrice" Header="Final Price" />
+                                    </dxg:GridControl.Columns>
+                                    <dxg:GridControl.View>
+                                        <dxg:TableView AllowGrouping="False"
                                                 AllowBestFit="True" ShowGroupPanel="False" 
                                                        TotalSummaryPosition="Bottom">
-                                <dxmvvm:Interaction.Behaviors>
-                                    <dxmvvm:EventToCommand EventName="CellValueChanged" 
+                                            <dxmvvm:Interaction.Behaviors>
+                                                <dxmvvm:EventToCommand EventName="CellValueChanged" 
                                                            Command="{Binding CellUpdateCommand}"
                                                            PassEventArgsToCommand="True"/>
-                                </dxmvvm:Interaction.Behaviors>
-                                <dxg:TableView.RowCellMenuCustomizations>
-                                    <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
+                                            </dxmvvm:Interaction.Behaviors>
+                                            <dxg:TableView.RowCellMenuCustomizations>
+                                                <dxb:BarButtonItem CommandParameter="{Binding Row.Row}" 
                                                            Command="{Binding DataContext.DeleteSingleRowCommand, RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
                                                            Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}" Content="Delete Row"/>
-                                </dxg:TableView.RowCellMenuCustomizations>
-                            </dxg:TableView>
-                        </dxg:GridControl.View>
-                    </dxg:GridControl>
-                </dxb:BarManager>
-            </dxlc:LayoutItem>
-        </dxlc:LayoutGroup>
-       
-        <dxg:GridControl Grid.Row="0" Grid.ColumnSpan="2" ItemsSource="{Binding OldMetalTransList}" 
-                         SelectedItem="{Binding SelectedOMTransLine, Mode=TwoWay}" AutoGenerateColumns="None"
-                         Margin="0,10,0,0" HorizontalAlignment="Left" Width="1200" VerticalAlignment="Top">
-            <dxg:GridControl.View>
-                <dxg:TableView  x:Name="tableView1" AllowGrouping="False"
-                                ShowGroupPanel="False" ShowAutoFilterRow="False" 
-                                AutoWidth="False" TotalSummaryPosition="Bottom"
-                                VerticalScrollbarVisibility="Auto" AllowEditing="True" EditorShowMode="MouseDown" 
-                                RowMinHeight="30">
-                    <dxmvvm:Interaction.Behaviors>
-                        <dxmvvm:EventToCommand EventName="CellValueChanged" 
-                                                           Command="{Binding CellUpdateCommand}"
-                                                           PassEventArgsToCommand="True"/>
-                        <!-- New binding for editor activation -->
-                        <dxmvvm:EventToCommand EventName="ShowingEditor"
-                               Command="{Binding EditorActivatedCommand}"
-                               PassEventArgsToCommand="True"/>
+                                            </dxg:TableView.RowCellMenuCustomizations>
+                                        </dxg:TableView>
+                                    </dxg:GridControl.View>
+                                </dxg:GridControl>
 
-                    </dxmvvm:Interaction.Behaviors>
-                </dxg:TableView>
-            </dxg:GridControl.View>
+                            </dxb:BarManager>
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
 
-            <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="Ref" Header="Ref #" ReadOnly="True" Width="40" />
-                <dxg:GridColumn FieldName="LineNbr" Header="Line #" ReadOnly="True" Width="40" />
-                <dxg:GridColumn FieldName="ProductSku" Header="Sku" ReadOnly="True" Width="120" />
-                <dxg:GridColumn FieldName="GrossWeight" Header="Gross Wt" Width="90" AllowedTotalSummaries="Sum">
-                    <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings 
-                            Style="{StaticResource NumberFormatStyle}" />
-                    </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>
+                </dxlc:LayoutGroup>
+            </dxlc:LayoutGroup>
 
-                <dxg:GridColumn FieldName="StoneWeight" Header="Stone Wt" Width="90" >
-                    <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
-                    </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>
-                <dxg:GridColumn FieldName="NetWeight" Header="Net Wt" Width="90" >
-                    <dxg:GridColumn.EditSettings>
-                        <dxe:TextEditSettings Style="{StaticResource NumberFormatStyle}"/>
-                    </dxg:GridColumn.EditSettings>
-                </dxg:GridColumn>
-                <dxg:GridColumn FieldName="SuppliedQty" Header="Supp Qty" Width="60" />
-                <dxg:GridColumn FieldName="OrderedQty"  Header="Ord Qty"  Width="60" ReadOnly="True" />
-                <dxg:GridColumn FieldName="ReceivedQty" Header="Recd Qty" Width="60" />
-                <dxg:GridColumn FieldName="AcceptedQty" Header="Acc Qty"  Width="60" />
-                <dxg:GridColumn FieldName="RejectedQty" Header="Rej Qty"  Width="60" ReadOnly="True" />
-
-                <!-- Submit Button Column -->
-                <dxg:GridColumn Header="Print" Width="80">
-                    <dxg:GridColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Print"
-                            Command="{Binding DataContext.PrintTagCommand, 
-                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
-                                       CommandParameter="{Binding RowData.Row}"
-                                    IsEnabled="{Binding RowData.Row.IsPrinted, Converter={StaticResource NegationConverter}}"
-                            HorizontalAlignment="Center" 
-                            VerticalAlignment="Center"/>
-                        </DataTemplate>
-                    </dxg:GridColumn.CellTemplate>
-                </dxg:GridColumn>
-
-            </dxg:GridControl.Columns>
-            
-        </dxg:GridControl>
+        </dxlc:LayoutControl>
     </Grid>
 </UserControl>
