@@ -439,7 +439,7 @@
             this.xrLabel1.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
             this.xrLabel1.SizeF = new System.Drawing.SizeF(227.5F, 23F);
             this.xrLabel1.StylePriority.UseFont = false;
-            this.xrLabel1.Text = "Daily Invoice Receipt Statement";
+            this.xrLabel1.Text = "Daily Invoice Receipt  Statement";
             // 
             // xrTable3
             // 

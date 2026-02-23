@@ -104,7 +104,7 @@
             // 
             this.vendorName.CanShrink = true;
             this.vendorName.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[CompDetails].[COMPANY_NAME]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[CompDetails].[COMPANY_NAME] ")});
             this.vendorName.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.vendorName.ForeColor = System.Drawing.Color.RoyalBlue;
             this.vendorName.Name = "vendorName";

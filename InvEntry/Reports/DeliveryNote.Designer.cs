@@ -102,11 +102,11 @@
             this.vendorCity = new DevExpress.XtraReports.UI.XRTableCell();
             this.ReportHeader = new DevExpress.XtraReports.UI.ReportHeaderBand();
             this.GroupFooter1 = new DevExpress.XtraReports.UI.GroupFooterBand();
+            this.notes = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel5 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
             this.pEstHdrGkey = new DevExpress.XtraReports.Parameters.Parameter();
-            this.notes = new DevExpress.XtraReports.UI.XRLabel();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -742,7 +742,7 @@
             // 
             this.vendorName.CanShrink = true;
             this.vendorName.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[CompDetails].[COMPANY_NAME]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[CompDetails].[COMPANY_NAME] ")});
             this.vendorName.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.vendorName.ForeColor = System.Drawing.Color.RoyalBlue;
             this.vendorName.Name = "vendorName";
@@ -814,6 +814,19 @@
             this.GroupFooter1.HeightF = 127.1889F;
             this.GroupFooter1.Name = "GroupFooter1";
             // 
+            // notes
+            // 
+            this.notes.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[EST_NOTES]")});
+            this.notes.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
+            this.notes.LocationFloat = new DevExpress.Utils.PointFloat(55F, 63.01671F);
+            this.notes.Multiline = true;
+            this.notes.Name = "notes";
+            this.notes.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.notes.SizeF = new System.Drawing.SizeF(232.5F, 54.17222F);
+            this.notes.StylePriority.UseFont = false;
+            this.notes.Text = "notes";
+            // 
             // xrLabel5
             // 
             this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(300.3738F, 94.18893F);
@@ -847,19 +860,6 @@
             this.pEstHdrGkey.Name = "pEstHdrGkey";
             this.pEstHdrGkey.Type = typeof(int);
             this.pEstHdrGkey.ValueInfo = "0";
-            // 
-            // notes
-            // 
-            this.notes.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[EST_NOTES]")});
-            this.notes.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
-            this.notes.LocationFloat = new DevExpress.Utils.PointFloat(55F, 63.01671F);
-            this.notes.Multiline = true;
-            this.notes.Name = "notes";
-            this.notes.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
-            this.notes.SizeF = new System.Drawing.SizeF(232.5F, 54.17222F);
-            this.notes.StylePriority.UseFont = false;
-            this.notes.Text = "notes";
             // 
             // DeliveryNote
             // 

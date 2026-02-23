@@ -1,7 +1,7 @@
 <Project>
       <PropertyGroup>
 		  <DevExpressVersion>
-			  25.1.8
+			  24.2.13
 		  </DevExpressVersion>
       </PropertyGroup>
 </Project>
