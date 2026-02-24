@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.DataAccess.Native.Json;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
@@ -313,11 +314,18 @@ public partial class InvoiceViewModel : ObservableObject
         copyHeaderExpression.Add($"{nameof(InvoiceHeader.InvBalance)}", (item, val) => item.InvBalance = val);
     }
 
+    private async Task<string> GetStateRefCodeAsync(string state)
+    {
+        var stateCode = await _referenceLoader.GetCodeAsync("CUST_STATE", state);
+        return stateCode;
+    }
+
     partial void OnCustomerStateChanged(string value)            //MtblReference value)
     {
         if (Buyer is null) return;
 
-        Buyer.GstStateCode = value;
+        //need to review
+        Buyer.GstStateCode = GetStateRefCodeAsync(value).GetAwaiter().GetResult();
 
         Header.CgstPercent = GetGSTPercent("CGST");
         Header.SgstPercent = GetGSTPercent("SGST");
@@ -676,11 +684,12 @@ public partial class InvoiceViewModel : ObservableObject
             return;
         }
 
+        //validation - give warning to user, if payment details are not entered
         if (!PayRctChk)
         {
             _messageBoxService.ShowMessage("No Customer Payment details entered....", "Missing Customer Payment Details", MessageButton.OK, MessageIcon.Error);
 
-            return;
+            // return;
         }
 
         invBalanceChk = true;  //is this a right place to fix

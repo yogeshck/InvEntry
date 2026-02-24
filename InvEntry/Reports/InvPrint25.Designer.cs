@@ -1183,6 +1183,8 @@
             this.GroupFooter1});
             this.DetailReport1.DataMember = "INVOICE_AR_RECEIPTS";
             this.DetailReport1.DataSource = this.sqlDataSource1;
+            this.DetailReport1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[INVOICE_HEADERINVOICE_AR_RECEIPTS].[adjusted_amount]>0")});
             this.DetailReport1.Level = 0;
             this.DetailReport1.Name = "DetailReport1";
             // 
@@ -1417,6 +1419,8 @@
             this.MetalPrice,
             this.MetalWeight,
             this.MetalGAmount});
+            this.TblRow1Gold.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "iif([INVOICE_HEADERGoldSumry].[GTOTNETWT] > 0, True, False)\n")});
             this.TblRow1Gold.Name = "TblRow1Gold";
             this.TblRow1Gold.Weight = 1D;
             // 
@@ -1536,7 +1540,7 @@
             this.xrTableCell18,
             this.xrTableCell20});
             this.TblRowSilver.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "iif([INVOICE_HEADERGold18Sumry].[STOTNETWT] < 1, False, True)\n")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "iif([INVOICE_HEADERSilverSumry].[STOTNETWT] > 0, True, False)\n")});
             this.TblRowSilver.Name = "TblRowSilver";
             this.TblRowSilver.Weight = 1D;
             // 
@@ -1639,6 +1643,8 @@
             // xrLabel18
             // 
             this.xrLabel18.Borders = DevExpress.XtraPrinting.BorderSide.Bottom;
+            this.xrLabel18.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[INVOICE_HEADERINVOICE_AR_RECEIPTS].[adjusted_amount]>0")});
             this.xrLabel18.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel18.LocationFloat = new DevExpress.Utils.PointFloat(2.000122F, 182.6668F);
             this.xrLabel18.Multiline = true;

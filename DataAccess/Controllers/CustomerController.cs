@@ -40,6 +40,7 @@ namespace DataAccess.Controllers
             if (customer == null)
             {
                 _customer.Add(value);
+                customer = _customer.Get(x => x.MobileNbr == value.MobileNbr);
             }
             else
             {
