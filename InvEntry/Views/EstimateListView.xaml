@@ -77,7 +77,7 @@
                          ItemsSource="{Binding Estimates}"
                          AutoGenerateColumns="None"
                          MinHeight="500"
-                         Height="620"
+                         Height="700"
                          MaxHeight="1100"
                          MinWidth="700"
                          Width="1000"

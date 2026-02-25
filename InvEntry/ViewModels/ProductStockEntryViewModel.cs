@@ -191,10 +191,16 @@ namespace InvEntry.ViewModels
 
         [RelayCommand]
         private async void OnEditorActivated(ShowingEditorEventArgs e)
-        {
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Awaiting ...input..."));
+        { 
 
             var waitVM = WaitIndicatorVM.ShowIndicator("Press... print button... reading weight.... .");
+          
+            if (!isManualMode)
+            {
+                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Awaiting ...input..."));
+
+                
+            }
 
             if (e.Column.FieldName == "GrossWeight")
             {
@@ -204,28 +210,35 @@ namespace InvEntry.ViewModels
                 var line = e.Row as GrnLine;
                 if (line != null)
                 {
-                    var reader = new WeighScaleReaderAuto();
-                    var weight = await reader.StartManualAsync();                //.StartScaleAsync(); // await one stable value
-                    if (weight < 0)
+                    if (!isManualMode)   //AUTO Mode
                     {
-                        //display error message
-                        _messageBoxService.ShowMessage("Weigh machine communication error...... ");
-                        return;
+                        var reader = new WeighScaleReaderAuto();
+                        var weight = await reader.StartManualAsync();
+                        //.StartScaleAsync(); // await one stable value
+
+                        if (weight < 0)
+                        {
+                            //display error message
+                            _messageBoxService.ShowMessage("Weigh machine communication error...... ");
+                            reader.Stop();
+                            return;
+                        }
+
+                        line.GrossWeight = weight;
+                        line.StoneWeight = 0;
+                        line.NetWeight = line.GrossWeight;
+
+
                     }
-                    else
+
+/*                    else
                     {
                         if (isManualMode)
                         {
                             line.GrossWeight = weight;
                         }
-                        else
-                        {
-                            line.GrossWeight = weight;
-                            line.StoneWeight = 0;
-                            line.NetWeight = line.GrossWeight;
-                        }
 
-                    }
+                    }*/
                 }
 
                 SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
@@ -511,7 +524,8 @@ namespace InvEntry.ViewModels
             }
             else
             {
-                ;// StopScale();
+                //mofied 24-feb needs to be tested
+                reader.Stop();
             }
 
             if (grnline.NetWeight.HasValue && grnline.NetWeight > 0 && grnline.ProductSku is not null)
@@ -654,6 +668,8 @@ namespace InvEntry.ViewModels
             productStock.Category = grnLineStock.ProductId;
             productStock.ProductSku = grnLineStock.ProductSku;
             productStock.IsBarcodePrinted = true;
+            productStock.CreatedOn = DateTime.Now;
+            productStock.CreatedBy = "System";
 
             // ProductStockList.Add(productStock);
             //save to db immediate - if list has 100 or more nos, it takes lots of time

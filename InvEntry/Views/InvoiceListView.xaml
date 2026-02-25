@@ -66,7 +66,7 @@
         </dxb:BarContainerControl>
         <dxg:GridControl Grid.Row="1" ItemsSource="{Binding Invoices}" AutoGenerateColumns="None"
                          MinHeight="500"
-                         Height="620"
+                         Height="700"
                          MaxHeight="1100"
                          MinWidth="900"
                          Width="1200" SelectedItem="{Binding SelectedInvoice}"

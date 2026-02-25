@@ -85,7 +85,7 @@
                          AutoGenerateColumns="None"
                          x:Name="VouchersGrid"
                          MinHeight="500"
-                         Height="500"
+                         Height="800"
                          MaxHeight="900"
                          MinWidth="800"
                          Width="1450"
