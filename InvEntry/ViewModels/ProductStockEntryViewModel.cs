@@ -525,7 +525,7 @@ namespace InvEntry.ViewModels
             else
             {
                 //mofied 24-feb needs to be tested
-                reader.Stop();
+               // reader.Stop();
             }
 
             if (grnline.NetWeight.HasValue && grnline.NetWeight > 0 && grnline.ProductSku is not null)
