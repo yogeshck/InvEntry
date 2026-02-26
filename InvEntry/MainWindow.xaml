@@ -32,12 +32,12 @@
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
             <dxwui:HamburgerMenu
-        NavigationTarget="{Binding ElementName=frame}"
-        OpenPaneWidth="200"
-        AllowBuiltInNavigation="True"
-         Header="Menu"
-                ViewState="Closed"
-                AvailableViewStates="Overlay">
+                    NavigationTarget="{Binding ElementName=frame}"
+                    OpenPaneWidth="200"
+                    AllowBuiltInNavigation="True"
+                     Header="Menu"
+                            ViewState="Closed"
+                            AvailableViewStates="Overlay">
                 <dxwui:HamburgerMenu.Content>
                     <dxwui:NavigationFrame x:Name="frame" BackNavigationMode="PreviousScreen" 
                                            AnimationDelay="0" AnimationType="None" MaxHeight="1500">
@@ -73,7 +73,7 @@
                                                  Content="Estimate "  HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:EstimateListView}"
                                                  Content="Estimate List" HideMenuWhenSelected="True"/>
-                    <!--    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockTransferEntryView}"
+                        <!--    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockTransferEntryView}"
                                                                 Content="Stock Transfer "
                                                                 HideMenuWhenSelected="True" />  -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalTransferEntryView}"
@@ -122,21 +122,21 @@
                                                  Content="GRN Entry" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
                                                  Content="GRN List" HideMenuWhenSelected="True"/>
-                          <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" GRNListView/> -->
-                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:ProductStockSummaryListView}"
-                                                 Content="Stock Summary List" HideMenuWhenSelected="True" />
+                        <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" GRNListView/> -->
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockVerifyPage}"
+                                                 Content="Stock Verify" HideMenuWhenSelected="True" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:DailyStockSummaryListView}"
                                                  Content="Daily Stock Summary List" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
                                                  Content="Product Stock" HideMenuWhenSelected="True"/>
-                <!--        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ImportDocViewPage}"
+                        <!--        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ImportDocViewPage}"
                                                                 Content="Util:Import" HideMenuWhenSelected="True" /> -->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerMenuNavigationButton Content="Price Setting"
                         NavigationTargetType="{x:Type page:SettingsPage}"
                         Glyph="{dx:DXImage 'SvgImages/XAF/Action_OrganizeDashboard.svg'}"/>
-                 <!--{dx:DXImage Images/Programming/Technology_32x32.png}"/> -->
+                <!--{dx:DXImage Images/Programming/Technology_32x32.png}"/> -->
 
                 <dxwui:HamburgerSubMenu>
                     <dxmvvm:Interaction.Behaviors>

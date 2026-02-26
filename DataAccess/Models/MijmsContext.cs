@@ -25,6 +25,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<DailyRate> DailyRates { get; set; }
 
+    public virtual DbSet<DailySalesInvoiceReceiptDbview> DailySalesInvoiceReceiptDbviews { get; set; }
+
     public virtual DbSet<DailyStockSummary> DailyStockSummaries { get; set; }
 
     public virtual DbSet<EstimateHeader> EstimateHeaders { get; set; }
@@ -105,6 +107,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<RepairHeader> RepairHeaders { get; set; }
 
+    public virtual DbSet<StockVerifyScan> StockVerifyScans { get; set; }
+
     public virtual DbSet<Test> Tests { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
@@ -112,6 +116,8 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<VoucherDbView> VoucherDbViews { get; set; }
 
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
+
+    public virtual DbSet<VwInvoiceTransaction> VwInvoiceTransactions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -484,6 +490,31 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Purity)
                 .HasMaxLength(20)
                 .HasColumnName("PURITY");
+        });
+
+        modelBuilder.Entity<DailySalesInvoiceReceiptDbview>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("DailySalesInvoiceReceiptDBView");
+
+            entity.Property(e => e.AdvanceAmt).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Bank).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Cash).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Credit).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.CreditCard).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DebitCard).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.DiscountAmt).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Gpay).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.InvAmount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.InvDate).HasPrecision(6);
+            entity.Property(e => e.InvNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Rd)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("RD");
+            entity.Property(e => e.Refund).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
@@ -2750,6 +2781,18 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.TransactionRef).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<StockVerifyScan>(entity =>
+        {
+            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__3214EC074684BA56");
+
+            entity.ToTable("StockVerifyScan");
+
+            entity.Property(e => e.Barcode)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.ScanTime).HasDefaultValueSql("(sysdatetime())");
+        });
+
         modelBuilder.Entity<Test>(entity =>
         {
             entity
@@ -2839,9 +2882,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.FundTransferDate).HasColumnName("fund_transfer_date");
             entity.Property(e => e.FundTransferMode).HasColumnName("fund_transfer_mode");
             entity.Property(e => e.FundTransferRefGkey).HasColumnName("fund_transfer_ref_gkey");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("GKEY");
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.Mode)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -2933,6 +2974,23 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("USED_FOR");
+        });
+
+        modelBuilder.Entity<VwInvoiceTransaction>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vwInvoiceTransactions");
+
+            entity.Property(e => e.Amount).HasColumnType("decimal(38, 2)");
+            entity.Property(e => e.InvAmount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.InvDate).HasPrecision(6);
+            entity.Property(e => e.InvNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.TransactionMode)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -24,5 +24,10 @@ namespace InvEntry.Views
         {
             InitializeComponent();
         }
+
+        private void BarcodeInput_EditValueChanged(object sender, DevExpress.Xpf.Editors.EditValueChangedEventArgs e)
+        {
+
+        }
     }
 }

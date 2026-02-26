@@ -2374,7 +2374,7 @@
             // xrLabel17
             // 
             this.xrLabel17.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[CompDetails].[COMPANY_NAME]\n")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ORG_THIS_COMPANY_VIEW].[company_name]")});
             this.xrLabel17.Font = new DevExpress.Drawing.DXFont("Segoe UI", 6.5F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel17.LocationFloat = new DevExpress.Utils.PointFloat(81.2986F, 10.99996F);
             this.xrLabel17.Multiline = true;
