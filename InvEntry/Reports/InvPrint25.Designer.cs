@@ -1201,7 +1201,7 @@
             // 
             this.xrLabel8.Borders = DevExpress.XtraPrinting.BorderSide.None;
             this.xrLabel8.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[external_transaction_id]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([external_transaction_id] is not null,\' >> \'+[external_transaction_id],\'\')")});
             this.xrLabel8.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
             this.xrLabel8.LocationFloat = new DevExpress.Utils.PointFloat(128.2235F, 0F);
             this.xrLabel8.Multiline = true;
