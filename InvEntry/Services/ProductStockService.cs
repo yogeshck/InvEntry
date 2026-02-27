@@ -27,7 +27,7 @@ namespace InvEntry.Services
 
         public async Task<ProductStock> GetProductStock(string productId)
         {
-            return await _mijmsApiService.Get<ProductStock>($"api/productstock/{productId}");
+            return await _mijmsApiService.Get<ProductStock>($"api/productstock/stock/{productId}");
         }
 
         public async Task CreateProductStock(ProductStock productStock)

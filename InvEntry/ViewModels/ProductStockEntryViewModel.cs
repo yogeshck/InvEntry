@@ -661,7 +661,7 @@ namespace InvEntry.ViewModels
             productStock.BalanceWeight = grnLineStock.NetWeight;
             productStock.SuppliedQty = grnLineStock.SuppliedQty;
             productStock.SoldQty = 0;
-            productStock.StockQty = grnLineStock.AcceptedQty;
+            productStock.StockQty = 1; //hardcoded to be reviewed later >>>> grnLineStock.AcceptedQty;
             productStock.Status = "In-Stock";
             productStock.SupplierId = SelectedGrn.SupplierId;
             productStock.IsProductSold = false;

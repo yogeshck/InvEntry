@@ -40,6 +40,19 @@ namespace DataAccess.Controllers
                 //Ok(_productStock.Get(x => x.ProductSku == productSku));
         }
 
+        // GET api/<ProductStockController>/5
+        [HttpGet("stock/{productSku}")]
+        public async Task<IActionResult> GetStock(string productSku)
+        {
+            //var pstk = _productStock.GetAll().FirstOrDefault(x => x.ProductSku == productSku);
+
+            return Ok(_productStock.GetAll().FirstOrDefault(x => x.ProductSku == productSku &&
+                                                                x.IsProductSold == false
+                                                                ));
+
+            //Ok(_productStock.Get(x => x.ProductSku == productSku));
+        }
+
         // POST api/<ProductStockController>
         [HttpPost]
         public IActionResult Post([FromBody] ProductStock value)

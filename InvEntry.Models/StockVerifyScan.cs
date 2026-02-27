@@ -19,5 +19,8 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         public DateTime _scanTime;
+
+        [ObservableProperty]
+        public string? _status;
     }
 }

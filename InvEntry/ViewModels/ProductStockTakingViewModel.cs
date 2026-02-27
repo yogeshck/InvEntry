@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DevExpress.Mvvm;
 using DevExpress.Xpf.Editors;
+using DevExpress.Xpo;
+using DevExpress.Xpo.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
 using System;
@@ -10,6 +13,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace InvEntry.ViewModels
 {
@@ -30,9 +34,6 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private ObservableCollection<ScanItem> _unavailableItems;
 
-        private ScanItem Items;
-        private int Status;
-
         [ObservableProperty]
         private StockVerifyScan _stockVerifiedItem;
 
@@ -42,21 +43,30 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private int _missingCount;
 
+        private ScanItem Items;
+        private int Status;
+        private int SessionId; 
+
         public ObservableCollection<ScanItem> _recentScanned;
 
+        private readonly IMessageBoxService _messageBoxService;
+
         public ProductStockTakingViewModel(IProductStockService productStockService,
-            IStockVerifyScanService stockVerifyScanService)
+            IStockVerifyScanService stockVerifyScanService,
+            IMessageBoxService messageBoxService)
         {
             _productStockService = productStockService;
-            _stockVerifyScanService= stockVerifyScanService;
+            _stockVerifyScanService = stockVerifyScanService;
 
             ProductStockGridList = new ObservableCollection<ProductStock>();
             UnavailableItems = new ObservableCollection<ScanItem>();
 
             Items = new ScanItem();
             StockVerifiedItem = new StockVerifyScan();
+            SessionId = int.Parse(DateTime.Now.ToString("MMddsssss"));
 
             MissingCount = 0;
+            _messageBoxService = messageBoxService;
         }
 
 
@@ -70,11 +80,18 @@ namespace InvEntry.ViewModels
             if (string.IsNullOrEmpty(barcode))
                 return;
 
-           //if (_scannedSet.Contains(barcode))
-           // {
-                // duplicate logic
-           // }
-           // else
+            barcode = barcode.Trim();
+
+            if (string.IsNullOrEmpty(barcode) || barcode.Length < 9 || barcode.Length > 15)
+            {
+                _messageBoxService.ShowMessage("Invalid Tag", "Invalid Tag", MessageButton.OK);
+                return;
+            }
+            //if (_scannedSet.Contains(barcode))
+            // {
+            // duplicate logic
+            // }
+            // else
             {
              //   _scannedSet.Add(barcode);
                 TotalScanned++;
@@ -85,7 +102,8 @@ namespace InvEntry.ViewModels
             StockVerifiedItem = new();
 
             StockVerifiedItem.Barcode = barcode;
-            StockVerifiedItem.SessionId = Status;
+            StockVerifiedItem.SessionId = SessionId;
+            StockVerifiedItem.Status = Status == 1 ? "In-Stock" : Status == 2 ? "Sold" : "Others";
 
             await AddStockVerifyScan(StockVerifiedItem);
 
@@ -112,7 +130,7 @@ namespace InvEntry.ViewModels
 
                 ProductStockGridList.Add(ProductSkuStock);
 
-                Status = 1;   //1  verified and available in table
+                Status = 1;   //1  In-Stock  2. Sold   3.Missing
 
             } else
             {

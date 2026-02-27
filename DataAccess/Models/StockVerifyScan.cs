@@ -12,4 +12,6 @@ public partial class StockVerifyScan
     public string Barcode { get; set; } = null!;
 
     public DateTime ScanTime { get; set; }
+
+    public string? Status { get; set; }
 }

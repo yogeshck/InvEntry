@@ -446,6 +446,8 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
+        var tagError = false;
+
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
         //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
@@ -473,6 +475,8 @@ public partial class InvoiceViewModel : ObservableObject
         else
         {
             IsBarCodeEnabled = false;
+            tagError = true;
+            //return;
         }
 
         //this should be set as summary stock to avoid confusion
@@ -480,8 +484,17 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (productStk is null)
         {
-            _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
-                "Product not found", MessageButton.OK, MessageIcon.Error);
+            if (tagError)
+            {
+                _messageBoxService.ShowMessage($"Product Tag not found for {ProductIdUI}, clear and select from list",
+                "Product Tag not found", MessageButton.OK, MessageIcon.Error);
+            }
+            else
+            {
+                _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
+                    "Product not found", MessageButton.OK, MessageIcon.Error);
+               // return;
+            }
             return;
         }
 
