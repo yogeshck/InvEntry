@@ -6,10 +6,12 @@ using DevExpress.Xpo;
 using DevExpress.Xpo.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
+using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -44,8 +46,8 @@ namespace InvEntry.ViewModels
         private int _missingCount;
 
         private ScanItem Items;
-        private int Status;
-        private int SessionId; 
+        private string Status;
+        private long SessionId;
 
         public ObservableCollection<ScanItem> _recentScanned;
 
@@ -63,7 +65,7 @@ namespace InvEntry.ViewModels
 
             Items = new ScanItem();
             StockVerifiedItem = new StockVerifyScan();
-            SessionId = int.Parse(DateTime.Now.ToString("MMddsssss"));
+            SessionId = long.Parse(DateTime.Now.ToString("ddsssss"));
 
             MissingCount = 0;
             _messageBoxService = messageBoxService;
@@ -74,26 +76,31 @@ namespace InvEntry.ViewModels
         private async Task ProcessScanAsync(EditValueChangedEventArgs args)
         {
 
-            Status = 0;
+            Status = null;
 
             var barcode = args.NewValue as string;
             if (string.IsNullOrEmpty(barcode))
                 return;
 
-            barcode = barcode.Trim();
+              BarcodeValidate scanInput = new();
+              barcode = scanInput.Validate(barcode);
 
             if (string.IsNullOrEmpty(barcode) || barcode.Length < 9 || barcode.Length > 15)
             {
                 _messageBoxService.ShowMessage("Invalid Tag", "Invalid Tag", MessageButton.OK);
                 return;
             }
-            //if (_scannedSet.Contains(barcode))
-            // {
-            // duplicate logic
-            // }
-            // else
+            
+            if (_scannedSet.Contains(barcode))
             {
-             //   _scannedSet.Add(barcode);
+                _messageBoxService.ShowMessage("Tag already scanned", "Duplicate Tag", MessageButton.OK);
+                //return;
+                //there are some duplicate tags printed - till we make unique, return should be blocked here
+                Status = "Dup Scan";
+            }
+             else
+            {
+                _scannedSet.Add(barcode);
                 TotalScanned++;
                 await FetchProductAsync(barcode);
 
@@ -103,7 +110,7 @@ namespace InvEntry.ViewModels
 
             StockVerifiedItem.Barcode = barcode;
             StockVerifiedItem.SessionId = SessionId;
-            StockVerifiedItem.Status = Status == 1 ? "In-Stock" : Status == 2 ? "Sold" : "Others";
+            StockVerifiedItem.Status = Status;
 
             await AddStockVerifyScan(StockVerifiedItem);
 
@@ -130,15 +137,17 @@ namespace InvEntry.ViewModels
 
                 ProductStockGridList.Add(ProductSkuStock);
 
-                Status = 1;   //1  In-Stock  2. Sold   3.Missing
+                Status = ProductSkuStock.IsProductSold == false ? "In-Stock" : "Sold"; //1  In-Stock  2. Sold   3.Missing
 
-            } else
+            }
+            else
             {
                 Items.Barcode = barcode;
-
+                Status = "No Tag";
                 UnavailableItems.Add(Items);
                 MissingCount++;
-            };
+            }
+            ;
 
         }
 

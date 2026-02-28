@@ -12,7 +12,7 @@ namespace InvEntry.Models
     {
 
         [ObservableProperty]
-        public int? _sessionId;
+        public long? _sessionId;
 
         [ObservableProperty]
         public string? _barcode;

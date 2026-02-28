@@ -2783,7 +2783,7 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<StockVerifyScan>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__3214EC074684BA56");
+            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__1630EB6297456813");
 
             entity.ToTable("StockVerifyScan");
 

@@ -450,6 +450,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
+        ProductIdUI = ProductIdUI.ToUpper();
+
         //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
 
         //SplashScreenManager.CreateWaitIndicator(waitVM).Show();

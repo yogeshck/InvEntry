@@ -7,7 +7,7 @@ public partial class StockVerifyScan
 {
     public int Gkey { get; set; }
 
-    public int SessionId { get; set; }
+    public long SessionId { get; set; }
 
     public string Barcode { get; set; } = null!;
 
