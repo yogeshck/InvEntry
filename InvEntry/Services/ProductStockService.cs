@@ -9,6 +9,7 @@ namespace InvEntry.Services
 {
     public interface IProductStockService
     {
+        Task<ProductStock> GetProduct(string productId);
         Task<ProductStock> GetProductStock(string productId);
 
         Task CreateProductStock(ProductStock productStock);
@@ -23,6 +24,10 @@ namespace InvEntry.Services
         public ProductStockService(IMijmsApiService mijmsApiService)
         {
             _mijmsApiService = mijmsApiService;
+        }
+        public async Task<ProductStock> GetProduct(string productId)
+        {
+            return await _mijmsApiService.Get<ProductStock>($"api/productstock/{productId}");
         }
 
         public async Task<ProductStock> GetProductStock(string productId)

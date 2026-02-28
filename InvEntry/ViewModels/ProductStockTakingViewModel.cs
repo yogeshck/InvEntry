@@ -65,7 +65,7 @@ namespace InvEntry.ViewModels
 
             Items = new ScanItem();
             StockVerifiedItem = new StockVerifyScan();
-            SessionId = long.Parse(DateTime.Now.ToString("ddsssss"));
+            SessionId = long.Parse(DateTime.Now.ToString("MMddsssss"));
 
             MissingCount = 0;
             _messageBoxService = messageBoxService;
@@ -79,7 +79,7 @@ namespace InvEntry.ViewModels
             Status = null;
 
             var barcode = args.NewValue as string;
-            if (string.IsNullOrEmpty(barcode))
+           if (string.IsNullOrEmpty(barcode))
                 return;
 
               BarcodeValidate scanInput = new();
@@ -129,7 +129,7 @@ namespace InvEntry.ViewModels
         {
 
             ProductSkuStock = new();
-            ProductSkuStock = await _productStockService.GetProductStock(barcode);
+            ProductSkuStock = await _productStockService.GetProduct(barcode);
             if (ProductSkuStock is not null)
             {
                 // IsBarCodeEnabled = true;
