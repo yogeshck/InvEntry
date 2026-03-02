@@ -42,7 +42,7 @@ namespace DataAccess.Controllers
 
         // GET api/<ProductStockController>/5
         [HttpGet("stock/{productSku}")]
-        public async Task<IActionResult> GetStock(string productSku)
+        public IActionResult GetStock(string productSku)
         {
             //var pstk = _productStock.GetAll().FirstOrDefault(x => x.ProductSku == productSku);
 
@@ -51,6 +51,14 @@ namespace DataAccess.Controllers
                                                                 ));
 
             //Ok(_productStock.Get(x => x.ProductSku == productSku));
+        }
+
+
+        // GET api/<MtblReferenceController>/5
+        [HttpGet("category/{category}")]
+        public IEnumerable<ProductStock> GetCategory(string category)
+        {
+            return _productStock.GetList(x => x.Category == category);
         }
 
         // POST api/<ProductStockController>

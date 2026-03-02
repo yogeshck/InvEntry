@@ -11,7 +11,7 @@ namespace InvEntry.Services
     {
         Task<ProductStock> GetProduct(string productId);
         Task<ProductStock> GetProductStock(string productId);
-
+        Task<IEnumerable<ProductStock>> GetCategoryList(string category);
         Task CreateProductStock(ProductStock productStock);
 
         Task UpdateProductStock(ProductStock product);
@@ -33,6 +33,11 @@ namespace InvEntry.Services
         public async Task<ProductStock> GetProductStock(string productId)
         {
             return await _mijmsApiService.Get<ProductStock>($"api/productstock/stock/{productId}");
+        }
+
+        public async Task<IEnumerable<ProductStock>> GetCategoryList(string category)
+        {
+            return await _mijmsApiService.GetEnumerable<ProductStock>($"api/productstock/category/{category}");
         }
 
         public async Task CreateProductStock(ProductStock productStock)

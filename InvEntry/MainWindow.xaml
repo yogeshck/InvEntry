@@ -122,13 +122,16 @@
                                                  Content="GRN Entry" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
                                                  Content="GRN List" HideMenuWhenSelected="True"/>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
+                                                 Content="Product Stock" HideMenuWhenSelected="True"/>
+            <!--            <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockAdjustmentView}"
+                                                 Content="Stock Adj." HideMenuWhenSelected="True"/>  -->
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" GRNListView/> -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockVerifyPage}"
                                                  Content="Stock Verify" HideMenuWhenSelected="True" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:DailyStockSummaryListView}"
                                                  Content="Daily Stock Summary List" HideMenuWhenSelected="True"/>
-                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
-                                                 Content="Product Stock" HideMenuWhenSelected="True"/>
+
                         <!--        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ImportDocViewPage}"
                                                                 Content="Util:Import" HideMenuWhenSelected="True" /> -->
                     </dxwui:HamburgerSubMenu.Items>

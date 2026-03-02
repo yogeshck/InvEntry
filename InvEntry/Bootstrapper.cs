@@ -181,6 +181,7 @@ public sealed class Bootstrapper
                  .AddSingleton<ReceiptAccountingViewModel>()
                  .AddSingleton<ProductStockViewModel>()
                  .AddSingleton<SettingsPageViewModel>()
+                 .AddSingleton<StockAdjustmentViewModel>()
                  .AddSingleton<VoucherEntryViewModel>()
                  .AddSingleton<VoucherListViewModel>()
                  .AddTransient<ReportDialogViewModel>()

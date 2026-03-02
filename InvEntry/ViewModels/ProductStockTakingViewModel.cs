@@ -65,7 +65,7 @@ namespace InvEntry.ViewModels
 
             Items = new ScanItem();
             StockVerifiedItem = new StockVerifyScan();
-            SessionId = long.Parse(DateTime.Now.ToString("MMddsssss"));
+            SessionId = long.Parse(DateTime.Now.ToString("MMddHHmmssfff"));
 
             MissingCount = 0;
             _messageBoxService = messageBoxService;
