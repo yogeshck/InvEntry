@@ -92,9 +92,9 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
     private void SetBase()
     {
-        ProductStock = new();
-        UserEntryStock = new();
-        ModifiedProductStock = new();
+        ProductStock = new ProductStock();
+        UserEntryStock = new ProductStock();
+        ModifiedProductStock = new ProductStock();
 
     }
 
@@ -148,6 +148,11 @@ public partial class StockAdjustmentViewModel : ObservableObject
             MessageBox.Show("Please select reason to continue....");
             return false;
         }
+
+        //need to work out - stone modification
+        //if (ProductStock.StoneWeight > 0 && ProductStock.StoneWeight < ProductStock.GrossWeight )
+        //    { }
+
         return true;
     }
 
@@ -155,15 +160,31 @@ public partial class StockAdjustmentViewModel : ObservableObject
     {
         var prdSku = await _productStockService.GetProductStock(productSku);
 
-        // Populate existing infor
-        ProductStock.GrossWeight = prdSku.GrossWeight;
-        ProductStock.StoneWeight = prdSku.StoneWeight;
-        ProductStock.NetWeight = prdSku.NetWeight;
+        // Always create fresh objects so bindings update correctly
+        ProductStock = new ProductStock
+        {
+            GrossWeight = prdSku.GrossWeight,
+            StoneWeight = prdSku.StoneWeight,
+            NetWeight = prdSku.NetWeight,
+            ProductSku = prdSku.ProductSku,
+            Category = prdSku.Category
+        };
 
-        ModifiedProductStock = prdSku;
+        ModifiedProductStock = new ProductStock
+        {
+            GrossWeight = prdSku.GrossWeight,
+            StoneWeight = prdSku.StoneWeight,
+            NetWeight = prdSku.NetWeight,
+            ProductSku = prdSku.ProductSku,
+            Category = prdSku.Category
+        };
 
+        // UserEntryStock stays as a fresh object from SetBase()
         Recalculate();
     }
+
+
+
 
     private async Task LoadReferencesAsync()
     {
@@ -175,18 +196,18 @@ public partial class StockAdjustmentViewModel : ObservableObject
         MessageBox.Show("Tag reprinted successfully.");
     }
 
- /*   private async Task<string> FetchReasonDesc()
-    {
-        var notes = "";
+    /*   private async Task<string> FetchReasonDesc()
+       {
+           var notes = "";
 
-        if (SelectedReasonCode is not null)
-        {
-            notes = await _referenceLoader.GetValueAsync("STOCK_ADJUSTMENT", SelectedReasonCode);
+           if (SelectedReasonCode is not null)
+           {
+               notes = await _referenceLoader.GetValueAsync("STOCK_ADJUSTMENT", SelectedReasonCode);
 
-        }
-        return notes;
-    }
-*/
+           }
+           return notes;
+       }
+   */
     private void Recalculate()
     {
         if (ProductStock is null || UserEntryStock is null || ProductStock.GrossWeight == 0
@@ -224,17 +245,19 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
     public bool CanApplyAdjustment
     {
-
         get
         {
             if (SelectedProductSku == null)
                 return false;
 
-            if (UserEntryStock.GrossWeight <= 0)
+            if (UserEntryStock == null || UserEntryStock.GrossWeight <= 0)
                 return false;
 
-            if (IsReduceSelected &&
+            if (IsReduceSelected && ProductStock != null &&
                 UserEntryStock.GrossWeight > ProductStock.GrossWeight)
+                return false;
+
+            if (ModifiedProductStock == null)
                 return false;
 
             if (ModifiedProductStock.StoneWeight > ModifiedProductStock.GrossWeight)
@@ -275,12 +298,15 @@ public partial class StockAdjustmentViewModel : ObservableObject
     [RelayCommand]
     private void ResetSAN()
     {
+        // Reinitialize base objects for the next adjustment
         SetBase();
-        ProductStock = null;
-        UserEntryStock = null;
-        ModifiedProductStock = null;
-        SelectedProductSku = null;
+
+        // Clear selection state
         SelectedCategoryId = null;
+        SelectedProductSku = null;
+        SelectedReasonCode = null;
+        IsAddSelected = true;
+        IsReduceSelected = false;
 
     }
 
