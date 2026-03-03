@@ -11,13 +11,8 @@ namespace InvEntry.Utils
     {
         // Regex pattern: 3 uppercase letters, digit, dash, then 6–7 digits
         //below would be implemented once we have standardised barcode
-        //private static readonly Regex BarcodeRegex =
-        //    new Regex(@"^[A-Z]{3}\d-\d{6,7}$", RegexOptions.Compiled);
-        //private static readonly Regex BarcodeRegex =
-        //     new Regex(@"^([A-Z]{3}\d-\d{6,7}|[A-Z]{3}-\d-\d{6,7})$", RegexOptions.Compiled);
         private static readonly Regex BarcodeRegex =
-               new Regex(@"^[A-Z]{3}\d-\d{4,6}$", RegexOptions.Compiled);
-
+            new Regex(@"^[A-Z]{3}-?\d-?\d{4,6}$", RegexOptions.Compiled);
 
         public BarcodeValidate() { }
 
