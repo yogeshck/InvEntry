@@ -114,9 +114,6 @@ namespace InvEntry.ViewModels
 
             _lineGrnLookup = new();
 
-            /*            reader = new();
-                        reader.StartAuto();*/
-
             SetThisCompany();
 
             PopulateMtblSupplierListAsync();
@@ -164,20 +161,6 @@ namespace InvEntry.ViewModels
             //bring all 'Open' status grn headers
             var grnHdrList = await _grnService.GetBySupplier(SupplierID);
         }
-
-
-        /*        partial void OnSelectedGrnLineChanged(GrnLine value)
-                {
-
-                  //  if ((nameof(GrnLine.GrossWeight).Equals(args.Column.FieldName) // || nameof(GrnLine.StoneWeight).Equals(args.Column.FieldName) ) 
-                                                                                    //&& line.NetWeight > 0 )
-                    {
-
-
-                        OnWeightCaptured(_capturedWeight);
-                    }
-                }*/
-
 
 
         [RelayCommand]
@@ -250,33 +233,6 @@ namespace InvEntry.ViewModels
         }
 
 
-
-        /*        private async void OnEditorActivated(ShowingEditorEventArgs e)
-                {
-                    if (e.Column.FieldName == "GrossWeight")
-                    {
-                        var line = e.Row as GrnLine;
-                        if (line != null)
-                        {
-                            var reader = new WeighScaleReader();
-                            var weight = await reader.StartScaleAsync(); // await one stable value
-
-                            // Update the bound property
-                            line.GrossWeight = weight;
-
-                            Dispatcher.Invoke(() =>
-                            {
-                                var view = e.Source as TableView; // or get via sender
-                                var rowHandle = view.FocusedRowHandle;
-                                view.SetCellValue(rowHandle, "GrossWeight", weight);
-                            });
-
-                        }
-                    }
-                }*/
-
-
-
         private void OnCellValueChanged(CellValueChangedEventArgs e)
         {
             if (e.Column.FieldName == "GrossWeight" && e.Value != null)
@@ -346,27 +302,28 @@ namespace InvEntry.ViewModels
 
             GrnLineList = new();
 
-            var grnLineRecCnt = 0;
+            var grnLineSkuCnt = 0;
+            var grnLineSkuToPrint = 0;
 
             var grnLineList_1 = await _grnService.GetByLineSumryGkey(SelectedGrnLineSumry.GKey, (int)SelectedGrnLineSumry.GrnHdrGkey);
 
             if (grnLineList_1 is not null)
-                grnLineRecCnt = grnLineList_1.Count(x => x.ProductId == prdView.Id &&
+                grnLineSkuCnt = grnLineList_1.Count(x => x.ProductId == prdView.Id &&
                                                         x.ProductSku != null);
 
-            if (grnLineRecCnt > 0)
+            if (grnLineSkuCnt > 0)
             //records already exist, then populate
             {
-                grnLineRecCnt = (int)(SelectedGrnLineSumry.SuppliedQty - grnLineRecCnt);
+                grnLineSkuToPrint = (int)(SelectedGrnLineSumry.SuppliedQty - grnLineSkuCnt);
             }
             else
             {
-                grnLineRecCnt = (int)SelectedGrnLineSumry.SuppliedQty;
+                grnLineSkuToPrint = (int)SelectedGrnLineSumry.SuppliedQty;
             }
 
             var tempSku = productSkuSeq;
 
-            for (int i = 1; i <= grnLineRecCnt; i++)
+            for (int i = grnLineSkuCnt+1; i <= grnLineSkuToPrint+1; i++)
             {
                 //Sequence number as product sku alongwith product code
 

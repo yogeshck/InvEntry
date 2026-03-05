@@ -119,13 +119,13 @@
                     <!-- {dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
                     <dxwui:HamburgerSubMenu.Items>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:GRNEntryPage}"
-                                                 Content="GRN Entry" HideMenuWhenSelected="True"/>
+                                                 Content="Material Receipt" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
-                                                 Content="GRN List" HideMenuWhenSelected="True"/>
+                                                 Content="MRN List" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
-                                                 Content="Product Stock" HideMenuWhenSelected="True"/>
+                                                 Content="Stock Closing" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockAdjustmentView}"
-                                                 Content="Stock Adj." HideMenuWhenSelected="True"/>  
+                                                 Content="Stock Adjust" HideMenuWhenSelected="True"/>  
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" GRNListView/> -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockVerifyPage}"
                                                  Content="Stock Verify" HideMenuWhenSelected="True" />
