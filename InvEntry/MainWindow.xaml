@@ -125,7 +125,7 @@
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
                                                  Content="Stock Closing" HideMenuWhenSelected="True"/>
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockAdjustmentView}"
-                                                 Content="Stock Adjust" HideMenuWhenSelected="True"/>  
+                                                 Content="Stock Adjustment" HideMenuWhenSelected="True"/>  
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" GRNListView/> -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockVerifyPage}"
                                                  Content="Stock Verify" HideMenuWhenSelected="True" />
