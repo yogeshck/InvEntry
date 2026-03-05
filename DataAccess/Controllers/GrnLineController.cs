@@ -38,6 +38,14 @@ namespace DataAccess.Controllers
         }
 
         // GET api/<GrnController>/5
+        [HttpGet("productSku/{productSku}")]
+        public async Task<IActionResult> GrtByProductSku(string productSku)
+        {
+            return Ok(_grnLineRepository.Get(x => x.ProductSku == productSku));
+
+        }
+
+        // GET api/<GrnController>/5
         [HttpGet("line/{grnLineSumryGkey}")]
         public async Task<IActionResult> GetByLineSumryGKey(int grnLineSumryGkey)
         {

@@ -150,8 +150,12 @@ public partial class StockAdjustmentViewModel : ObservableObject
         }
 
         //need to work out - stone modification
+        //if stone weight already available before change - allow stone to reduce only
+        //stone weight can be modified to additon only  
         //if (ProductStock.StoneWeight > 0 && ProductStock.StoneWeight < ProductStock.GrossWeight )
         //    { }
+        // Assume: oldStoneWeight = existing value
+        //         newStoneWeight = user input
 
         return true;
     }
@@ -221,8 +225,50 @@ public partial class StockAdjustmentViewModel : ObservableObject
         decimal modifiedStone;
         decimal modifiedNet;
 
+/*        if (ProductStock.StoneWeight > 0)
+        {
+            // Stone weight already exists → allow both reduction and addition
+            if (ModifiedProductStock.StoneWeight >= 0)
+            {
+                // ✅ valid change (increase or decrease)
+                // Example: update stone weight
+               // stoneWeight = newStoneWeight;
+            }
+            else
+            {
+                // ❌ invalid: negative input not allowed
+            }
+        }
+        else
+        {
+            // No stone weight yet → only addition allowed
+            if (newStoneWeight > 0)
+            {
+                // ✅ valid addition
+                stoneWeight = newStoneWeight;
+            }
+            else
+            {
+                // ❌ invalid: cannot reduce when no stone exists
+            }
+        }*/
+
         if (IsAddSelected)
         {
+            if (ProductStock.StoneWeight > 0)
+            {
+                // Stone weight already exists → allow both reduction and addition
+                if (ModifiedProductStock.StoneWeight >= 0)
+                {
+                }
+            }
+            else
+            {
+                // ❌ invalid: negative input not allowed
+                MessageBox.Show("Negative Value not allowed....");
+                return;
+            }
+
             modifiedGross = (decimal)(ProductStock.GrossWeight + grossInput);
             modifiedStone = (decimal)ProductStock.StoneWeight + stoneInput;
         }

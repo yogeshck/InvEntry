@@ -35,6 +35,8 @@ namespace InvEntry.Services
 
         Task<IEnumerable<GrnLine>> GetByHdrGkey(int hdrGkey);
 
+        Task<GrnLine> GetByProductSku(string productSku);
+
         Task<IEnumerable<GrnLineSummary>> GetBySumryHdrGkey(int hdrGkey);
     }
 
@@ -119,6 +121,12 @@ namespace InvEntry.Services
 
             await Task.WhenAll(list);
         }
+
+        public async Task<GrnLine> GetByProductSku(string productSku)
+        {
+            return await _mijmsApiService.Get<GrnLine>($"api/grnline/productSku/{productSku}");
+        }
+
 
         public async Task<IEnumerable<GrnLineSummary>> GetBySumryHdrGkey(int hdrGkey)
         {

@@ -486,7 +486,12 @@ namespace InvEntry.ViewModels
                     {
                         x.Status = "Closed";
                         _ = ProcessStockLinesAsync(x);
-                        await _grnService.CreateGrnLine(grnLines);
+
+                        var grnLineChk = await _grnService.GetByProductSku(x.ProductSku);
+                        if (grnLineChk is null)
+                        {
+                            await _grnService.CreateGrnLine(grnLines);
+                        }
                     }
                 }
             });
@@ -506,11 +511,11 @@ namespace InvEntry.ViewModels
             if (grnline.NetWeight > 0.00m)
             {
 
-                var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
-                                                                            grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
-                                                                            grnline.StoneWeight.Value,
-                                                                            grnline.ProductPurity, Company.CompanyName);
-                //return Task.CompletedTask;
+    //  unblock          var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
+    //                                                                        grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
+    //                                                                        grnline.StoneWeight.Value,
+    //                                                                        grnline.ProductPurity, Company.CompanyName);
+                 
             }
 
 
@@ -538,8 +543,14 @@ namespace InvEntry.ViewModels
                                     } else*/
                 {
                     grnline.Status = "Closed";
+
                     _ = ProcessStockLinesAsync(grnline);
-                    await _grnService.CreateGrnLine(grnline);
+
+                    var grnLineChk = await _grnService.GetByProductSku(grnline.ProductSku);
+                    if (grnLineChk is not null)
+                    { } else { 
+                        await _grnService.CreateGrnLine(grnline);
+                    }
                 }
 
                 productSkuSeq = productSkuSeq + 1;
@@ -646,6 +657,10 @@ namespace InvEntry.ViewModels
         private async Task ProcessStockLinesAsync(GrnLine grnLineStock)
         {
 
+            var prdStk = await _productStockService.GetProductStock(grnLineStock.ProductSku);
+            if (prdStk is not null)   
+                return;     //avoid duplication of product stock
+
             if (ProductStockList is null)
                 ProductStockList = new();
 
@@ -670,6 +685,8 @@ namespace InvEntry.ViewModels
             productStock.IsBarcodePrinted = true;
             productStock.CreatedOn = DateTime.Now;
             productStock.CreatedBy = "System";
+
+
 
             // ProductStockList.Add(productStock);
             //save to db immediate - if list has 100 or more nos, it takes lots of time

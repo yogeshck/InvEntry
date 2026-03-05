@@ -45,6 +45,11 @@ namespace InvEntry.Services.Mock
             throw new NotImplementedException();
         }
 
+        public Task<GrnLine> GetByProductSku(string productSku)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey)
         {
             throw new NotImplementedException();
