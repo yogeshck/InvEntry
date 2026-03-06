@@ -468,10 +468,10 @@ namespace InvEntry.ViewModels
             if (grnline.NetWeight > 0.00m)
             {
 
-    //  unblock          var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
-    //                                                                        grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
-    //                                                                        grnline.StoneWeight.Value,
-    //                                                                        grnline.ProductPurity, Company.CompanyName);
+              var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
+                                                                            grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
+                                                                            grnline.StoneWeight.Value,
+                                                                            grnline.ProductPurity, Company.CompanyName);
                  
             }
 

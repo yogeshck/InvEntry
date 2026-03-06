@@ -157,6 +157,7 @@ public sealed class Bootstrapper
                  .AddMockService()
                  .ConfigureFormulas()
                  .AddTallyService()
+                 .AddSingleton<BarCodeTagListViewModel>()
                  .AddSingleton<CashReceiptViewModel>()
                  .AddSingleton<CustomerOrderDBViewListViewModel>()
                  .AddSingleton<CustomerOrderListViewModel>()
