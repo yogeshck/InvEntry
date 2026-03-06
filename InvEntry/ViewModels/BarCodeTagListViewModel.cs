@@ -75,18 +75,16 @@ namespace InvEntry.ViewModels
 
             //_ = LoadReferencesAsync();
 
-            PopulateProductCategoryList();
+            PopulateProductCategoryLst();
             _ = PopulateProductSkuList();
 
 
         }
 
-
-        private async void PopulateProductCategoryList()
+        private async void PopulateProductCategoryLst()
         {
             var list = await _productCategoryService.GetProductCategoryList();
-            ProductCategoryList = new(list
-                                    .Select(x => x.Name));
+            ProductCategoryList = new(list.Select(x => x.Name));
         }
 
         private async Task PopulateProductSkuList(string category = "RING")
