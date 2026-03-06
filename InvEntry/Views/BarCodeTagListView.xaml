@@ -39,11 +39,9 @@
                 <dxb:BarEditItem Content="Category"
                                  EditWidth="150"
                                  EditHeight="35"
-                                 EditValue="{Binding SelectedCategory, Mode=TwoWay}">
+                                 EditValue="{Binding SelectedCategory}">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"
-                                                  DisplayMember="Name"
-                                                  ValueMember="Id"
                                                   IsTextEditable="False" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
@@ -51,16 +49,12 @@
                 <dxb:BarEditItem Content="BarCode"
                                  EditWidth="150"
                                  EditHeight="35"
-                                 EditValue="{Binding SelectedProductSku, Mode=TwoWay}">
+                                 EditValue="{Binding SelectedProductSku}">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductSkuStrList}"
-                                                  DisplayMember="Name"
-                                                  ValueMember="Id"
-                                                  IsTextEditable="False">
-                        </dxe:ComboBoxEditSettings>
+                                                  IsTextEditable="False" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-
 
                 <dxb:BarEditItem   EditValue="{Binding OptionsStr}"
                                    Content="Options"
@@ -71,14 +65,14 @@
                                                Mask="[0-9 ]*" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
-                
+
                 <dxb:BarButtonItem x:Name="btnRefresh"
                                    Content="Refresh"
                                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                                    GlyphSize="Large"
-                                   Command="{Binding RefreshInvoicesCommand}" />
+                                   Command="{Binding RefreshBarcodeCommand}" />
                 <dxb:BarItemSeparator Margin="2,0,2,0" />
-                
+
                 <dxb:BarButtonItem x:Name="btnPrintGrid"
                                    Content="Export"
                                    Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
@@ -86,7 +80,7 @@
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top" />
                 <dxb:BarItemSeparator Margin="2,0,2,0" />
-                
+
                 <dxb:BarButtonItem x:Name="btnPrintInvoice"
                                    Content="Print"
                                    Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
@@ -95,10 +89,59 @@
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top"
                                    Command="{Binding PrintInvoiceCommand}" />
-                
+
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
 
+        <dxg:GridControl Grid.Row="1"
+                         ItemsSource="{Binding ProductStockGridList}"
+                         AutoGenerateColumns="None"
+                         x:Name="VouchersGrid"
+                         MinHeight="500"
+                         Height="800"
+                         MaxHeight="900"
+                         MinWidth="800"
+                         Width="1450"
+                         SelectedItem="{Binding SelectedVoucher}"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Top">
+            <dxmvvm:Interaction.Behaviors>
+                <dxmvvm:EventToCommand EventName="SelectedItemChanged"
+                                       Command="{Binding SelectionChangedCommand}" />
+                <behavior:PrintGridBehavior BarButtonItem="{Binding ElementName=btnPrintGrid}" />
+            </dxmvvm:Interaction.Behaviors>
+            <dxg:GridControl.View>
+                <dxg:TableView ShowGroupPanel="False"
+                               AllowBestFit="True"
+                               x:Name="VouchersTableview"
+                               EditorButtonShowMode="ShowForFocusedCell"
+                               AllowEditing="True"
+                               AllowGrouping="False"
+                               ShowAutoFilterRow="True"
+                               AutoWidth="False"
+                               ShowTotalSummary="True" />
+            </dxg:GridControl.View>
+
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="ProductSku"
+                                Header="Product ID"
+                                Width="110" />
+                <dxg:GridColumn FieldName="Category"
+                                Header="Category"
+                                Width="90" />
+                <dxg:GridColumn FieldName="GrossWeight"
+                                Header="Gross"
+                                Width="100" />
+                <dxg:GridColumn FieldName="StoneWeight"
+                                Header="Stone"
+                                Width="100" />
+                <dxg:GridColumn FieldName="NetWeight"
+                                Header="Net"
+                                Width="100" />
+
+            </dxg:GridControl.Columns>
+
+        </dxg:GridControl>
 
     </Grid>
     </dxwui:NavigationPage>

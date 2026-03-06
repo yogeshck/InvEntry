@@ -129,9 +129,9 @@
                         <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" GRNListView/> -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockVerifyPage}"
                                                  Content="Stock Verify" HideMenuWhenSelected="True" />
-                    <!--    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:BarCodeTagListView}"
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:BarCodeTagListView}"
                                                                 Content="Barcode Tag List"
-                                                                HideMenuWhenSelected="True" />  -->
+                                                                HideMenuWhenSelected="True" />  
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:DailyStockSummaryListView}"
                                                  Content="Daily Stock Summary List" HideMenuWhenSelected="True"/>
 

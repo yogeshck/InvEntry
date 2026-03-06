@@ -4,7 +4,7 @@ public class BarCodePrint
 {
 
     private static string PrinterName = "Bar Code Printer TT065-50"; // Set your printer name
-    private bool firstRec = true;
+    private static bool firstRec = true;
 
     public static bool ProcessBarCode(string productCode, string productName, decimal VApercent,
                                     decimal productWeight, decimal prdStoneWeight, string productPurity, 
@@ -46,6 +46,10 @@ public class BarCodePrint
     private static string GenerateZPL(string productCode, string productName, string VaPercent,
                                     string productWeight, string stoneWeight, string productPurity, string companyName)
     {
+
+        if (companyName.Length > 20)
+            companyName = companyName.Substring(0, 19);
+            
         /* return "^XA\n" +
     "^FO50,50\n" +
     "^BY3\n" +
@@ -54,7 +58,7 @@ public class BarCodePrint
     "^XZ";*/
         string zplCmd = "";
 
-/*        if (firstRec)
+        if (firstRec)
             zplCmd = "^XA\n" +
 
                 "^MNA\n" +                              // Non-continuous media
@@ -66,60 +70,67 @@ public class BarCodePrint
                 "^MD30\n" +                             // Set darkness level (30 = medium)
                 "^LH0,0\n" +                            // Set label home position
                 "^FWN\n";                              // Set print direction (Normal)
-        else*/
+        else
             zplCmd = "^XA\n";
 
         zplCmd +=
                 "^PW700\n" +
-                "^LL100\n" +
+                "^LL250\n" +
 
-                "^FO0,10\n" +                         // Position: X=20, Y=10
+                "^FO5,30\n" +                         // Position: X=20, Y=10
                 "^BY1\n" +                            // Barcode width
-                "^BCN,30,N,N,N\n" +                 // Code 128 Barcode (50 dots high, NO text)"
+                "^BCN,40,N,N,N\n" +                 // Code 128 Barcode (50 dots high, NO text)"
                 $"^FD{productCode}^FS\n" +             // Barcode Data (Replace with actual Product Code)
 
                 // 🔹 Second Line: Product Code
-                "^FO0,70\n" +                         // Position below barcode
-                "^A0N,18,18\n" +                     // Font size (20 height, 20 width)
+                "^FO5,80\n" +                         // Position below barcode
+                "^A0N,18,25\n" +                     // Font size (20 height, 20 width)
                 $"^FD{productCode}^FS\n" +                 // Product Code Text
 
                 // 🔹 Second Line: MM/YY
-                "^FO140,70\n" +
+                "^FO140,80\n" +
                 "^A0N,18,18\n" +
                 $"^FD ^FS\n" +  // MM/YY Text
 
-                "^FO0,90\n" +
-                "^A0N,18,18\n" +
-                $"^FD{companyName}^FS\n" + // Company Name
+               "^FO10,110\n" +
+               "^A0N,15,15\n" +
+               $"^FD{companyName}^FS\n" + // Company Name
 
                 // 🔹 Right Section: Weight and Rate
-                "^FO210,10\n" +
+                "^FO210,30\n" +
                 "^A0N,20,20\n" +
                 $"^FD{productName}^FS\n" +  // Weight
 
-                "^FO210,30\n" +
+                "^FO210,50\n" +
                 "^A0N,20,20\n" +
                 $"^FDGwt: {productWeight}^FS\n";
 
         //if (stoneWeight is not null )
         if (stoneWeight.Length > 0)
         {
-            zplCmd += 
-                "^FO210,50\n" +
+            zplCmd +=
+                "^FO210,70\n" +
                 "^A0N,20,20\n" +
                 $"^FDStone: {stoneWeight}^FS\n";
         }
-        
-        zplCmd +=
+        else
+        {
+            zplCmd +=
                 "^FO210,70\n" +
                 "^A0N,20,20\n" +
-                $"^FDMC: {VaPercent}^FS\n" +  // Rate
+                $"^FD ^FS\n";
+        }
 
-                "^FO210,90\n" +
-                "^A0N,20,20\n" +
-                $"^FDPurity: {productPurity}^FS\n" +  // Rate
+        zplCmd +=
+                    "^FO210,90\n" +
+                    "^A0N,20,20\n" +
+                    $"^FDMC: {VaPercent}^FS\n" +  // Rate
 
-                "^XZ\n";
+                    "^FO210,110\n" +
+                    "^A0N,20,20\n" +
+                    $"^FDPurity: {productPurity}^FS\n" +  // Rate
+
+                    "^XZ\n";
 
         return zplCmd;
     }

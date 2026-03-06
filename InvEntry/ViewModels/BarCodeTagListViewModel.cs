@@ -27,13 +27,8 @@ namespace InvEntry.ViewModels
         private ObservableCollection<MtblReference> mtblReferencesList;
 
         [ObservableProperty]
-        private ObservableCollection<string> _productCategoryList;
-
-        [ObservableProperty]
         private ObservableCollection<string> _productSkuStrList;
 
-        private readonly IGrnService _grnService;
-        private readonly IProductCategoryService _productCategoryService;
         private readonly IProductViewService _productViewService;
         private readonly IProductTransactionService _productTransactionService;
         private readonly IProductStockService _productStockService;
@@ -41,6 +36,14 @@ namespace InvEntry.ViewModels
         private readonly IDialogService _dialogService;
         private readonly IMtblReferencesService _mtblReferencesService;
         private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
+        private readonly IProductCategoryService _productCategoryService;
+
+
+        [ObservableProperty]
+        private ObservableCollection<string> _productCategoryLst;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _productCategoryList;
 
         [ObservableProperty]
         private ObservableCollection<ProductStock> _productStockList;
@@ -73,18 +76,21 @@ namespace InvEntry.ViewModels
 
             _referenceLoader = referenceLoader;
 
+            _ = PopulateProductCategoryLst();
             //_ = LoadReferencesAsync();
 
-            PopulateProductCategoryLst();
             _ = PopulateProductSkuList();
 
 
         }
 
-        private async void PopulateProductCategoryLst()
+        private async Task PopulateProductCategoryLst()
         {
-            var list = await _productCategoryService.GetProductCategoryList();
-            ProductCategoryList = new(list.Select(x => x.Name));
+            var categoryList = await _productCategoryService.GetProductCategoryList();
+
+            ProductCategoryList = new(categoryList.
+                                            Select(x => x.Name));
+
         }
 
         private async Task PopulateProductSkuList(string category = "RING")
@@ -92,6 +98,11 @@ namespace InvEntry.ViewModels
             var skuList = await _productStockService.GetCategoryList(category);
             ProductSkuStrList = new(skuList
                                    .Select(x => x.ProductSku));
+        }
+
+        partial void OnSelectedCategoryChanged(string value)
+        {
+            _ = PopulateProductSkuList(value);
         }
 
         [RelayCommand]
