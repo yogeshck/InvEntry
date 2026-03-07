@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.Xpf.Bars;
 using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
 using InvEntry.Helpers;
 using InvEntry.Models;
@@ -51,8 +52,11 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private OrgThisCompanyView _company;
 
-       // [ObservableProperty]
-       // private Product _product;
+        // [ObservableProperty]
+        // private Product _product;
+
+        [ObservableProperty]
+        private ObservableCollection<ProductStock> _prdStockList;
 
         [ObservableProperty]
         private string _selectedCategory;
@@ -60,21 +64,31 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private string _selectedProductSku;
 
+        [ObservableProperty]
+        private string _optionsStr;
+
         public BarCodeTagListViewModel(
+                            IProductViewService productViewService,
                             IProductStockService productStockService,
                             IProductCategoryService productCategoryService,
                             IMtblReferencesService mtblReferencesService,
                             IMessageBoxService messageBoxService,
                             IProductTransactionService productTransactionService,
+                            IOrgThisCompanyViewService orgThisCompanyViewService,
                             ReferenceLoader referenceLoader)
         {
             _productStockService = productStockService;
+            _productViewService = productViewService;
             _productCategoryService = productCategoryService;
             _messageBoxService = messageBoxService;
             _mtblReferencesService = mtblReferencesService;
             _productTransactionService = productTransactionService;
+            _orgThisCompanyViewService = orgThisCompanyViewService;
+
 
             _referenceLoader = referenceLoader;
+
+            SetThisCompany();
 
             _ = PopulateProductCategoryLst();
             //_ = LoadReferencesAsync();
@@ -82,6 +96,13 @@ namespace InvEntry.ViewModels
             _ = PopulateProductSkuList();
 
 
+        }
+
+        private async void SetThisCompany()
+        {
+            Company = new();
+            Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+            //Header.TenantGkey = Company.TenantGkey;
         }
 
         private async Task PopulateProductCategoryLst()
@@ -106,15 +127,61 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
+        private void ResetForm()
+        {
+            ProductStockList = null;
+            SelectedProductSku = null;
+        }
+
+        [RelayCommand]
         private async Task RefreshBarcodeAsync()
         {
 
-            var productStock = await _productStockService.GetProductStock(SelectedProductSku);
+            ProductStockList = new();
 
-/*            var invoicesResult = await _invoiceService.GetAll(SearchOption);
-            if (invoicesResult is not null)
-                Invoices = null;
-            Invoices = new(invoicesResult);*/
+            if (SelectedCategory is not null && SelectedProductSku is null)
+            {
+                // Load all products in the category
+                //var prd = await _productStockService.GetCategoryList(SelectedCategory);
+                var product = await _productStockService.GetCategoryList(SelectedCategory);
+                ProductStockList = new(product);
+            }
+
+            else if (!string.IsNullOrEmpty(SelectedProductSku))
+            {
+                // Load single product by ID/SKU
+                var product = await _productStockService.GetProductStock(SelectedProductSku);
+                if (product is not null)
+                {
+                    ProductStockList = new ObservableCollection<ProductStock> { product };
+                }
+            }
+
+            //    else if (productStock is not null)
+            //     {
+            // Reset and show only this product
+            //         ProductStockList = new List<ProductStock> { productStock };
+            //     }
+        }
+
+
+        [RelayCommand]
+        private async Task PrintTagAsync(ProductStock productStock)
+        {
+
+            var productView = await _productViewService.GetByCategory(productStock.Category);
+
+            if (productStock.NetWeight > 0.00m)
+            {
+
+                var result = BarCodePrint.ProcessBarCode(productStock.ProductSku, productView.Description,
+                                                                              productStock.VaPercent.Value,
+                                                                              productStock.NetWeight.Value,
+                                                                              productStock.StoneWeight.Value,
+                                                                              productView.Purity, 
+                                                                              Company.CompanyName);
+
+            }
         }
     }
 }

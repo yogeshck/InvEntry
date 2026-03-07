@@ -337,7 +337,7 @@ namespace InvEntry.ViewModels
                 grnLine.LineNbr = i;
                 grnLine.ProductDesc = prdView.Description;
                 grnLine.ProductPurity = prdView?.Purity;
-                grnLine.SuppVaPercent = 18;// prdView.VaPercent;
+                grnLine.SuppVaPercent = prdView.VaPercent;
                 grnLine.GrnLineSumryGkey = SelectedGrnLineSumry.GKey;
 
                 //grnLine.ProductSku = SelectedGrnLineSumry.ProductCategory;
@@ -642,8 +642,8 @@ namespace InvEntry.ViewModels
             productStock.IsBarcodePrinted = true;
             productStock.CreatedOn = DateTime.Now;
             productStock.CreatedBy = "System";
-
-
+            productStock.WastageAmount = 0;
+            productStock.WastagePercent = 0;
 
             // ProductStockList.Add(productStock);
             //save to db immediate - if list has 100 or more nos, it takes lots of time

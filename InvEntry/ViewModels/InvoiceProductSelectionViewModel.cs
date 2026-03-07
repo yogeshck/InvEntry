@@ -66,8 +66,8 @@ namespace InvEntry.ViewModels
         private async Task RefreshProductStockAsync()
         {
             var productStockResult = await _productViewService.GetByCategory(Category);
-            if (productStockResult is not null)
-                ProductStockView = new(productStockResult);
+          //  if (productStockResult is not null)
+           //     ProductStockView = new(productStockResult);
         }
 
     }

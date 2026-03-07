@@ -15,7 +15,8 @@ namespace InvEntry.Services
 
         Task<ProductView> GetByProductSku(string productSku);
 
-        Task<IEnumerable<ProductView>> GetByCategory(string category);
+       // Task<IEnumerable<ProductView>> GetByCategory(string category);
+        Task<ProductView> GetByCategory(string category);
 
         Task<IEnumerable<ProductView>> GetAll();
     }
@@ -39,9 +40,11 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<ProductView>($"api/ProductView/productSku/{productSku}");
         }
 
-        public async Task<IEnumerable<ProductView>> GetByCategory(string category)
+       // public async Task<IEnumerable<ProductView>> GetByCategory(string category)
+        public async Task<ProductView> GetByCategory(string category)
         {
-            return await _mijmsApiService.GetEnumerable<ProductView>($"api/ProductView/category/{category}");
+            //return await _mijmsApiService.GetEnumerable<ProductView>($"api/ProductView/category/{category}");
+            return await _mijmsApiService.Get<ProductView>($"api/ProductView/category/{category}");
         }
 
         public async Task<IEnumerable<ProductView>> GetAll()
