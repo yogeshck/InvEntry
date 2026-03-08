@@ -54,6 +54,7 @@
     <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
     <ProjectReference Include="..\InvEntry.Tally\InvEntry.Tally.csproj" />
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
+    <ProjectReference Include="..\InvEntry.LabelGenerator\InvEntry.LabelGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

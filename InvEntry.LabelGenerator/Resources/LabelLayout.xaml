@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Base design width for scaling -->
+    <sys:Int32 x:Key="BaseWidth">500</sys:Int32>
+    <sys:Int32 x:Key="LabelWidth">700</sys:Int32>
+
+    <!-- Field definitions -->
+    <x:Array x:Key="LabelFields"
+             Type="sys:String">
+        <!-- Format: Name|X|Y|FontHeight|FontWidth|Template -->
+        ProductBarcode|5|30|0|0|^BY1\n^BCN,40,N,N,N\n^FD{ProductCode}^FS
+        ProductCodeText|5|80|18|25|^FD{ProductCode}^FS
+        CompanyName|10|110|15|15|^FD{CompanyName}^FS
+        ProductName|210|30|20|20|^FD{ProductName}^FS
+        ProductWeight|210|50|20|20|^FDGwt: {ProductWeight}^FS
+        StoneWeight|210|70|20|20|^FDStone: {StoneWeight}^FS
+        VaPercent|210|90|20|20|^FDMC: {VaPercent}^FS
+        Purity|210|110|20|20|^FDPurity: {ProductPurity}^FS
+    </x:Array>
+</ResourceDictionary>

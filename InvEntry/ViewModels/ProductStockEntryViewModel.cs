@@ -8,6 +8,7 @@ using DevExpress.Xpf.Printing;
 using DevExpress.XtraGauges.Core.Styles;
 using DevExpress.XtraRichEdit.Forms;
 using InvEntry.Extension;
+using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Store;
@@ -468,11 +469,15 @@ namespace InvEntry.ViewModels
             if (grnline.NetWeight > 0.00m)
             {
 
-              var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
+/*              var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
                                                                             grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
                                                                             grnline.StoneWeight.Value,
-                                                                            grnline.ProductPurity, Company.CompanyName);
-                 
+                                                                            grnline.ProductPurity, Company.CompanyName);*/
+
+                var result = LabelGenPrintHelper.GenerateLabel(grnline.ProductSku, grnline.ProductDesc,
+                                                              grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
+                                                              grnline.StoneWeight.Value,
+                                                              grnline.ProductPurity, Company.CompanyName);
             }
 
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 18
-VisualStudioVersion = 18.0.11222.15 d18.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvEntry", "InvEntry\InvEntry.csproj", "{144670CB-6396-488C-A76D-2E03A3B69E78}"
 EndProject
@@ -10,8 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1DF041AD-ADBC-4F0C-BB73-D36410F29EA2}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		.github\workflows\dotnet-desktop.yml = .github\workflows\dotnet-desktop.yml
 		Directory.Build.props = Directory.Build.props
+		.github\workflows\dotnet-desktop.yml = .github\workflows\dotnet-desktop.yml
 		Nuget.config = Nuget.config
 	EndProjectSection
 EndProject
@@ -30,6 +30,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.Tally", "InvEntry.Tally\InvEntry.Tally.csproj", "{21613E60-1043-4EF6-99A4-C47B4F1FDADA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.Reports", "InvEntry.Reports\InvEntry.Reports.csproj", "{70B6A9C9-BA0F-46C6-9453-DEAC3369E731}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.LabelGenerator", "InvEntry.LabelGenerator\InvEntry.LabelGenerator.csproj", "{6857D7B3-6815-4357-8EC4-61AEB95FE58A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -255,6 +257,26 @@ Global
 		{70B6A9C9-BA0F-46C6-9453-DEAC3369E731}.Release|x64.Build.0 = Release|Any CPU
 		{70B6A9C9-BA0F-46C6-9453-DEAC3369E731}.Release|x86.ActiveCfg = Release|Any CPU
 		{70B6A9C9-BA0F-46C6-9453-DEAC3369E731}.Release|x86.Build.0 = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|ARM.Build.0 = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|x64.Build.0 = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Debug|x86.Build.0 = Debug|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|ARM.Build.0 = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|ARM64.Build.0 = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|x64.ActiveCfg = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|x64.Build.0 = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|x86.ActiveCfg = Release|Any CPU
+		{6857D7B3-6815-4357-8EC4-61AEB95FE58A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

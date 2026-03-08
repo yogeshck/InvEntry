@@ -77,15 +77,15 @@ public class BarCodePrint
                 "^PW700\n" +
                 "^LL250\n" +
 
-                "^FO5,30\n" +                         // Position: X=20, Y=10
+                "^FO5,30\n" +                         // Position: X=20, Y=10 means  x=05 left side of the label
                 "^BY1\n" +                            // Barcode width
-                "^BCN,40,N,N,N\n" +                 // Code 128 Barcode (50 dots high, NO text)"
-                $"^FD{productCode}^FS\n" +             // Barcode Data (Replace with actual Product Code)
+                "^BCN,40,N,N,N\n" +                   // Code 128 Barcode (50 dots high, NO text)"
+                $"^FD{productCode}^FS\n" +            // Barcode Data (Replace with actual Product Code)
 
                 // 🔹 Second Line: Product Code
                 "^FO5,80\n" +                         // Position below barcode
-                "^A0N,18,25\n" +                     // Font size (20 height, 20 width)
-                $"^FD{productCode}^FS\n" +                 // Product Code Text
+                "^A0N,18,25\n" +                      // Font size (20 height, 20 width)
+                $"^FD{productCode}^FS\n" +            // Product Code Text
 
                 // 🔹 Second Line: MM/YY
                 "^FO140,80\n" +
@@ -97,9 +97,9 @@ public class BarCodePrint
                $"^FD{companyName}^FS\n" + // Company Name
 
                 // 🔹 Right Section: Weight and Rate
-                "^FO210,30\n" +
+                "^FO210,30\n" +                        //based on the label size perforation position to be shifted ex. -> 210+   
                 "^A0N,20,20\n" +
-                $"^FD{productName}^FS\n" +  // Weight
+                $"^FD{productName}^FS\n" +             // Weight
 
                 "^FO210,50\n" +
                 "^A0N,20,20\n" +
