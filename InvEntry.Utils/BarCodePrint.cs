@@ -1,4 +1,6 @@
-﻿namespace InvEntry.Utils;
+﻿using System.Runtime.Intrinsics.Arm;
+
+namespace InvEntry.Utils;
 
 public class BarCodePrint
 {
@@ -73,6 +75,15 @@ public class BarCodePrint
         else
             zplCmd = "^XA\n";
 
+        // PW = print width - This sets the width of the label (the printable area) to 700 dots.
+        // Since most Zebra printers are 203 dpi(dots per inch), 700 dots ≈ 3.45 inches wide.
+        // If the printer is 300 dpi, 700 dots ≈ 2.33 inches.
+
+        // LL = Label Length - This sets the length of the label to 250 dots. At 203 dpi, this is about 1.23 inches.
+        // At 300 dpi, it's about 0.83 inches.
+
+        // This prints a label 700 dots wide × 250 dots tall
+
         zplCmd +=
                 "^PW700\n" +
                 "^LL250\n" +
@@ -97,11 +108,11 @@ public class BarCodePrint
                $"^FD{companyName}^FS\n" + // Company Name
 
                 // 🔹 Right Section: Weight and Rate
-                "^FO210,30\n" +                        //based on the label size perforation position to be shifted ex. -> 210+   
+                "^FO250,30\n" +              //OLD = 210          //based on the label size perforation position to be shifted ex. -> 210+   
                 "^A0N,20,20\n" +
                 $"^FD{productName}^FS\n" +             // Weight
 
-                "^FO210,50\n" +
+                "^FO250,50\n" +                         //OLD = 210
                 "^A0N,20,20\n" +
                 $"^FDGwt: {productWeight}^FS\n";
 
@@ -109,24 +120,24 @@ public class BarCodePrint
         if (stoneWeight.Length > 0)
         {
             zplCmd +=
-                "^FO210,70\n" +
+                "^FO250,70\n" +                         //OLD = 210
                 "^A0N,20,20\n" +
                 $"^FDStone: {stoneWeight}^FS\n";
         }
         else
         {
             zplCmd +=
-                "^FO210,70\n" +
+                "^FO250,70\n" +                         //OLD = 210
                 "^A0N,20,20\n" +
                 $"^FD ^FS\n";
         }
 
         zplCmd +=
-                    "^FO210,90\n" +
+                    "^FO250,90\n" +                     //OLD = 210
                     "^A0N,20,20\n" +
                     $"^FDMC: {VaPercent}^FS\n" +  // Rate
 
-                    "^FO210,110\n" +
+                    "^FO250,110\n" +                    //OLD = 210
                     "^A0N,20,20\n" +
                     $"^FDPurity: {productPurity}^FS\n" +  // Rate
 
