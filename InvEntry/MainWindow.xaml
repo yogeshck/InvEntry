@@ -55,9 +55,9 @@
                                                                 HideMenuWhenSelected="False" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:InvoiceListView}"
                                                  Content="Invoice List" HideMenuWhenSelected="True"/>
-                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalPurchaseView}"
+                <!--        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:OldMetalPurchaseView}"
                                                                 Content="Old Metal Purchase"
-                                                                HideMenuWhenSelected="True" />
+                                                                HideMenuWhenSelected="True" />  -->
                         
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:OSVoucherView}"
                                                                 Content="OutStanding Entry"
