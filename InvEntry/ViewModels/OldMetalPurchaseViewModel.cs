@@ -56,16 +56,16 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private ObservableCollection<string> productCategoryList;
 
     [ObservableProperty]
-    private ObservableCollection<OldMetalTransaction> selectedRows;
+    private ObservableCollection<OldMetalTransaction> _omTransUIList;
+
+    [ObservableProperty]
+    private OldMetalTransaction _omTrans;
 
     [ObservableProperty]
     private ObservableCollection<string> _metalList;
 
     [ObservableProperty]
     private ObservableCollection<MtblReference> _mtblReferencesList;
-
-    [ObservableProperty]
-    private OldMetalTransaction omHeader;
 
     [ObservableProperty]
     private ProductView _oldMetalProduct;
@@ -134,7 +134,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         //_productTransactionSummaryService = productTransactionSummaryService;
 
-        selectedRows = new();
+        //selectedRows = new();
         //productStockList = new();
 
        _settingsPageViewModel = settingsPageViewModel;
@@ -155,6 +155,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         //PopulateSalesPersonList();
 
         //PopulateUnboundHeaderDataMap();
+
     }
 
     private async void SetThisCompany()
@@ -250,13 +251,10 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
     private void SetHeader()
     {
-        OmHeader = new()
-        {
-            TransDate = DateTime.Now,
-            //IsTaxApplicable = true,
-            //     GstLocSeller = Company.GstCode,
-            //    TenantGkey = Company.TenantGkey
-        };
+
+        OmTrans = new OldMetalTransaction();
+        OmTransUIList = new ObservableCollection<OldMetalTransaction>();
+
     }
 
     private void displayRateErrorMsg()
@@ -323,7 +321,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         }
 
-        OmHeader.CustMobile = phoneNumber;
+        //OmHeader.CustMobile = phoneNumber;
     }
 
     [RelayCommand]
@@ -364,24 +362,19 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             return;
         }
 
-        OldMetalTransaction oldMetalTransaction = new OldMetalTransaction()
-        {
-            //Qty = 1,
-            TransactedRate = metalPrice,
-        };
+        OmTrans = new();
 
-        //invoiceLine.SetProductDetails(productStk);
+        OmTrans.ProductCategory = productStk.Category;
+        //OmTrans.ProductGkey = productStk.ProductSku;
+        OmTrans.ProductId = productStk.Id; 
+        //productStk.ProductSku;
+        OmTrans.TransactedRate = metalPrice;
+        OmTrans.Metal = productStk.Metal;
 
-/*        if (ProductSkuStock is not null)
-        {
-            invoiceLine.ProductSku = ProductSkuStock.ProductSku;
-            invoiceLine.ProdQty = ProductSkuStock.StockQty;
-            invoiceLine.ProdGrossWeight = ProductSkuStock.GrossWeight;
-            invoiceLine.ProdStoneWeight = ProductSkuStock.StoneWeight;
-            invoiceLine.ProdNetWeight = ProductSkuStock.NetWeight;
 
-        }
-*/
+        OmTransUIList.Add(OmTrans);
+
+
         //EvaluateFormula(invoiceLine, isInit: true);
 
         //TODO OmHeader.Add(omMetalTrans);
@@ -401,53 +394,14 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task EvaluateOldMetalTransaction()
+    private async Task EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
     {
 
-        //   var billedPrice = _settingsPageViewModel.GetPrice(product.Metal);
 
-        OldMetalTransaction oldMetalTransactionLine = new OldMetalTransaction()
-        {
-            CustGkey = OmHeader.CustGkey,
-            CustMobile = OmHeader.CustMobile,
-            //  TransType = "OG Purchase",
-            TransDate = DateTime.Now,
-            //   Uom = "Grams"
-        };
+     //   if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
+     //       oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
 
-        // OmHeader.ad
-        // OmHeader.Add(oldMetalTransactionLine);
-        return Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    private async Task EvaluateOldMetalTransactionLineAsync(OldMetalTransaction oldMetalTransaction)
-    {
-
-        if (string.IsNullOrEmpty(oldMetalTransaction.Metal)) return;
-
-        OldMetalProduct = await _productViewService.GetProduct(oldMetalTransaction.Metal);
-
-        if (OldMetalProduct is null)
-        {
-            _messageBoxService.ShowMessage($"No Product found for {OldMetalProduct}, Please make sure it exists",
-                "Product not found", MessageButton.OK, MessageIcon.Error);
-            return;
-        }
-
-        var metalPrice = _settingsPageViewModel.GetPrice(OldMetalProduct.Metal);
-
-        if (metalPrice < 1)
-        {
-            displayRateErrorMsg();
-            //return;
-        }
-
-
-        if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
-            oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
-
-        oldMetalTransaction.Purity = OldMetalProduct.Purity;
+      //  oldMetalTransaction.Purity = OldMetalProduct.Purity;
 
         oldMetalTransaction.NetWeight = (
                                            oldMetalTransaction.GrossWeight.GetValueOrDefault() -
@@ -462,6 +416,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         oldMetalTransaction.DocRefType = "Invoice";
 
     }
+
 
     private async Task ProductStockSummaryUpdate(InvoiceLine line)
     {
@@ -548,7 +503,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         //if (!isSuccess) return;
 
-        if (!string.IsNullOrEmpty(OmHeader.TransNbr))
+/*        if (!string.IsNullOrEmpty(OMTrans.TransNbr))
         {
             var result = _messageBoxService.ShowMessage("Purchase nbr already exists, Do you want to print preview the Old Purchase ?", "Old Purchase",
                                                             MessageButton.OKCancel,
@@ -560,7 +515,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
                //TODO  PrintPreviewOMPurchase();
             }
             return;
-        }
+        }*/
 
         if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
@@ -575,7 +530,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         }
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
-        OmHeader.CustGkey = (int?)Buyer.GKey;
+ //todo       OmHeader.CustGkey = (int?)Buyer.GKey;
 
         // this loop required? - repetition???
 /*        Header.Lines.ForEach(x =>
@@ -584,12 +539,12 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             x.InvoiceId = Header.InvNbr;
         });*/
 
-        var header = await _oldMetalTransactionService.CreateOldMetalTransaction(OmHeader);
+//TODO        var header = await _oldMetalTransactionService.CreateOldMetalTransaction(OmHeader);
 
-        if (header is not null)
-        {
-            OmHeader.GKey = header.GKey;
-            OmHeader.TransNbr = header.TransNbr;
+ //       if (header is not null)
+ //       {
+//            OmHeader.GKey = header.GKey;
+//            OmHeader.TransNbr = header.TransNbr;
 
 /*            Header.Lines.ForEach(x =>
             {
@@ -605,8 +560,8 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
            // await ProcessOldMetalTransaction();
 
-            _messageBoxService.ShowMessage("Invoice " + OmHeader.TransNbr + " Created Successfully", "Invoice Created",
-                                                MessageButton.OK, MessageIcon.Exclamation);
+  //          _messageBoxService.ShowMessage("Invoice " + OmHeader.TransNbr + " Created Successfully", "Invoice Created",
+  //                                              MessageButton.OK, MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
 
@@ -622,6 +577,6 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         //TODO    PrintPurchaseCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
-        }
+  //      }
     }
 }

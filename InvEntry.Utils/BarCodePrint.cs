@@ -88,31 +88,31 @@ public class BarCodePrint
                 "^PW700\n" +
                 "^LL250\n" +
 
-                "^FO5,30\n" +                         // Position: X=20, Y=10 means  x=05 left side of the label
+                "^FO5,05\n" +                         // Position: X=20, Y=10 means  x=05 left side of the label
                 "^BY1\n" +                            // Barcode width
                 "^BCN,40,N,N,N\n" +                   // Code 128 Barcode (50 dots high, NO text)"
                 $"^FD{productCode}^FS\n" +            // Barcode Data (Replace with actual Product Code)
 
                 // 🔹 Second Line: Product Code
-                "^FO5,80\n" +                         // Position below barcode
+                "^FO5,55\n" +                         // Position below barcode
                 "^A0N,18,25\n" +                      // Font size (20 height, 20 width)
                 $"^FD{productCode}^FS\n" +            // Product Code Text
 
                 // 🔹 Second Line: MM/YY
-                "^FO140,80\n" +
+                "^FO140,55\n" +
                 "^A0N,18,18\n" +
                 $"^FD ^FS\n" +  // MM/YY Text
 
-               "^FO10,110\n" +
+               "^FO10,85\n" +
                "^A0N,15,15\n" +
                $"^FD{companyName}^FS\n" + // Company Name
 
                 // 🔹 Right Section: Weight and Rate
-                "^FO250,30\n" +              //OLD = 210          //based on the label size perforation position to be shifted ex. -> 210+   
+                "^FO250,05\n" +              //OLD = 210          //based on the label size perforation position to be shifted ex. -> 210+   
                 "^A0N,20,20\n" +
                 $"^FD{productName}^FS\n" +             // Weight
 
-                "^FO250,50\n" +                         //OLD = 210
+                "^FO250,25\n" +                         //OLD = 210
                 "^A0N,20,20\n" +
                 $"^FDGwt: {productWeight}^FS\n";
 
@@ -120,24 +120,24 @@ public class BarCodePrint
         if (stoneWeight.Length > 0)
         {
             zplCmd +=
-                "^FO250,70\n" +                         //OLD = 210
+                "^FO250,45\n" +                         //OLD = 210
                 "^A0N,20,20\n" +
                 $"^FDStone: {stoneWeight}^FS\n";
         }
         else
         {
             zplCmd +=
-                "^FO250,70\n" +                         //OLD = 210
+                "^FO250,45\n" +                         //OLD = 210
                 "^A0N,20,20\n" +
                 $"^FD ^FS\n";
         }
 
         zplCmd +=
-                    "^FO250,90\n" +                     //OLD = 210
+                    "^FO250,65\n" +                     //OLD = 210
                     "^A0N,20,20\n" +
                     $"^FDMC: {VaPercent}^FS\n" +  // Rate
 
-                    "^FO250,110\n" +                    //OLD = 210
+                    "^FO250,85\n" +                    //OLD = 210
                     "^A0N,20,20\n" +
                     $"^FDPurity: {productPurity}^FS\n" +  // Rate
 
