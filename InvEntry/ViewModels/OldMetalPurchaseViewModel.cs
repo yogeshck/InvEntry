@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing.Text;
 using System.Linq;
+using System.Printing;
 using System.Threading.Tasks;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
@@ -335,17 +336,6 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
-
-        //SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-        //var product = await _productViewService.GetProduct(ProductIdUI);
-
-        // await Task.Delay(30000);
-
-        //SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-        //this should be set as summary stock to avoid confusion
         var productStk = await _productViewService.GetProduct(ProductIdUI);
 
         if (productStk is null)
@@ -370,6 +360,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         //productStk.ProductSku;
         OmTrans.TransactedRate = metalPrice;
         OmTrans.Metal = productStk.Metal;
+        OmTrans.Purity = productStk.Purity;
 
 
         OmTransUIList.Add(OmTrans);
@@ -394,14 +385,28 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
+    private void CellUpdate(CellValueChangedEventArgs args)
+    {
+        if (args.Row is OldMetalTransaction line)
+        {
+            EvaluateOldMetalTransaction(line);
+        }
+        
+
+            
+    }
+
+    [RelayCommand]
+    private void  EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
     {
 
 
-     //   if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
-     //       oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
+        //   if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
+        //       oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
 
-      //  oldMetalTransaction.Purity = OldMetalProduct.Purity;
+        //  oldMetalTransaction.Purity = OldMetalProduct.Purity;
+
+        oldMetalTransaction.WastagePercent = 0;
 
         oldMetalTransaction.NetWeight = (
                                            oldMetalTransaction.GrossWeight.GetValueOrDefault() -
@@ -413,109 +418,60 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
-        oldMetalTransaction.DocRefType = "Invoice";
+        oldMetalTransaction.DocRefType = "Old Purchase";
+
+        oldMetalTransaction.TransType = "OG Purchase";
+
+        oldMetalTransaction.TransDate = DateTime.Now; 
+        oldMetalTransaction.DocRefDate = DateTime.Now;
+        oldMetalTransaction.CustGkey = Buyer.GKey;
+        oldMetalTransaction.CustMobile = Buyer.MobileNbr;
+
+        oldMetalTransaction.Purity = "OG Purchase";
 
     }
 
-
-    private async Task ProductStockSummaryUpdate(InvoiceLine line)
+    private async Task ProcessOldMetalTransaction()
     {
-        ProductTransaction productTransaction = new();
 
-        var productSumryStk = await _productStockSummaryService.GetByProductGkey(line.ProductGkey);
-
-        if (productSumryStk is not null)
+        foreach (var omTrans in OmTransUIList)
         {
-            //Set Product Transaction
-            productTransaction.OpeningGrossWeight = productSumryStk.GrossWeight.GetValueOrDefault();
-            productTransaction.OpeningStoneWeight = productSumryStk.StoneWeight.GetValueOrDefault();
-            productTransaction.OpeningNetWeight = productSumryStk.NetWeight.GetValueOrDefault();
-
-            productTransaction.ObQty = productSumryStk.StockQty.GetValueOrDefault();
-
-            productTransaction.ProductSku = line.ProductSku;
-            productTransaction.RefGkey = line.GKey;
-            productTransaction.TransactionDate = DateTime.Now;
-            productTransaction.ProductCategory = line.ProdCategory;
-
-            productTransaction.TransactionType = "Issue";
-            productTransaction.DocumentNbr = line.InvoiceId;
-            productTransaction.DocumentDate = DateTime.Now;
-            productTransaction.DocumentType = "Sales Invoice";
-            productTransaction.VoucherType = "Sales";
-            productTransaction.TransactionQty = line.ProdQty.GetValueOrDefault();
-            productTransaction.CbQty = productSumryStk.StockQty.GetValueOrDefault() - line.ProdQty.GetValueOrDefault();
-
-            productTransaction.TransactionGrossWeight = line.ProdGrossWeight.GetValueOrDefault();
-            productTransaction.TransactionStoneWeight = line.ProdStoneWeight.GetValueOrDefault();
-            productTransaction.TransactionNetWeight = line.ProdNetWeight.GetValueOrDefault();
-
-            productTransaction.ClosingGrossWeight = productSumryStk.GrossWeight.GetValueOrDefault()
-                                                            - line.ProdGrossWeight.GetValueOrDefault();
-            productTransaction.ClosingStoneWeight = productSumryStk.StoneWeight.GetValueOrDefault()
-                                                            - line.ProdStoneWeight.GetValueOrDefault();
-            productTransaction.ClosingNetWeight = productSumryStk.NetWeight.GetValueOrDefault()
-                                                            - line.ProdNetWeight.GetValueOrDefault();
-
-            //Set Product Stock Summary
-            productSumryStk.GrossWeight = (productSumryStk.GrossWeight ?? 0) - line.ProdGrossWeight;
-            productSumryStk.StoneWeight = (productSumryStk.StoneWeight ?? 0) - line.ProdStoneWeight;
-            productSumryStk.NetWeight = (productSumryStk.NetWeight ?? 0) - line.ProdNetWeight;
-            productSumryStk.SuppliedGrossWeight = 0; //need to work ntw-- (productSumryStk.SuppliedGrossWeight ?? 0) - line.ProdGrossWeight;
-            //productSumryStk.AdjustedWeight = (productSumryStk.AdjustedWeight ?? 0);
-            productSumryStk.SoldWeight = 0; //ntw (productSumryStk.SoldWeight ?? 0) + line.ProdNetWeight;
-            productSumryStk.BalanceWeight = (productSumryStk.BalanceWeight ?? 0) - line.ProdNetWeight;
-            //productSumryStk.SuppliedQty = (productSumryStk.SuppliedQty ?? 0) + x.SuppliedQty;
-            productSumryStk.SoldQty = 0; //ntw (productSumryStk.SoldQty ?? 0) + line.ProdQty;
-            productSumryStk.StockQty = (productSumryStk.StockQty ?? 0) - line.ProdQty;
-            //productSumryStk.AdjustedQty = (productSumryStk.AdjustedQty ?? 0);
-
-            await _productStockSummaryService.UpdateProductStockSummary(productSumryStk);
-
-            //productTransaction = await _productTransactionService.CreateProductTransaction(productTransaction);
-
-            //await CreateProductTransaction(line, productSumryStk);
+            await _oldMetalTransactionService.CreateOldMetalTransaction(omTrans);
         }
     }
 
-    [RelayCommand]  //(CanExecute = nameof(CanCreatePurchase))]
-    private async Task CreatePurchase()
+    [RelayCommand]
+    private void ResetForm()
     {
-        //LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
+        SetHeader();
+        SetThisCompany();
+        Buyer = null;
+        OmTrans = null;
+        CustomerPhoneNumber = null;
+        CustomerState = Company.State;
+        OmTransUIList = null;
 
-        //validate to fit to save invoice
-/*   TODO     if (!PurchaseLineChk)
-        {
-            _messageBoxService.ShowMessage("Please enter Invoice details and then Save, ", "Missing Invoice Details", MessageButton.OK, MessageIcon.Error);
+    }
 
+    [RelayCommand(CanExecute = nameof(CanDeleteSingleRow))]
+    private void DeleteSingleRow(OldMetalTransaction omTransline)
+    {
+        var result = _messageBoxService.ShowMessage("Delete current row", "Delete Row", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+        if (result == MessageResult.No)
             return;
-        }*/
 
-/*        if (!PayRctChk)
-        {
-            _messageBoxService.ShowMessage("No Customer Payment details entered....", "Missing Customer Payment Details", MessageButton.OK, MessageIcon.Error);
+        var index = OmTransUIList.Remove(omTransline);
+    }
 
-            return;
-        }*/
+    private bool CanDeleteSingleRow(OldMetalTransaction omTransLine)
+    {
+        return omTransLine is not null && OmTransUIList.IndexOf(omTransLine) > -1;
+    }
 
-        //invBalanceChk = true;  //is this a right place to fix
-        //var isSuccess = ProcessInvBalance();
-
-        //if (!isSuccess) return;
-
-/*        if (!string.IsNullOrEmpty(OMTrans.TransNbr))
-        {
-            var result = _messageBoxService.ShowMessage("Purchase nbr already exists, Do you want to print preview the Old Purchase ?", "Old Purchase",
-                                                            MessageButton.OKCancel,
-                                                            MessageIcon.Question,
-                                                            MessageResult.Cancel);
-
-            if (result == MessageResult.OK)
-            {
-               //TODO  PrintPreviewOMPurchase();
-            }
-            return;
-        }*/
+    [RelayCommand]  //(CanExecute = nameof(CanCreatePurchase))]
+    private async Task CreatePurchaseOrder()
+    {
 
         if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
@@ -529,41 +485,13 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             Buyer = await _customerService.CreateCustomer(Buyer);
         }
 
-        //Header.InvNbr = InvoiceNumberGenerator.Generate();
- //todo       OmHeader.CustGkey = (int?)Buyer.GKey;
+        await ProcessOldMetalTransaction();
 
-        // this loop required? - repetition???
-/*        Header.Lines.ForEach(x =>
-        {
-            x.InvLineNbr = Header.Lines.IndexOf(x) + 1;
-            x.InvoiceId = Header.InvNbr;
-        });*/
 
-//TODO        var header = await _oldMetalTransactionService.CreateOldMetalTransaction(OmHeader);
+                  _messageBoxService.ShowMessage("Customer PO " + OmTrans.TransNbr + " Created Successfully", "Cust PO Created",
+                                                      MessageButton.OK, MessageIcon.Exclamation);
 
- //       if (header is not null)
- //       {
-//            OmHeader.GKey = header.GKey;
-//            OmHeader.TransNbr = header.TransNbr;
-
-/*            Header.Lines.ForEach(x =>
-            {
-                x.InvoiceHdrGkey = header.GKey;
-                x.InvoiceId = header.InvNbr;
-                x.TenantGkey = header.TenantGkey;
-            });*/
-
-            // loop for validation check for customer
-            //await _invoiceService.CreateInvoiceLine(Header.Lines);
-
-            //await ProcessProductTransaction(Header.Lines);
-
-           // await ProcessOldMetalTransaction();
-
-  //          _messageBoxService.ShowMessage("Invoice " + OmHeader.TransNbr + " Created Successfully", "Invoice Created",
-  //                                              MessageButton.OK, MessageIcon.Exclamation);
-
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Purchase Order..."));
 
             var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
 
@@ -576,6 +504,8 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         //TODO    PrintPreviewPurcahseCommand.NotifyCanExecuteChanged();
         //TODO    PrintPurchaseCommand.NotifyCanExecuteChanged();
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+
+        ResetForm();
 
   //      }
     }

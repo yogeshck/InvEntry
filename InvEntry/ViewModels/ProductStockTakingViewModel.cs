@@ -11,11 +11,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Media;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Linq;
 
 namespace InvEntry.ViewModels
 {
@@ -37,10 +39,19 @@ namespace InvEntry.ViewModels
         private ObservableCollection<ScanItem> _unavailableItems;
 
         [ObservableProperty]
+        private ObservableCollection<CategorySummary> _categorySummaries = new();
+
+        [ObservableProperty]
         private StockVerifyScan _stockVerifiedItem;
 
         [ObservableProperty]
+        private string _statusMessage;
+
+        [ObservableProperty]
         private int totalScanned;
+
+        [ObservableProperty]
+        private Brush _statusBrush = Brushes.Wheat; // default
 
         [ObservableProperty]
         private int _missingCount;
@@ -79,30 +90,37 @@ namespace InvEntry.ViewModels
             Status = null;
 
             var barcode = args.NewValue as string;
-           if (string.IsNullOrEmpty(barcode))
+            if (string.IsNullOrEmpty(barcode))
                 return;
 
-              BarcodeValidate scanInput = new();
-              barcode = scanInput.Validate(barcode);
+            BarcodeValidate scanInput = new();
+            barcode = scanInput.Validate(barcode);
 
             if (string.IsNullOrEmpty(barcode) || barcode.Length < 9 || barcode.Length > 15)
             {
-                _messageBoxService.ShowMessage("Invalid Tag", "Invalid Tag", MessageButton.OK);
+                StatusMessage = $"❌ Invalid Tag: {barcode}";
+                StatusBrush = Brushes.Red;
+                // _messageBoxService.ShowMessage("Invalid Tag", "Invalid Tag", MessageButton.OK);
                 return;
             }
-            
+
             if (_scannedSet.Contains(barcode))
             {
-                _messageBoxService.ShowMessage("Tag already scanned", "Duplicate Tag", MessageButton.OK);
+                StatusMessage = $"Tag already scanned: {barcode}";
+                StatusBrush = Brushes.Red;
+                //_messageBoxService.ShowMessage("Tag already scanned", "Duplicate Tag", MessageButton.OK);
                 //return;
                 //there are some duplicate tags printed - till we make unique, return should be blocked here
                 Status = "Dup Scan";
             }
-             else
+            else
             {
                 _scannedSet.Add(barcode);
                 TotalScanned++;
                 await FetchProductAsync(barcode);
+                StatusMessage = $"✅ Scanned: {barcode}";
+                StatusBrush = Brushes.Green;
+
 
             }
 
@@ -136,20 +154,46 @@ namespace InvEntry.ViewModels
                 // ProductIdUI = ProductSkuStock.Category;
 
                 ProductStockGridList.Add(ProductSkuStock);
+                UpdateCategorySummary(ProductSkuStock);
 
                 Status = ProductSkuStock.IsProductSold == false ? "In-Stock" : "Sold"; //1  In-Stock  2. Sold   3.Missing
 
             }
             else
             {
-                Items.Barcode = barcode;
+                var missingItem = new ScanItem()
+                {
+                    Barcode = barcode,
+                    Status = "No Tag",
+                        ScanTime = DateTime.Now.ToString("HH:mm:ss")
+                };
                 Status = "No Tag";
-                UnavailableItems.Add(Items);
+                UnavailableItems.Add(missingItem);
                 MissingCount++;
             }
             ;
 
         }
+
+        private void UpdateCategorySummary(ProductStock product)
+        {
+            var existing = CategorySummaries.FirstOrDefault(c => c.Category == product.Category);
+            if (existing != null)
+            {
+                existing.ItemCount++;
+                existing.TotalWeight += product.NetWeight;
+            }
+            else
+            {
+                CategorySummaries.Add(new CategorySummary
+                {
+                    Category = product.Category,
+                    ItemCount = 1,
+                    TotalWeight = product.NetWeight,
+                });
+            }
+        }
+
 
         private async Task AddStockVerifyScan(StockVerifyScan verifyScan)
         {
@@ -164,4 +208,16 @@ namespace InvEntry.ViewModels
         }
 
     }
+
+    public partial class CategorySummary : ObservableObject
+    {
+        [ObservableProperty]
+        public string _category;
+
+        [ObservableProperty]
+        public int _itemCount; 
+
+        [ObservableProperty]
+        public decimal? _totalWeight;     }
+
 }

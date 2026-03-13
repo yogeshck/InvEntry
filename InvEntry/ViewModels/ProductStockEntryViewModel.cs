@@ -465,6 +465,8 @@ namespace InvEntry.ViewModels
         private async Task PrintTagAsync(GrnLine grnline)
         {
 
+           // BarCodePrint.ReinitializePrinter();
+
 
             if (grnline.NetWeight > 0.00m)
             {

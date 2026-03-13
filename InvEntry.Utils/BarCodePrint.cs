@@ -6,20 +6,30 @@ public class BarCodePrint
 {
 
     private static string PrinterName = "Bar Code Printer TT065-50"; // Set your printer name
-    private static bool firstRec = true;
+                                                                     // private static bool firstRec = true;
+    private static bool initialized = false;
+
 
     public static bool ProcessBarCode(string productCode, string productName, decimal VApercent,
-                                    decimal productWeight, decimal prdStoneWeight, string productPurity, 
-                                    string companyName="MATHA")
+                                    decimal productWeight, decimal prdStoneWeight, string productPurity,
+                                    string companyName = "MATHA")
     {
 
         try
         {
+            // Run initialization once per session
+            if (!initialized)
+            {
+                string initZPL = GenerateInitZPL();
+                RawPrinterHelper.SendZPLToPrinter(PrinterName, initZPL, out var initErr);
+                initialized = true;
+            }
+
 
             var netWeight = productWeight.ToString("F3");
             var vaPercent = (int)VApercent + "%";
             var stoneWeight = "";
-            
+
             if (prdStoneWeight > 0)
             {
                 stoneWeight = prdStoneWeight.ToString("F3");
@@ -44,6 +54,20 @@ public class BarCodePrint
         return false;
     }
 
+    private static string GenerateInitZPL()
+    {
+        return "^XA\n" +
+               "^MNA\n" +   // Non-continuous media
+               "^MTT\n" +   // Thermal Transfer mode
+               "^SLC0\n" +  // Enable auto label detection
+               "^JUS\n" +   // Perform auto-calibration
+               "^PR6\n" +   // Print speed
+               "^MD30\n" +  // Darkness
+               "^LH0,0\n" + // Home position
+               "^FWN\n" +   // Print direction
+               "^XZ\n";
+    }
+
 
     private static string GenerateZPL(string productCode, string productName, string VaPercent,
                                     string productWeight, string stoneWeight, string productPurity, string companyName)
@@ -51,7 +75,7 @@ public class BarCodePrint
 
         if (companyName.Length > 20)
             companyName = companyName.Substring(0, 19);
-            
+
         /* return "^XA\n" +
     "^FO50,50\n" +
     "^BY3\n" +
@@ -60,21 +84,28 @@ public class BarCodePrint
     "^XZ";*/
         string zplCmd = "";
 
-        if (firstRec)
-            zplCmd = "^XA\n" +
+        /*        if (firstRec)
+                {
+                    firstRec = false;
 
-                "^MNA\n" +                              // Non-continuous media
-                "^MTT\n" +                              // Thermal Transfer mode
-                "^SLC0\n" +                             // Enable auto label detection
-                "^JUS\n" +                              // Perform auto-calibration
-                "^XA\n" +
-                "^PR6\n" +                              // Set print speed (6 = medium speed)
-                "^MD30\n" +                             // Set darkness level (30 = medium)
-                "^LH0,0\n" +                            // Set label home position
-                "^FWN\n";                              // Set print direction (Normal)
-        else
-            zplCmd = "^XA\n";
+                    zplCmd = "^XA\n" +
 
+                        "^MNA\n" +                              // Non-continuous media
+                        "^MTT\n" +                              // Thermal Transfer mode
+                        "^SLC0\n" +                             // Enable auto label detection
+                        "^JUS\n" +                              // Perform auto-calibration
+                        "^XA\n" +
+                        "^PR6\n" +                              // Set print speed (6 = medium speed)
+                        "^MD30\n" +                             // Set darkness level (30 = medium)
+                        "^LH0,0\n" +                            // Set label home position
+                        "^FWN\n"+                              // Set print direction (Normal)
+                    "XZ\n";
+                }
+                else
+                {
+                    zplCmd = "^XA\n";
+
+                }*/
         // PW = print width - This sets the width of the label (the printable area) to 700 dots.
         // Since most Zebra printers are 203 dpi(dots per inch), 700 dots ≈ 3.45 inches wide.
         // If the printer is 300 dpi, 700 dots ≈ 2.33 inches.
@@ -85,8 +116,9 @@ public class BarCodePrint
         // This prints a label 700 dots wide × 250 dots tall
 
         zplCmd +=
-                "^PW700\n" +
-                "^LL250\n" +
+                "^XA\n" +
+                "^PW700\n" +                            //700
+                "^LL250\n" +                            //250
 
                 "^FO5,05\n" +                         // Position: X=20, Y=10 means  x=05 left side of the label
                 "^BY1\n" +                            // Barcode width
@@ -146,10 +178,25 @@ public class BarCodePrint
         return zplCmd;
     }
 
+    public static void ReinitializePrinter()
+    {
+        try
+        {
+            string initZPL = GenerateInitZPL();
+            RawPrinterHelper.SendZPLToPrinter(PrinterName, initZPL, out var err);
+            initialized = true; // reset state
+            Console.WriteLine("Printer reinitialized successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Printer reinit failed: {ex.Message}");
+        }
+    }
 }
+
 
 public class BarCodeProductRec
 {
     public string productCode { get; set; }
-    
+
 }
