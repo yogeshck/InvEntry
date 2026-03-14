@@ -13,6 +13,8 @@ namespace InvEntry.Services
 
         Task CreateVerifiedStock(StockVerifyScan barCode);
 
+        Task CreateVerifiedStockBulk(List<StockVerifyScan> scanBufferLst);
+
         //Task UpdateVerifiedStock(StockVerifyScan barCode);
     }
 
@@ -34,6 +36,13 @@ namespace InvEntry.Services
         {
 
             await _mijmsApiService.Post($"api/stockverifyscan/", barCode);
+        }
+
+        public async Task CreateVerifiedStockBulk(List<StockVerifyScan> scanBufferLst)
+        {
+            var entities = scanBufferLst.ToList();
+
+            await _mijmsApiService.PostList($"api/stockverifyscan/bulk/", scanBufferLst);
         }
 
 /*        public async Task UpdateProductStock(StockVerifyScan barCode)

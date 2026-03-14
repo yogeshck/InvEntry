@@ -51,13 +51,16 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private OrgThisCompanyView _company;
 
     [ObservableProperty]
-    private Customer _buyer;
+    private Customer _seller;
 
     [ObservableProperty]
     private ObservableCollection<string> productCategoryList;
 
     [ObservableProperty]
     private ObservableCollection<OldMetalTransaction> _omTransUIList;
+
+    [ObservableProperty]
+    private ObservableCollection<OldMetalTransaction> selectedRows;
 
     [ObservableProperty]
     private OldMetalTransaction _omTrans;
@@ -69,7 +72,13 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private ObservableCollection<MtblReference> _mtblReferencesList;
 
     [ObservableProperty]
+    private ObservableCollection<string> _stateReferencesList;
+
+    [ObservableProperty]
     private ProductView _oldMetalProduct;
+
+    [ObservableProperty]
+    public bool _customerReadOnly;
 
     private readonly ReferenceLoader _referenceLoader;
 
@@ -135,10 +144,13 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         //_productTransactionSummaryService = productTransactionSummaryService;
 
-        //selectedRows = new();
+        selectedRows = new();
         //productStockList = new();
 
-       _settingsPageViewModel = settingsPageViewModel;
+        _settingsPageViewModel = settingsPageViewModel;
+
+        
+        _customerReadOnly = false;
 
         SetMetalPrice();
         SetHeader();
@@ -191,10 +203,10 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         return (decimal)metalPrice;
     }
 
-/*    private async void SetMasterLedger()
-    {
-        MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
-    }*/
+    /*    private async void SetMasterLedger()
+        {
+            MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
+        }*/
 
     private async void PopulateProductCategoryList()
     {
@@ -215,9 +227,9 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         //CustOrdStatusList = await _referenceLoader.LoadValuesAsync("CUST_ORD_STATUS");
 
-        //StateReferencesList = await _referenceLoader.LoadValuesAsync("CUST_STATE");
+        StateReferencesList = await _referenceLoader.LoadValuesAsync("CUST_STATE");
 
-       // PaymentModeList = await _referenceLoader.LoadValuesAsync("PAYMENT_MODE");
+        // PaymentModeList = await _referenceLoader.LoadValuesAsync("PAYMENT_MODE");
 
         // SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
 
@@ -275,27 +287,27 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
             return;
 
-        if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
+        if (Seller is not null && Seller.MobileNbr == phoneNumber)
             return;
 
-        //CustomerReadOnly = false;
+        CustomerReadOnly = false;
         createCustomer = false;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
-        Buyer = await _customerService.GetCustomer(phoneNumber);
+        Seller = await _customerService.GetCustomer(phoneNumber);
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
-        if (Buyer is null)
+        if (Seller is null)
         {
             _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
 
-            Buyer = new();
-            Buyer.MobileNbr = phoneNumber;
-            Buyer.Address.GstStateCode = Company.GstCode;
-            Buyer.Address.State = Company.State;
-            Buyer.Address.District = Company.District;
+            Seller = new();
+            Seller.MobileNbr = phoneNumber;
+            Seller.Address.GstStateCode = Company.GstCode;
+            Seller.Address.State = Company.State;
+            Seller.Address.District = Company.District;
 
             createCustomer = true;
             //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
@@ -305,18 +317,18 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         }
         else
         {
-            var gstCode = Buyer.Address is null ? Company.GstCode : Buyer.Address.GstStateCode;
+            var gstCode = Seller.Address is null ? Company.GstCode : Seller.Address.GstStateCode;
 
-            if (Buyer.Address is null)
+            if (Seller.Address is null)
             {
-                Buyer.Address = new();
-                Buyer.Address.GstStateCode = Company.GstCode;
+                Seller.Address = new();
+                Seller.Address.GstStateCode = Company.GstCode;
             }
 
             //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
             CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", gstCode);
 
-           // customerCreditCheck(Buyer);
+            // customerCreditCheck(Seller);
 
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
@@ -336,16 +348,16 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        var productStk = await _productViewService.GetProduct(ProductIdUI);
+        var prdView = await _productViewService.GetProduct(ProductIdUI);
 
-        if (productStk is null)
+        if (prdView is null)
         {
             _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
                 "Product not found", MessageButton.OK, MessageIcon.Error);
             return;
         }
 
-        var metalPrice = getBilledPrice(productStk.Metal);
+        var metalPrice = getBilledPrice(prdView.Metal);
         if (metalPrice < 1)
         {
             displayRateErrorMsg();
@@ -354,13 +366,13 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         OmTrans = new();
 
-        OmTrans.ProductCategory = productStk.Category;
-        //OmTrans.ProductGkey = productStk.ProductSku;
-        OmTrans.ProductId = productStk.Id; 
+        OmTrans.ProductCategory = prdView.Category;
+        //OmTrans.ProductGkey = prdView.ProductSku;
+        OmTrans.ProductId = prdView.Id;
         //productStk.ProductSku;
         OmTrans.TransactedRate = metalPrice;
-        OmTrans.Metal = productStk.Metal;
-        OmTrans.Purity = productStk.Purity;
+        OmTrans.Metal = prdView.Metal;
+        OmTrans.Purity = prdView.Purity;
 
 
         OmTransUIList.Add(OmTrans);
@@ -372,7 +384,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         ProductIdUI = string.Empty;
 
-       //TODO EvaluateHeader();
+        //TODO EvaluateHeader();
 
         /*        if (invoiceLine.ProdGrossWeight > 0)
                 {
@@ -391,13 +403,13 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         {
             EvaluateOldMetalTransaction(line);
         }
-        
 
-            
+
+
     }
 
     [RelayCommand]
-    private void  EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
+    private void EvaluateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
     {
 
 
@@ -407,6 +419,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         //  oldMetalTransaction.Purity = OldMetalProduct.Purity;
 
         oldMetalTransaction.WastagePercent = 0;
+        oldMetalTransaction.WastageWeight = 0;
 
         oldMetalTransaction.NetWeight = (
                                            oldMetalTransaction.GrossWeight.GetValueOrDefault() -
@@ -422,12 +435,12 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         oldMetalTransaction.TransType = "OG Purchase";
 
-        oldMetalTransaction.TransDate = DateTime.Now; 
+        oldMetalTransaction.TransDate = DateTime.Now;
         oldMetalTransaction.DocRefDate = DateTime.Now;
-        oldMetalTransaction.CustGkey = Buyer.GKey;
-        oldMetalTransaction.CustMobile = Buyer.MobileNbr;
+        oldMetalTransaction.CustGkey = Seller.GKey;
+        oldMetalTransaction.CustMobile = Seller.MobileNbr;
 
-        oldMetalTransaction.Purity = "OG Purchase";
+        //oldMetalTransaction.Purity = "OG Purchase";
 
     }
 
@@ -445,11 +458,11 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     {
         SetHeader();
         SetThisCompany();
-        Buyer = null;
+        Seller = null;
         OmTrans = null;
         CustomerPhoneNumber = null;
         CustomerState = Company.State;
-        OmTransUIList = null;
+        OmTransUIList.Clear();
 
     }
 
@@ -473,7 +486,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private async Task CreatePurchaseOrder()
     {
 
-        if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
+        if (Seller is null || string.IsNullOrEmpty(Seller.CustomerName))
         {
             _messageBoxService.ShowMessage("Customer information is not provided", "Customer info",
                                                 MessageButton.OK, MessageIcon.Hand);
@@ -482,31 +495,31 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         if (createCustomer)
         {
-            Buyer = await _customerService.CreateCustomer(Buyer);
+            Seller = await _customerService.CreateCustomer(Seller);
         }
 
         await ProcessOldMetalTransaction();
 
 
-                  _messageBoxService.ShowMessage("Customer PO " + OmTrans.TransNbr + " Created Successfully", "Cust PO Created",
-                                                      MessageButton.OK, MessageIcon.Exclamation);
+        _messageBoxService.ShowMessage("Customer PO " + OmTrans.TransNbr + " Created Successfully", "Cust PO Created",
+                                            MessageButton.OK, MessageIcon.Exclamation);
 
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Purchase Order..."));
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Purchase Order..."));
 
-            var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
+        var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
 
-            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-            //TO DO PrintPreviewOMPurchase();
+        //TO DO PrintPreviewOMPurchase();
 
-            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
         //TODO    PrintPreviewPurcahseCommand.NotifyCanExecuteChanged();
         //TODO    PrintPurchaseCommand.NotifyCanExecuteChanged();
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
         ResetForm();
 
-  //      }
+        //      }
     }
 }

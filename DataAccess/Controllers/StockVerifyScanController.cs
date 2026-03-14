@@ -44,13 +44,31 @@ namespace DataAccess.Controllers
 
         }
 
-        // PUT api/<ProductStockController>/5
-/*        [HttpPut("{productGkey}")]
-        public IActionResult Put(int productGkey, [FromBody] ProductStock value)
+        [HttpPost("bulk")]
+        public IActionResult PostList([FromBody] List<StockVerifyScan> scanBuffer)
         {
-            _verifiedStock.Update(value);
-            return Ok(value);
-        }*/
+            if (scanBuffer == null || scanBuffer.Count == 0)
+                return BadRequest("No items provided.");
+
+            for (int i = 0; i < scanBuffer.Count; i++)
+            {
+                var item = scanBuffer[i];
+                if (string.IsNullOrEmpty(item.Barcode))
+                    return BadRequest($"Item at index {i} has an empty barcode.");
+
+                _verifiedStock.Add(item);
+            }
+            return Ok(new { Count = scanBuffer.Count, Message = "Bulk insert successful" });
+        }
+
+
+        // PUT api/<ProductStockController>/5
+        /*        [HttpPut("{productGkey}")]
+                public IActionResult Put(int productGkey, [FromBody] ProductStock value)
+                {
+                    _verifiedStock.Update(value);
+                    return Ok(value);
+                }*/
 
         // DELETE api/<ProductStockController>/5
         /*

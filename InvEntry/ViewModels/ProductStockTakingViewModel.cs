@@ -62,6 +62,10 @@ namespace InvEntry.ViewModels
 
         public ObservableCollection<ScanItem> _recentScanned;
 
+        private readonly List<StockVerifyScan> _scanBufferList = new();
+
+        private const int BulkSaveThreshold = 4;
+
         private readonly IMessageBoxService _messageBoxService;
 
         public ProductStockTakingViewModel(IProductStockService productStockService,
@@ -124,13 +128,22 @@ namespace InvEntry.ViewModels
 
             }
 
-            StockVerifiedItem = new();
+            StockVerifiedItem = new StockVerifyScan
+            {
+                Barcode = barcode,
+                SessionId = SessionId,
+                Status = Status,
+            };
 
-            StockVerifiedItem.Barcode = barcode;
-            StockVerifiedItem.SessionId = SessionId;
-            StockVerifiedItem.Status = Status;
+            _scanBufferList.Add(StockVerifiedItem);
 
-            await AddStockVerifyScan(StockVerifiedItem);
+            if (_scanBufferList.Count >= BulkSaveThreshold)
+            {
+                await BulkSaveAsync();
+            }
+
+            //Disabled individual save for now - we will do bulk save every 50 scans or on demand
+            //await AddStockVerifyScan(StockVerifiedItem);
 
             BarcodeInput = string.Empty;
         }
@@ -199,6 +212,24 @@ namespace InvEntry.ViewModels
         {
             await _stockVerifyScanService.CreateVerifiedStock(verifyScan);
         }
+
+
+
+
+        private async Task BulkSaveAsync()
+        {
+            try
+            {
+                await _stockVerifyScanService.CreateVerifiedStockBulk(_scanBufferList);
+                StatusMessage = $"💾 Saved {_scanBufferList.Count} scans to DB";
+                _scanBufferList.Clear();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"❌ Save failed: {ex.Message}";
+            }
+        }
+
 
         public class ScanItem
         {
