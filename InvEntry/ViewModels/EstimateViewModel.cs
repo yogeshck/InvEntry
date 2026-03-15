@@ -98,6 +98,8 @@ public partial class EstimateViewModel: ObservableObject
     [ObservableProperty]
     private ObservableCollection<MtblReference> stateReferencesList;
 
+    private ProductStock ProductSkuStock;
+
     public ICommand ShowWindowCommand { get; set; }
 
     [ObservableProperty]
@@ -107,7 +109,9 @@ public partial class EstimateViewModel: ObservableObject
 
     private bool createCustomer  = false;
     private bool estBalanceChk   = false;
-   // private bool estimateWithTax = false;
+    private bool IsBarCodeEnabled = false;
+
+    // private bool estimateWithTax = false;
     //private bool isStockTransfer = false;
 
     private readonly ICustomerService _customerService;
@@ -465,26 +469,58 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
+
+        var tagError = false;
+
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
-        var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
+        ProductIdUI = ProductIdUI.ToUpper();
 
-        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+       //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
 
-        var product = await _productViewService.GetProduct(ProductIdUI);
+       // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
+       // var product = await _productViewService.GetProduct(ProductIdUI);
 
         // await Task.Delay(30000);
 
-        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+       // SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
-        if (product is null)
+
+        ProductSkuStock = new();
+        ProductSkuStock = await _productStockService.GetProductStock(ProductIdUI);
+        if (ProductSkuStock is not null)
         {
-            _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
-                "Product not found", MessageButton.OK, MessageIcon.Error);
+            IsBarCodeEnabled = true;
+            ProductIdUI = ProductSkuStock.Category;
+        }
+        else
+        {
+            IsBarCodeEnabled = false;
+            tagError = true;
+            //return;
+        }
+
+        //this should be set as summary stock to avoid confusion
+        var productStk = await _productViewService.GetProduct(ProductIdUI);
+
+        if (productStk is null)
+        {
+            if (tagError)
+            {
+                _messageBoxService.ShowMessage($"Product Tag not found for {ProductIdUI}, clear and select from list",
+                "Product Tag not found", MessageButton.OK, MessageIcon.Error);
+            }
+            else
+            {
+                _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
+                    "Product not found", MessageButton.OK, MessageIcon.Error);
+                // return;
+            }
             return;
         }
 
-        var metalPrice = _settingsPageViewModel.GetPrice(product.Metal);
+        var metalPrice = _settingsPageViewModel.GetPrice(productStk.Metal);
 
         if (metalPrice < 1)
         {
@@ -504,7 +540,17 @@ public partial class EstimateViewModel: ObservableObject
 
         };
 
-        estimateLine.SetProductDetails(product);   
+        estimateLine.SetProductDetails(productStk);
+
+        if (ProductSkuStock is not null)
+        {
+            estimateLine.ProductSku = ProductSkuStock.ProductSku;
+            estimateLine.ProdQty = (int)ProductSkuStock.StockQty;
+            estimateLine.ProdGrossWeight = ProductSkuStock.GrossWeight;
+            estimateLine.ProdStoneWeight = ProductSkuStock.StoneWeight;
+            estimateLine.ProdNetWeight = ProductSkuStock.NetWeight;
+
+        }
 
         EvaluateFormula(estimateLine, isInit: true);
 
@@ -657,16 +703,23 @@ public partial class EstimateViewModel: ObservableObject
 
             await ProductStockSummaryUpdate(line);
 
-            //await ProductStockUpdate(line);  //Put in on-hold for time being - till we introduce barcode
+            await ProductStockUpdate(line);  //Put in on-hold for time being - till we introduce barcode
 
             //await CreateProductTransaction(line);
         }
     }
 
-    /*    private async Task ProductStockUpdate(EstimateLine line)
+    private async Task ProductStockUpdate(EstimateLine line)
     {
 
         var productStk = await _productStockService.GetProductStock(line.ProductSku);
+
+
+        if (productStk is null)
+        {
+            IsBarCodeEnabled = false;
+            return;
+        }
 
         productStk.SoldWeight = line.ProdGrossWeight;
         productStk.BalanceWeight = 0;
@@ -677,7 +730,7 @@ public partial class EstimateViewModel: ObservableObject
 
         await _productStockService.UpdateProductStock(productStk);
 
-    }*/
+    }
 
     //Consolidated stock line in product stock summary - stock qty / weight has to be reduced based on invoiced qty
     //this logic would be revisited/changed once product sku - barcode feature introduced

@@ -30,10 +30,12 @@
             </Style>
             <dxmvvm:BooleanNegationConverter x:Key="NegationConverter"/>
         </Grid.Resources>
+        
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />

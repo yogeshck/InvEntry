@@ -133,7 +133,9 @@
                                                  Content="Barcode Enquiry" HideMenuWhenSelected="True" />  
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:DailyStockSummaryListView}"
                                                  Content="Daily Stock Summary List" HideMenuWhenSelected="True"/>
-
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:StockClosingView}"
+                                                                Content="Stock Closing New"
+                                                                HideMenuWhenSelected="True" />
                         <!--        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ImportDocViewPage}"
                                                                 Content="Util:Import" HideMenuWhenSelected="True" /> -->
                     </dxwui:HamburgerSubMenu.Items>

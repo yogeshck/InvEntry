@@ -96,4 +96,6 @@ public partial class EstimateLine
     public DateTime? ModifiedOn { get; set; }
 
     public int? TenantGkey { get; set; }
+
+    public string? ProductSku { get; set; }
 }

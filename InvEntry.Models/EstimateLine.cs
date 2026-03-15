@@ -145,5 +145,8 @@ namespace InvEntry.Models
         [ObservableProperty]
         public int? _tenantGkey;
 
+        [ObservableProperty]
+        public string? _productSku;
+
 }
 }
