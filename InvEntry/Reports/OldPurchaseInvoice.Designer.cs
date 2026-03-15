@@ -1018,7 +1018,7 @@
             // 
             this.pRefDocNbr.Description = "Parameter1";
             this.pRefDocNbr.Name = "pRefDocNbr";
-            this.pRefDocNbr.ValueInfo = "OGA-0009";
+            this.pRefDocNbr.ValueInfo = "OGP-0049";
             // 
             // OldPurchaseInvoice
             // 

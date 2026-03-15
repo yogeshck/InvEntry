@@ -60,11 +60,11 @@ public partial class OldMetalTransactionListViewModel: ObservableObject
     private void PrintDeliveryNote()
     {
 
-/*        if (SelectedTransaction.TransType.Equals("OG Purchase"))
+        if (SelectedTransaction.TransType.Equals("OG Purchase"))
         {
             _reportDialogService.PrintPreviewOMPurchase(SelectedTransaction.DocRefNbr);
         }
-        else*/
+        else
         {
             _reportDialogService.PrintPreviewDeliveryNote(SelectedTransaction.DocRefNbr, (int)SelectedTransaction.DocRefGkey, null);
 

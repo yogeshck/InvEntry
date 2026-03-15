@@ -404,8 +404,6 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             EvaluateOldMetalTransaction(line);
         }
 
-
-
     }
 
     [RelayCommand]
@@ -447,10 +445,12 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private async Task ProcessOldMetalTransaction()
     {
 
-        foreach (var omTrans in OmTransUIList)
+/*        foreach (var omTrans in OmTransUIList)
         {
             await _oldMetalTransactionService.CreateOldMetalTransaction(omTrans);
-        }
+        }*/
+
+        await _oldMetalTransactionService.CreateOldMetalTransaction(OmTransUIList);
     }
 
     [RelayCommand]
