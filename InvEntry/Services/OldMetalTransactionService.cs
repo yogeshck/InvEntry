@@ -17,7 +17,7 @@ namespace InvEntry.Services
 
         Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
 
-        Task CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
+        Task <string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
 
         Task<IEnumerable<OldMetalTransaction>> GetAll(DateSearchOption options);
     }
@@ -37,14 +37,35 @@ namespace InvEntry.Services
             return await _mijmsApiService.Post($"api/OldMetalTransaction/", oldMetalTransaction);
         }
 
-        public async Task CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
+        /*        public async Task<string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
+                {
+                    var list = new List<Task>();
+                    var transNbr = "";
+
+                    foreach (var line in lines) 
+                    {
+                        list.Add(CreateOldMetalTransaction(line));
+                        transNbr = line.TransNbr;
+                    }
+
+                    await Task.WhenAll(list);
+
+                    return transNbr;
+                }*/
+
+        public async Task<string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
         {
-            var list = new List<Task>();
+            var tasks = new List<Task<OldMetalTransaction>>();
 
             foreach (var line in lines)
-                list.Add(CreateOldMetalTransaction(line));
+            {
+                tasks.Add(CreateOldMetalTransaction(line));
+            }
 
-            await Task.WhenAll(list);
+            var results = await Task.WhenAll(tasks);
+
+            // If you want the last created transaction number:
+            return results.Last().TransNbr;
         }
 
         public async Task<OldMetalTransaction> GetOldMetalTransaction(string transNbr)

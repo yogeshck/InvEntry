@@ -93,7 +93,7 @@ public class ReportFactoryService : IReportFactoryService
 
     public XtraReport CreateOMPurchaseReport(string pDocRefNbr)
     {
-        var report = CreateOMPurchaseReport(pDocRefNbr);
+        var report = CreateOMPurchaseReport();
 
         //await report.ExportToPdfAsync(filePath);
         report.Parameters["pRefDocNbr"].Value = pDocRefNbr;

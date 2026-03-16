@@ -97,6 +97,8 @@ namespace InvEntry.ViewModels
             if (string.IsNullOrEmpty(barcode))
                 return;
 
+            barcode = barcode.ToUpper();
+
             BarcodeValidate scanInput = new();
             barcode = scanInput.Validate(barcode);
 

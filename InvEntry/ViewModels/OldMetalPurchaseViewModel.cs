@@ -103,6 +103,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
 
     private bool createCustomer = false;
+    private string omOrderNbr;
 
     private decimal IGSTPercent = 0M;
     private decimal SCGSTPercent = 3M;
@@ -442,15 +443,19 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
     }
 
-    private async Task ProcessOldMetalTransaction()
+    private async Task ProcessOldMetalTransactionAsync()
     {
 
-/*        foreach (var omTrans in OmTransUIList)
-        {
-            await _oldMetalTransactionService.CreateOldMetalTransaction(omTrans);
-        }*/
+        /*        foreach (var omTrans in OmTransUIList)
+                {
+                    await _oldMetalTransactionService.CreateOldMetalTransaction(omTrans);
+                }*/
 
-        await _oldMetalTransactionService.CreateOldMetalTransaction(OmTransUIList);
+        var result = await _oldMetalTransactionService.CreateOldMetalTransaction(OmTransUIList);
+
+        omOrderNbr = result.ToString();
+
+
     }
 
     [RelayCommand]
@@ -498,10 +503,10 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             Seller = await _customerService.CreateCustomer(Seller);
         }
 
-        await ProcessOldMetalTransaction();
+        ProcessOldMetalTransactionAsync();
 
 
-        _messageBoxService.ShowMessage("Customer PO " + OmTrans.TransNbr + " Created Successfully", "Cust PO Created",
+        _messageBoxService.ShowMessage("Customer PO " + omOrderNbr + " Created Successfully", "Cust PO Created",
                                             MessageButton.OK, MessageIcon.Exclamation);
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Purchase Order..."));
@@ -510,7 +515,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-        //TO DO PrintPreviewOMPurchase();
+        PrintPreviewOMPurchase();
 
         SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
@@ -522,4 +527,17 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         //      }
     }
+
+    private bool CanPrintCustomerPurchase()
+    {
+        return string.IsNullOrEmpty(OmTrans?.TransNbr);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPrintCustomerPurchase))]
+    private void PrintPreviewOMPurchase()
+    {
+        _reportDialogService.PrintPreviewOMPurchase(omOrderNbr);
+     
+    }
+
 }

@@ -62,7 +62,7 @@ public partial class OldMetalTransactionListViewModel: ObservableObject
 
         if (SelectedTransaction.TransType.Equals("OG Purchase"))
         {
-            _reportDialogService.PrintPreviewOMPurchase(SelectedTransaction.DocRefNbr);
+            _reportDialogService.PrintPreviewOMPurchase(SelectedTransaction.TransNbr);
         }
         else
         {

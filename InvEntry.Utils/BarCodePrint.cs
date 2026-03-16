@@ -123,7 +123,7 @@ public class BarCodePrint
 
                 "^FO5,05\n" +                         // Position: X=20, Y=10 means  x=05 left side of the label
                // prev "^BY1\n" +                            // Barcode width
-                "^BY2,2,40"+           // Barcode module width=2, ratio=2, height=40
+                "^BY1,2,40"+           // Barcode module width=2, ratio=2, height=40
 
                 "^BCN,40,N,N,N\n" +                   // Code 128 Barcode (50 dots high, NO text)"
                 $"^FD{productCode}^FS\n" +            // Barcode Data (Replace with actual Product Code)

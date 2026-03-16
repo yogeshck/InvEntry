@@ -78,7 +78,7 @@
             this.DetailData1 = new DevExpress.XtraReports.UI.XRControlStyle();
             this.DetailData3_Odd = new DevExpress.XtraReports.UI.XRControlStyle();
             this.PageInfo = new DevExpress.XtraReports.UI.XRControlStyle();
-            this.prefDocNbr = new DevExpress.XtraReports.Parameters.Parameter();
+            this.pRefDocNbr = new DevExpress.XtraReports.Parameters.Parameter();
             this.GroupHeader2 = new DevExpress.XtraReports.UI.GroupHeaderBand();
             this.xrLine1 = new DevExpress.XtraReports.UI.XRLine();
             this.customerTable = new DevExpress.XtraReports.UI.XRTable();
@@ -98,7 +98,7 @@
             this.vendorCity = new DevExpress.XtraReports.UI.XRTableCell();
             this.ReportHeader = new DevExpress.XtraReports.UI.ReportHeaderBand();
             this.GroupFooter1 = new DevExpress.XtraReports.UI.GroupFooterBand();
-            this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.xrLine2 = new DevExpress.XtraReports.UI.XRLine();
             this.taxTable = new DevExpress.XtraReports.UI.XRTable();
             this.cgstTableRow = new DevExpress.XtraReports.UI.XRTableRow();
             this.cgstCaption = new DevExpress.XtraReports.UI.XRTableCell();
@@ -115,12 +115,12 @@
             this.xrTableRow12 = new DevExpress.XtraReports.UI.XRTableRow();
             this.xrTableCell19 = new DevExpress.XtraReports.UI.XRTableCell();
             this.invGrandTotal = new DevExpress.XtraReports.UI.XRTableCell();
+            this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
             this.GroupFooter2 = new DevExpress.XtraReports.UI.GroupFooterBand();
-            this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
-            this.notes = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel4 = new DevExpress.XtraReports.UI.XRLabel();
+            this.xrLabel2 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLabel5 = new DevExpress.XtraReports.UI.XRLabel();
-            this.xrLine2 = new DevExpress.XtraReports.UI.XRLine();
+            this.notes = new DevExpress.XtraReports.UI.XRLabel();
             ((System.ComponentModel.ISupportInitialize)(this.lineDetHdrTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -502,7 +502,7 @@
             customSqlQuery1.Name = "OldMetalTrans";
             queryParameter1.Name = "pRefDocNbr";
             queryParameter1.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter1.Value = new DevExpress.DataAccess.Expression("?prefDocNbr", typeof(string));
+            queryParameter1.Value = new DevExpress.DataAccess.Expression("?pRefDocNbr", typeof(string));
             customSqlQuery1.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter1});
             customSqlQuery1.Sql = resources.GetString("customSqlQuery1.Sql");
@@ -510,7 +510,7 @@
             customSqlQuery2.Name = "CompDetails";
             queryParameter2.Name = "paramEstNbr4";
             queryParameter2.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter2.Value = new DevExpress.DataAccess.Expression("?prefDocNbr", typeof(string));
+            queryParameter2.Value = new DevExpress.DataAccess.Expression("?pRefDocNbr", typeof(string));
             customSqlQuery2.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter2});
             customSqlQuery2.Sql = resources.GetString("customSqlQuery2.Sql");
@@ -518,7 +518,7 @@
             customSqlQuery3.Name = "CustomerDetails";
             queryParameter3.Name = "prefDocuNbr";
             queryParameter3.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter3.Value = new DevExpress.DataAccess.Expression("?prefDocNbr", typeof(string));
+            queryParameter3.Value = new DevExpress.DataAccess.Expression("?pRefDocNbr", typeof(string));
             customSqlQuery3.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter3});
             customSqlQuery3.Sql = resources.GetString("customSqlQuery3.Sql");
@@ -588,11 +588,11 @@
             this.PageInfo.Name = "PageInfo";
             this.PageInfo.Padding = new DevExpress.XtraPrinting.PaddingInfo(6, 6, 0, 0, 100F);
             // 
-            // prefDocNbr
+            // pRefDocNbr
             // 
-            this.prefDocNbr.Description = "REf Doc number";
-            this.prefDocNbr.Name = "prefDocNbr";
-            this.prefDocNbr.ValueInfo = "OGP-0049";
+            this.pRefDocNbr.Description = "REf Doc number";
+            this.pRefDocNbr.Name = "pRefDocNbr";
+            this.pRefDocNbr.ValueInfo = "OGP-0049";
             // 
             // GroupHeader2
             // 
@@ -784,11 +784,11 @@
             this.GroupFooter1.HeightF = 124.189F;
             this.GroupFooter1.Name = "GroupFooter1";
             // 
-            // calculatedField1
+            // xrLine2
             // 
-            this.calculatedField1.DataMember = "OldMetalTrans";
-            this.calculatedField1.Expression = "[final_purchase_price]";
-            this.calculatedField1.Name = "calculatedField1";
+            this.xrLine2.LocationFloat = new DevExpress.Utils.PointFloat(3.166656F, 0F);
+            this.xrLine2.Name = "xrLine2";
+            this.xrLine2.SizeF = new System.Drawing.SizeF(645.8333F, 2F);
             // 
             // taxTable
             // 
@@ -994,6 +994,12 @@
             this.invGrandTotal.TextFormatString = "{0:##,###,##0.00}";
             this.invGrandTotal.Weight = 0.80783965162513149D;
             // 
+            // calculatedField1
+            // 
+            this.calculatedField1.DataMember = "OldMetalTrans";
+            this.calculatedField1.Expression = "[final_purchase_price]";
+            this.calculatedField1.Name = "calculatedField1";
+            // 
             // GroupFooter2
             // 
             this.GroupFooter2.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
@@ -1004,28 +1010,6 @@
             this.GroupFooter2.Level = 1;
             this.GroupFooter2.Name = "GroupFooter2";
             // 
-            // xrLabel2
-            // 
-            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(2.5F, 37.99994F);
-            this.xrLabel2.Multiline = true;
-            this.xrLabel2.Name = "xrLabel2";
-            this.xrLabel2.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel2.SizeF = new System.Drawing.SizeF(55F, 23F);
-            this.xrLabel2.Text = "NOTE:";
-            // 
-            // notes
-            // 
-            this.notes.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'Transacted Rate : \'+[transacted_rate]")});
-            this.notes.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
-            this.notes.LocationFloat = new DevExpress.Utils.PointFloat(57.50005F, 37.99993F);
-            this.notes.Multiline = true;
-            this.notes.Name = "notes";
-            this.notes.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.notes.SizeF = new System.Drawing.SizeF(232.5F, 54.17222F);
-            this.notes.StylePriority.UseFont = false;
-            this.notes.Text = "notes";
-            // 
             // xrLabel4
             // 
             this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(310.6268F, 67F);
@@ -1034,6 +1018,15 @@
             this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
             this.xrLabel4.SizeF = new System.Drawing.SizeF(142.4066F, 23F);
             this.xrLabel4.Text = "Authorised Signatory";
+            // 
+            // xrLabel2
+            // 
+            this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(2.5F, 37.99994F);
+            this.xrLabel2.Multiline = true;
+            this.xrLabel2.Name = "xrLabel2";
+            this.xrLabel2.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.xrLabel2.SizeF = new System.Drawing.SizeF(55F, 23F);
+            this.xrLabel2.Text = "NOTE:";
             // 
             // xrLabel5
             // 
@@ -1044,11 +1037,16 @@
             this.xrLabel5.SizeF = new System.Drawing.SizeF(142.4066F, 23F);
             this.xrLabel5.Text = "Customer Sign";
             // 
-            // xrLine2
+            // notes
             // 
-            this.xrLine2.LocationFloat = new DevExpress.Utils.PointFloat(3.166656F, 0F);
-            this.xrLine2.Name = "xrLine2";
-            this.xrLine2.SizeF = new System.Drawing.SizeF(645.8333F, 2F);
+            this.notes.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
+            this.notes.LocationFloat = new DevExpress.Utils.PointFloat(57.50005F, 37.99993F);
+            this.notes.Multiline = true;
+            this.notes.Name = "notes";
+            this.notes.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
+            this.notes.SizeF = new System.Drawing.SizeF(232.5F, 54.17222F);
+            this.notes.StylePriority.UseFont = false;
+            this.notes.Text = "notes";
             // 
             // OldMetalPurchase
             // 
@@ -1073,9 +1071,9 @@
             this.PageWidth = 827;
             this.PaperKind = DevExpress.Drawing.Printing.DXPaperKind.A4;
             this.ParameterPanelLayoutItems.AddRange(new DevExpress.XtraReports.Parameters.ParameterPanelLayoutItem[] {
-            new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.prefDocNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
+            new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pRefDocNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
-            this.prefDocNbr});
+            this.pRefDocNbr});
             this.StyleSheet.AddRange(new DevExpress.XtraReports.UI.XRControlStyle[] {
             this.Title,
             this.DetailCaption1,
@@ -1106,7 +1104,7 @@
         private DevExpress.XtraReports.UI.XRControlStyle DetailData1;
         private DevExpress.XtraReports.UI.XRControlStyle DetailData3_Odd;
         private DevExpress.XtraReports.UI.XRControlStyle PageInfo;
-        private DevExpress.XtraReports.Parameters.Parameter prefDocNbr;
+        private DevExpress.XtraReports.Parameters.Parameter pRefDocNbr;
         private DevExpress.XtraReports.UI.GroupHeaderBand GroupHeader2;
         private DevExpress.XtraReports.UI.XRTable customerTable;
         private DevExpress.XtraReports.UI.XRTableRow CusNameAddRow;
@@ -1172,10 +1170,10 @@
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell19;
         private DevExpress.XtraReports.UI.XRTableCell invGrandTotal;
         private DevExpress.XtraReports.UI.GroupFooterBand GroupFooter2;
-        private DevExpress.XtraReports.UI.XRLabel xrLabel5;
         private DevExpress.XtraReports.UI.XRLabel xrLabel4;
         private DevExpress.XtraReports.UI.XRLabel xrLabel2;
-        private DevExpress.XtraReports.UI.XRLabel notes;
         private DevExpress.XtraReports.UI.XRLine xrLine2;
+        private DevExpress.XtraReports.UI.XRLabel xrLabel5;
+        private DevExpress.XtraReports.UI.XRLabel notes;
     }
 }

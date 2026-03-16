@@ -50,7 +50,7 @@ namespace InvEntry.Extension
         public static void PrintPreviewOMPurchase(this IDialogService reportDialogService, string docRefNbr)
                                                             
         {
-            PrintPreviewOMPurchase(reportDialogService, docRefNbr);
+            //PrintPreviewOMPurchase(reportDialogService, docRefNbr);
             var dialogVM = DISource.Resolve<ReportDialogViewModel>();
             dialogVM.OMTransInit(docRefNbr); // estGkey, company);
 
