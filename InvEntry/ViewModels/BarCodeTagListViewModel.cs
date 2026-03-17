@@ -24,7 +24,7 @@ namespace InvEntry.ViewModels
     public partial class BarCodeTagListViewModel : ObservableObject
     {
 
-       // private readonly ReferenceLoader _referenceLoader;
+        // private readonly ReferenceLoader _referenceLoader;
 
         [ObservableProperty]
         private ObservableCollection<MtblReference> mtblReferencesList;
@@ -120,7 +120,7 @@ namespace InvEntry.ViewModels
         private async Task PopulateProductSkuList(string category = "RING")
         {
             var skuList = await _productStockService.GetCategoryList(category);
- 
+
 
             ProductSkuStrList = new(skuList
                         .Select(x => x.ProductSku));
@@ -149,7 +149,7 @@ namespace InvEntry.ViewModels
             {
                 // Load all stock only products for choosen category
                 var product = await _productStockService.GetCategoryList(SelectedCategory);
-  
+
                 // Build a lookup of duplicate SKUs
                 var duplicateSkus = product
                     .GroupBy(p => p.ProductSku)
@@ -185,8 +185,8 @@ namespace InvEntry.ViewModels
 
         private ProductStock SetProduct(ProductStock prdStk)
         {
-           // var prdStk = await _productStockService.GetProductStock(SelectedGridLine.GKey);
-          //  if (prdStk is not null)
+            // var prdStk = await _productStockService.GetProductStock(SelectedGridLine.GKey);
+            //  if (prdStk is not null)
             //    return;     //avoid duplication of product stock
 
             ProductStock newProductStock = new ProductStock();
@@ -223,50 +223,63 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task PrintTagAsync(ProductStock productStock)
         {
+            
+            var newPrdStk = productStock;
 
             var productView = await _productViewService.GetByCategory(productStock.Category);
 
-            mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", SelectedCategory);
+            if (productStock.IsReAssign)
+            {
+                mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", SelectedCategory);
 
-            productSkuSeq = int.Parse(mtblReference.RefValue);
+                productSkuSeq = int.Parse(mtblReference.RefValue);
 
-            var oldPrdStk = productStock;
+                var oldPrdStk = productStock;
 
-            var newPrdStk = SetProduct(productStock);
+                newPrdStk = SetProduct(productStock);
 
-            newPrdStk = SetProductSku(newPrdStk,productView);
+                newPrdStk = SetProductSku(newPrdStk, productView);
 
 
-            //save to db immediate - if list has 100 or more nos, it takes lots of time
-            await _productStockService.CreateProductStock(newPrdStk);
+                //save to db immediate - if list has 100 or more nos, it takes lots of time
+                await _productStockService.CreateProductStock(newPrdStk);
 
-            /*            if (productStock.NetWeight > 0.00m)
-                        {
+                oldPrdStk.Status = "InActive";
+                oldPrdStk.IsProductSold = true;
+                oldPrdStk.NetWeight = 0;
+                oldPrdStk.BalanceWeight = 0;
+                oldPrdStk.StockQty = 0;
+                oldPrdStk.ModifiedBy = "DeActivated";
+                oldPrdStk.ModifiedOn = DateTime.Now;
+                await _productStockService.UpdateProductStock(oldPrdStk);
 
-                            var result = BarCodePrint.ProcessBarCode(productStock.ProductSku, productView.Description,
-                                                                                          productStock.VaPercent.Value,
-                                                                                          productStock.NetWeight.Value,
-                                                                                          productStock.StoneWeight.Value,
-                                                                                          productView.Purity, 
-                                                                                          Company.CompanyName);
+                //if user maintains seq nbr for product sku - this needs to be executed - but in difference place - need to fix
+                mtblReference.RefValue = productSkuSeq.ToString();
+                await _mtblReferencesService.UpdateReference(mtblReference);
 
-                        }*/
+            }
 
-            oldPrdStk.Status = "InActive";
-            oldPrdStk.IsProductSold = true;
-            oldPrdStk.NetWeight = 0;
-            oldPrdStk.BalanceWeight = 0;
-            oldPrdStk.StockQty = 0;
-            oldPrdStk.ModifiedBy = "DeActivated";
-            oldPrdStk.ModifiedOn = DateTime.Now;
-            await _productStockService.UpdateProductStock(oldPrdStk);
+                PrintTag(newPrdStk, productView);
 
-            //if user maintains seq nbr for product sku - this needs to be executed - but in difference place - need to fix
-            mtblReference.RefValue = productSkuSeq.ToString();
-            await _mtblReferencesService.UpdateReference(mtblReference);
+                //after modification refresh the list
+                await RefreshBarcodeAsync();
+            
+        }
 
-            //after modification refresh the list
-            await RefreshBarcodeAsync();
+        private void PrintTag(ProductStock newPrdStk, ProductView productView)
+        {
+
+            if (newPrdStk.NetWeight > 0.00m)
+            {
+
+                var result = BarCodePrint.ProcessBarCode(newPrdStk.ProductSku, productView.Description,
+                                                                              newPrdStk.VaPercent.Value,
+                                                                              newPrdStk.NetWeight.Value,
+                                                                              newPrdStk.StoneWeight.Value,
+                                                                              productView.Purity,
+                                                                              Company.CompanyName);
+
+            }
 
         }
 

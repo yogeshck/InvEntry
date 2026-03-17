@@ -97,5 +97,8 @@ namespace InvEntry.Models
         [ObservableProperty]
         public string? _duplicateFlag;
 
+        [ObservableProperty]
+        public bool _isReAssign;
+
     }
 }

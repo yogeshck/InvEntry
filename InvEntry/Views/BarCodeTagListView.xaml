@@ -153,8 +153,15 @@
                 <dxg:GridColumn FieldName="DuplicateFlag"
                                 Header="Duplicate"
                                 Width="80" />
+                <dxg:GridColumn FieldName="IsReAssign"
+                                Header="ReAssign?">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:CheckEditSettings />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
 
-                
+
+
                 <!-- Submit Button Column -->
                 <dxg:GridColumn Header="Print"
                                 Width="80">
