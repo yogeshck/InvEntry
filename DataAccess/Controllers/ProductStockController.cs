@@ -30,6 +30,18 @@ namespace DataAccess.Controllers
         }
 
         // GET api/<ProductStockController>/5
+        [HttpGet("key/{key}")]
+        public async Task<IActionResult> GetByKey(int key)
+        {
+            //var pstk = _productStock.GetAll().FirstOrDefault(x => x.ProductSku == productSku);
+
+            return Ok(_productStock.Get(x => x.Gkey == key &&
+                                            x.IsProductSold == false));
+
+            //Ok(_productStock.Get(x => x.ProductSku == productSku));
+        }
+
+        // GET api/<ProductStockController>/5
         [HttpGet("{productSku}")]
         public async Task<IActionResult> Get(string productSku)
         {
@@ -58,7 +70,8 @@ namespace DataAccess.Controllers
         [HttpGet("category/{category}")]
         public IEnumerable<ProductStock> GetCategory(string category)
         {
-            return _productStock.GetList(x => x.Category == category);
+            return _productStock.GetList(x => x.Category == category &&
+                                          x.IsProductSold == false  );
         }
 
         // POST api/<ProductStockController>
@@ -88,6 +101,16 @@ namespace DataAccess.Controllers
                 _productStock.Remove(product);
 
             return Ok();
+        }
+
+
+        // DELETE api/<InvoiceController>/5
+        [HttpDelete("{gKey}")]
+        public void Delete(int gKey)
+        {
+            var pStk = _productStock.GetId(gKey);
+
+            _productStock.Remove(pStk);
         }
     }
 }

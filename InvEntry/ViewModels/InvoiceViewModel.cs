@@ -1083,7 +1083,8 @@ public partial class InvoiceViewModel : ObservableObject
                                         arInvRctLine.AdjustedAmount.GetValueOrDefault();
 
 
-        if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
+        if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund"
+                            || arInvRctLine.TransactionType == "Advance Receipt")
         {
             arInvRctLine.ModeOfReceipt = "Cash";
         }
@@ -1091,7 +1092,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             arInvRctLine.ModeOfReceipt = "Credit";
         }
-        else
+        else 
         {
             arInvRctLine.ModeOfReceipt = "Bank";
         }
@@ -1306,7 +1307,7 @@ public partial class InvoiceViewModel : ObservableObject
         }
         if (Header.AdvanceAdj > 0)
         {
-            SetReceipts("Advance");
+            SetReceipts("Advance Receipt");
 
         }
         if (Header.RdAmountAdj > 0)
@@ -1507,7 +1508,7 @@ public partial class InvoiceViewModel : ObservableObject
             var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
             var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
             var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
-            var s when s.Equals("Advance", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+            var s when s.Equals("Advance Receipt", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
             _ => 0M
         };
 

@@ -64,8 +64,14 @@ namespace InvEntry.Services
 
             var results = await Task.WhenAll(tasks);
 
-            // If you want the last created transaction number:
-            return results.Last().TransNbr;
+/*            if (results.Length == 0)
+            {
+                throw new InvalidOperationException("No transactions were created because 'lines' was empty.");
+            }*/
+
+            return results.LastOrDefault()?.TransNbr;
+
+
         }
 
         public async Task<OldMetalTransaction> GetOldMetalTransaction(string transNbr)

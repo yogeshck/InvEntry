@@ -255,7 +255,8 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
         if (IsAddSelected)
         {
-            if (ProductStock.StoneWeight > 0)
+            //validation needs to be done
+/*            if (ProductStock.StoneWeight > 0)
             {
                 // Stone weight already exists → allow both reduction and addition
                 if (ModifiedProductStock.StoneWeight >= 0)
@@ -268,7 +269,7 @@ public partial class StockAdjustmentViewModel : ObservableObject
                 MessageBox.Show("Negative Value not allowed....");
                 return;
             }
-
+*/
             modifiedGross = (decimal)(ProductStock.GrossWeight + grossInput);
             modifiedStone = (decimal)ProductStock.StoneWeight + stoneInput;
         }

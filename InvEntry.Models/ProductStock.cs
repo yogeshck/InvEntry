@@ -94,5 +94,8 @@ namespace InvEntry.Models
         [ObservableProperty]
         public bool _isBarcodePrinted;
 
+        [ObservableProperty]
+        public string? _duplicateFlag;
+
     }
 }

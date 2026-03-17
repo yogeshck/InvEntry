@@ -43,7 +43,7 @@
                     <dxb:BarEditItem.EditSettings>
                         <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"
                                                   IsTextEditable="False" />
-                    </dxb:BarEditItem.EditSettings>
+                    </dxb:BarEditItem.EditSettings> 
                 </dxb:BarEditItem>
 
                 <dxb:BarEditItem Content="BarCode"
@@ -115,13 +115,28 @@
                                AllowGrouping="False"
                                ShowAutoFilterRow="True"
                                AutoWidth="False"
-                               ShowTotalSummary="True" />
+                               ShowTotalSummary="True" >
+                    
+                    <!-- RowStyle to highlight duplicates -->
+                    <dxg:TableView.RowStyle>
+                        <Style TargetType="dxg:RowControl">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DuplicateFlag}" Value="D">
+                                    <Setter Property="Background"
+                                            Value="LightCoral" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </dxg:TableView.RowStyle>
+                </dxg:TableView>
+                
             </dxg:GridControl.View>
 
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="ProductSku"
                                 Header="Product ID"
-                                Width="110" />
+                                Width="110"
+                                SortOrder="Ascending" />
                 <dxg:GridColumn FieldName="Category"
                                 Header="Category"
                                 Width="90" />
@@ -134,6 +149,11 @@
                 <dxg:GridColumn FieldName="NetWeight"
                                 Header="Net"
                                 Width="100" />
+                <!-- Add other columns here -->
+                <dxg:GridColumn FieldName="DuplicateFlag"
+                                Header="Duplicate"
+                                Width="80" />
+
                 
                 <!-- Submit Button Column -->
                 <dxg:GridColumn Header="Print"
@@ -150,6 +170,7 @@
                         </DataTemplate>
                     </dxg:GridColumn.CellTemplate>
                 </dxg:GridColumn>
+                
             </dxg:GridControl.Columns>
 
         </dxg:GridControl>

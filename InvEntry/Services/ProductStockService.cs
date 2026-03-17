@@ -9,6 +9,7 @@ namespace InvEntry.Services
 {
     public interface IProductStockService
     {
+        Task<ProductStock> GetProductStock(int gKey);
         Task<ProductStock> GetProduct(string productId);
         Task<ProductStock> GetProductStock(string productId);
         Task<IEnumerable<ProductStock>> GetCategoryList(string category);
@@ -25,6 +26,12 @@ namespace InvEntry.Services
         {
             _mijmsApiService = mijmsApiService;
         }
+
+        public async Task<ProductStock> GetProductStock(int gKey)
+        {
+            return await _mijmsApiService.Get<ProductStock>($"api/productstock/key/{gKey}");
+        }
+
         public async Task<ProductStock> GetProduct(string productId)
         {
             return await _mijmsApiService.Get<ProductStock>($"api/productstock/{productId}");
@@ -50,5 +57,10 @@ namespace InvEntry.Services
         {
             await _mijmsApiService.Put($"api/productstock/{productStock.ProductGkey}", productStock);
         }
+
+/*        public async Task DeleteProductStock(ProductStock productStock)
+        {
+            await _mijmsApiService.($"api/productstock/{productStock.ProductGkey}");
+        }*/
     }
 }
