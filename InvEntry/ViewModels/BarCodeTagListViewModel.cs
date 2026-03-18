@@ -223,7 +223,7 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task PrintTagAsync(ProductStock productStock)
         {
-            
+
             var newPrdStk = productStock;
 
             var productView = await _productViewService.GetByCategory(productStock.Category);
@@ -259,21 +259,25 @@ namespace InvEntry.ViewModels
 
             }
 
-                PrintTag(newPrdStk, productView);
+            PrintTag(newPrdStk, productView);
 
-                //after modification refresh the list
-                await RefreshBarcodeAsync();
-            
+            //after modification refresh the list
+            await RefreshBarcodeAsync();
+
         }
 
         private void PrintTag(ProductStock newPrdStk, ProductView productView)
         {
 
+            /*            if (productView.VaPercent <1 )
+                            _messageBoxService.ShowMessage("V A Percent error. ", "Estimate Created", MessageButton.OK, MessageIcon.Exclamation);*/
+
+
             if (newPrdStk.NetWeight > 0.00m)
             {
 
                 var result = BarCodePrint.ProcessBarCode(newPrdStk.ProductSku, productView.Description,
-                                                                              newPrdStk.VaPercent.Value,
+                                                                              productView.VaPercent.Value,
                                                                               newPrdStk.NetWeight.Value,
                                                                               newPrdStk.StoneWeight.Value,
                                                                               productView.Purity,

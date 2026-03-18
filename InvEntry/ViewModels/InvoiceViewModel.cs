@@ -770,10 +770,10 @@ public partial class InvoiceViewModel : ObservableObject
             await ProcessOldMetalTransaction();
 
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
-            ProcessReceipts();
+            await ProcessReceipts();
 
-            if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
-                await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);
+        //    if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))    //blocked this on 18-Mar - need to workout in detail
+        //        await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);  // this code causing crashes of application
 
             _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created",
                                                 MessageButton.OK, MessageIcon.Exclamation);
@@ -802,7 +802,8 @@ public partial class InvoiceViewModel : ObservableObject
 
             await ProductStockSummaryUpdate(line);
 
-            await ProductStockUpdate(line);  
+            if (IsBarCodeEnabled)
+                await ProductStockUpdate(line);  
 
             //await CreateProductTransaction(line);
         }
@@ -1409,21 +1410,35 @@ public partial class InvoiceViewModel : ObservableObject
         Header.ReceiptLines.Add(arInvRct);
     }
 
-    private async void ProcessReceipts()
+    private async Task ProcessReceipts()
     {
-        //For each Receipts row - seperate Voucher has to be created
-        foreach (var receipts in Header.ReceiptLines)
+        try
         {
-            if (receipts is null) return;
+            // Work on a snapshot to avoid collection modification issues
+            var receiptsSnapshot = Header.ReceiptLines.ToList();
 
-            var voucher = CreateVoucher(receipts);
-            voucher = await SaveVoucher(voucher);
 
-            var arReceipts = CreateArReceipts(receipts, voucher);
-            await SaveArReceipts(arReceipts);
+            //For each Receipts row - seperate Voucher has to be created
+            foreach (var receipts in receiptsSnapshot ) //Header.ReceiptLines)
+            {
+                if (receipts is null) continue;
 
+                var voucher = CreateVoucher(receipts);
+                voucher = await SaveVoucher(voucher);
+
+                var arReceipts = CreateArReceipts(receipts, voucher);
+                await SaveArReceipts(arReceipts);
+
+            }
         }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage($"Error processing receipts: {ex.Message}",
+                                       "Receipts Error", MessageButton.OK, MessageIcon.Error);
+        }
+
     }
+    
 
     private async Task ProcessOldMetalTransaction()
     {
