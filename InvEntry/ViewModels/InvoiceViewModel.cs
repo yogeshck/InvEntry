@@ -332,7 +332,7 @@ public partial class InvoiceViewModel : ObservableObject
         Header.IgstPercent = GetGSTPercent("IGST");
 
         //Need to fetch based on pincode - future change
-        Header.GstLocBuyer = value;
+        Header.GstLocBuyer = Buyer.GstStateCode; // value;
 
         EvaluateForAllLines();
         EvaluateHeader();
@@ -1235,7 +1235,7 @@ public partial class InvoiceViewModel : ObservableObject
         Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
             (
                 Header.RecdAmount.GetValueOrDefault() +
-                Header.AdvanceAdj.GetValueOrDefault() +
+        //        Header.AdvanceAdj.GetValueOrDefault() +    //asked user to enter in invoice ar receipts
                 Header.RdAmountAdj.GetValueOrDefault()
              );
 
@@ -1306,11 +1306,11 @@ public partial class InvoiceViewModel : ObservableObject
         {
             SetReceipts("Discount");
         }
-        if (Header.AdvanceAdj > 0)
-        {
-            SetReceipts("Advance Receipt");
-
-        }
+ //       if (Header.AdvanceAdj > 0)                    // blocked 18-Mar
+ //       {
+ //           SetReceipts("Advance Receipt");
+ //
+ //       }
         if (Header.RdAmountAdj > 0)
         {
             SetReceipts("R.D.");
@@ -1523,7 +1523,7 @@ public partial class InvoiceViewModel : ObservableObject
             var s when s.Equals("Refund", StringComparison.OrdinalIgnoreCase) => Header.InvRefund,
             var s when s.Equals("Credit", StringComparison.OrdinalIgnoreCase) => Header.InvBalance,
             var s when s.Equals("Discount", StringComparison.OrdinalIgnoreCase) => Header.DiscountAmount,
-            var s when s.Equals("Advance Receipt", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
+        //    var s when s.Equals("Advance Receipt", StringComparison.OrdinalIgnoreCase) => Header.AdvanceAdj,
             _ => 0M
         };
 
