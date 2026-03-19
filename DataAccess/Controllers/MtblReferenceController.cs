@@ -27,7 +27,8 @@ namespace DataAccess.Controllers
             [HttpGet("{refName}")]
             public IEnumerable<MtblReference> Get(string refName)
             {
-                return _mtblReference.GetList(x => (x.RefName == refName ));
+                return _mtblReference.GetList(x => (x.RefName == refName ))
+                                         .OrderBy(x => x.SortSeq);
             }
 
             // GET api/<MtblReferenceController>/5

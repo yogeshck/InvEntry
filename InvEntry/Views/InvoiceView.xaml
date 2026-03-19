@@ -351,11 +351,13 @@
                                     <Setter Property="FontSize" Value="14"/>
                                 </Style>
                             </dxlc:LayoutGroup.Resources>
+                            
+                            <!--
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem Label="Advance  " HorizontalAlignment="Left" Width="210"
                                                  VerticalAlignment="Center"
                                                  LabelTemplate="{StaticResource RsTemplate}">
-                                    <dxe:TextEdit
+                                    <dxe:TextEdit 
                                                   EditValue="{Binding Header.AdvanceAdj}" Width="120"
                                                   FontSize="14"                                        
                                                   HorizontalContentAlignment="Right" >
@@ -366,6 +368,8 @@
                                     </dxe:TextEdit>
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
+                            -->
+                            
                             <dxlc:LayoutGroup Orientation="Horizontal">
                                 <dxlc:LayoutItem Label="RD           " HorizontalAlignment="Left" Width="210"
                                                  VerticalAlignment="Center"

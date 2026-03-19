@@ -56,13 +56,11 @@ namespace DataAccess.Controllers
         [HttpGet("stock/{productSku}")]
         public IActionResult GetStock(string productSku)
         {
-            //var pstk = _productStock.GetAll().FirstOrDefault(x => x.ProductSku == productSku);
 
-            return Ok(_productStock.GetAll().FirstOrDefault(x => x.ProductSku == productSku &&
+            return Ok(_productStock.GetList(x => x.ProductSku == productSku &&
                                                                 x.IsProductSold == false
-                                                                ));
+                                                                ).FirstOrDefault());
 
-            //Ok(_productStock.Get(x => x.ProductSku == productSku));
         }
 
 

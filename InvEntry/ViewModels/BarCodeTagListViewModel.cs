@@ -74,6 +74,8 @@ namespace InvEntry.ViewModels
 
         private int productSkuSeq = 0;
         private MtblReference mtblReference;
+        private DateTime startdate;
+
         public BarCodeTagListViewModel(
                             IProductViewService productViewService,
                             IProductStockService productStockService,

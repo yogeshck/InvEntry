@@ -1203,7 +1203,7 @@
             this.xrLabel8.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "iif([external_transaction_id] is not null,\' >> \'+[external_transaction_id],\'\')")});
             this.xrLabel8.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
-            this.xrLabel8.LocationFloat = new DevExpress.Utils.PointFloat(128.2235F, 0F);
+            this.xrLabel8.LocationFloat = new DevExpress.Utils.PointFloat(160.3925F, 0F);
             this.xrLabel8.Multiline = true;
             this.xrLabel8.Name = "xrLabel8";
             this.xrLabel8.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -1222,7 +1222,7 @@
             this.xrLabel7.Multiline = true;
             this.xrLabel7.Name = "xrLabel7";
             this.xrLabel7.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.xrLabel7.SizeF = new System.Drawing.SizeF(50.39F, 13F);
+            this.xrLabel7.SizeF = new System.Drawing.SizeF(82F, 13F);
             this.xrLabel7.StylePriority.UseBorders = false;
             this.xrLabel7.StylePriority.UseFont = false;
             this.xrLabel7.Text = "xrLabel7";
@@ -1233,7 +1233,7 @@
             this.xrLabel6.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[adjusted_amount]")});
             this.xrLabel6.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
-            this.xrLabel6.LocationFloat = new DevExpress.Utils.PointFloat(52.39011F, 0F);
+            this.xrLabel6.LocationFloat = new DevExpress.Utils.PointFloat(84.5591F, 0F);
             this.xrLabel6.Multiline = true;
             this.xrLabel6.Name = "xrLabel6";
             this.xrLabel6.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -1258,7 +1258,7 @@
             this.RctSumryTotal.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[InvRctSumry].[InvAdjTotal]")});
             this.RctSumryTotal.Font = new DevExpress.Drawing.DXFont("Arial", 8.75F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.RctSumryTotal.LocationFloat = new DevExpress.Utils.PointFloat(52.39011F, 0.3332011F);
+            this.RctSumryTotal.LocationFloat = new DevExpress.Utils.PointFloat(82F, 0.3332011F);
             this.RctSumryTotal.Multiline = true;
             this.RctSumryTotal.Name = "RctSumryTotal";
             this.RctSumryTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -1277,7 +1277,7 @@
             this.RctTotalLbl.Multiline = true;
             this.RctTotalLbl.Name = "RctTotalLbl";
             this.RctTotalLbl.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.RctTotalLbl.SizeF = new System.Drawing.SizeF(52.39014F, 15.99975F);
+            this.RctTotalLbl.SizeF = new System.Drawing.SizeF(82F, 15.99975F);
             this.RctTotalLbl.StylePriority.UseFont = false;
             this.RctTotalLbl.Text = "Total : ";
             // 
