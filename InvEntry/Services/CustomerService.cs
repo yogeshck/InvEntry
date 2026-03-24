@@ -31,7 +31,8 @@ public class CustomerService : ICustomerService
 
     public async Task<Customer> CreateCustomer(Customer customer)
     {
-        var orgAddress = await _mijmsApiService.Post($"api/address/",customer.Address);
+        var orgAddress = await _mijmsApiService.Post($"api/Address/address",customer.Address);
+
         customer.AddressGkey = orgAddress.GKey;
         customer.GstStateCode = orgAddress.GstStateCode;
         return await _mijmsApiService.Post($"api/customer/", customer);
@@ -68,7 +69,7 @@ public class CustomerService : ICustomerService
     {
 
         //var savedAddress = await _mijmsApiService.Get<OrgAddress>($"api/address/{customer.AddressGkey}");
-        var savedAddress = await _mijmsApiService.Post($"api/address/", customer.Address);
+        var savedAddress = await _mijmsApiService.Post($"api/Address/", customer.Address);
 
         if (savedAddress is not null)
         {

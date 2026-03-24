@@ -110,15 +110,19 @@ public partial class InvoiceViewModel : ObservableObject
     private List<MtblReference> _gstTaxRefList;
 
     private bool createCustomer = false;
+    private bool updateCustomer = false;
     private bool invBalanceChk = false;
     private bool InvLineChk = false;
     private bool PayRctChk = false;
     private bool IsBarCodeEnabled = false;
 
+    private string CustName;
+    private string CustCity;
     private readonly ReferenceLoader _referenceLoader;
 
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
+    private readonly IAddressService _addressService;
     private readonly IProductStockService _productStockService;
     private readonly IProductStockSummaryService _productStockSummaryService;
     private readonly IProductTransactionService _productTransactionService;
@@ -153,6 +157,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     public InvoiceViewModel(ICustomerService customerService,
         IProductViewService productViewService,
+        IAddressService addressService,
         IProductStockService productStockService,
         IProductStockSummaryService productStockSummaryService,
         IProductTransactionService productTransactionService,
@@ -176,6 +181,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
+        _addressService = addressService;
         _productViewService = productViewService;
         _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
@@ -380,6 +386,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         CustomerReadOnly = false;
         createCustomer = false;
+        updateCustomer = false;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
@@ -393,6 +400,7 @@ public partial class InvoiceViewModel : ObservableObject
 
             Buyer = new();
             Buyer.MobileNbr = phoneNumber;
+
             Buyer.Address.GstStateCode = Company.GstCode;
             Buyer.Address.State = Company.State;
             Buyer.Address.District = Company.District;
@@ -412,6 +420,11 @@ public partial class InvoiceViewModel : ObservableObject
                 Buyer.Address = new();
                 Buyer.Address.GstStateCode = Company.GstCode;
             }
+
+            updateCustomer = true;
+
+            CustName = Buyer.CustomerName;
+            CustCity = Buyer.Address.City;
 
             //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
             CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", gstCode);
@@ -736,6 +749,18 @@ public partial class InvoiceViewModel : ObservableObject
         if (createCustomer)
         {
             Buyer = await _customerService.CreateCustomer(Buyer);
+        }
+        else if (updateCustomer)
+        {
+            if (CustName != Buyer.CustomerName)
+            {
+                await _customerService.UpdateCustomer(Buyer);
+            }
+
+            if (CustCity != Buyer.Address.City)
+            {
+                await _addressService.UpdateAddress(Buyer.Address);
+            }
         }
 
         //Header.InvNbr = InvoiceNumberGenerator.Generate();
@@ -1601,6 +1626,9 @@ public partial class InvoiceViewModel : ObservableObject
         PayRctChk = false;
         CreateInvoiceCommand.NotifyCanExecuteChanged();
         invBalanceChk = false;  //reset to false for next invoice
+        CustName = null;
+        CustCity = null;
+
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]

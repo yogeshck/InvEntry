@@ -29,18 +29,18 @@ namespace InvEntry.Services
 
         public async Task<OrgAddress> CreateAddress(OrgAddress orgAddress)
         {
-            orgAddress = await _mijmsApiService.Post($"api/address/", orgAddress);
+            orgAddress = await _mijmsApiService.Post($"api/Address/", orgAddress);
             return orgAddress;
         }
 
         public async Task<OrgAddress> GetAddress(int gkey)
         {
-              return await _mijmsApiService.Get<OrgAddress>($"api/address/{gkey}");
+              return await _mijmsApiService.Get<OrgAddress>($"api/Address/{gkey}");
         }
 
         public async Task UpdateCustomer(OrgAddress orgAddress)
         {
-            await _mijmsApiService.Put($"api/address/", orgAddress);
+            await _mijmsApiService.Put($"api/Address/", orgAddress);
         }
     }
 }
