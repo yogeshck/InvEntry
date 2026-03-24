@@ -8,12 +8,19 @@ namespace DataAccess.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AddressController : BaseController<OrgAddress>
+    public class AddressController : ControllerBase              //BaseController<OrgAddress>
     {
         
-        public AddressController(IRepositoryBase<OrgAddress> orgAddressRepository) : 
+/*        public AddressController(IRepositoryBase<OrgAddress> orgAddressRepository) : 
                                                 base(orgAddressRepository)
         {
+        }*/
+
+        private readonly IRepositoryBase<OrgAddress> _repository;
+
+        public AddressController(IRepositoryBase<OrgAddress> addressRepo)
+        {
+            _repository = addressRepo;
         }
 
         // GET api/<AddressController>/5

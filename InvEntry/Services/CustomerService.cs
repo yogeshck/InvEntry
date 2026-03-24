@@ -67,6 +67,7 @@ public class CustomerService : ICustomerService
     public async Task UpdateCustomer(Customer customer)
     {
 
+        //var savedAddress = await _mijmsApiService.Get<OrgAddress>($"api/address/{customer.AddressGkey}");
         var savedAddress = await _mijmsApiService.Post($"api/address/", customer.Address);
 
         if (savedAddress is not null)

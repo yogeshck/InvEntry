@@ -122,6 +122,7 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
+                 .AddSingleton<IAddressService, AddressService>()
                  .AddSingleton<ICustomerOrderDbViewService, CustomerOrderDbViewService>()
                  .AddSingleton<ICustomerOrderService, CustomerOrderService>()
                  .AddSingleton<ICustomerService, CustomerService>()

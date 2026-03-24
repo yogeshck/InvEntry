@@ -91,6 +91,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
     private readonly ILedgerService _ledgerService;
     private readonly IDialogService _dialogService;
+    private readonly IAddressService _addressService;
     private readonly IVoucherService _voucherService;
     private readonly ICustomerService _customerService;
     private readonly IDialogService _reportDialogService;
@@ -120,6 +121,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     public OldMetalPurchaseViewModel(
                 IDialogService dialogService,
                 ILedgerService ledgerService,
+                IAddressService addressService,
                 ICustomerService customerService,
                 IMessageBoxService messageBoxService,
                 IProductViewService productViewService,
@@ -138,6 +140,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         _dialogService = dialogService;
         _ledgerService = ledgerService;
+        _addressService = addressService;
         _customerService = customerService;
         _messageBoxService = messageBoxService;
         _productViewService = productViewService;
@@ -526,9 +529,14 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         }
         else if (updateSeller)
         {
-            if (CustName != Seller.CustomerName || CustCity != Seller.Address.City)
+            if (CustName != Seller.CustomerName)
             {
                 await _customerService.UpdateCustomer(Seller);
+            }
+
+            if (CustCity != Seller.Address.City)
+            {
+                await _addressService.UpdateAddress(Seller.Address);
             }
         }
         await ProcessOldMetalTransactionAsync();
