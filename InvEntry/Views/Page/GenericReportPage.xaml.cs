@@ -4,11 +4,11 @@
 namespace InvEntry.Views.Page
 {
     /// <summary>
-    /// Interaction logic for ProductStockPage.xaml
+    /// Interaction logic for GenericReportPage.xaml
     /// </summary>
-    public partial class ProductStockPage : NavigationPage
+    public partial class GenericReportPage : NavigationPage
     {
-        public ProductStockPage()
+        public GenericReportPage()
         {
             InitializeComponent();
         }

@@ -28,8 +28,25 @@ namespace DataAccess.Controllers
         [HttpPost("address")]
         public IActionResult Post([FromBody] OrgAddress value)
         {
-            _repository.Add(value);
-            return Ok(value);
+            var address = _repository.Get(x => x.Gkey == value.Gkey);
+
+            if (address == null)
+            {
+                _repository.Add(value);
+                return Ok(value);
+            }
+            else
+            {
+                address.AddressLine1 = value.AddressLine1;
+                address.AddressLine2 = value.AddressLine2;
+                address.City = value.City;
+                address.State = value.State;
+                address.Country = value.Country;
+                address.Pincode = value.Pincode;
+                address.GstStateCode = value.GstStateCode;
+                _repository.Update(address);
+                return Ok(address);
+            }
         }
 
         // PUT api/<AddressController>/5

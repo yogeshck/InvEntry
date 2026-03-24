@@ -143,13 +143,18 @@
                         </dxlc:LayoutItem>
 
                         <dxlc:LayoutItem Label="Name">
-
                             <dxe:TextEdit EditValue="{Binding Seller.CustomerName}"
                                           CharacterCasing="Upper"
-                                          IsReadOnly="{Binding CustomerReadOnly}" />
-
+                                          IsReadOnly="{Binding CustomerReadOnly}">
+                                <dxmvvm:Interaction.Behaviors>
+                                    <dxmvvm:EventToCommand EventName="EditValueChanged"
+                                                           Command="{Binding CheckCustomerChangesCommand}"
+                                                           PassEventArgsToCommand="True" />
+                                </dxmvvm:Interaction.Behaviors>
+                            </dxe:TextEdit>
                         </dxlc:LayoutItem>
 
+                       
                         <dxlc:LayoutItem Label="City">
 
                             <dxe:TextEdit EditValue="{Binding Seller.Address.City}"
@@ -440,8 +445,7 @@
 
                                         <dxg:GridColumn FieldName="FinalPurchasePrice"
                                                         Header="Final Amount (Rs)"
-                                                        Width="150"
-                                                        ReadOnly="False">
+                                                        Width="150" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:TextEditSettings Style="{StaticResource NumberFormatEditSettingsStyle}" />
                                             </dxg:GridColumn.EditSettings>

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
+using DevExpress.PivotGrid.CustomFunctions;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
@@ -80,6 +81,12 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     [ObservableProperty]
     public bool _customerReadOnly;
 
+    [ObservableProperty]
+    private bool _isCustomerModified;
+
+    private string CustName;
+    private string CustCity;
+
     private readonly ReferenceLoader _referenceLoader;
 
     private readonly ILedgerService _ledgerService;
@@ -102,7 +109,8 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
 
-    private bool createCustomer = false;
+    private bool createSeller = false;
+    private bool updateSeller = false;
     private string omOrderNbr;
 
     private decimal IGSTPercent = 0M;
@@ -150,7 +158,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         _settingsPageViewModel = settingsPageViewModel;
 
-        
+
         _customerReadOnly = false;
 
         SetMetalPrice();
@@ -292,7 +300,8 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             return;
 
         CustomerReadOnly = false;
-        createCustomer = false;
+        createSeller = false;
+        updateSeller = false;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
@@ -310,7 +319,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             Seller.Address.State = Company.State;
             Seller.Address.District = Company.District;
 
-            createCustomer = true;
+            createSeller = true;
             //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
             CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", Company.GstCode);
 
@@ -320,10 +329,17 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         {
             var gstCode = Seller.Address is null ? Company.GstCode : Seller.Address.GstStateCode;
 
+            CustName = Seller.CustomerName;
+            CustCity = Seller.Address.City;
+
+            updateSeller = true;
+
             if (Seller.Address is null)
             {
                 Seller.Address = new();
                 Seller.Address.GstStateCode = Company.GstCode;
+                Seller.Address.City = Company.City;
+                Seller.Address.Area = Company.Area;
             }
 
             //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
@@ -428,7 +444,11 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
         oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
-        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        if (oldMetalTransaction.FinalPurchasePrice is null)
+        {
+            oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+        }
 
         oldMetalTransaction.DocRefType = "Old Purchase";
 
@@ -446,10 +466,10 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private async Task ProcessOldMetalTransactionAsync()
     {
 
-        /*        foreach (var omTrans in OmTransUIList)
-                {
-                    await _oldMetalTransactionService.CreateOldMetalTransaction(omTrans);
-                }*/
+        foreach (var omTrans in OmTransUIList)
+        {
+            omTrans.CustGkey = Seller.GKey;
+        }
 
         var result = await _oldMetalTransactionService.CreateOldMetalTransaction(OmTransUIList);
 
@@ -468,6 +488,8 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         CustomerPhoneNumber = null;
         CustomerState = Company.State;
         OmTransUIList.Clear();
+        CustName = null;
+        CustCity = null;
 
     }
 
@@ -498,12 +520,18 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             return;
         }
 
-        if (createCustomer)
+        if (createSeller)
         {
             Seller = await _customerService.CreateCustomer(Seller);
         }
-
-        ProcessOldMetalTransactionAsync();
+        else if (updateSeller)
+        {
+            if (CustName != Seller.CustomerName || CustCity != Seller.Address.City)
+            {
+                await _customerService.UpdateCustomer(Seller);
+            }
+        }
+        await ProcessOldMetalTransactionAsync();
 
 
         _messageBoxService.ShowMessage("Customer PO " + omOrderNbr + " Created Successfully", "Cust PO Created",
@@ -528,6 +556,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
         //      }
     }
 
+
     private bool CanPrintCustomerPurchase()
     {
         return string.IsNullOrEmpty(OmTrans?.TransNbr);
@@ -537,7 +566,7 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
     private void PrintPreviewOMPurchase()
     {
         _reportDialogService.PrintPreviewOMPurchase(omOrderNbr);
-     
+
     }
 
 }

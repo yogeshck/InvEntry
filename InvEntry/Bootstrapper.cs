@@ -165,6 +165,7 @@ public sealed class Bootstrapper
                  .AddSingleton<DailyStockSummaryListViewModel>()
                  .AddSingleton<EstimateListViewModel>()
                  .AddSingleton<EstimateViewModel>()
+                 .AddSingleton<GenericReportViewModel>()
                  .AddSingleton<GRNListViewModel>()
                  .AddSingleton<GRNViewModel>()
                  .AddSingleton<ImportDocViewModel>()

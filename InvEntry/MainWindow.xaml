@@ -140,6 +140,22 @@
                                                                 Content="Util:Import" HideMenuWhenSelected="True" /> -->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
+                <dxwui:HamburgerSubMenu Content="Reports"
+                                        MoreButtonVisibilityMode="Hidden"
+                                        Glyph="{dx:DXImage 'SvgImages/XAF/ActionGroup_EasyTestRecorder.svg'}">
+                    <!-- {dx:DXImage Images/XAF/BOProductGroup_32x32.png}"> -->
+                    <dxwui:HamburgerSubMenu.Items>
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:GenericReportPage}"
+                                                                Content="Daily Report"
+                                                                HideMenuWhenSelected="True" />
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
+                                                                Content="MRN List"
+                                                                HideMenuWhenSelected="True" />
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"
+                                                                Content="Stock Closing"
+                                                                HideMenuWhenSelected="True" />
+                    </dxwui:HamburgerSubMenu.Items>
+                </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerMenuNavigationButton Content="Price Setting"
                         NavigationTargetType="{x:Type page:SettingsPage}"
                         Glyph="{dx:DXImage 'SvgImages/XAF/Action_OrganizeDashboard.svg'}"/>
