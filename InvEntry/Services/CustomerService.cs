@@ -33,8 +33,12 @@ public class CustomerService : ICustomerService
     {
         var orgAddress = await _mijmsApiService.Post($"api/Address/address",customer.Address);
 
-        customer.AddressGkey = orgAddress.GKey;
-        customer.GstStateCode = orgAddress.GstStateCode;
+        if (orgAddress != null)
+        {
+            customer.AddressGkey = orgAddress.GKey;
+            customer.GstStateCode = orgAddress.GstStateCode;
+        }
+
         return await _mijmsApiService.Post($"api/customer/", customer);
     }
 

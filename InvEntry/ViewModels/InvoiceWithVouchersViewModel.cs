@@ -69,6 +69,9 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
 
+    [ObservableProperty]
+    private decimal invBalance;
+
     private readonly ICustomerService _customerService;
     private readonly IInvoiceService _invoiceService;
     private readonly IVoucherService _voucherService;
@@ -144,6 +147,10 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
                                 .Select(x => x.RefValue)
                                 .OrderBy(x => x)
                              );
+
+        var crDisc = "CR DISCOUNT";
+        PaymentModeList.Add(crDisc);
+
     }
 
 
@@ -152,6 +159,7 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     {
         OsInvoices.Clear();
         mobileNbrs.Clear();
+        InvBalance = 0;
 
         var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... processing your request.... .");
 
@@ -345,7 +353,7 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
             {
             }
 
-
+            InvBalance = SelectedInvoice.InvBalance.GetValueOrDefault();
 
             //in this sceneario - supposed to create two voucher - one is for adjusting the invoice balance and another is for advance
 

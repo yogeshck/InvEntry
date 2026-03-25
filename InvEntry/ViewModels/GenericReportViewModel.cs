@@ -2,12 +2,15 @@
 using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
 using InvEntry.Helpers;
 using InvEntry.Models;
+using InvEntry.Services;
+using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace InvEntry.ViewModels;
 
@@ -21,12 +24,26 @@ public partial class GenericReportViewModel : ObservableObject
     private DataTable _genericItems;
 
     [ObservableProperty]
+    private DateSearchOption _searchOption;
+
+    [ObservableProperty]
+    private DateTime _today = DateTime.Today;
+
+    [ObservableProperty]
     private ObservableCollection<string> _reportNameList;
 
     public List<string> DataTypes;
 
-    public GenericReportViewModel()
+    private readonly IInvoiceService _invoiceService;
+
+    public GenericReportViewModel(IInvoiceService invoiceService)
     {
+        _invoiceService = invoiceService;
+
+        SearchOption = new();
+        SearchOption.To = Today;
+        SearchOption.From = Today.AddDays(-1);
+
         // Initial load
         PopulateOptions();
 
@@ -50,15 +67,18 @@ public partial class GenericReportViewModel : ObservableObject
         LoadData(value);
     }
 
-    private void LoadData(string type)
+    private async Task LoadData(string type)
     {
         if (type == "Invoice")
         {
-            var invoices = new List<InvoiceHeader>
+
+            var invoices = await _invoiceService.GetAll(SearchOption);
+
+/*            var invoices = new List<InvoiceHeader>
                 {
                     new InvoiceHeader { InvNbr = "INV001", InvDate = DateTime.Now, CustMobile = "ABC Corp", AmountPayable = 1200 },
                     new InvoiceHeader { InvNbr = "INV002", InvDate = DateTime.Now, CustMobile = "XYZ Ltd", AmountPayable = 800 }
-                };
+                };*/
             GenericItems = GridDataHelper.MapAndTrim(invoices);
         }
         else if (type == "Receipt")
