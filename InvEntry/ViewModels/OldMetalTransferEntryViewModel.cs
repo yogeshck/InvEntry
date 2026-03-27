@@ -529,7 +529,9 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         if (!string.IsNullOrEmpty(Header.EstNbr))
         {
-            var result = _messageBoxService.ShowMessage("Transfer already created, Do you want to print preview the Transfer ?", "Estoice", MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
+            var result = _messageBoxService.ShowMessage(
+                "Transfer already created, Do you want to print preview the Transfer ?", "Estoice", 
+                                        MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
 
             if (result == MessageResult.OK)
             {
@@ -540,7 +542,8 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
         if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
         {
-            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", MessageButton.OK, MessageIcon.Hand);
+            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", 
+                                                MessageButton.OK, MessageIcon.Hand);
             return;
         }
 
@@ -586,7 +589,8 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
             SetOldMetalTransaction();
             await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
 
-            _messageBoxService.ShowMessage("Transfer Created Successfully", "Transfer Created", MessageButton.OK, MessageIcon.Exclamation);
+            _messageBoxService.ShowMessage("Transfer Created Successfully", "Transfer Created", MessageButton.OK, 
+                                                MessageIcon.Exclamation);
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Transfer..."));
 
@@ -606,7 +610,6 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
 
     private bool CanCreateStockTransfer()
     {
-
         return string.IsNullOrEmpty(Header?.EstNbr);
     }
 
@@ -620,17 +623,20 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
     private void ExportToPdf()
     {
-        _reportFactoryService.CreateDeliveryNoteReportPdf(Header.EstNbr, Header.GKey, Company, "D:\\Madrone\\Invoice\\");
+        _reportFactoryService.CreateDeliveryNoteReportPdf(
+                                        Header.EstNbr, Header.GKey, Company, "D:\\Madrone\\Invoice\\");
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
     private void PrintStockTransfer()
     {
         //after report uncomment this
-        var printed = PrintHelper.Print(_reportFactoryService.CreateDeliveryNoteReport(Header.EstNbr, Header.GKey, Company));
+        var printed = PrintHelper.Print(
+                    _reportFactoryService.CreateDeliveryNoteReport(Header.EstNbr, Header.GKey, Company));
 
         if (printed.HasValue && printed.Value)
-            _messageBoxService.ShowMessage("Delivery Note printed Successfully", "Delivery Note print", MessageButton.OK, MessageIcon.None);
+            _messageBoxService.ShowMessage("Delivery Note printed Successfully", "Delivery Note print", 
+                MessageButton.OK, MessageIcon.None);
 
         ResetOldMetalTrans();
     }

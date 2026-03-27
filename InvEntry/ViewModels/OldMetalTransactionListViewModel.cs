@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Charts.Designer.Native;
 using DevExpress.Mvvm;
@@ -66,7 +66,8 @@ public partial class OldMetalTransactionListViewModel: ObservableObject
         }
         else
         {
-            _reportDialogService.PrintPreviewDeliveryNote(SelectedTransaction.DocRefNbr, (int)SelectedTransaction.DocRefGkey, null);
+            _reportDialogService.PrintPreviewDeliveryNote(SelectedTransaction.DocRefNbr, 
+                                                            (int)SelectedTransaction.DocRefGkey, null);
 
         }
 

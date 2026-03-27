@@ -42,6 +42,9 @@ public partial class StockAdjustmentViewModel : ObservableObject
     private ObservableCollection<string> _productSkuStrList;
 
     [ObservableProperty]
+    private ObservableCollection<string> _actionList;
+
+    [ObservableProperty]
     private ProductStock _productStock;
 
     [ObservableProperty]
@@ -58,6 +61,9 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
     [ObservableProperty]
     private string _selectedReasonCode;
+
+    [ObservableProperty]
+    private string _selectedActionCode;
 
     [ObservableProperty]
     private bool isAddSelected = true;
@@ -86,6 +92,7 @@ public partial class StockAdjustmentViewModel : ObservableObject
         PopulateProductCategoryList();
         _ = PopulateProductSkuList();
 
+        SetActionList();
         SetBase();
 
     }
@@ -98,6 +105,10 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
     }
 
+    private void SetActionList()
+    {
+        ActionList = ["ADD", "Reduce"];
+    }
     partial void OnIsAddSelectedChanged(bool value)
     {
         if (value)
@@ -107,12 +118,23 @@ public partial class StockAdjustmentViewModel : ObservableObject
         Recalculate();
     }
 
-    partial void OnIsReduceSelectedChanged(bool value)
+/*    partial void OnIsAddSelectedChanged(bool value)
     {
         if (value)
-            IsAddSelected = false;
+            IsReduceSelected = false;
+
 
         Recalculate();
+    }*/
+
+    partial void OnSelectedActionCodeChanged(string value)
+    {
+        if (value == "ADD")
+        { IsAddSelected = true; }
+        else
+        { IsAddSelected = false; }
+
+            Recalculate();
     }
 
     private async void PopulateProductCategoryList()
