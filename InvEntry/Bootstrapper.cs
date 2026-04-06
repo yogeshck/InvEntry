@@ -163,6 +163,7 @@ public sealed class Bootstrapper
                  .AddSingleton<CustomerOrderDBViewListViewModel>()
                  .AddSingleton<CustomerOrderListViewModel>()
                  .AddSingleton<CustomerOrderViewModel>()
+                 .AddSingleton<DailyStockEntryViewModel>()
                  .AddSingleton<DailyStockSummaryListViewModel>()
                  .AddSingleton<EstimateListViewModel>()
                  .AddSingleton<EstimateViewModel>()

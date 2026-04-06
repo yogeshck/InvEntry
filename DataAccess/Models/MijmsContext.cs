@@ -59,8 +59,6 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<OldMetalTransaction> OldMetalTransactions { get; set; }
 
-    public virtual DbSet<OpeningStock> OpeningStocks { get; set; }
-
     public virtual DbSet<OrgAddress> OrgAddresses { get; set; }
 
     public virtual DbSet<OrgBankDetail> OrgBankDetails { get; set; }
@@ -97,11 +95,7 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<ProductView> ProductViews { get; set; }
 
-    public virtual DbSet<RepDailyStockSummary> RepDailyStockSummaries { get; set; }
-
     public virtual DbSet<StockVerifyScan> StockVerifyScans { get; set; }
-
-    public virtual DbSet<Test> Tests { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
@@ -113,10 +107,6 @@ public partial class MijmsContext : DbContext
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
- /*   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-    => optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=mijms;Trusted_Connection=True;TrustServerCertificate=True;");
-*/
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CustomerOrder>(entity =>
@@ -500,22 +490,59 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToView("daily_stock_summary");
+            entity.HasKey(e => e.Gkey).HasName("PK_REP_DAILY_STOCK_SUMMARY");
 
-            entity.Property(e => e.OpeningQtyFirstTransaction)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("opening_qty_first_transaction");
+            entity.ToTable("DAILY_STOCK_SUMMARY");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKey");
+            entity.Property(e => e.ClosingStockGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("CLOSING_STOCK_GROSS_WEIGHT");
+            entity.Property(e => e.ClosingStockNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("CLOSING_STOCK_NET_WEIGHT");
+            entity.Property(e => e.ClosingStockQty).HasColumnName("CLOSING_STOCK_QTY");
+            entity.Property(e => e.ClosingStockStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("CLOSING_STOCK_STONE_WEIGHT");
+            entity.Property(e => e.Metal)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("METAL");
+            entity.Property(e => e.OpeningStockGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OPENING_STOCK_GROSS_WEIGHT");
+            entity.Property(e => e.OpeningStockNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OPENING_STOCK_NET_WEIGHT");
+            entity.Property(e => e.OpeningStockQty).HasColumnName("OPENING_STOCK_QTY");
+            entity.Property(e => e.OpeningStockStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("OPENING_STOCK_STONE_WEIGHT");
             entity.Property(e => e.ProductCategory)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_CATEGORY");
-            entity.Property(e => e.StockIn).HasColumnType("decimal(38, 3)");
-            entity.Property(e => e.StockOut).HasColumnType("decimal(38, 3)");
-            entity.Property(e => e.TotalTransactedQty)
-                .HasColumnType("decimal(38, 3)")
-                .HasColumnName("total_transacted_qty");
+            entity.Property(e => e.StockInGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STOCK_IN_GROSS_WEIGHT");
+            entity.Property(e => e.StockInNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STOCK_IN_NET_WEIGHT");
+            entity.Property(e => e.StockInQty).HasColumnName("STOCK_IN_QTY");
+            entity.Property(e => e.StockInStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STOCK_IN_STONE_WEIGHT");
+            entity.Property(e => e.StockOutGrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STOCK_OUT_GROSS_WEIGHT");
+            entity.Property(e => e.StockOutNetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STOCK_OUT_NET_WEIGHT");
+            entity.Property(e => e.StockOutQty).HasColumnName("STOCK_OUT_QTY");
+            entity.Property(e => e.StockOutStoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STOCK_OUT_STONE_WEIGHT");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
         });
 
@@ -1632,22 +1659,6 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("wastage_weight");
         });
 
-        modelBuilder.Entity<OpeningStock>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("OPENING_STOCK");
-
-            entity.Property(e => e.OpeningGrossWeight)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("OPENING_GROSS_WEIGHT");
-            entity.Property(e => e.ProductCategory)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("product_category");
-            entity.Property(e => e.TransactionDate).HasColumnName("transaction_date");
-        });
-
         modelBuilder.Entity<OrgAddress>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -2671,51 +2682,9 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("WASTAGE_PERCENT");
         });
 
-        modelBuilder.Entity<RepDailyStockSummary>(entity =>
-        {
-            entity.HasKey(e => e.Gkey);
-
-            entity.ToTable("REP_DAILY_STOCK_SUMMARY");
-
-            entity.Property(e => e.Gkey).HasColumnName("gkey");
-            entity.Property(e => e.ClosingStock)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("CLOSING_STOCK");
-            entity.Property(e => e.ClosingStockQty).HasColumnName("CLOSING_STOCK_QTY");
-            entity.Property(e => e.Metal)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("METAL");
-            entity.Property(e => e.OpeningStock)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("OPENING_STOCK");
-            entity.Property(e => e.OpeningStockQty).HasColumnName("OPENING_STOCK_QTY");
-            entity.Property(e => e.ProductCategory)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("PRODUCT_CATEGORY");
-            entity.Property(e => e.StockIn)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCK_IN");
-            entity.Property(e => e.StockInQty).HasColumnName("STOCK_IN_QTY");
-            entity.Property(e => e.StockOut)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCK_OUT");
-            entity.Property(e => e.StockOutQty).HasColumnName("STOCK_OUT_QTY");
-            entity.Property(e => e.StockTransferIn)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCK_TRANSFER_IN");
-            entity.Property(e => e.StockTransferInQty).HasColumnName("STOCK_TRANSFER_IN_QTY");
-            entity.Property(e => e.StockTransferOut)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCK_TRANSFER_OUT");
-            entity.Property(e => e.StockTransferOutQty).HasColumnName("STOCK_TRANSFER_OUT_QTY");
-            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
-        });
-
         modelBuilder.Entity<StockVerifyScan>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__1630EB62DE3F92FB");
+            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__1630EB62E2A9B55D");
 
             entity.ToTable("StockVerifyScan");
 
@@ -2726,27 +2695,6 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<Test>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("test");
-
-            entity.Property(e => e.OpeningQtyFirstTransaction)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("opening_qty_first_transaction");
-            entity.Property(e => e.ProductCategory)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("PRODUCT_CATEGORY");
-            entity.Property(e => e.StockIn).HasColumnType("decimal(38, 3)");
-            entity.Property(e => e.StockOut).HasColumnType("decimal(38, 3)");
-            entity.Property(e => e.TotalTransactedQty)
-                .HasColumnType("decimal(38, 3)")
-                .HasColumnName("total_transacted_qty");
-            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
         });
 
         modelBuilder.Entity<Voucher>(entity =>
@@ -2829,10 +2777,10 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("ob_amount");
             entity.Property(e => e.PaidAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("Paid_Amount");
+                .HasColumnName("Paid Amount");
             entity.Property(e => e.RecdAmount)
                 .HasColumnType("decimal(18, 2)")
-                .HasColumnName("Recd_Amount");
+                .HasColumnName("Recd Amount");
             entity.Property(e => e.RefDocDate).HasColumnName("ref_doc_date");
             entity.Property(e => e.RefDocGkey).HasColumnName("ref_doc_gkey");
             entity.Property(e => e.RefDocNbr)

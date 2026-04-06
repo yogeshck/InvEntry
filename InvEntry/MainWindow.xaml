@@ -148,7 +148,9 @@
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:GenericReportPage}"
                                                                 Content="Daily Report"
                                                                 HideMenuWhenSelected="True" />
-             <!--           <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
+                        <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:DailyStockEntryView}"
+                                                 Content="Daily Stock Summary List" HideMenuWhenSelected="True"/>
+                        <!--           <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:GRNListView}"
                                                                 Content="MRN List"
                                                                 HideMenuWhenSelected="True" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:ProductStockPage}"

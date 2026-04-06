@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Grid;
+using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
@@ -13,25 +14,22 @@ using System.Threading.Tasks;
 
 namespace InvEntry.ViewModels
 {
-    public partial class DailyStockSummaryListViewModel : ObservableObject
+    public partial class DailyStockEntryViewModel : ObservableObject
     {
+
         private readonly IDailyStockSummaryService _dailyStockSummaryService;
         private readonly IDialogService _reportDialogService;
-
-        [ObservableProperty]
-        private ObservableCollection<DailyStockSummary> _dailyStockStockSummary;
 
         [ObservableProperty]
         private DateSearchOption _dateSearchOption;
 
         [ObservableProperty]
-        private DateTime _startDate = DateTime.Today;
+        private ObservableCollection<DailyStockSummary> _dailyStockSummaryList;
 
         [ObservableProperty]
-        private DateTime _Today = DateTime.Today;
+        private DateTime _startDate = DateTime.Today;
 
-
-        public DailyStockSummaryListViewModel(IDailyStockSummaryService dailyStockSummaryService,
+        public DailyStockEntryViewModel(IDailyStockSummaryService dailyStockSummaryService,
                                                 [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
         {
             _dailyStockSummaryService = dailyStockSummaryService;
@@ -39,20 +37,26 @@ namespace InvEntry.ViewModels
 
             _dateSearchOption = new();
             DateSearchOption.From = StartDate.AddDays(-1);
-            DateSearchOption.To = StartDate.AddDays(-1); 
+            DateSearchOption.To = StartDate.AddDays(-1);
 
+            //populate product category
+            //populate previous day data - closing balance as todays ob
 
             Task.Run(RefreshDailyStockSummaryAsync).Wait();
         }
 
+
         [RelayCommand]
         private async Task RefreshDailyStockSummaryAsync()
         {
-            var dailyStockSummaryResult = await _dailyStockSummaryService.GetAll(DateSearchOption);
-            if (dailyStockSummaryResult is not null)
-                DailyStockStockSummary = null;
-                DailyStockStockSummary = new(dailyStockSummaryResult);
+
+            var prevDaysStockSummaryList = await _dailyStockSummaryService.GetAll(DateSearchOption);
+
+            if (prevDaysStockSummaryList is not null)
+                DailyStockSummaryList = null;
+                DailyStockSummaryList = new(prevDaysStockSummaryList);
+
+
         }
     }
-
 }
