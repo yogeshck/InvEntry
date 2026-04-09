@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DevExpress.Xpf.Grid;
+using InvEntry.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +26,19 @@ namespace InvEntry.Views
         {
             InitializeComponent();
         }
+
+        private void TableView_ShowingEditor(object sender, ShowingEditorEventArgs e)
+        {
+            var row = e.Row as DailyStockSummary;
+            if (row == null) return;
+
+            // Block editing for Opening fields if IsObEditable is false
+            if ((e.Column.FieldName == "OpeningStockQty" || e.Column.FieldName == "OpeningStockNetWeight")
+                && !row.IsObEditable)
+            {
+                e.Cancel = true; // prevents editor from opening
+            }
+        }
+
     }
 }

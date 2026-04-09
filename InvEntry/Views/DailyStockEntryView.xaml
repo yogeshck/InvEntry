@@ -34,32 +34,50 @@
         <!-- Menu Bar -->
         <dxb:BarContainerControl Grid.Row="0">
             <dxb:MainMenuControl FontSize="15" Height="60">
-                <dxb:BarEditItem EditValue="{Binding DateSearchOption.From}" EditWidth="120" Content="From Date">
+                <dxb:BarEditItem EditValue="{Binding SelectedDate}" EditWidth="120" Content="From Date">
                     <dxb:BarEditItem.EditSettings>
                         <dxe:DateEditSettings AllowDefaultButton="True"/>
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
+
+                <dxb:BarButtonItem Content="Prev Date"
+                   Glyph="{dx:DXImage 'Images/Navigation/Backward_32x32.png'}"
+                   GlyphSize="Large"
+                   Command="{Binding RefreshPrevDateCommand}" />
 
                 <dxb:BarButtonItem Content="Refresh"
                                    Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                                    GlyphSize="Large"
                                    Command="{Binding RefreshDailyStockSummaryCommand}" />
 
+                <dxb:BarButtonItem Content="Next Date"
+                   Glyph="{dx:DXImage 'Images/Navigation/Forward_32x32.png'}"
+                   GlyphSize="Large"
+                   Command="{Binding RefreshNextDateCommand}"
+                   IsEnabled="{Binding CanGoNext}" />
+
                 <dxb:BarItemSeparator Margin="2,0,2,0"/>
+
+                <dxb:BarButtonItem Content="Add Row"
+                                       Glyph="{dx:DXImage 'Images/Actions/Add_32x32.png'}"
+                                        GlyphSize="Large"
+                                       Command="{Binding AddRowCommand}" />
+
                 <dxb:BarButtonItem Content="Export"
                                    Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}"
                                    GlyphSize="Large"
                                    BarItemDisplayMode="ContentAndGlyph"
                                    GlyphAlignment="Top" />
                 <dxb:BarItemSeparator Margin="2,0,2,0"/>
+
             </dxb:MainMenuControl>
         </dxb:BarContainerControl>
 
         <!-- DailyStocks Grid -->
-        <dxg:GridControl Grid.Row="1" ItemsSource="{Binding DailyStocks}" AutoGenerateColumns="None"
-                         Height="45">
+        <dxg:GridControl Grid.Row="1"  AutoGenerateColumns="None"
+                         Height="50">
             <dxg:GridControl.View>
-                <dxg:TableView ShowGroupPanel="False" AllowEditing="True"/>
+                <dxg:TableView ShowGroupPanel="False" AllowEditing="False"/>
             </dxg:GridControl.View>
 
             <dxg:GridControl.Columns>
@@ -80,7 +98,7 @@
                         </DataTemplate>
                     </dxg:GridColumn.HeaderTemplate>
                 </dxg:GridColumn>
-                
+
                 <!-- Opening -->
                 <dxg:GridColumn FieldName="OpeningQty" Width="160">
                     <dxg:GridColumn.HeaderTemplate>
@@ -97,7 +115,8 @@
                 </dxg:GridColumn>
 
                 <!-- Stock In -->
-                <dxg:GridColumn FieldName="StockInQty" Width="160">
+                <dxg:GridColumn FieldName="StockInQty" Width="160"
+                                AllowEditing="True" ReadOnly="False">
                     <dxg:GridColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel>
@@ -115,13 +134,15 @@
                 <dxg:GridColumn FieldName="StockOutQty" Width="160">
                     <dxg:GridColumn.HeaderTemplate>
                         <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="Stock Out" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,2,0,0">
-                                    <TextBlock FontSize="14" Text="Qty" Margin="20,0,40,0"/>
-                                    <TextBlock FontSize="14" Text="Weight"/>
+                            <Border Background="YellowGreen" Padding="4">
+                                <StackPanel>
+                                    <TextBlock Text="Stock Out" FontSize="15" FontWeight="Bold" Foreground="Black" HorizontalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,2,0,0">
+                                        <TextBlock FontSize="14" Text="Qty" Foreground="Black"  Margin="20,0,40,0"/>
+                                        <TextBlock FontSize="14" Text="Weight" Foreground="Black"/>
+                                    </StackPanel>
                                 </StackPanel>
-                            </StackPanel>
+                            </Border>
                         </DataTemplate>
                     </dxg:GridColumn.HeaderTemplate>
                 </dxg:GridColumn>
@@ -143,24 +164,55 @@
             </dxg:GridControl.Columns>
         </dxg:GridControl>
 
-        <!-- Summary Grid (no headers, aligned with above) -->
-        <dxg:GridControl Grid.Row="2" ItemsSource="{Binding DailyStockSummaryList}" AutoGenerateColumns="None">
+        <dxg:GridControl Grid.Row="2"
+                 ItemsSource="{Binding DailyStockSummaryList}"
+                 AutoGenerateColumns="None">
             <dxg:GridControl.View>
-                <dxg:TableView ShowGroupPanel="False" AllowEditing="False" ShowColumnHeaders="False"/>
+                <dxg:TableView ShowColumnHeaders="False"
+                    AllowEditing="True"
+                       ShowGroupPanel="False"
+                       CellValueChangedCommand="{Binding OnCellUpdateCommand}"
+                       ShowingEditor="TableView_ShowingEditor">
+                    <dxmvvm:Interaction.Behaviors>
+                        <dxmvvm:EventToCommand EventName="CellValueChanged"
+                                       Command="{Binding CellUpdateCommand}"
+                                       PassEventArgsToCommand="True" />
+                    </dxmvvm:Interaction.Behaviors>
+                </dxg:TableView>
             </dxg:GridControl.View>
+
             <dxg:GridControl.Columns>
                 <dxg:GridColumn FieldName="Metal" Width="100"/>
                 <dxg:GridColumn FieldName="ProductCategory" Width="150"/>
-                <dxg:GridColumn FieldName="OpeningStockQty" Width="60"/>
-                <dxg:GridColumn FieldName="OpeningStockNetWeight" Width="100"/>
+
+                <dxg:GridColumn FieldName="OpeningStockQty" Header="Opening Qty" Width="60">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:SpinEditSettings IsEnabled="{Binding IsObEditable}" />
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+
+                <dxg:GridColumn FieldName="OpeningStockNetWeight" Width="100"
+                                  AllowEditing="{Binding IsOpeningEditable}" />
                 <dxg:GridColumn FieldName="StockInQty" Width="60"/>
                 <dxg:GridColumn FieldName="StockInNetWeight" Width="100"/>
                 <dxg:GridColumn FieldName="StockOutQty" Width="60"/>
                 <dxg:GridColumn FieldName="StockOutNetWeight" Width="100"/>
-                <dxg:GridColumn FieldName="ClosingStockQty" Width="60"/>
-                <dxg:GridColumn FieldName="ClosingStockNetWeight" Width="100"/>
+                <dxg:GridColumn FieldName="ClosingStockQty" Width="60" AllowEditing="False"/>
+                <dxg:GridColumn FieldName="ClosingStockNetWeight" Width="100" AllowEditing="False"/>
             </dxg:GridControl.Columns>
         </dxg:GridControl>
+
+        <Border Grid.Row="3"
+                Background="Wheat"
+                Padding="8"
+                CornerRadius="4"
+                Margin="0,10,0,0">
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{Binding StatusBrush}"
+                       FontSize="16"
+                       FontWeight="Bold" 
+                       TextWrapping="Wrap"/>
+        </Border>
 
         <!-- Action Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3" Margin="10">
