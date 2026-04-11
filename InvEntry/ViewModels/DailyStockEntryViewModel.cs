@@ -1,11 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
-using DevExpress.Xpf.Editors.Helpers;
 using DevExpress.Xpf.Grid;
-using DevExpress.Xpo.DB;
-using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
-using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
@@ -15,9 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Data;
-using System.Windows.Forms;
-using System.Windows.Threading;
 
 namespace InvEntry.ViewModels
 {
@@ -58,7 +51,8 @@ namespace InvEntry.ViewModels
         public bool prevDate = false;
         public bool nextDate = false;
 
-        public IEnumerable<string> AvailableProductCategories;
+        [ObservableProperty]
+        public IEnumerable<string> _availableProductCategories;
             
                 //    ProductCategoryList.Except(DailyStockSummaryList.Select(x => x.ProductCategory));
 

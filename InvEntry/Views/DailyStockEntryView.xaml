@@ -17,9 +17,9 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=viewmodels:DailyStockEntryViewModel}"
              DataContext="{ext:DISource Type=viewmodels:DailyStockEntryViewModel}"
-             Height="600" Width="1200" >
+             Height="600" Width="1400" >
 
-    <Grid>
+    <Grid Width="1200" HorizontalAlignment="Left" >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Menu -->
@@ -32,7 +32,7 @@
         </Grid.RowDefinitions>
 
         <!-- Menu Bar -->
-        <dxb:BarContainerControl Grid.Row="0">
+        <dxb:BarContainerControl Grid.Row="0" Width="1200   " HorizontalAlignment="Left" VerticalAlignment="Top">
             <dxb:MainMenuControl FontSize="15" Height="60">
 
                 <dxb:BarButtonItem Content="Prev Date"
@@ -204,7 +204,7 @@
 
                 <dxg:GridColumn FieldName="OpeningStockNetWeight" Width="100"
                                   AllowEditing="{Binding IsOpeningEditable}" />
-                <dxg:GridColumn FieldName="StockInQty" Width="60"/>
+                <dxg:GridColumn FieldName="StockInQty" Width="60">
                 <dxg:GridColumn FieldName="StockInNetWeight" Width="100"/>
                 <dxg:GridColumn FieldName="StockOutQty" Width="60"/>
                 <dxg:GridColumn FieldName="StockOutNetWeight" Width="100"/>

@@ -19,7 +19,7 @@
              xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v25.1"
              d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceListViewModel}"
-             d:DesignHeight="450" d:DesignWidth="1400">
+             d:DesignHeight="600" d:DesignWidth="1400">
     <Grid Width="1200" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
