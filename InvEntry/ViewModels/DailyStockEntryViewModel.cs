@@ -26,9 +26,18 @@ namespace InvEntry.ViewModels
 
         private readonly IDailyStockSummaryService _dailyStockSummaryService;
         private readonly IDialogService _reportDialogService;
+        private readonly IProductCategoryService _productCategoryService;
+        private readonly IMetalsService _metalsService;
 
         [ObservableProperty]
         private DateSearchOption _dateSearchOption;
+
+        [ObservableProperty]
+        private ObservableCollection<string> _productCategoryList;
+
+
+        [ObservableProperty]
+        private ObservableCollection<string> _metalsList;
 
         [ObservableProperty]
         private ObservableCollection<DailyStockSummary> _dailyStockSummaryList;
@@ -49,12 +58,19 @@ namespace InvEntry.ViewModels
         public bool prevDate = false;
         public bool nextDate = false;
 
+        public IEnumerable<string> AvailableProductCategories;
+            
+                //    ProductCategoryList.Except(DailyStockSummaryList.Select(x => x.ProductCategory));
 
         public DailyStockEntryViewModel(IDailyStockSummaryService dailyStockSummaryService,
-                                                [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
+                            IProductCategoryService productCategoryService,
+                            IMetalsService metalsService,
+                    [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
         {
             _dailyStockSummaryService = dailyStockSummaryService;
             _reportDialogService = reportDialogService;
+            _productCategoryService = productCategoryService;
+            _metalsService = metalsService;
 
             DailyStockSummaryList = new ObservableCollection<DailyStockSummary>();
 
@@ -62,12 +78,28 @@ namespace InvEntry.ViewModels
             DateSearchOption.From = SelectedDate;
             //DateSearchOption.To = StartDate.AddDays(-1);
 
+            PopulateMetalsList();
+            PopulateProductCategoryList();
+
             //populate product category
             //populate previous day data - closing balance as todays ob
 
             Task.Run(RefreshDailyStockSummary).Wait();
         }
 
+        private async void PopulateProductCategoryList()
+        {
+            var list = await _productCategoryService.GetProductCategoryList();
+            ProductCategoryList = new(list
+                                    .Where(x => !x.Name.StartsWith("OLD"))
+                                    .Select(x => x.Name));
+        }
+
+        private async void PopulateMetalsList()
+        {
+            var list = await _metalsService.GetMetalList();
+            MetalsList = new(list .Select(x => x.MetalName));
+        }
 
         [RelayCommand]
         private async Task RefreshDailyStockSummary()
@@ -104,42 +136,11 @@ namespace InvEntry.ViewModels
                     }
 
 
-                }
-                ;
+                };
 
-                /*                else
-                                {
-                                    // No previous data → user must enter manually
-                                    // var categories = _repository.GetProductCategories();
+                //StatusMessage = "Data refreshed successfully.";
 
-                                    DailyStockSummaryList.Add(new DailyStockSummary
-                                    {   Metal = "Gold",
-                                        TransactionDate = SelectedDate,
-                                        OpeningStockQty = 0,
-                                        OpeningStockGrossWeight = 0,
-                                        OpeningStockStoneWeight = 0,
-                                        OpeningStockNetWeight = 0,
-                                        StockInGrossWeight = 0,
-                                        StockInStoneWeight = 0,
-                                        StockInNetWeight = 0,
-                                        StockOutGrossWeight = 0,
-                                        StockOutStoneWeight = 0,
-                                        StockOutNetWeight = 0,
-                                    });*/
-
-                /*                foreach (var cat in categories)
-                                {
-                                    DailyStockSummaryList.Add(new DailyStockSummary
-                                    {
-                                        Metal = cat.Metal,
-                                        ProductCategory = cat.Name,
-                                        OpeningStockQty = 0,
-                                        OpeningStockNetWeight = 0
-                                    });
-                                }*/
-
-
-                StatusMessage = "Data refreshed successfully.";
+               // FilterOutCategories();
 
                 OnPropertyChanged(nameof(CanGoNext)); // update button state
             }
@@ -224,9 +225,11 @@ namespace InvEntry.ViewModels
                             StockOutNetWeight = 0,
                             IsObEditable = false,
                         });
-                    };
-                    
-                } else
+                    }
+                    ;
+
+                }
+                else
                 {
                     var newRow = new DailyStockSummary
                     {
@@ -241,8 +244,16 @@ namespace InvEntry.ViewModels
                     IsOpeningEditable = true;
                 }
             }
+
+            FilterOutCategories();
+
         }
 
+        private void FilterOutCategories()
+        {
+            AvailableProductCategories =
+                        ProductCategoryList.Except(DailyStockSummaryList.Select(x => x.ProductCategory));
+        }
 
         [RelayCommand]
         private void OnCellUpdate(CellValueChangedEventArgs e)
@@ -282,6 +293,7 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private void Save()
         {
+
             _dailyStockSummaryService.CreateDailyStockSummary(DailyStockSummaryList.ToList());
             //display save message
             DailyStockSummaryList.Clear();

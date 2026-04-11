@@ -15,7 +15,7 @@ namespace InvEntry.Services
 
         Task<IEnumerable<DailyStockSummary>> GetAll(DateSearchOption options);
 
-        Task CreateDailyStockSummary(List<DailyStockSummary> dailyStockSummary);
+        Task CreateDailyStockSummary(List<DailyStockSummary> dailyStockSummaryList);
 
         Task UpdateDailyStockSummary(DailyStockSummary dailyStockSummary);
 
@@ -35,11 +35,18 @@ namespace InvEntry.Services
             return await _mijmsApiService.PostEnumerable<DailyStockSummary, DateSearchOption>($"api/dailyStockSummary/filter", options);
         }
 
-        public async Task CreateDailyStockSummary(List<DailyStockSummary> dailyStockSummaries)
+        public async Task CreateDailyStockSummary(List<DailyStockSummary> dailyStockSummaryList)
         {
-            foreach (var summary in dailyStockSummaries)
+            foreach (var summary in dailyStockSummaryList)
             {
-                await _mijmsApiService.Post($"api/dailyStockSummary/", summary);
+                if (summary.GKey < 1)
+                {
+                    await UpdateDailyStockSummary(summary);
+                }
+                else
+                {
+                    await _mijmsApiService.Post($"api/dailyStockSummary/", summary);
+                }
             }
         }
 

@@ -34,21 +34,17 @@
         <!-- Menu Bar -->
         <dxb:BarContainerControl Grid.Row="0">
             <dxb:MainMenuControl FontSize="15" Height="60">
-                <dxb:BarEditItem EditValue="{Binding SelectedDate}" EditWidth="120" Content="From Date">
-                    <dxb:BarEditItem.EditSettings>
-                        <dxe:DateEditSettings AllowDefaultButton="True"/>
-                    </dxb:BarEditItem.EditSettings>
-                </dxb:BarEditItem>
 
                 <dxb:BarButtonItem Content="Prev Date"
                    Glyph="{dx:DXImage 'Images/Navigation/Backward_32x32.png'}"
                    GlyphSize="Large"
                    Command="{Binding RefreshPrevDateCommand}" />
 
-                <dxb:BarButtonItem Content="Refresh"
-                                   Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
-                                   GlyphSize="Large"
-                                   Command="{Binding RefreshDailyStockSummaryCommand}" />
+                <dxb:BarEditItem EditValue="{Binding SelectedDate}" EditWidth="120" Content="Date">
+                    <dxb:BarEditItem.EditSettings>
+                        <dxe:DateEditSettings AllowDefaultButton="True"/>
+                    </dxb:BarEditItem.EditSettings>
+                </dxb:BarEditItem>
 
                 <dxb:BarButtonItem Content="Next Date"
                    Glyph="{dx:DXImage 'Images/Navigation/Forward_32x32.png'}"
@@ -56,6 +52,11 @@
                    Command="{Binding RefreshNextDateCommand}"
                    IsEnabled="{Binding CanGoNext}" />
 
+                <dxb:BarButtonItem Content="Refresh"
+                                   Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                                   GlyphSize="Large"
+                                   Command="{Binding RefreshDailyStockSummaryCommand}" />
+                
                 <dxb:BarItemSeparator Margin="2,0,2,0"/>
 
                 <dxb:BarButtonItem Content="Add Row"
@@ -182,12 +183,22 @@
             </dxg:GridControl.View>
 
             <dxg:GridControl.Columns>
-                <dxg:GridColumn FieldName="Metal" Width="100"/>
-                <dxg:GridColumn FieldName="ProductCategory" Width="150"/>
+                <dxg:GridColumn FieldName="Metal" Width="100">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalsList}"
+                                                                          IsTextEditable="False"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
+                <dxg:GridColumn FieldName="ProductCategory" Width="150">
+                    <dxg:GridColumn.EditSettings>
+                        <dxe:ComboBoxEditSettings ItemsSource="{Binding AvailableProductCategories}"
+                                                                          IsTextEditable="False"/>
+                    </dxg:GridColumn.EditSettings>
+                </dxg:GridColumn>
 
                 <dxg:GridColumn FieldName="OpeningStockQty" Header="Opening Qty" Width="60">
                     <dxg:GridColumn.EditSettings>
-                        <dxe:SpinEditSettings IsEnabled="{Binding IsObEditable}" />
+                        <dxe:TextEditSettings IsEnabled="{Binding IsObEditable}" />
                     </dxg:GridColumn.EditSettings>
                 </dxg:GridColumn>
 
