@@ -19,6 +19,7 @@ namespace InvEntry.ViewModels
 
         private readonly IDailyStockSummaryService _dailyStockSummaryService;
         private readonly IDialogService _reportDialogService;
+        private readonly IMessageBoxService _messageBoxService;
         private readonly IProductCategoryService _productCategoryService;
         private readonly IMetalsService _metalsService;
 
@@ -53,17 +54,19 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         public IEnumerable<string> _availableProductCategories;
-            
-                //    ProductCategoryList.Except(DailyStockSummaryList.Select(x => x.ProductCategory));
+
+        //    ProductCategoryList.Except(DailyStockSummaryList.Select(x => x.ProductCategory));
 
         public DailyStockEntryViewModel(IDailyStockSummaryService dailyStockSummaryService,
-                            IProductCategoryService productCategoryService,
-                            IMetalsService metalsService,
-                    [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
+                                        IProductCategoryService productCategoryService,
+                                        IMessageBoxService messageBoxService,
+                                        IMetalsService metalsService,
+                                        [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
         {
             _dailyStockSummaryService = dailyStockSummaryService;
             _reportDialogService = reportDialogService;
             _productCategoryService = productCategoryService;
+            _messageBoxService = messageBoxService;
             _metalsService = metalsService;
 
             DailyStockSummaryList = new ObservableCollection<DailyStockSummary>();
@@ -92,7 +95,7 @@ namespace InvEntry.ViewModels
         private async void PopulateMetalsList()
         {
             var list = await _metalsService.GetMetalList();
-            MetalsList = new(list .Select(x => x.MetalName));
+            MetalsList = new(list.Select(x => x.MetalName));
         }
 
         [RelayCommand]
@@ -130,11 +133,12 @@ namespace InvEntry.ViewModels
                     }
 
 
-                };
+                }
+                ;
 
                 //StatusMessage = "Data refreshed successfully.";
 
-               // FilterOutCategories();
+                // FilterOutCategories();
 
                 OnPropertyChanged(nameof(CanGoNext)); // update button state
             }
@@ -285,12 +289,31 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
+        private void Cancel()
+        {
+            var result = _messageBoxService.ShowMessage("Clear all updated rows", "Delete Rows", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+
+            if (result == MessageResult.No)
+                return;
+
+            Reset();
+
+        }
+
+        private void Reset()
+        {
+            DailyStockSummaryList.Clear();
+        }
+
+        [RelayCommand]
         private void Save()
         {
 
             _dailyStockSummaryService.CreateDailyStockSummary(DailyStockSummaryList.ToList());
             //display save message
-            DailyStockSummaryList.Clear();
+            Reset();
+            
+            StatusMessage = "Data saved successfully.";
         }
 
     }
