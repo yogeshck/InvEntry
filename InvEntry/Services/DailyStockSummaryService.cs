@@ -39,7 +39,7 @@ namespace InvEntry.Services
         {
             foreach (var summary in dailyStockSummaryList)
             {
-                if (summary.GKey < 1)
+                if (summary.GKey > 1)
                 {
                     await UpdateDailyStockSummary(summary);
                 }

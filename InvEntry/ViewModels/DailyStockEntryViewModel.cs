@@ -184,9 +184,20 @@ namespace InvEntry.ViewModels
                 var newRow = new DailyStockSummary
                 {
                     TransactionDate = SelectedDate,
-                    Metal = "Gold", // default or user choice
+                    Metal = "GOLD", // default or user choice
                     ProductCategory = string.Empty,
-                    IsObEditable = true
+                    IsObEditable = true,
+                    OpeningStockGrossWeight = 0,
+                    OpeningStockStoneWeight = 0,
+                    StockInGrossWeight = 0,
+                    StockInStoneWeight = 0,
+                    StockOutGrossWeight = 0,
+                    StockOutStoneWeight = 0,
+                    StockInNetWeight = 0,
+                    ClosingStockGrossWeight = 0,
+                    ClosingStockStoneWeight = 0,
+                    StockOutNetWeight = 0,
+
                 };
 
                 DailyStockSummaryList.Add(newRow);
@@ -217,9 +228,11 @@ namespace InvEntry.ViewModels
                             OpeningStockNetWeight = item.ClosingStockNetWeight,
                             StockInGrossWeight = 0,
                             StockInStoneWeight = 0,
-                            StockInNetWeight = 0,
                             StockOutGrossWeight = 0,
                             StockOutStoneWeight = 0,
+                            StockInNetWeight = 0,
+                            ClosingStockGrossWeight = 0,
+                            ClosingStockStoneWeight = 0,
                             StockOutNetWeight = 0,
                             IsObEditable = false,
                         });
@@ -232,9 +245,19 @@ namespace InvEntry.ViewModels
                     var newRow = new DailyStockSummary
                     {
                         TransactionDate = SelectedDate,
-                        Metal = "Gold", // default or user choice
+                        Metal = "GOLD", // default or user choice
                         ProductCategory = string.Empty,
-                        IsObEditable = true
+                        IsObEditable = true,
+                        OpeningStockGrossWeight= 0,
+                        OpeningStockStoneWeight= 0,
+                        StockInGrossWeight= 0, 
+                        StockInStoneWeight = 0,
+                        StockOutGrossWeight = 0,
+                        StockOutStoneWeight = 0,
+                        StockInNetWeight = 0,
+                        ClosingStockGrossWeight = 0,
+                        ClosingStockStoneWeight = 0,
+                        StockOutNetWeight = 0,
                     };
 
                     DailyStockSummaryList.Add(newRow);
