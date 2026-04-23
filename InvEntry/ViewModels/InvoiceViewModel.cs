@@ -153,7 +153,7 @@ public partial class InvoiceViewModel : ObservableObject
         nameof(InvoiceLine.VaAmount)
     };
 
-    private ProductView OldMetalProduct;
+    private ProductView OldMetalProductView;
 
     public InvoiceViewModel(ICustomerService customerService,
         IProductViewService productViewService,
@@ -590,18 +590,18 @@ public partial class InvoiceViewModel : ObservableObject
     private async Task EvaluateOldMetalTransactionLineAsync(OldMetalTransaction oldMetalTransaction)
     {
 
-        if (string.IsNullOrEmpty(oldMetalTransaction.Metal)) return;
+        if (string.IsNullOrEmpty(oldMetalTransaction.ProductId)) return;
 
-        OldMetalProduct = await _productViewService.GetProduct(oldMetalTransaction.Metal);
+        OldMetalProductView = await _productViewService.GetProduct(oldMetalTransaction.ProductId);
 
-        if (OldMetalProduct is null)
+        if (OldMetalProductView is null)
         {
-            _messageBoxService.ShowMessage($"No Product found for {OldMetalProduct}, Please make sure it exists",
+            _messageBoxService.ShowMessage($"No Product found for {OldMetalProductView}, Please make sure it exists",
                 "Product not found", MessageButton.OK, MessageIcon.Error);
             return;
         }
 
-        var metalPrice = _settingsPageViewModel.GetPrice(OldMetalProduct.Metal);
+        var metalPrice = _settingsPageViewModel.GetPrice(OldMetalProductView.Metal);
 
         if (metalPrice < 1)
         {
@@ -613,7 +613,7 @@ public partial class InvoiceViewModel : ObservableObject
         if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
             oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
 
-        oldMetalTransaction.Purity = OldMetalProduct.Purity;
+        oldMetalTransaction.Purity = OldMetalProductView.Purity;
 
         oldMetalTransaction.NetWeight = (
                                            oldMetalTransaction.GrossWeight.GetValueOrDefault() -
@@ -626,6 +626,8 @@ public partial class InvoiceViewModel : ObservableObject
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
 
         oldMetalTransaction.DocRefType = "Invoice";
+
+        oldMetalTransaction.EnrichOldMetalProductDetails(OldMetalProductView);
 
     }
 
@@ -1091,6 +1093,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         oldMetalTransaction.DocRefType = "Invoice";
 
+        oldMetalTransaction.EnrichOldMetalProductDetails(OldMetalProductView);
     }
 
     [RelayCommand]
@@ -1191,10 +1194,10 @@ public partial class InvoiceViewModel : ObservableObject
                         .Sum();
     }
 
-    private decimal? FilterMetalTransactions(string metal)
+    private decimal? FilterMetalTransactions(string productId)
     {
         return Header.OldMetalTransactions
-                        .Where(x => metal.Equals(x.Metal, StringComparison.OrdinalIgnoreCase))
+                        .Where(x => productId.Equals(x.ProductId, StringComparison.OrdinalIgnoreCase))
                         .Select(x => x.FinalPurchasePrice)
                         .Sum();
     }
@@ -1471,7 +1474,7 @@ public partial class InvoiceViewModel : ObservableObject
         foreach (var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichInvHeaderDetails(Header);
-            omTrans.EnrichProductDetails(OldMetalProduct);
+            //omTrans.EnrichProductDetails(OldMetalProduct);
         }
 
         await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);

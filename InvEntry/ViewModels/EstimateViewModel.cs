@@ -1158,7 +1158,7 @@ public partial class EstimateViewModel: ObservableObject
         foreach (var omTrans in Header.OldMetalTransactions)
         {
             omTrans.EnrichEstHeaderDetails(Header);
-            omTrans.EnrichProductDetails(OldMetalProduct);
+            omTrans.EnrichOldMetalProductDetails(OldMetalProduct);
         }
 
         await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);

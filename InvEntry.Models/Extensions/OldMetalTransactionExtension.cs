@@ -63,17 +63,13 @@ public static class OldMetalTransactionExtension
 
     }
 
-    public static void EnrichProductDetails(this OldMetalTransaction oldMetalTransaction, ProductView productView)
+    public static void EnrichOldMetalProductDetails(this OldMetalTransaction oldMetalTransaction, ProductView oldMetalProductView)
     {
-        oldMetalTransaction.ProductGkey = productView.GKey;
-        oldMetalTransaction.ProductId = productView.Id;
-        oldMetalTransaction.ProductCategory = productView.Category;
-
-        oldMetalTransaction.ProductGkey = productView.GKey;
-        oldMetalTransaction.Purity = productView.Purity;
-        oldMetalTransaction.ProductId = productView.Id;
-        oldMetalTransaction.Metal = productView.Metal;
-        oldMetalTransaction.ProductCategory = productView.Category;
+        oldMetalTransaction.ProductGkey = oldMetalProductView.GKey;
+        oldMetalTransaction.ProductId = oldMetalProductView.Id;
+        oldMetalTransaction.Purity = oldMetalProductView.Purity;
+        oldMetalTransaction.Metal = oldMetalProductView.Metal;
+        oldMetalTransaction.ProductCategory = oldMetalProductView.Category;
 
     }
 

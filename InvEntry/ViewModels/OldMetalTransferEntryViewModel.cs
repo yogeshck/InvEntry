@@ -384,7 +384,7 @@ public partial class OldMetalTransferEntryViewModel: ObservableObject
         };
 
         oldMetalTransaction.EnrichEstHeaderOMTransDetails(Header);
-        oldMetalTransaction.EnrichProductDetails(OldMetalProduct);
+        oldMetalTransaction.EnrichOldMetalProductDetails(OldMetalProduct);
 
         if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
             oldMetalTransaction.TransactedRate = todaysRate;
