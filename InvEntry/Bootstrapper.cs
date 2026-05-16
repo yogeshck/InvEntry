@@ -146,6 +146,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductStockSummaryService, ProductStockSummaryService>()
                  .AddSingleton<IProductTransactionService, ProductTransactionService>()
                  .AddSingleton<IProductTransactionSummaryService, ProductTransactionSummaryService>()
+                 .AddSingleton<IRepSalesInvrctDbViewService, RepSalesInvrctDbViewService>()
                  .AddSingleton<IProductViewService, ProductViewService>()
                  .AddSingleton<IReportFactoryService, ReportFactoryService>()
                  .AddSingleton<IStockManager, StockManager>()

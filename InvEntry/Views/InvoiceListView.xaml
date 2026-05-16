@@ -16,7 +16,6 @@
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:behavior="clr-namespace:InvEntry.Behavior"
              xmlns:ext="clr-namespace:InvEntry.Extension" 
-             xmlns:dxp="clr-namespace:DevExpress.Xpf.Printing;assembly=DevExpress.Xpf.Printing.v25.1"
              d:DataContext="{d:DesignInstance Type=viewmodels:InvoiceListViewModel}"
              DataContext="{ext:DISource Type=viewmodels:InvoiceListViewModel}"
              d:DesignHeight="600" d:DesignWidth="1400">
@@ -30,6 +29,7 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>-->
         <dxb:BarContainerControl>
+            
             <dxb:MainMenuControl FontSize="15" Height="60">
                 <dxb:BarEditItem EditValue="{Binding SearchOption.From}" EditWidth="120" Content="From Date" >
                     <dxb:BarEditItem.EditSettings >
@@ -50,6 +50,7 @@
                                                Mask="[0-9 ]*" />
                     </dxb:BarEditItem.EditSettings>
                 </dxb:BarEditItem>
+                
                 <dxb:BarButtonItem x:Name="btnRefresh" Content="Refresh"
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     GlyphSize="Large"

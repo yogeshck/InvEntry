@@ -15,6 +15,26 @@
     <Application.Resources>
         <ResourceDictionary>
 
+            <!-- Global style for all bar text -->
+            <Style x:Key="BarTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="20"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="5,0"/>
+            </Style>
+
+            <!-- Title style -->
+            <Style x:Key="BarTitleTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BarTextStyle}">
+                <Setter Property="FontSize" Value="22"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="10,0,20,0"/>
+            </Style>
+
+            <!-- Title template -->
+            <DataTemplate x:Key="BarTitleTemplate">
+                <TextBlock Text="{Binding}" Style="{StaticResource BarTitleTextStyle}" />
+            </DataTemplate>
+            
             <Style TargetType="dxg:RowControl">
                 <Setter Property="Height" Value="40"/>
                 <Setter Property="FontSize" Value="14"/>
