@@ -32,12 +32,12 @@
 
             <!-- Title template -->
             <DataTemplate x:Key="BarTitleTemplate">
-                <TextBlock Text="{Binding}" Style="{StaticResource BarTitleTextStyle}" />
+                <TextBlock Text="{Binding}" Style="{StaticResource BarTitleTextStyle}" />   
             </DataTemplate>
             
             <Style TargetType="dxg:RowControl">
-                <Setter Property="Height" Value="40"/>
-                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Height" Value="30"/>
+                <Setter Property="FontSize" Value="13"/>
             </Style>
 
             <Style TargetType="TextBlock" x:Key="LayoutTabHeaderStyle">

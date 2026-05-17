@@ -101,6 +101,7 @@ public partial class GenericReportViewModel : ObservableObject
                                 new InvoiceHeader { InvNbr = "INV002", InvDate = DateTime.Now, CustMobile = "XYZ Ltd", AmountPayable = 800 }
                             };*/
             GenericItems = GridDataHelper.MapAndTrim(invoiceReceipts);
+
         }
         else if (type == "Receipt")
         {
