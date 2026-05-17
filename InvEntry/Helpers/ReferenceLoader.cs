@@ -27,7 +27,7 @@ public class ReferenceLoader
                                                                         IEnumerable<MtblReference>? fallback = null)
     {
         var list = await GetOrLoadList(refName, fallback);
-        return new ObservableCollection<MtblReference>(list);
+        return new ObservableCollection<MtblReference>(list.OrderBy(x => x.SortSeq));
     }
 
     // -------------------------
@@ -43,6 +43,7 @@ public class ReferenceLoader
 
         return new ObservableCollection<string>(
             list.Select(x => x.RefValue));
+      
     }
 
     // -------------------------
