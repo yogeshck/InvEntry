@@ -4,6 +4,7 @@ using DevExpress.DataAccess.Native.Json;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
+using DevExpress.Xpf.Core.ConditionalFormatting.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
@@ -265,7 +266,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         PaymentModeList = await _referenceLoader.LoadValuesAsync("PAYMENT_MODE");
 
-        // SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");
+        // SalesPersonReferencesList = await _referenceLoader.LoadValuesAsync("SALES_PERSON");  
 
     }
 
@@ -672,7 +673,9 @@ public partial class InvoiceViewModel : ObservableObject
 
     private bool CanProcessArReceipts()
     {
-        return !Header.DiscountAmount.HasValue || Header.DiscountAmount.Value == 0;
+        //return !Header.DiscountAmount.HasValue || Header.DiscountAmount.Value.GetDecimalValue() == 0;
+        return (Header.DiscountAmount ?? 0) == 0;
+
     }
 
     [RelayCommand]
@@ -1111,7 +1114,6 @@ public partial class InvoiceViewModel : ObservableObject
         arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() -
                                         arInvRctLine.AdjustedAmount.GetValueOrDefault();
 
-
         if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund"
                             || arInvRctLine.TransactionType == "Advance Receipt")
         {
@@ -1282,10 +1284,14 @@ public partial class InvoiceViewModel : ObservableObject
         //Note if inv balance is greater than zero - we need to show message to get confirmation from user
         // and warn to check there is unpaid balance........ 
 
+/*        if (Header.InvBalance.ToString().Length != Header.DiscountAmount.ToString().Length)  == not working, inserting new record as discount - check
+            return false;*/
+
         if (Header.InvBalance > 0)
         {
-            var result = _messageBoxService.ShowMessage("Received Amount is lesser than the Invoice Amount, " +
-                "Do you want to make Credit for the balance Invoice Amount of Rs. " + Header.InvBalance + " ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+            var result = _messageBoxService.ShowMessage("Amount received is short, " +
+                "Apply the balance as Credit Rs. " + Header.InvBalance + " ?", "Invoice", 
+                MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
             if (result == MessageResult.Yes)
             {
@@ -1307,8 +1313,8 @@ public partial class InvoiceViewModel : ObservableObject
         }
         else if (Header.InvBalance < 0)
         {
-            var result = _messageBoxService.ShowMessage("Received Amount is more than Invoice Amount, " +
-                "Do you want to Refund excess Amount of Rs. " + Header.InvBalance + " ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+            var result = _messageBoxService.ShowMessage("Excess Invoice Amount received, " +
+                "Do you want to Refund Rs. " + Header.InvBalance + " ?", "Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
 
             if (result == MessageResult.Yes)
             {
@@ -1334,7 +1340,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             SetReceipts("Discount");
         }
- //       if (Header.AdvanceAdj > 0)                    // blocked 18-Mar
+ //       if (Header.AdvanceAdj > 0)                    // blocked 18-Mar-2026 Allowed user to enter in AR receipts using drop down 
  //       {
  //           SetReceipts("Advance Receipt");
  //
