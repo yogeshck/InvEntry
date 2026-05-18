@@ -52,11 +52,12 @@ public partial class GenericReportViewModel : ObservableObject
         _reportFactoryService = reportFactoryService;
 
         SearchOption = new();
-        SearchOption.To = Today;
+        SearchOption.To = Today.AddDays(-1);
         SearchOption.From = Today.AddDays(-1);
 
         // Initial load
         PopulateOptions();
+        _ = RefreshDataAsync();
 
         _ = LoadData(SelectedType);
 
