@@ -53,6 +53,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<MtblReference> MtblReferences { get; set; }
 
+    public virtual DbSet<MtblReferencesRemove> MtblReferencesRemoves { get; set; }
+
     public virtual DbSet<MtblVoucherType> MtblVoucherTypes { get; set; }
 
     public virtual DbSet<OldMetalTransaction> OldMetalTransactions { get; set; }
@@ -102,6 +104,8 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<VoucherDbView> VoucherDbViews { get; set; }
 
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
+
+    public virtual DbSet<VoucherTypesRemove> VoucherTypesRemoves { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -1537,6 +1541,37 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.SortSeq).HasColumnName("sort_seq");
         });
 
+        modelBuilder.Entity<MtblReferencesRemove>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("MTBL_REFERENCES_REMOVE");
+
+            entity.Property(e => e.Gkey).HasColumnName("gkey");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.Module)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("module");
+            entity.Property(e => e.RefCode)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ref_code");
+            entity.Property(e => e.RefDesc)
+                .HasMaxLength(500)
+                .IsUnicode(false)
+                .HasColumnName("ref_desc");
+            entity.Property(e => e.RefName)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ref_name");
+            entity.Property(e => e.RefValue)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ref_value");
+            entity.Property(e => e.SortSeq).HasColumnName("sort_seq");
+        });
+
         modelBuilder.Entity<MtblVoucherType>(entity =>
         {
             entity
@@ -2665,6 +2700,9 @@ public partial class MijmsContext : DbContext
 
             entity.Property(e => e.AdvanceAmt).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Bank).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.BankScanner)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("Bank Scanner");
             entity.Property(e => e.Cash).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Credit).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.CreditCard).HasColumnType("decimal(18, 2)");
@@ -2676,10 +2714,16 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.InvNbr)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+            entity.Property(e => e.MSwipe)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("mSwipe");
             entity.Property(e => e.Rd)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("RD");
             entity.Property(e => e.Refund).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.WireTransfer)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("Wire Transfer");
         });
 
         modelBuilder.Entity<StockVerifyScan>(entity =>
@@ -2818,6 +2862,54 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey);
 
             entity.ToTable("VOUCHER_TYPES");
+
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedNever()
+                .HasColumnName("GKEY");
+            entity.Property(e => e.Abbreviation)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("ABBREVIATION");
+            entity.Property(e => e.DocNbrLength).HasColumnName("DOC_NBR_LENGTH");
+            entity.Property(e => e.DocNbrMethod)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_METHOD");
+            entity.Property(e => e.DocNbrPrefill)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_PREFILL");
+            entity.Property(e => e.DocNbrPrefix)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_PREFIX");
+            entity.Property(e => e.DocNbrSuffix)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOC_NBR_SUFFIX");
+            entity.Property(e => e.DocumentType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_TYPE");
+            entity.Property(e => e.IsActive).HasColumnName("IS_ACTIVE");
+            entity.Property(e => e.IsTaxable).HasColumnName("IS_TAXABLE");
+            entity.Property(e => e.LastUsedNumber).HasColumnName("LAST_USED_NUMBER");
+            entity.Property(e => e.MtblVoucherTypeGkey).HasColumnName("MTBL_VOUCHER_TYPE_GKEY");
+            entity.Property(e => e.Narration)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("NARRATION");
+            entity.Property(e => e.UsedFor)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("USED_FOR");
+        });
+
+        modelBuilder.Entity<VoucherTypesRemove>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("VOUCHER_TYPES_REMOVE");
 
             entity.Property(e => e.Gkey)
                 .ValueGeneratedNever()

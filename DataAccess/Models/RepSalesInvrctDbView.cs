@@ -30,4 +30,10 @@ public partial class RepSalesInvrctDbView
     public decimal? Bank { get; set; }
 
     public decimal? Credit { get; set; }
+
+    public decimal? WireTransfer { get; set; }
+
+    public decimal? BankScanner { get; set; }
+
+    public decimal? MSwipe { get; set; }
 }

@@ -45,4 +45,13 @@ public partial class RepSalesInvrctDbView : BaseEntity
 
     [ObservableProperty]
     public decimal? _credit;
+
+    [ObservableProperty]
+    public decimal? _wireTransfer;
+
+    [ObservableProperty]
+    public decimal? _bankScanner;
+
+    [ObservableProperty]
+    public decimal? _mSwipe;
 }
