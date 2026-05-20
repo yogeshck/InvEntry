@@ -48,14 +48,16 @@ jobs:
   # Job 1: Build and Publish Both Projects
   build:
     runs-on: windows-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     outputs:
       version: ${{ steps.set_version.outputs.VERSION }} # Pass the version to other jobs
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.x'
 
@@ -98,7 +100,7 @@ jobs:
 
       # Upload Zipped Artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: PublishedProjects
           path: ./PublishedProjects-${{ env.TAG_VERSION }}.zip
@@ -108,7 +110,7 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@v2
         with:
           tag_name: ${{ env.TAG_VERSION }}
           release_name: Release ${{ env.TAG_VERSION }}
@@ -124,12 +126,12 @@ jobs:
           TAG_VERSION: ${{ steps.set_version.outputs.TAG_VERSION }}
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: PublishedProjects
 
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./PublishedProjects-${{ env.TAG_VERSION }}.zip
