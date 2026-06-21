@@ -14,8 +14,6 @@ namespace DataAccess.Controllers
 /*        public AddressController(IRepositoryBase<OrgAddress> orgAddressRepository) : 
                                                 base(orgAddressRepository)
         {
-        }*/
-
         private readonly IRepositoryBase<OrgAddress> _repository;
 
         public AddressController(IRepositoryBase<OrgAddress> addressRepo)
