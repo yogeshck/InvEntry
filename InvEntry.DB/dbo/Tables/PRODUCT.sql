@@ -1,0 +1,28 @@
+﻿CREATE TABLE [dbo].[PRODUCT] (
+    [GKEY]                   INT            IDENTITY (1, 1) NOT NULL,
+    [ID]                     VARCHAR (50)   NULL,
+    [NAME]                   VARCHAR (50)   NULL,
+    [DESCRIPTION]            VARCHAR (50)   NULL,
+    [CATEGORY]               VARCHAR (50)   NULL,
+    [PURITY]                 VARCHAR (50)   NULL,
+    [PURITY_PERCENT]         DECIMAL (4, 2) NULL,
+    [IMAGE_REF]              VARCHAR (150)  NULL,
+    [SET_GKEY]               INT            NULL,
+    [STOCK_GROUP]            VARCHAR (50)   NULL,
+    [BRAND]                  VARCHAR (50)   NULL,
+    [METAL]                  VARCHAR (50)   NULL,
+    [HSN_CODE]               VARCHAR (50)   NULL,
+    [MODEL]                  VARCHAR (50)   NULL,
+    [UOM]                    VARCHAR (50)   NULL,
+    [TAX_RULE]               VARCHAR (50)   NULL,
+    [BASE_UNIT]              VARCHAR (50)   NULL,
+    [IS_TAXABLE]             BIT            NULL,
+    [IS_ACTIVE]              BIT            NULL,
+    [PRODUCT_ATTRIBUTE_GKEY] INT            NULL,
+    [CREATED_BY]             VARCHAR (50)   NULL,
+    [CREATED_ON]             DATETIME2 (6)  NULL,
+    [MODIFIED_BY]            VARCHAR (50)   NULL,
+    [MODIFIED_ON]            DATETIME2 (6)  NULL,
+    CONSTRAINT [PK_PRODUCT] PRIMARY KEY CLUSTERED ([GKEY] ASC)
+);
+

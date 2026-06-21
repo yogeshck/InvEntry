@@ -13,5 +13,5 @@ public partial class StockVerifyScan
 
     public DateTime ScanTime { get; set; }
 
-    public string? Status { get; set; }
+    public byte[]? Status { get; set; }
 }

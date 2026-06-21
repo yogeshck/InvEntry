@@ -1,6 +1,10 @@
-@DataAccess_HostAddress = http://localhost:5039
+@DataAccess_HostAddress = https://localhost:7001
 
-GET {{DataAccess_HostAddress}}/weatherforecast/
+//GET {{DataAccess_HostAddress}}/weatherforecast/
+//Accept: application/json
+
+###
+GET {{DataAccess_HostAddress}}/api/address/1525
 Accept: application/json
 
 ###

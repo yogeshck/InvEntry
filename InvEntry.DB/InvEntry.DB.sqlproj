@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>InvEntry.DB</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{e291b431-16d9-47c2-be52-61be27d3c0e9}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>InvEntry.DB</RootNamespace>
+    <AssemblyName>InvEntry.DB</AssemblyName>
+    <ModelCollation>1033,CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <TargetFrameworkProfile />
+    <DefaultCollation>SQL_Latin1_General_CP1_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="hr\" />
+    <Folder Include="hr\Tables\" />
+    <Folder Include="dbo\Views\" />
+    <Folder Include="Security\" />
+    <Folder Include="dbo\Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\StockVerifyScan.sql" />
+    <Build Include="dbo\Tables\VOUCHER_TYPES.sql" />
+    <Build Include="hr\Tables\DAILY_ATTENDENCE.sql" />
+    <Build Include="hr\Tables\DESIGNATIONS.sql" />
+    <Build Include="hr\Tables\HOLIDAY_CALENDAR.sql" />
+    <Build Include="hr\Tables\LEAVE_TYPES.sql" />
+    <Build Include="dbo\Tables\PRODUCT_STOCK_SUMMARY.sql" />
+    <Build Include="dbo\Tables\PRODUCT.sql" />
+    <Build Include="dbo\Tables\CUSTOMER_ORDER.sql" />
+    <Build Include="hr\Tables\EMPLOYEE.sql" />
+    <Build Include="dbo\Tables\ORG_CUSTOMER.sql" />
+    <Build Include="dbo\Tables\MTBL_REFERENCES.sql" />
+    <Build Include="dbo\Tables\CUSTOMER_ORDER_LINES.sql" />
+    <Build Include="hr\Tables\EMPLOYEE_ADDRESS.sql" />
+    <Build Include="dbo\Tables\ORG_COMPANY.sql" />
+    <Build Include="dbo\Tables\ORG_ADDRESS.sql" />
+    <Build Include="dbo\Tables\GRN_HEADER.sql" />
+    <Build Include="dbo\Tables\GRN_LINE_SUMMARY.sql" />
+    <Build Include="dbo\Tables\MTBL_LEDGERS.sql" />
+    <Build Include="dbo\Tables\VOUCHER.sql" />
+    <Build Include="dbo\Tables\INVOICE_AR_RECEIPTS.sql" />
+    <Build Include="dbo\Tables\INVOICE_HEADER.sql" />
+    <Build Include="dbo\Tables\DAILY_RATE.sql" />
+    <Build Include="dbo\Tables\DAILY_STOCK_SUMMARY.sql" />
+    <Build Include="dbo\Tables\ESTIMATE_HEADER.sql" />
+    <Build Include="dbo\Tables\ESTIMATE_LINE.sql" />
+    <Build Include="dbo\Tables\GRN_LINE.sql" />
+    <Build Include="dbo\Tables\INVOICE_LINE.sql" />
+    <Build Include="hr\Tables\DEPARTMENT.sql" />
+    <Build Include="dbo\Tables\LEDGERS_HEADER.sql" />
+    <Build Include="dbo\Tables\LEDGERS_TRANSACTIONS.sql" />
+    <Build Include="dbo\Tables\METALS.sql" />
+    <Build Include="dbo\Tables\MTBL_VOUCHER_TYPES.sql" />
+    <Build Include="dbo\Tables\OLD_METAL_TRANSACTION.sql" />
+    <Build Include="dbo\Tables\ORG_BANK_DETAILS.sql" />
+    <Build Include="dbo\Tables\ORG_CONTACT.sql" />
+    <Build Include="dbo\Tables\ORG_CONTACT_EMAIL.sql" />
+    <Build Include="dbo\Tables\ORG_GEO_LOCATIONS.sql" />
+    <Build Include="dbo\Tables\ORG_PLACES.sql" />
+    <Build Include="dbo\Tables\PRODUCT_CATEGORY.sql" />
+    <Build Include="dbo\Tables\PRODUCT_GROUP.sql" />
+    <Build Include="dbo\Tables\PRODUCT_STOCK.sql" />
+    <Build Include="dbo\Tables\PRODUCT_TRANSACTION.sql" />
+    <Build Include="dbo\Tables\PRODUCT_TRANSACTION_SUMMARY.sql" />
+    <Build Include="dbo\Tables\REP_DAILY_STOCK_SUMMARY.sql" />
+    <Build Include="dbo\Views\CUSTOMER_ORDER_DB_VIEW.sql" />
+    <Build Include="dbo\Views\PRODUCT_VIEW.sql" />
+    <Build Include="dbo\Views\ORG_THIS_COMPANY_VIEW.sql" />
+    <Build Include="dbo\Views\GRNDBVIEW.sql" />
+    <Build Include="dbo\Views\REP_SALES_INVRCT_DB_VIEW.sql" />
+    <Build Include="dbo\Views\ORG_CUSTOMER_ADDRESS_VIEW.sql" />
+    <Build Include="dbo\Views\VOUCHER_DB_VIEW.sql" />
+    <Build Include="dbo\Views\DailySalesInvoiceReceiptDBView.sql" />
+    <Build Include="Security\NT AUTHORITY_SYSTEM.sql" />
+    <Build Include="Security\NT AUTHORITY_SYSTEM_1.sql" />
+    <Build Include="Security\RoleMemberships.sql" />
+    <Build Include="dbo\Stored Procedures\Get_Stock_Day_Book.sql" />
+    <Build Include="dbo\Stored Procedures\sp_BackupDatabases.sql" />
+    <Build Include="dbo\Stored Procedures\Update_Stock_curday_Book.sql" />
+    <Build Include="dbo\Stored Procedures\usp_GetInvoiceReceiptPivot.sql" />
+    <Build Include="Security\hr.sql" />
+  </ItemGroup>
+</Project>

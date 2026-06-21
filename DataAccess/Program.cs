@@ -15,7 +15,24 @@ var logger = new LoggerConfiguration()
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSerilog(logger);
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// CORS FIX
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+
+         policy.WithOrigins(
+                    "http://localhost:5173",
+                    "http://localhost:3000"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<MijmsContext>(ctx => ctx.UseSqlServer(connectionString));
 builder.Services.AddSwaggerGen();
@@ -27,6 +44,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+// ENABLE CORS BEFORE authorization
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 

@@ -1,0 +1,28 @@
+﻿CREATE TABLE [dbo].[INVOICE_AR_RECEIPTS] (
+    [gkey]                      INT             IDENTITY (1, 1) NOT NULL,
+    [cust_gkey]                 INT             NULL,
+    [invoice_gkey]              INT             NULL,
+    [invoice_nbr]               VARCHAR (50)    NULL,
+    [invoice_receivable_amount] DECIMAL (18, 2) NULL,
+    [balance_after_adj]         DECIMAL (18, 2) NULL,
+    [seq_nbr]                   INT             NOT NULL,
+    [transaction_type]          VARCHAR (50)    NULL,
+    [mode_of_receipt]           VARCHAR (50)    NULL,
+    [bal_before_adj]            DECIMAL (18, 2) NULL,
+    [adjusted_amount]           DECIMAL (18, 2) NULL,
+    [internal_voucher_nbr]      VARCHAR (50)    NULL,
+    [internal_voucher_date]     DATETIME2 (7)   NULL,
+    [external_transaction_id]   NVARCHAR (50)   NULL,
+    [external_transaction_date] DATETIME2 (7)   NULL,
+    [bank_name]                 VARCHAR (50)    NULL,
+    [other_reference]           VARCHAR (50)    NULL,
+    [sender_bank_account_nbr]   VARCHAR (50)    NULL,
+    [sender_bank_gkey]          INT             NULL,
+    [sender_bank_branch]        VARCHAR (50)    NULL,
+    [sender_bank_ifsc_code]     VARCHAR (50)    NULL,
+    [company_bank_account_nbr]  VARCHAR (50)    NULL,
+    [status]                    VARCHAR (50)    NULL,
+    [invoice_receipt_nbr]       VARCHAR (50)    NULL,
+    CONSTRAINT [PK_ar_invoice_receipts] PRIMARY KEY CLUSTERED ([gkey] ASC)
+);
+

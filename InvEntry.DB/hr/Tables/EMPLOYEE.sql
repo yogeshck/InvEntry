@@ -1,0 +1,25 @@
+﻿CREATE TABLE [hr].[EMPLOYEE] (
+    [GKEY]                  INT           IDENTITY (1, 1) NOT NULL,
+    [EMPLOYEE_CODE]         NVARCHAR (20) NOT NULL,
+    [FIRST_NAME]            NVARCHAR (50) NOT NULL,
+    [MIDDLE_NAME]           NVARCHAR (50) NULL,
+    [LAST_NAME]             NVARCHAR (50) NOT NULL,
+    [GENDER]                CHAR (1)      NULL,
+    [DATE_OF_BIRTH]         DATE          NULL,
+    [DATE_OF_JOIN]          DATE          NULL,
+    [BLOOD_GROUP_ID]        VARCHAR (2)   NULL,
+    [MARITAL_STATUS]        INT           NULL,
+    [MOBILE_NBR]            NVARCHAR (20) NULL,
+    [WORK_MOBILE_NBR]       NVARCHAR (20) NULL,
+    [EMERGENCY_CONTACT_NBR] NVARCHAR (20) NULL,
+    [PERSONAL_EMAIL]        NVARCHAR (20) NULL,
+    [WORK_EMAIL]            NVARCHAR (20) NULL,
+    [IS_ACTIVE]             BIT           DEFAULT ((1)) NOT NULL,
+    [CREATED_BY]            NVARCHAR (50) NULL,
+    [CREATED_ON]            DATETIME2 (7) DEFAULT (sysutcdatetime()) NOT NULL,
+    [UPDATED_BY]            NVARCHAR (50) NULL,
+    [UPDATED_ON]            DATETIME2 (7) DEFAULT (sysutcdatetime()) NOT NULL,
+    PRIMARY KEY CLUSTERED ([GKEY] ASC),
+    UNIQUE NONCLUSTERED ([EMPLOYEE_CODE] ASC)
+);
+
