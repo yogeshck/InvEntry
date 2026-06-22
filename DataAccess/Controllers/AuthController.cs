@@ -46,6 +46,10 @@ namespace DataAccess.Controllers
             // 1. In production, extract user identity from the Authorization Bearer token header
             // 2. Return the matching user object structure expected by the React frontend:
 
+            var authHeader = Request.Headers.Authorization.ToString();
+
+            Console.WriteLine($"Authorization Header: {authHeader}");
+
             return Ok(new
 
             {

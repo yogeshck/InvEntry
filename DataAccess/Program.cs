@@ -26,6 +26,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.RequireHttpsMetadata = true;
     options.SaveToken = true;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = false,
@@ -33,6 +34,23 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtKey))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine(
+                $"JWT AUTH FAILED: {context.Exception.Message}");
+
+            return Task.CompletedTask;
+        },
+
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("JWT VALIDATED SUCCESSFULLY");
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -48,6 +66,7 @@ builder.Services.AddCors(options =>
 
          policy.WithOrigins(
                     "http://localhost:5173",
+                     "http://127.0.0.1:5173",
                     "http://localhost:3000"
             )
             .AllowAnyHeader()
