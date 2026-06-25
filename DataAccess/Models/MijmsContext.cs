@@ -117,6 +117,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
+    public virtual DbSet<SupplierMetalTransaction> SupplierMetalTransactions { get; set; }
+
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
     public virtual DbSet<VoucherDbView> VoucherDbViews { get; set; }
@@ -3092,14 +3094,18 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<Supplier>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("PK__SUPPLIER__5F3369A0DD958F8E");
+            entity.HasKey(e => e.Gkey).HasName("PK__SUPPLIER__5F3369A063395109");
 
             entity.ToTable("SUPPLIER");
 
-            entity.HasIndex(e => e.SupplierCode, "UQ__SUPPLIER__641649BFC2EB2052").IsUnique();
+            entity.HasIndex(e => e.SupplierCode, "UQ__SUPPLIER__641649BF610863FE").IsUnique();
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AddressGkey).HasColumnName("ADDRESS_GKEY");
+            entity.Property(e => e.ContactName)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("CONTACT_NAME");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -3107,6 +3113,14 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.CreatedOn)
                 .HasDefaultValueSql("(sysdatetime())")
                 .HasColumnName("CREATED_ON");
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("EMAIL");
+            entity.Property(e => e.Gstin)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("GSTIN");
             entity.Property(e => e.IsActive)
                 .HasDefaultValue(true)
                 .HasColumnName("IS_ACTIVE");
@@ -3117,9 +3131,14 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ModifiedOn)
                 .HasDefaultValueSql("(sysdatetime())")
                 .HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(200)
+                .IsUnicode(false)
+                .HasColumnName("NOTES");
             entity.Property(e => e.Phone)
                 .HasMaxLength(30)
-                .IsUnicode(false);
+                .IsUnicode(false)
+                .HasColumnName("PHONE");
             entity.Property(e => e.ShortName)
                 .HasMaxLength(20)
                 .IsUnicode(false)
@@ -3132,6 +3151,78 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("SUPPLIER_NAME");
+        });
+
+        modelBuilder.Entity<SupplierMetalTransaction>(entity =>
+        {
+            entity.HasKey(e => e.Gkey).HasName("PK__SUPPLIER__5F3369A086DB2755");
+
+            entity.ToTable("SUPPLIER_METAL_TRANSACTION");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.CreatedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn).HasColumnName("CREATED_ON");
+            entity.Property(e => e.GrossWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("GROSS_WEIGHT");
+            entity.Property(e => e.Karat)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("KARAT");
+            entity.Property(e => e.Metal)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("METAL");
+            entity.Property(e => e.MetalFineness)
+                .HasColumnType("decimal(8, 2)")
+                .HasColumnName("METAL_FINENESS");
+            entity.Property(e => e.ModifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn).HasColumnName("MODIFIED_ON");
+            entity.Property(e => e.NetWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("NET_WEIGHT");
+            entity.Property(e => e.PricePerGram)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("PRICE_PER_GRAM");
+            entity.Property(e => e.PureWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("PURE_WEIGHT");
+            entity.Property(e => e.PurityPercent)
+                .HasColumnType("decimal(6, 2)")
+                .HasColumnName("PURITY_PERCENT");
+            entity.Property(e => e.ReferenceNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("REFERENCE_NBR");
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(200)
+                .IsUnicode(false)
+                .HasColumnName("REMARKS");
+            entity.Property(e => e.StoneWeight)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("STONE_WEIGHT");
+            entity.Property(e => e.SupplierGkey).HasColumnName("SUPPLIER_GKEY");
+            entity.Property(e => e.SupplierShortname)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("SUPPLIER_SHORTNAME");
+            entity.Property(e => e.TestMetalFineness)
+                .HasColumnType("decimal(8, 2)")
+                .HasColumnName("TEST_METAL_FINENESS");
+            entity.Property(e => e.TestPurityPercent)
+                .HasColumnType("decimal(6, 2)")
+                .HasColumnName("TEST_PURITY_PERCENT");
+            entity.Property(e => e.TransactionAmount)
+                .HasColumnType("decimal(18, 2)")
+                .HasColumnName("TRANSACTION_AMOUNT");
+            entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+            entity.Property(e => e.TransactionType).HasColumnName("TRANSACTION_TYPE");
         });
 
         modelBuilder.Entity<Voucher>(entity =>

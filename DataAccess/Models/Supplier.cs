@@ -17,6 +17,14 @@ public partial class Supplier
 
     public int? AddressGkey { get; set; }
 
+    public string? Gstin { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? Notes { get; set; }
+
+    public string? ContactName { get; set; }
+
     public bool IsActive { get; set; }
 
     public string? CreatedBy { get; set; }

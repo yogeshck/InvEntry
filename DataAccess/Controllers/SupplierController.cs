@@ -22,10 +22,17 @@ namespace DataAccess.Controllers
             return Ok(_supplier.GetAll());
         }
 
-        [HttpGet("{phone}")]
-        public async Task<IActionResult> Get(string phone)
+        [HttpGet("phone/{phone}")]
+        public async Task<IActionResult> GetByPhone(string phone)
         {
             return Ok(_supplier.Get(x => x.Phone == phone));
+        }
+
+
+        [HttpGet("{gkey}")]
+        public async Task<IActionResult> Get(int gkey)
+        {
+            return Ok(_supplier.Get(x => x.Gkey == gkey));
         }
 
         [HttpPost]
@@ -48,12 +55,12 @@ namespace DataAccess.Controllers
             return supplier ?? value;
         }
 
-        [HttpPut("{phone}")]
+/*        [HttpPut("{phone}")]
         public void Put(string phone, [FromBody] Supplier value)
         {
             _supplier.Update(value);
 
-        }
+        }*/
         
         // DELETE api/<ProductStockController>/5
         [HttpDelete("{MobileNbr}")]

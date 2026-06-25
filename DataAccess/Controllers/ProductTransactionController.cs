@@ -14,10 +14,10 @@ namespace DataAccess.Controllers
         private readonly IRepositoryBase<ProductTransaction> _productTransaction;
         private readonly ILogger<ProductTransactionController> _logger;
 
-        public ProductTransactionController(IRepositoryBase<ProductTransaction> _productTransRepo,
+        public ProductTransactionController(IRepositoryBase<ProductTransaction> productTransRepo,
                                             ILogger<ProductTransactionController> logger)
         {
-            _productTransaction = _productTransRepo;
+            _productTransaction = productTransRepo;
             _logger = logger;
         }
 
