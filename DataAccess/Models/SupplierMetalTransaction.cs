@@ -15,7 +15,7 @@ public partial class SupplierMetalTransaction
 
     public int TransactionType { get; set; }
 
-    public string Metal { get; set; } = null!;
+    public string MetalType { get; set; } = null!;
 
     public decimal? MetalFineness { get; set; }
 
@@ -50,4 +50,8 @@ public partial class SupplierMetalTransaction
     public DateTime? ModifiedOn { get; set; }
 
     public string? ModifiedBy { get; set; }
+
+    public string? PaymentMethod { get; set; }
+
+    public int? BankGkey { get; set; }
 }

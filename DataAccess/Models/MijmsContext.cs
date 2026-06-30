@@ -3160,6 +3160,7 @@ public partial class MijmsContext : DbContext
             entity.ToTable("SUPPLIER_METAL_TRANSACTION");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.BankGkey).HasColumnName("BANK_GKEY");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -3172,13 +3173,13 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false)
                 .HasColumnName("KARAT");
-            entity.Property(e => e.Metal)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("METAL");
             entity.Property(e => e.MetalFineness)
                 .HasColumnType("decimal(8, 2)")
                 .HasColumnName("METAL_FINENESS");
+            entity.Property(e => e.MetalType)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("METAL_TYPE");
             entity.Property(e => e.ModifiedBy)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -3187,6 +3188,10 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.NetWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("NET_WEIGHT");
+            entity.Property(e => e.PaymentMethod)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("PAYMENT_METHOD");
             entity.Property(e => e.PricePerGram)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("PRICE_PER_GRAM");
