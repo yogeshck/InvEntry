@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.LabelGenerator", "
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "InvEntry.DB", "InvEntry.DB\InvEntry.DB.sqlproj", "{E291B431-16D9-47C2-BE52-61BE27D3C0E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.Contracts", "InvEntry.Contracts\InvEntry.Contracts.csproj", "{ED8505FE-26AC-407A-833B-378533F6FCF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -279,6 +281,26 @@ Global
 		{E291B431-16D9-47C2-BE52-61BE27D3C0E9}.Release|x86.ActiveCfg = Release|Any CPU
 		{E291B431-16D9-47C2-BE52-61BE27D3C0E9}.Release|x86.Build.0 = Release|Any CPU
 		{E291B431-16D9-47C2-BE52-61BE27D3C0E9}.Release|x86.Deploy.0 = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|ARM.Build.0 = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|x64.Build.0 = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Debug|x86.Build.0 = Debug|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|ARM.ActiveCfg = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|ARM.Build.0 = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|ARM64.Build.0 = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|x64.ActiveCfg = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|x64.Build.0 = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|x86.ActiveCfg = Release|Any CPU
+		{ED8505FE-26AC-407A-833B-378533F6FCF5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

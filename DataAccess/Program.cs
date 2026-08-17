@@ -3,6 +3,7 @@ using DataAccess.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using DataAccess.Workflows;
 
 using Serilog;
 
@@ -77,9 +78,19 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddDbContext<MijmsContext>(ctx => ctx.UseSqlServer(connectionString));
+builder.Services.AddDbContext<MijmsContext>(
+        ctx => ctx.UseSqlServer(connectionString));
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped(typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
+builder.Services.AddScoped(
+        typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
+
+builder.Services.AddScoped<
+    IUnitOfWork,
+    UnitOfWork>();
+
+builder.Services.AddScoped<
+                        ICustomerOrderWorkflow,
+                        CustomerOrderWorkflow>();
 
 var app = builder.Build();
 
