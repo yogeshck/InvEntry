@@ -15,6 +15,7 @@ using InvEntry.Services;
 using InvEntry.Tally;
 using InvEntry.ViewModels;
 using InvEntry.Views;
+using InvEntry.Services.Printing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -157,6 +158,20 @@ public sealed class Bootstrapper
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddTransient<ReferenceLoader, ReferenceLoader>()
                  //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
+
+                 .AddSingleton<ILabelPrinter>(serviceProvider =>
+                 {
+                     if (ctx.HostingEnvironment.IsDevelopment())
+                     {
+                         return new SimulatedLabelPrinter
+                         {
+                             Outcome = SimulatedPrintOutcome.PrinterOffline
+                         };
+                     }
+
+                     return new ZplLabelPrinter();
+                 })
+
                  .AddMockService()
                  .ConfigureFormulas()
                  .AddTallyService()

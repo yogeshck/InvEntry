@@ -29,20 +29,31 @@
                 <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator" Value="False"/>
             </Style>
             <dxmvvm:BooleanNegationConverter x:Key="NegationConverter"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </Grid.Resources>
         
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        
+
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions> 
-        
+            <!-- Menu -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- GRN header and summary grids -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- GRN line-entry grid -->
+            <RowDefinition Height="*"/>
+
+            <!-- Printing status/error panel -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Submit button -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <dxb:BarContainerControl DrawBorder="True"  Grid.ColumnSpan="2">
             <dxb:MainMenuControl Margin="5" BorderThickness="5" BorderBrush="Aqua">
                 <dxb:BarEditItem EditValue="{Binding SupplierID}" EditWidth="120" Content="Supplier ID:">
@@ -195,9 +206,78 @@
 
             </dxg:GridControl.Columns>
         </dxg:GridControl>
-        
-        <dx:SimpleButton Grid.Row="4" Grid.ColumnSpan="2" Content="Submit" Width="150" Height="25" 
-                         Background="#FFE9EBEC" Command="{Binding SubmitCommand}"/>
+
+        <!-- Printing error/status panel -->
+        <Border Grid.Row="3"
+        Grid.ColumnSpan="2"
+        Margin="0,10,0,5"
+        Padding="12"
+        Background="#FFF2F2"
+        BorderBrush="#D32F2F"
+        BorderThickness="1"
+        CornerRadius="4">
+
+            <Border.Style>
+                <Style TargetType="Border">
+                    <!-- Hidden unless HasError is explicitly true -->
+                    <Setter Property="Visibility"
+                    Value="Collapsed"/>
+
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasError}"
+                             Value="True">
+                            <Setter Property="Visibility"
+                            Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                   Margin="0,0,10,0"
+                   VerticalAlignment="Top"
+                   FontSize="20"
+                   Foreground="#B71C1C"
+                   Text="⚠"/>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock FontSize="14"
+                       FontWeight="Bold"
+                       Foreground="#B71C1C"
+                       Text="{Binding ErrorPanelTitle}"/>
+
+                    <TextBlock Margin="0,4,0,0"
+                       Foreground="#B71C1C"
+                       Text="{Binding ErrorPanelMessage}"
+                       TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Button Grid.Column="2"
+                Width="25"
+                Height="25"
+                Padding="0"
+                VerticalAlignment="Top"
+                Content="×"
+                Command="{Binding ClearErrorsCommand}"/>
+            </Grid>
+        </Border>
+
+        <dx:SimpleButton Grid.Row="4"
+                         Grid.ColumnSpan="2"
+                         Margin="0,5,0,0"
+                         Content="Submit"
+                         Width="150"
+                         Height="30"
+                         HorizontalAlignment="Center"
+                         Background="#FFE9EBEC"
+                         Command="{Binding SubmitCommand}"/>
 
     </Grid>
     

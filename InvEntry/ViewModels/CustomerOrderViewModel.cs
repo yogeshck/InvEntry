@@ -92,6 +92,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> _paymentModeList;
 
+    private ProductView OldMetalProductView;
+
     //[ObservableProperty]
     //private ObservableCollection<MtblReference> mtblReferencesList;
 
@@ -112,6 +114,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private bool createCustomer = false;
     private bool updateOrder = false;
     private bool invBalanceChk = false;
+    private decimal todaysRate;
 
     private readonly ReferenceLoader _referenceLoader;
 
@@ -208,8 +211,9 @@ public partial class CustomerOrderViewModel : ObservableObject
         try
         {
             await SetThisCompany();
-            SetHeader(); 
+            SetHeader();
 
+            SetMetalPrice();
             await SetMasterLedger();
 
             _ = LoadReferencesAsync();
@@ -232,6 +236,37 @@ public partial class CustomerOrderViewModel : ObservableObject
     {
         Company = new();
         Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+    }
+
+    private void SetMetalPrice()
+    {
+        var metalPrice = getBilledPrice("GOLD");
+        if (metalPrice < 1)
+        {
+            displayRateErrorMsg();
+            //return;
+        }
+
+        todaysRate = (decimal)metalPrice;
+    }
+
+    private void displayRateErrorMsg()
+    {
+        _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
+                                        "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
+
+    }
+
+    private decimal getBilledPrice(string metal)
+    {
+        var metalPrice = _settingsPageViewModel.GetPrice(metal);
+
+        if (metalPrice is null)
+        {
+            metalPrice = -1;
+        }
+
+        return (decimal)metalPrice;
     }
 
     private async Task SetMasterLedger()
@@ -639,7 +674,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         if (args.Row is OldMetalTransaction oldMetalTransaction &&
             args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
         {
-            EvaluateOldMetalTransactions(oldMetalTransaction);
+            EvaluateOldMetalTransactionsAsync(oldMetalTransaction);
         }
 
         await EvaluateHeader();
@@ -792,17 +827,56 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
+    private async Task EvaluateOldMetalTransactionsAsync(OldMetalTransaction oldMetalTransaction)
     {
+
+        /*        if (oldMetalTransaction.ProductId is null)
+                {
+                    return;
+                }*/
+
+        if (string.IsNullOrEmpty(oldMetalTransaction.ProductId)) return;
+
+        OldMetalProductView = await _productViewService.GetProduct(oldMetalTransaction.ProductId);
+
+        if (OldMetalProductView is null)
+        {
+            _messageBoxService.ShowMessage($"No Product found for {OldMetalProductView}, Please make sure it exists",
+                "Product not found", MessageButton.OK, MessageIcon.Error);
+            return;
+        }
+
+        var metalPrice = _settingsPageViewModel.GetPrice("GOLD");
+
+        if (metalPrice < 1)
+        {
+            displayRateErrorMsg();
+            //return;
+        }
+
+        oldMetalTransaction.TransactedRate = todaysRate;
+
+
+        if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
+            oldMetalTransaction.TransactedRate = metalPrice; // todaysRate;
+
+        oldMetalTransaction.Purity = OldMetalProductView.Purity;
+
+
         oldMetalTransaction.NetWeight = (
-                                   oldMetalTransaction.GrossWeight.GetValueOrDefault() -
-                                   oldMetalTransaction.StoneWeight.GetValueOrDefault() -
-                                   oldMetalTransaction.WastageWeight.GetValueOrDefault()
-                                );
+                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
+                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
+                                        );
 
         oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
                                                     oldMetalTransaction.TransactedRate.GetValueOrDefault();
         oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
+
+        oldMetalTransaction.DocRefType = "Invoice";
+
+        oldMetalTransaction.EnrichOldMetalProductDetails(OldMetalProductView);
+    
 
     }
 

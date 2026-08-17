@@ -11,6 +11,7 @@ using InvEntry.Extension;
 using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
+using InvEntry.Services.Printing;
 using InvEntry.Store;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
@@ -36,6 +37,18 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         private DateTime _Today = DateTime.Today;
+
+        [ObservableProperty]
+        private bool _isPrintingTag;
+
+        [ObservableProperty]
+        private bool _hasError;
+
+        [ObservableProperty]
+        private string _errorPanelTitle;
+
+        [ObservableProperty]
+        private string? _errorPanelMessage;
 
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
@@ -91,6 +104,7 @@ namespace InvEntry.ViewModels
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
         private Dictionary<string, Action<GrnLine, decimal?>> copyGRNLineExpression;
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
+        private readonly ILabelPrinter _labelPrinter;
 
         public ProductStockEntryViewModel(IGrnService grnService,
                                             IProductViewService productViewService,
@@ -100,8 +114,8 @@ namespace InvEntry.ViewModels
                                             IProductCategoryService productCategoryService,
                                             IOrgThisCompanyViewService orgThisCompanyViewService,
                                             IMessageBoxService messageBoxService,
-                                            IMtblReferencesService mtblReferencesService
-                                            )
+                                            IMtblReferencesService mtblReferencesService,
+                                            ILabelPrinter labelPrinter)
         {
             _grnService = grnService;
             _productViewService = productViewService;
@@ -112,6 +126,7 @@ namespace InvEntry.ViewModels
             _messageBoxService = messageBoxService;
             _mtblReferencesService = mtblReferencesService;
             _orgThisCompanyViewService = orgThisCompanyViewService;
+            _labelPrinter = labelPrinter;
 
             _lineGrnLookup = new();
 
@@ -175,7 +190,15 @@ namespace InvEntry.ViewModels
 
         [RelayCommand]
         private async void OnEditorActivated(ShowingEditorEventArgs e)
-        { 
+        {
+            //var line = e.Row as GrnLine;
+
+            if (e.Row is not GrnLine line)
+                return;
+
+            ClearErrors();
+            // User has started correcting the current line.
+            //ClearPrintStatusFor(line);
 
             var waitVM = WaitIndicatorVM.ShowIndicator("Press... print button... reading weight.... .");
           
@@ -191,7 +214,7 @@ namespace InvEntry.ViewModels
 
                 SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-                var line = e.Row as GrnLine;
+                //var line = e.Row as GrnLine;
                 if (line != null)
                 {
                     if (!isManualMode)   //AUTO Mode
@@ -203,7 +226,9 @@ namespace InvEntry.ViewModels
                         if (weight < 0)
                         {
                             //display error message
-                            _messageBoxService.ShowMessage("Weigh machine communication error...... ");
+                            ShowError(
+                                        "Weighing machine error",
+                                        "Unable to read the weight. Please check the weighing-machine connection.");
                             reader.Stop();
                             return;
                         }
@@ -230,9 +255,223 @@ namespace InvEntry.ViewModels
                 if (!isManualMode)
                     _ = PrintTagAsync(line);
             }
+            else
+            {
+                if(line != null)
+                {
+                    if(line.NetWeight > 0)
+                    {
+                        _ = PrintTagAsync(line);
+                    }
+                }
+            }
 
         }
 
+        [RelayCommand]
+        private void ClearErrors()
+        {
+            HasError = false;
+            ErrorPanelTitle = null;
+            ErrorPanelMessage = null;
+        }
+
+        private void ShowError(string title, string? message)
+        {
+            ShowErrors(title, new[] { message });
+        }
+
+        private void ShowErrors(
+    string title,
+    IEnumerable<string?> messages)          
+        {
+            var errors = messages
+                .Where(message => !string.IsNullOrWhiteSpace(message))
+                .Select(message => message!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (errors.Count == 0)
+                errors.Add("An unknown error occurred.");
+
+            ErrorPanelTitle = string.IsNullOrWhiteSpace(title)
+                ? "Error"
+                : title;
+
+            ErrorPanelMessage = errors.Count switch
+            {
+                1 => errors[0],
+
+                _ => string.Join(
+                    Environment.NewLine,
+                    errors.Select(
+                        (error, index) => $"{index + 1}. {error}"))
+            };
+
+            HasError = true;
+        }
+
+        private IReadOnlyList<string> ValidateTagForPrinting(GrnLine? grnLine)
+        {
+            var errors = new List<string>();
+
+            if (grnLine is null)
+            {
+                errors.Add("Please select a GRN line before printing.");
+                return errors;
+            }
+
+            if (SelectedGrn is null)
+                errors.Add("Please select a GRN before printing.");
+
+            if (Company is null)
+                errors.Add("Company details have not been loaded.");
+
+            if (mtblReference is null)
+                errors.Add("The product SKU sequence reference has not been loaded.");
+
+            if (string.IsNullOrWhiteSpace(grnLine.ProductSku))
+                errors.Add("Product SKU is required.");
+
+            if (!grnLine.NetWeight.HasValue || grnLine.NetWeight.Value <= 0m)
+                errors.Add("Net weight must be greater than zero.");
+
+            if (grnLine.StoneWeight.GetValueOrDefault() < 0m)
+                errors.Add("Stone weight cannot be negative.");
+
+            if (grnLine.StoneWeight.GetValueOrDefault() >
+                grnLine.GrossWeight.GetValueOrDefault())
+            {
+                errors.Add("Stone weight cannot exceed gross weight.");
+            }
+
+            if (grnLine.SuppVaPercent.GetValueOrDefault() < 0m)
+                errors.Add("VA percentage cannot be negative.");
+
+            return errors;
+        }
+
+        [RelayCommand]
+        private async Task PrintTagAsync(GrnLine? grnLine)
+        {
+            if (IsPrintingTag)
+                return;
+
+            ClearErrors();
+
+            var validationErrors = ValidateTagForPrinting(grnLine);
+
+            if (validationErrors.Count > 0)
+            {
+                ShowErrors(
+        "Unable to print label",
+        validationErrors);
+
+                return; // Remain on the current row
+            }
+
+            var line = grnLine!;
+
+            IsPrintingTag = true;
+
+            try
+            {
+/*                var printResult = BarCodePrint.ProcessBarCode(
+                    line.ProductSku!,
+                    line.ProductDesc ?? string.Empty,
+                    line.SuppVaPercent.GetValueOrDefault(),
+                    line.NetWeight!.Value,
+                    line.StoneWeight.GetValueOrDefault(),
+                    line.ProductPurity ?? string.Empty,
+                    Company!.CompanyName ?? "MATHA");*/
+
+                var request = new LabelPrintRequest(
+    line.ProductSku!,
+    line.ProductDesc ?? string.Empty,
+    line.SuppVaPercent.GetValueOrDefault(),
+    line.NetWeight!.Value,
+    line.StoneWeight.GetValueOrDefault(),
+    line.ProductPurity ?? string.Empty,
+    Company!.CompanyName ?? "MATHA");
+
+                var printResult = await _labelPrinter.PrintAsync(request);
+
+                if (!printResult.Success)
+                {
+                    SelectedGrnLine = line;
+
+                    ShowError(
+                            "Label printing failed",
+                            printResult.ErrorMessage ??
+                            "The printer did not accept the label.");
+
+
+                    return; // Critical: do not move to the next row
+                }
+
+                var completedLineNumber = line.LineNbr;
+
+                var existingLine =
+                    await _grnService.GetByProductSku(line.ProductSku!);
+
+                if (existingLine is null)
+                {
+                    line.GrnHdrGkey = SelectedGrn!.GKey;
+                    line.Status = "Closed";
+
+                    await ProcessStockLinesAsync(line);
+                    await _grnService.CreateGrnLine(line);
+
+                    productSkuSeq++;
+                    mtblReference!.RefValue = productSkuSeq.ToString();
+
+                    await _mtblReferencesService.UpdateReference(
+                        mtblReference);
+                }
+
+               // PrintStatusMessage =
+               //     $"Label {line.ProductSku} was submitted to the printer.";
+
+                // Execute this only after everything succeeds.
+                SelectNextPrintableLine((int)completedLineNumber);
+            }
+            catch (Exception ex)
+            {
+                SelectedGrnLine = line;
+
+                System.Diagnostics.Debug.WriteLine(ex);
+
+                ShowErrors(
+                    "Label operation failed",
+                    new[]
+                    {
+            "The label operation could not be completed.",
+            ex.Message
+                    });
+            
+
+            // Do not call SelectNextPrintableLine() here.
+        }
+            finally
+            {
+                IsPrintingTag = false;
+            }
+        }
+
+        private void SelectNextPrintableLine(int completedLineNumber)
+        {
+            if (GrnLineList is null || GrnLineList.Count == 0)
+                return;
+
+            // Do not assume that line numbers are continuous.
+            var nextLine = GrnLineList
+                .Where(line => line.LineNbr > completedLineNumber)
+                .OrderBy(line => line.LineNbr)
+                .FirstOrDefault();
+
+            if (nextLine is not null)
+                SelectedGrnLine = nextLine;
+        }
 
         private void OnCellValueChanged(CellValueChangedEventArgs e)
         {
@@ -383,6 +622,8 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task SelectionGRNChanged()
         {
+            ClearErrors(); 
+            
             if (SelectedGrn is null) return;
 
             var grnLineListSumryResult = await _grnService.GetBySumryHdrGkey(SelectedGrn.GKey);
@@ -459,84 +700,7 @@ namespace InvEntry.ViewModels
 
 
 
-        }
-
-        [RelayCommand]
-        private async Task PrintTagAsync(GrnLine grnline)
-        {
-
-           // BarCodePrint.ReinitializePrinter();
-
-
-            if (grnline.NetWeight > 0.00m)
-            {
-
-              var result = BarCodePrint.ProcessBarCode(grnline.ProductSku, grnline.ProductDesc,
-                                                                            grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
-                                                                            grnline.StoneWeight.Value,
-                                                                            grnline.ProductPurity, Company.CompanyName);
-
-/*                var result = LabelGenPrintHelper.GenerateLabel(grnline.ProductSku, grnline.ProductDesc,
-                                                              grnline.SuppVaPercent.Value, grnline.NetWeight.Value,
-                                                              grnline.StoneWeight.Value,
-                                                              grnline.ProductPurity, Company.CompanyName);*/
-            }
-
-
-            //set isprinted to false
-
-            var nextSeq = SelectedGrnLine.LineNbr + 1;
-
-            if (GrnLineList.Any(x => x.LineNbr == nextSeq))
-            {
-                SelectedGrnLine = GrnLineList.First(x => x.LineNbr == nextSeq);
-            }
-            else
-            {
-                //mofied 24-feb needs to be tested
-               // reader.Stop();
-            }
-
-            if (grnline.NetWeight.HasValue && grnline.NetWeight > 0 && grnline.ProductSku is not null)
-            {
-                grnline.GrnHdrGkey = SelectedGrn.GKey;
-
-                /*                    if (x.ProductSku is null)
-                                    {
-                                        return;
-                                    } else*/
-                {
-                    grnline.Status = "Closed";
-
-                    _ = ProcessStockLinesAsync(grnline);
-
-                    var grnLineChk = await _grnService.GetByProductSku(grnline.ProductSku);
-                    if (grnLineChk is not null)
-                    { } else { 
-                        await _grnService.CreateGrnLine(grnline);
-                    }
-                }
-
-                productSkuSeq = productSkuSeq + 1;
-                mtblReference.RefValue = productSkuSeq.ToString();
-                //if user maintains seq nbr for product sku - this nees to be executed - but in difference place - need to fix
-                await _mtblReferencesService.UpdateReference(mtblReference);
-
-            }
-
-        }
-
-        /*        private void DisablePrintButton(int rowHandle)
-                {
-                    var row = gridView1.GetRow(rowHandle) as MyRowModel;
-                    if (row != null)
-                    {
-                        row.CanPrint = false; // mark as disabled
-                        gridView1.RefreshRow(rowHandle); // refresh UI
-                    }
-                }*/
-
-        // Move cursor to next row and specific column
+        } 
 
 
         [RelayCommand]
@@ -661,12 +825,12 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private void CellUpdate(CellValueChangedEventArgs args)
         {
-            if (args.Row is GrnLine line)
-            {
+            if (args.Row is not GrnLine line)
+                return;
 
-                EvaluateFormula(line);
-
-            }
+            ClearErrors();
+            //ClearPrintStatusFor(line);
+            EvaluateFormula(line);
         }
 
         private void PopulateUnboundLineDataMap()
@@ -698,6 +862,7 @@ namespace InvEntry.ViewModels
             grnLine.RejectedQty = 0;
 
         }
+
 
         private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
         {

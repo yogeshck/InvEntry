@@ -1,205 +1,257 @@
-﻿using System.Runtime.Intrinsics.Arm;
+﻿using System.Globalization;
 
 namespace InvEntry.Utils;
 
-public class BarCodePrint
+public enum LabelPrintStatus
 {
+    Failed,
+    Submitted
+}
 
-    private static string PrinterName = "Bar Code Printer TT065-50"; // Set your printer name
-                                                                     // private static bool firstRec = true;
-    private static bool initialized = false;
+public sealed record LabelPrintResult(
+    LabelPrintStatus Status,
+    string? ErrorMessage = null)
+{
+    // Submitted means Windows accepted the RAW ZPL data. It does not prove that
+    // the label physically came out of the printer.
+    public bool Success => Status == LabelPrintStatus.Submitted;
+}
 
+public static class BarCodePrint
+{
+    private const string PrinterName = "Bar Code Printer TT065-50";
 
-    public static bool ProcessBarCode(string productCode, string productName, decimal VApercent,
-                                    decimal productWeight, decimal prdStoneWeight, string productPurity,
-                                    string companyName = "MATHA")
+    // RawPrinterHelper and the initialization flag are shared by all callers.
+    // This lock prevents two labels from being submitted at the same time.
+    private static readonly object PrintLock = new();
+    private static bool initialized;
+
+    public static LabelPrintResult ProcessBarCode(
+        string productCode,
+        string productName,
+        decimal vaPercent,
+        decimal productWeight,
+        decimal productStoneWeight,
+        string productPurity,
+        string companyName = "MATHA")
     {
+        var validationError = ValidateInput(
+            productCode,
+            productWeight,
+            productStoneWeight,
+            vaPercent);
+
+        if (validationError is not null)
+            return Failed(validationError);
 
         try
         {
-            // Run initialization once per session
-            if (!initialized)
+            lock (PrintLock)
             {
-                string initZPL = GenerateInitZPL();
-                RawPrinterHelper.SendZPLToPrinter(PrinterName, initZPL, out var initErr);
-                initialized = true;
+                if (!EnsurePrinterInitialized(out var initializationError))
+                    return Failed(initializationError ?? "Printer initialization failed.");
+
+                var productWeightText = productWeight.ToString(
+                    "F3",
+                    CultureInfo.InvariantCulture);
+
+                var stoneWeightText = productStoneWeight > 0m
+                    ? productStoneWeight.ToString("F3", CultureInfo.InvariantCulture)
+                    : string.Empty;
+
+                var vaPercentText =
+                    $"{vaPercent.ToString("0.##", CultureInfo.InvariantCulture)}%";
+
+                var zplCommand = GenerateZpl(
+                    EscapeZpl(productCode),
+                    EscapeZpl(productName),
+                    vaPercentText,
+                    productWeightText,
+                    stoneWeightText,
+                    EscapeZpl(productPurity),
+                    EscapeZpl(companyName));
+
+                if (!RawPrinterHelper.SendZPLToPrinter(
+                        PrinterName,
+                        zplCommand,
+                        out var printError))
+                {
+                    return Failed(printError ?? "Windows rejected the print data.");
+                }
+
+                // RawPrinterHelper confirms only that the ZPL was submitted.
+                return new LabelPrintResult(LabelPrintStatus.Submitted);
             }
-
-
-            var netWeight = productWeight.ToString("F3");
-            var vaPercent = (int)VApercent + "%";
-            var stoneWeight = "";
-
-            if (prdStoneWeight > 0)
-            {
-                stoneWeight = prdStoneWeight.ToString("F3");
-            }
-
-            string zplCommand = GenerateZPL(productCode, productName, vaPercent, netWeight, stoneWeight,
-                                            productPurity, companyName);
-
-            if (RawPrinterHelper.SendZPLToPrinter(PrinterName, zplCommand, out var err))
-            {
-                return true;
-            }
-
-            Console.WriteLine($"Printing barcode for: {err}");
-
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Printing barcode for: Error");
+            return Failed($"Unexpected printing error: {ex.Message}");
         }
-
-        return false;
     }
 
-    private static string GenerateInitZPL()
+    public static LabelPrintResult ReinitializePrinter()
+    {
+        try
+        {
+            lock (PrintLock)
+            {
+                initialized = false;
+
+                if (!EnsurePrinterInitialized(out var error))
+                    return Failed(error ?? "Printer reinitialization failed.");
+
+                return new LabelPrintResult(LabelPrintStatus.Submitted);
+            }
+        }
+        catch (Exception ex)
+        {
+            initialized = false;
+            return Failed($"Printer reinitialization failed: {ex.Message}");
+        }
+    }
+
+    private static bool EnsurePrinterInitialized(out string? error)
+    {
+        if (initialized)
+        {
+            error = null;
+            return true;
+        }
+
+        var success = RawPrinterHelper.SendZPLToPrinter(
+            PrinterName,
+            GenerateInitZpl(),
+            out error);
+
+        // Never mark initialization complete when submission failed.
+        initialized = success;
+        return success;
+    }
+
+    private static string? ValidateInput(
+        string productCode,
+        decimal productWeight,
+        decimal productStoneWeight,
+        decimal vaPercent)
+    {
+        if (string.IsNullOrWhiteSpace(productCode))
+            return "Product code is required.";
+
+        if (productWeight <= 0m)
+            return "Product weight must be greater than zero.";
+
+        if (productStoneWeight < 0m)
+            return "Stone weight cannot be negative.";
+
+        if (productStoneWeight > productWeight)
+            return "Stone weight cannot be greater than product weight.";
+
+        if (vaPercent < 0m)
+            return "VA percentage cannot be negative.";
+
+        return null;
+    }
+
+    private static LabelPrintResult Failed(string message) =>
+        new(LabelPrintStatus.Failed, message);
+
+    private static string EscapeZpl(string? value)
+    {
+        // Prevent field values from terminating ^FD or injecting ZPL commands.
+        return (value ?? string.Empty)
+            .Replace('^', ' ')
+            .Replace('~', ' ')
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
+    }
+
+    private static string GenerateInitZpl()
     {
         return "^XA\n" +
-               "^MNA\n" +   // Non-continuous media
-               "^MTT\n" +   // Thermal Transfer mode
-               "^SLC0\n" +  // Enable auto label detection
-               "^JUS\n" +   // Perform auto-calibration
-               "^PR6\n" +   // Print speed
-               "^MD30\n" +  // Darkness
-               "^LH0,0\n" + // Home position
-               "^FWN\n" +   // Print direction
+               "^MNA\n" +
+               "^MTT\n" +
+               "^SLC0\n" +
+               "^JUS\n" +
+               "^PR6\n" +
+               "^MD30\n" +
+               "^LH0,0\n" +
+               "^FWN\n" +
                "^XZ\n";
     }
 
-
-    private static string GenerateZPL(string productCode, string productName, string VaPercent,
-                                    string productWeight, string stoneWeight, string productPurity, string companyName)
+    private static string GenerateZpl(
+        string productCode,
+        string productName,
+        string vaPercent,
+        string productWeight,
+        string stoneWeight,
+        string productPurity,
+        string companyName)
     {
+        companyName = LimitLength(companyName, 20);
+        productName = LimitLength(productName, 28);
+        productPurity = LimitLength(productPurity, 15);
 
-        if (companyName.Length > 20)
-            companyName = companyName.Substring(0, 19);
+        var stoneText = stoneWeight.Length > 0
+            ? $"Stone: {stoneWeight}"
+            : string.Empty;
 
-        /* return "^XA\n" +
-    "^FO50,50\n" +
-    "^BY3\n" +
-    "^BCN,100,Y,N,N\n" +
-    $"^FD{productCode}^FS\n" +
-    "^XZ";*/
-        string zplCmd = "";
+        return
+            "^XA\n" +
+            "^PW700\n" +
+            "^LL250\n" +
+            "^MD10\n" +
 
-        /*        if (firstRec)
-                {
-                    firstRec = false;
+            "^FO5,5\n" +
+            "^BY1,2.0,40\n" +
+            "^BCN,40,N,N,N\n" +
+            $"^FD{productCode}^FS\n" +
 
-                    zplCmd = "^XA\n" +
+            "^FO5,55\n" +
+            "^A0N,20,20\n" +
+            $"^FD{productCode}^FS\n" +
 
-                        "^MNA\n" +                              // Non-continuous media
-                        "^MTT\n" +                              // Thermal Transfer mode
-                        "^SLC0\n" +                             // Enable auto label detection
-                        "^JUS\n" +                              // Perform auto-calibration
-                        "^XA\n" +
-                        "^PR6\n" +                              // Set print speed (6 = medium speed)
-                        "^MD30\n" +                             // Set darkness level (30 = medium)
-                        "^LH0,0\n" +                            // Set label home position
-                        "^FWN\n"+                              // Set print direction (Normal)
-                    "XZ\n";
-                }
-                else
-                {
-                    zplCmd = "^XA\n";
+            "^FO140,55\n" +
+            "^A0N,18,18\n" +
+            "^FD ^FS\n" +
 
-                }*/
-        // PW = print width - This sets the width of the label (the printable area) to 700 dots.
-        // Since most Zebra printers are 203 dpi(dots per inch), 700 dots ≈ 3.45 inches wide.
-        // If the printer is 300 dpi, 700 dots ≈ 2.33 inches.
+            "^FO10,85\n" +
+            "^A0N,18,18\n" +
+            $"^FD{companyName}^FS\n" +
 
-        // LL = Label Length - This sets the length of the label to 250 dots. At 203 dpi, this is about 1.23 inches.
-        // At 300 dpi, it's about 0.83 inches.
+            "^FO250,5\n" +
+            "^A0N,22,22\n" +
+            $"^FD{productName}^FS\n" +
 
-        // This prints a label 700 dots wide × 250 dots tall
+            "^FO250,25\n" +
+            "^A0N,20,20\n" +
+            $"^FDGwt: {productWeight}^FS\n" +
 
-        zplCmd +=
-                "^XA\n" +
-                "^PW700\n" +                            //700
-                "^LL250\n" +                            //250
-                "^MD10"+                                // Darkness level (tune between 20–30)  20 to 25
+            "^FO250,45\n" +
+            "^A0N,20,20\n" +
+            $"^FD{stoneText}^FS\n" +
 
-                "^FO5,05\n" +                         // Position: X=20, Y=10 means  x=05 left side of the label
-               // prev "^BY1\n" +                            // Barcode width
-                "^BY1,1.5,40"+           // Barcode module width=2, ratio=2, height=40
+            "^FO250,65\n" +
+            "^A0N,20,20\n" +
+            $"^FDMC: {vaPercent}^FS\n" +
 
-                "^BCN,40,N,N,N\n" +                   // Code 128 Barcode (50 dots high, NO text)"
-                $"^FD{productCode}^FS\n" +            // Barcode Data (Replace with actual Product Code)
-
-                // 🔹 Second Line: Product Code
-                "^FO5,55\n" +                         // Position below barcode
-                "^A0N,20,20\n" +                      // Font size (20 height, 20 width)  prev = A0N,18,25
-                $"^FD{productCode}^FS\n" +            // Product Code Text
-
-                // 🔹 Second Line: MM/YY
-                "^FO140,55\n" +
-                "^A0N,18,18\n" +
-                $"^FD ^FS\n" +  // MM/YY Text
-
-               "^FO10,85\n" +
-               "^A0N,18,18\n" +
-               $"^FD{companyName}^FS\n" + // Company Name
-
-                // 🔹 Right Section: Weight and Rate
-                "^FO250,05\n" +              //OLD = 210          //based on the label size perforation position to be shifted ex. -> 210+   
-                "^A0N,22,22\n" +                     //prev 20,20
-                $"^FD{productName}^FS\n" +             // Weight
-
-                "^FO250,25\n" +                         //OLD = 210
-                "^A0N,20,20\n" +
-                $"^FDGwt: {productWeight}^FS\n";
-
-        //if (stoneWeight is not null )
-        if (stoneWeight.Length > 0)
-        {
-            zplCmd +=
-                "^FO250,45\n" +                         //OLD = 210
-                "^A0N,20,20\n" +
-                $"^FDStone: {stoneWeight}^FS\n";
-        }
-        else
-        {
-            zplCmd +=
-                "^FO250,45\n" +                         //OLD = 210
-                "^A0N,20,20\n" +
-                $"^FD ^FS\n";
-        }
-
-        zplCmd +=
-                    "^FO250,65\n" +                     //OLD = 210
-                    "^A0N,20,20\n" +
-                    $"^FDMC: {VaPercent}^FS\n" +  // Rate
-
-                    "^FO250,85\n" +                    //OLD = 210
-                    "^A0N,20,20\n" +
-                    $"^FDPurity: {productPurity}^FS\n" +  // Rate
-
-                    "^XZ\n";
-
-        return zplCmd;
+            "^FO250,85\n" +
+            "^A0N,20,20\n" +
+            $"^FDPurity: {productPurity}^FS\n" +
+            "^XZ\n";
     }
 
-    public static void ReinitializePrinter()
+    private static string LimitLength(string value, int maximumLength)
     {
-        try
-        {
-            string initZPL = GenerateInitZPL();
-            RawPrinterHelper.SendZPLToPrinter(PrinterName, initZPL, out var err);
-            initialized = true; // reset state
-            Console.WriteLine("Printer reinitialized successfully.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Printer reinit failed: {ex.Message}");
-        }
+        if (value.Length <= maximumLength)
+            return value;
+
+        return value[..maximumLength];
     }
 }
 
-
 public class BarCodeProductRec
 {
-    public string productCode { get; set; }
-
+    public string ProductCode { get; set; } = string.Empty;
 }

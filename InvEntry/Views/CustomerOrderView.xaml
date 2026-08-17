@@ -598,7 +598,7 @@
                                     </dxg:GridControl.Resources>
 
                                     <dxg:GridControl.Columns>
-                                        <dxg:GridColumn FieldName="Metal"
+                                        <dxg:GridColumn FieldName="ProductId"
                                                         Header="Metal">
                                             <dxg:GridColumn.EditSettings>
                                                 <dxe:ComboBoxEditSettings ItemsSource="{Binding MetalList}" />
