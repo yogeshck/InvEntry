@@ -12,6 +12,7 @@ using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
 using InvEntry.Services;
+using InvEntry.Services.Customers;
 using InvEntry.Store;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
@@ -118,7 +119,6 @@ public partial class CustomerOrderViewModel : ObservableObject
     private decimal todaysRate;
 
     private readonly ReferenceLoader _referenceLoader;
-
     private readonly ICustomerService _customerService;
     private readonly IProductViewService _productViewService;
     private readonly IProductStockService _productStockService;
@@ -138,6 +138,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IReportFactoryService _reportFactoryService;
+    private readonly ICustomerLookupService _customerLookupService;
+
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<CustomerOrderLine, decimal?>> copyCustomerOrderLineExpression;
     private Dictionary<string, Action<CustomerOrder, decimal?>> copyCustomerOrderExpression;
@@ -150,6 +152,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     public CustomerOrderViewModel(
 
             ICustomerService customerService,
+            ICustomerLookupService customerLookupService,
             IProductViewService productViewService,
             IProductStockService productStockService,
             IProductStockSummaryService productStockSummaryService,
@@ -174,6 +177,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         // Assign dependencies
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
+        _customerLookupService = customerLookupService;
         _productViewService = productViewService;
         _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
@@ -489,7 +493,6 @@ public partial class CustomerOrderViewModel : ObservableObject
         CustomerPhoneNumber = null;
         CustomerState = null;
         //SalesPerson = null;
-        CreateCustomerOrderCommand.NotifyCanExecuteChanged();
         //invBalanceChk = false;  //reset to false for next invoice
     }
 
@@ -515,63 +518,199 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task FetchCustomer(EditValueChangedEventArgs args)
+    private async Task FetchCustomer(
+    EditValueChangedEventArgs args)
     {
-        if (args.NewValue is not string phoneNumber) return;
+        if (args.NewValue is not string phoneNumber)
+            return;
 
         phoneNumber = phoneNumber.Trim();
 
-        if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
-            return;
-
-        if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
-            return;
-
-        CustomerReadOnly = false;
-        createCustomer = false;
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
-
-        Buyer = await _customerService.GetCustomer(phoneNumber);
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-
-        if (Buyer is null)
+        if (string.IsNullOrWhiteSpace(phoneNumber) ||
+            phoneNumber.Length < 10)
         {
-            _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
-
-            Buyer = new();
-            Buyer.MobileNbr = phoneNumber;
-            Buyer.Address.GstStateCode = Company.GstCode;
-            Buyer.Address.State = Company.State;
-            Buyer.Address.District = Company.District;
-
-            createCustomer = true;
-            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
-
-            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", Company.GstCode);
-
-            Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
+            return;
         }
-        else
-        {
-            var gstCode = Buyer.Address is null ? Company.GstCode : Buyer.Address.GstStateCode;
 
-            if (Buyer.Address is null)
+        if (Buyer is not null &&
+            Buyer.MobileNbr == phoneNumber &&
+            Buyer.GKey > 0)
+        {
+            return;
+        }
+
+        try
+        {
+            CustomerReadOnly = false;
+            createCustomer = false;
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(
+                    "Fetching Customer details..."));
+
+            var result =
+                await _customerLookupService
+                    .ResolveByMobileAsync(phoneNumber);
+
+            Buyer = result.Customer;
+
+            Buyer.Address ??= new OrgAddress();
+
+            if (result.IsExisting)
             {
-                Buyer.Address = new();
-                Buyer.Address.GstStateCode = Company.GstCode;
+                await PrepareExistingCustomerAsync();
+
+                return;
             }
 
-            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", gstCode);
-            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            await PrepareNewCustomerAsync(phoneNumber);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Failed to fetch customer: " + ex.Message,
+                "Customer Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
 
-            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
+    private async Task PrepareExistingCustomerAsync()
+    {
+        if (Buyer is null)
+            return;
 
+        Buyer.Address ??= new OrgAddress();
+
+        createCustomer = false;
+
+        //
+        // Existing customer is display-only by default.
+        //
+        CustomerReadOnly = true;
+
+        //
+        // Determine GST state.
+        //
+        var gstCode =
+            Buyer.Address.GstStateCode;
+
+        if (string.IsNullOrWhiteSpace(gstCode))
+        {
+            gstCode = Buyer.GstStateCode;
         }
 
-        Header.CustMobileNbr = phoneNumber;
+        //
+        // If customer has no GST state/location,
+        // fall back to seller/company state.
+        //
+        if (string.IsNullOrWhiteSpace(gstCode))
+        {
+            gstCode = Company?.GstCode;
+
+            Buyer.Address.GstStateCode = gstCode;
+        }
+
+        if (!string.IsNullOrWhiteSpace(gstCode))
+        {
+            CustomerState =
+                await _referenceLoader.GetValueAsync(
+                    "CUST_STATE",
+                    gstCode);
+        }
+
+        //
+        // Customer Order references the customer through GKey.
+        //
+        Header.CustGkey = Buyer.GKey;
+
+        Header.CustMobileNbr =
+            Buyer.MobileNbr;
+
+        //
+        // Re-evaluate transaction calculations if required.
+        //
+        EvaluateForAllLines();
+
         await EvaluateHeader();
+
+        //
+        // Existing customer:
+        // continue directly to transaction entry.
+        //
+        Messenger.Default.Send(
+            "ProductIdUIName",
+            MessageType.FocusTextEdit);
+    }
+
+    private async Task PrepareNewCustomerAsync(
+    string phoneNumber)
+    {
+        if (Buyer is null)
+            return;
+
+        Buyer.Address ??= new OrgAddress();
+
+        Buyer.MobileNbr = phoneNumber;
+
+        createCustomer = true;
+
+        //
+        // New customer must be editable.
+        //
+        CustomerReadOnly = false;
+
+        //
+        // Default place/state to company location.
+        //
+        if (Company is not null)
+        {
+            Buyer.Address.GstStateCode =
+                Company.GstCode;
+
+            Buyer.Address.State =
+                Company.State;
+
+            Buyer.Address.District =
+                Company.District;
+
+            Buyer.GstStateCode =
+                Company.GstCode;
+
+            if (!string.IsNullOrWhiteSpace(
+                    Company.GstCode))
+            {
+                CustomerState =
+                    await _referenceLoader
+                        .GetValueAsync(
+                            "CUST_STATE",
+                            Company.GstCode);
+            }
+        }
+
+        _messageBoxService.ShowMessage(
+            "Customer not found. Please enter the customer details.",
+            "New Customer",
+            MessageButton.OK,
+            MessageIcon.Information);
+
+        //
+        // TEMPORARY Cycle-1 behaviour:
+        // focus existing customer-name UI.
+        //
+        // Later this will be replaced by:
+        // OpenCustomerEditor(Buyer, isNew: true)
+        //
+        Messenger.Default.Send(
+            "CustomerNameUI",
+            MessageType.FocusTextEdit);
     }
 
     [RelayCommand]
@@ -608,21 +747,58 @@ public partial class CustomerOrderViewModel : ObservableObject
             }
         }
 
- /*   partial void OnOrderStatusUIChanged(string oldValue, string newValue)
-    {
-        Header.OrderStatusFlag = Int32.Parse(GetOrderStatus(0, newValue));
-    }*/
+    /*   partial void OnOrderStatusUIChanged(string oldValue, string newValue)
+       {
+           Header.OrderStatusFlag = Int32.Parse(GetOrderStatus(0, newValue));
+       }*/
 
     partial void OnCustomerStateChanged(string value)
     {
-        if (Buyer is null) return;
-
-        Buyer.GstStateCode = value;
-
-        EvaluateForAllLines();
-        //EvaluateHeader();
+        _ = ApplyCustomerStateAsync(value);
     }
 
+    private async Task ApplyCustomerStateAsync(
+    string stateName)
+    {
+        if (Buyer is null ||
+            string.IsNullOrWhiteSpace(stateName))
+        {
+            return;
+        }
+
+        try
+        {
+            Buyer.Address ??=
+                new OrgAddress();
+
+            var gstStateCode =
+                await _referenceLoader.GetCodeAsync(
+                    "CUST_STATE",
+                    stateName);
+
+            Buyer.Address.GstStateCode =
+                gstStateCode;
+
+            //
+            // Compatibility property.
+            //
+            Buyer.GstStateCode =
+                gstStateCode;
+
+            EvaluateForAllLines();
+
+            await EvaluateHeader();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Unable to resolve customer state: " +
+                ex.Message,
+                "Customer State",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+    }
 
     private void EvaluateForAllLines()
     {
@@ -723,41 +899,78 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
 
-    private async Task CreateOrUpdateCustomerAsync()
+    private async Task EnsureCustomerSavedAsync()
     {
-        if (createCustomer)
+        if (Buyer is null)
         {
-            Buyer = await _customerService.CreateCustomer(Buyer);
-        }
-    }
-
-    /*
-    private async Task SaveNewOrderAsync()
-    {
-
-        Header.OrderStatusFlag = await _referenceLoader.GetCodeAsIntAsync("CUST_ORD_STATUS", OrderStatusUI);
-
-        var headerResult = await _customerOrderService.CreateCustomerOrder(Header);
-
-        if (headerResult == null) throw new Exception("Failed to create customer order.");
-
-        Header.GKey = headerResult.GKey;
-        Header.OrderNbr = headerResult.OrderNbr;
-
-        foreach (var line in Header.Lines)
-        {
-            line.OrderGkey = Header.GKey;
-            line.OrderNbr = Header.OrderNbr;
-            line.TenantGkey = Header.TenantGkey;
+            throw new InvalidOperationException(
+                "Customer information is missing.");
         }
 
-        await _customerOrderService.CreateCustomerOrderLine(Header.Lines);
+        //
+        // Existing customer.
+        //
+        // DO NOT automatically update customer master.
+        //
+        if (Buyer.GKey > 0)
+        {
+            Header.CustGkey =
+                Buyer.GKey;
 
-        await ProcessOldMetalTransaction();
-        await ProcessReceipts();
-        await SaveLedgerTransactions();
+            Header.CustMobileNbr =
+                Buyer.MobileNbr;
+
+            return;
+        }
+
+        //
+        // New customer.
+        //
+        if (!createCustomer)
+        {
+            throw new InvalidOperationException(
+                "Customer has not been saved.");
+        }
+
+        if (string.IsNullOrWhiteSpace(
+                Buyer.CustomerName))
+        {
+            throw new InvalidOperationException(
+                "Customer name is required.");
+        }
+
+        Buyer.Address ??=
+            new OrgAddress();
+
+        //
+        // Explicitly CREATE only.
+        //
+        Buyer =
+            await _customerLookupService
+                .CreateAsync(Buyer);
+
+        if (Buyer is null ||
+            Buyer.GKey <= 0)
+        {
+            throw new InvalidOperationException(
+                "Customer could not be saved.");
+        }
+
+        createCustomer = false;
+
+        //
+        // Newly created customer is now an
+        // existing persisted customer.
+        //
+        CustomerReadOnly = true;
+
+        Header.CustGkey =
+            Buyer.GKey;
+
+        Header.CustMobileNbr =
+            Buyer.MobileNbr;
     }
-    */
+
 
     private async Task SaveNewOrderAsync()
     {
@@ -793,7 +1006,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         {
             if (!ValidateBeforeCreate()) return;
 
-            await CreateOrUpdateCustomerAsync();
+            await EnsureCustomerSavedAsync();
 
             Header.CustGkey = Buyer?.GKey;
 
@@ -838,7 +1051,7 @@ public partial class CustomerOrderViewModel : ObservableObject
                 PrintPreviewInvoice();
                 PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
                 PrintInvoiceCommand.NotifyCanExecuteChanged();*//*
-                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+                Messenger.Default.Send(MessageType.WaitIndicator, VM.ShowIndicator("Fetching Order details..."));
 
                 ResetCustomerOrder();
             }

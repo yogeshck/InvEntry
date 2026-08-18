@@ -2,75 +2,169 @@
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+namespace DataAccess.Controllers;
 
-namespace DataAccess.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class CustomerController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CustomerController : ControllerBase
+    private readonly IRepositoryBase<OrgCustomer> _customer;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public CustomerController(
+        IRepositoryBase<OrgCustomer> customerRepo,
+        IUnitOfWork unitOfWork)
     {
-       private readonly IRepositoryBase<OrgCustomer> _customer;
+        _customer = customerRepo;
+        _unitOfWork = unitOfWork;
+    }
 
-        public CustomerController(IRepositoryBase<OrgCustomer> customerRepo)
+    // GET api/customer
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        return Ok(_customer.GetAll());
+    }
+
+    // GET api/customer/{mobile}
+    [HttpGet("{mobile}")]
+    public IActionResult Get(string mobile)
+    {
+        var customer =
+            _customer.Get(
+                x => x.MobileNbr == mobile);
+
+        if (customer is null)
+            return NotFound();
+
+        return Ok(customer);
+    }
+
+    // GET api/customer/by-gkey/123
+    [HttpGet("by-gkey/{gkey:int}")]
+    public IActionResult GetByGkey(int gkey)
+    {
+        if (gkey <= 0)
+            return BadRequest("Invalid customer GKey.");
+
+        var customer =
+            _customer.Get(
+                x => x.Gkey == gkey);
+
+        if (customer is null)
+            return NotFound();
+
+        return Ok(customer);
+    }
+
+    // POST api/customer
+    [HttpPost]
+    public async Task<ActionResult<OrgCustomer>> Post(
+        [FromBody] OrgCustomer value,
+        CancellationToken cancellationToken)
+    {
+        if (value is null)
+            return BadRequest("Customer is required.");
+
+        if (string.IsNullOrWhiteSpace(value.MobileNbr))
         {
-            _customer = customerRepo;
+            return BadRequest(
+                "Customer mobile number is required.");
         }
 
-        // GET: api/<ProductStockController>
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        value.MobileNbr =
+            value.MobileNbr.Trim();
+
+        //
+        // Cycle-1 duplicate protection.
+        //
+        var existing =
+            await _customer.GetAsync(
+                x => x.MobileNbr == value.MobileNbr);
+
+        if (existing is not null)
         {
-            return Ok(_customer.GetAll());
+            //
+            // POST is CREATE only.
+            //
+            // Do not silently update an existing customer.
+            //
+            return Ok(existing);
         }
 
-        // GET api/<ProductStockController>/5
-        [HttpGet("{mobile}")]
-        public async Task<IActionResult> Get(string mobile)
+        _customer.Add(value);
+
+        //
+        // IMPORTANT:
+        // Repository.Add() only tracks the entity.
+        // SaveChanges generates the identity Gkey.
+        //
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
+
+        if (value.Gkey <= 0)
         {
-            return Ok(_customer.Get(x => x.MobileNbr == mobile));
+            throw new InvalidOperationException(
+                "Customer was saved but no GKey was generated.");
         }
 
-        // POST api/<ProductStockController>
-        [HttpPost]
-        public OrgCustomer Post([FromBody] OrgCustomer value)
+        return Ok(value);
+    }
+
+    // PUT api/customer/{mobileNbr}
+    [HttpPut("{mobileNbr}")]
+    public async Task<IActionResult> Put(
+        string mobileNbr,
+        [FromBody] OrgCustomer value,
+        CancellationToken cancellationToken)
+    {
+        if (value is null)
+            return BadRequest("Customer is required.");
+
+        if (value.Gkey <= 0)
         {
-            var customer = _customer.Get(x => x.MobileNbr == value.MobileNbr);
-
-            if (customer == null)
-            {
-                _customer.Add(value);
-                customer = _customer.Get(x => x.MobileNbr == value.MobileNbr);
-            }
-            else
-            {
-                customer.CustomerName = value.CustomerName;
-                customer.LedgerName = value.LedgerName;
-                _customer.Update(customer);
-            }
-
-            return customer ?? value;
+            return BadRequest(
+                "Customer GKey is required for update.");
         }
 
-        // PUT api/<ProductStockController>/5
-        [HttpPut("{MobileNbr}")]
-        public void Put(string MobileNbr, [FromBody] OrgCustomer value)
-        {
-            _customer.Update(value);
-        }
+        var existing =
+            await _customer.GetAsync(
+                x => x.Gkey == value.Gkey);
 
-        // DELETE api/<ProductStockController>/5
-        [HttpDelete("{MobileNbr}")]
-        public async Task<IActionResult> Delete(string MobileNbr)
-        {
-            var product = _customer.Get(x => x.MobileNbr == MobileNbr);
+        if (existing is null)
+            return NotFound();
 
-            if (product is not null)
-                _customer.Remove(product);
+        //
+        // For now Update() is retained.
+        // Later we can move this mapping into
+        // CustomerWorkflow.
+        //
+        _customer.Update(value);
 
-            return Ok();
-        }
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
 
+        return Ok(value);
+    }
 
+    // DELETE api/customer/{mobileNbr}
+    [HttpDelete("{mobileNbr}")]
+    public async Task<IActionResult> Delete(
+        string mobileNbr,
+        CancellationToken cancellationToken)
+    {
+        var customer =
+            await _customer.GetAsync(
+                x => x.MobileNbr == mobileNbr);
+
+        if (customer is null)
+            return NotFound();
+
+        _customer.Remove(customer);
+
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
+
+        return NoContent();
     }
 }

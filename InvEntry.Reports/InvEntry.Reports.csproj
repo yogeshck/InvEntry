@@ -21,14 +21,6 @@
     <None Update="apprepsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="CrystalReports\cjp.rpt">
-      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
-      <LastGenOutput>cjp.cs</LastGenOutput>
-    </None>
-    <None Update="CrystalReports\crbcode.rpt">
-      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
-      <LastGenOutput>crbcode.cs</LastGenOutput>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

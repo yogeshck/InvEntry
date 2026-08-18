@@ -15,6 +15,8 @@ public interface ICustomerService
 
     Task<List<Customer>> GetCustomers(List<string> mobileNumbers);
 
+    Task<Customer?> GetCustomerByGkey(int customerGkey);
+
     Task<Customer> CreateCustomer(Customer customer);
 
     Task UpdateCustomer(Customer customer);
@@ -69,17 +71,66 @@ public class CustomerService : ICustomerService
             .ContinueWith(t => t.Result.Where(c => c != null).ToList());
     }
 
-    public async Task UpdateCustomer(Customer customer)
+    public async Task<Customer?> GetCustomerByGkey(
+    int customerGkey)
     {
+        if (customerGkey <= 0)
+            return null;
 
-        //var savedAddress = await _mijmsApiService.Get<OrgAddress>($"api/address/{customer.AddressGkey}");
-        var savedAddress = await _mijmsApiService.Post($"api/Address/", customer.Address);
-
-        if (savedAddress is not null)
-        {
-            customer.AddressGkey = savedAddress.GKey;
-        }
-            await _mijmsApiService.Put($"api/customer/{customer.MobileNbr}", customer);
-     
+        return await _mijmsApiService.Get<Customer>(
+            $"api/customer/by-gkey/{customerGkey}");
     }
+
+    public async Task UpdateCustomer(
+        Customer customer)
+    {
+        ArgumentNullException.ThrowIfNull(customer);
+
+        if (customer.GKey <= 0)
+        {
+            throw new InvalidOperationException(
+                "Customer GKey is required for update.");
+        }
+
+        customer.Address ??=
+            new OrgAddress();
+
+        //
+        // Update existing address.
+        //
+        if (customer.AddressGkey > 0)
+        {
+            customer.Address.GKey =
+                customer.AddressGkey.Value;
+
+            await _mijmsApiService.Put(
+                $"api/Address/{customer.AddressGkey.Value}",
+                customer.Address);
+        }
+        else
+        {
+            //
+            // Customer exists but does not yet have
+            // an address. Create one.
+            //
+            var savedAddress =
+                await _mijmsApiService.Post(
+                    "api/Address/address",
+                    customer.Address);
+
+            if (savedAddress is not null)
+            {
+                customer.AddressGkey =
+                    savedAddress.GKey;
+            }
+        }
+
+        customer.GstStateCode =
+            customer.Address.GstStateCode;
+
+        await _mijmsApiService.Put(
+            $"api/customer/{customer.MobileNbr}",
+            customer);
+    }
+
 }

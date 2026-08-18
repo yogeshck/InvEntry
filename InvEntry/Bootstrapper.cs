@@ -12,10 +12,11 @@ using InvEntry.Metadata;
 using InvEntry.Models;
 using InvEntry.Reports;
 using InvEntry.Services;
+using InvEntry.Services.Customers;
+using InvEntry.Services.Printing;
 using InvEntry.Tally;
 using InvEntry.ViewModels;
 using InvEntry.Views;
-using InvEntry.Services.Printing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -134,6 +135,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<ILedgerService, LedgerService>()
+                 .AddSingleton<ICustomerLookupService, CustomerLookupService>()
                  .AddSingleton<IMasterDataService, MasterDataService>()
                  .AddSingleton<IMetalsService, MetalsService>()
                  .AddSingleton<IMijmsApiService, MijmsApiService>()

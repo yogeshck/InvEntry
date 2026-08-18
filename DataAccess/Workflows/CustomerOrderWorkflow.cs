@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using DataAccess.Models;
+﻿using DataAccess.Models;
 using DataAccess.Repository;
 using InvEntry.Contracts.CustomerOrders;
 using System.Linq;
