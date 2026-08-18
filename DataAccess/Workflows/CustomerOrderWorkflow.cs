@@ -1,7 +1,9 @@
-﻿using DataAccess.Models;
+﻿using Azure.Core;
+using DataAccess.Models;
 using DataAccess.Repository;
 using InvEntry.Contracts.CustomerOrders;
 using System.Linq;
+using System.Threading;
 
 namespace DataAccess.Workflows;
 
@@ -11,17 +13,23 @@ public sealed class CustomerOrderWorkflow : ICustomerOrderWorkflow
 
     private readonly IRepositoryBase<CustomerOrder> _orderRepository;
     private readonly IRepositoryBase<CustomerOrderLine> _lineRepository;
+    private readonly IRepositoryBase<Voucher> _voucherRepository;
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
+    private readonly IRepositoryBase<OldMetalTransaction> _oldMetalRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public CustomerOrderWorkflow(
         IRepositoryBase<CustomerOrder> orderRepository,
         IRepositoryBase<CustomerOrderLine> lineRepository,
+        IRepositoryBase<OldMetalTransaction> oldMetalRepository,
+        IRepositoryBase<Voucher> voucherRepository,
         IRepositoryBase<VoucherType> voucherTypeRepository,
         IUnitOfWork unitOfWork)
     {
         _orderRepository = orderRepository;
         _lineRepository = lineRepository;
+        _oldMetalRepository = oldMetalRepository;
+        _voucherRepository = voucherRepository;
         _voucherTypeRepository = voucherTypeRepository;
         _unitOfWork = unitOfWork;
     }
@@ -63,11 +71,33 @@ public sealed class CustomerOrderWorkflow : ICustomerOrderWorkflow
                     cancellationToken);
             }
 
+            // ------------------------------------------------
+            // Product Lines
+            // ------------------------------------------------
             await SyncLinesAsync(
                 savedOrder,
                 request.Lines,
                 cancellationToken);
 
+            // ------------------------------------------------
+            // Old Metal Transactions
+            // ------------------------------------------------
+            await SyncOldMetalAsync(
+                savedOrder,
+                request.OldMetalTransactions,
+                cancellationToken);
+
+            // ------------------------------------------------
+            // Voucher 
+            // ------------------------------------------------
+            await SyncReceiptsAsync(
+                savedOrder,
+                request.Receipts,
+                cancellationToken);
+
+            // ------------------------------------------------
+            // Save everything together
+            // ------------------------------------------------
             await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
 
@@ -174,6 +204,311 @@ public sealed class CustomerOrderWorkflow : ICustomerOrderWorkflow
         }
     }
 
+    private async Task SyncOldMetalAsync(
+        CustomerOrder order,
+        IReadOnlyCollection<OldMetalTransactionSaveModel> incomingItems,
+        CancellationToken cancellationToken)
+    {
+        var existingItems =
+            (await _oldMetalRepository.GetListAsync(
+                x =>
+                    x.DocRefGkey == order.Gkey &&
+                    x.DocRefType == DocumentType))
+            .ToList();
+
+        DeleteRemovedOldMetal(
+            existingItems,
+            incomingItems);
+
+        foreach (var incoming in incomingItems)
+        {
+            if (incoming.Gkey <= 0)
+            {
+                await AddNewOldMetalAsync(
+                    order,
+                    incoming,
+                    cancellationToken);
+            }
+            else
+            {
+                UpdateExistingOldMetal(
+                    order,
+                    existingItems,
+                    incoming);
+            }
+        }
+    }
+
+    private void DeleteRemovedOldMetal(
+    IEnumerable<OldMetalTransaction> existingItems,
+    IEnumerable<OldMetalTransactionSaveModel> incomingItems)
+    {
+        var incomingKeys =
+            incomingItems
+                .Where(x => x.Gkey > 0)
+                .Select(x => x.Gkey)
+                .ToHashSet();
+
+        foreach (var existing in existingItems)
+        {
+            if (!incomingKeys.Contains(existing.Gkey))
+            {
+                _oldMetalRepository.Remove(existing);
+            }
+        }
+    }
+
+    private async Task AddNewOldMetalAsync(
+    CustomerOrder order,
+    OldMetalTransactionSaveModel source,
+    CancellationToken cancellationToken)
+    {
+        var entity = new OldMetalTransaction();
+
+        MapOldMetal(
+            source,
+            entity);
+
+        SetOldMetalOrderReference(
+            order,
+            entity);
+
+        entity.TransNbr =
+            await GenerateOldMetalTransactionNumberAsync(
+                source.TransType,
+                cancellationToken);
+
+        entity.TransDate ??= DateTime.Now;
+
+        _oldMetalRepository.Add(entity);
+    }
+
+    private static void UpdateExistingOldMetal(
+    CustomerOrder order,
+    IEnumerable<OldMetalTransaction> existingItems,
+    OldMetalTransactionSaveModel source)
+    {
+        var existing =
+            existingItems.FirstOrDefault(
+                x => x.Gkey == source.Gkey);
+
+        if (existing == null)
+        {
+            throw new InvalidOperationException(
+                $"Old metal transaction GKey {source.Gkey} was not found.");
+        }
+
+        if (existing.DocRefGkey != order.Gkey)
+        {
+            throw new InvalidOperationException(
+                $"Old metal transaction {source.Gkey} does not belong to this customer order.");
+        }
+
+        MapOldMetal(
+            source,
+            existing);
+
+        SetOldMetalOrderReference(
+            order,
+            existing);
+    }
+
+    private async Task SyncReceiptsAsync(
+    CustomerOrder order,
+    IReadOnlyCollection<CustomerOrderReceiptSaveModel> incomingReceipts,
+    CancellationToken cancellationToken)
+    {
+        var existingReceipts =
+            (await _voucherRepository.GetListAsync(
+                x => x.RefDocGkey == order.Gkey &&
+                     x.RefDocNbr == order.OrderNbr))
+            .ToList();
+
+        foreach (var incoming in incomingReceipts)
+        {
+            if (incoming.Gkey <= 0)
+            {
+                await AddNewReceiptAsync(
+                    order,
+                    incoming,
+                    cancellationToken);
+            }
+            else
+            {
+                UpdateExistingReceipt(
+                    order,
+                    existingReceipts,
+                    incoming);
+            }
+        }
+    }
+
+    private static void MapReceipt(
+    CustomerOrderReceiptSaveModel source,
+    Voucher target)
+    {
+        target.VoucherType = source.VoucherType;
+
+        target.Mode = source.Mode;
+
+        target.TransAmount =
+            source.TransAmount;
+
+        target.VoucherDate =
+            source.VoucherDate;
+
+        target.TransDate =
+            source.TransDate;
+
+        target.TransDesc =
+            source.TransDesc;
+
+        target.FromLedgerGkey =
+            source.FromLedgerGkey;
+
+        target.ToLedgerGkey =
+            source.ToLedgerGkey;
+
+        target.FundTransferMode =
+            source.FundTransferMode;
+
+        target.FundTransferRefGkey =
+            source.FundTransferRefGkey;
+
+        target.FundTransferDate =
+            source.FundTransferDate;
+    }
+
+    private static void UpdateExistingReceipt(
+    CustomerOrder order,
+    IEnumerable<Voucher> existingReceipts,
+    CustomerOrderReceiptSaveModel source)
+    {
+        var existing =
+            existingReceipts.FirstOrDefault(
+                x => x.Gkey == source.Gkey);
+
+        if (existing == null)
+        {
+            throw new InvalidOperationException(
+                $"Receipt GKey {source.Gkey} was not found for " +
+                $"customer order '{order.OrderNbr}'.");
+        }
+
+        MapReceipt(
+            source,
+            existing);
+
+        existing.CustomerGkey =
+            order.CustGkey;
+
+        existing.RefDocGkey =
+            order.Gkey;
+
+        existing.RefDocNbr =
+            order.OrderNbr;
+
+        existing.RefDocDate =
+            order.OrderDate;
+    }
+
+    private async Task<string> GenerateVoucherNumberAsync(
+    string voucherTypeName,
+    CancellationToken cancellationToken)
+    {
+        var voucherType =
+            await _voucherTypeRepository.GetAsync(
+                x => x.DocumentType == voucherTypeName);
+
+        if (voucherType == null)
+        {
+            throw new InvalidOperationException(
+                $"Voucher type '{voucherTypeName}' is not configured.");
+        }
+
+        var nextNumber =
+            (voucherType.LastUsedNumber ?? 0) + 1;
+
+        voucherType.LastUsedNumber =
+            nextNumber;
+
+        var prefix =
+            voucherType.DocNbrPrefix ?? string.Empty;
+
+        var length =
+            voucherType.DocNbrLength ?? 4;
+
+        return
+            $"{prefix}{nextNumber.ToString($"D{length}")}";
+    }
+
+    private async Task AddNewReceiptAsync(
+                            CustomerOrder order,
+                            CustomerOrderReceiptSaveModel source,
+                            CancellationToken cancellationToken)
+    {
+        if (!source.TransAmount.HasValue ||
+            source.TransAmount.Value <= 0)
+        {
+            throw new InvalidOperationException(
+                "Receipt amount must be greater than zero.");
+        }
+
+        if (string.IsNullOrWhiteSpace(source.VoucherType))
+        {
+            throw new InvalidOperationException(
+                "Voucher type is required for receipt.");
+        }
+
+        var entity = new Voucher();
+
+        MapReceipt(source, entity);
+
+        // Customer/order references are controlled by server.
+        entity.CustomerGkey = order.CustGkey;
+
+        entity.RefDocGkey = order.Gkey;
+        entity.RefDocNbr = order.OrderNbr;
+        entity.RefDocDate = order.OrderDate;
+
+        entity.VoucherDate ??= DateTime.Now;
+        entity.TransDate ??= DateTime.Now;
+
+        // Receipt / money received.
+        entity.TransType = "RECEIPT";
+
+        // Cash / UPI / Bank etc.
+        entity.VoucherType = source.VoucherType;
+
+        entity.SeqNbr =
+            await GenerateVoucherSequenceAsync(
+                entity.VoucherDate.Value,
+                entity.VoucherType);
+
+        entity.VoucherNbr =
+            await GenerateVoucherNumberAsync(
+                entity.VoucherType,
+                cancellationToken);
+
+        _voucherRepository.Add(entity);
+    }
+
+    private async Task<int> GenerateVoucherSequenceAsync(
+        DateTime voucherDate,
+        string voucherType)
+    {
+        var vouchers =
+            await _voucherRepository.GetListAsync(
+                x =>
+                    x.VoucherDate.HasValue &&
+                    x.VoucherDate.Value.Date == voucherDate.Date &&
+                    x.VoucherType == voucherType);
+
+        return
+            (vouchers.Max(x => x.SeqNbr) ?? 0) + 1;
+    }
+
+
     private void DeleteRemovedLines(
         IEnumerable<CustomerOrderLine> existingLines,
         IEnumerable<CustomerOrderLineSaveModel> incomingLines)
@@ -191,6 +526,16 @@ public sealed class CustomerOrderWorkflow : ICustomerOrderWorkflow
                 _lineRepository.Remove(existingLine);
             }
         }
+    }
+
+    private static void SetOldMetalOrderReference(
+    CustomerOrder order,
+    OldMetalTransaction entity)
+    {
+        entity.DocRefGkey = order.Gkey;
+        entity.DocRefNbr = order.OrderNbr;
+        entity.DocRefDate = order.OrderDate;
+        entity.DocRefType = DocumentType;
     }
 
     private void AddNewLine(
@@ -467,4 +812,81 @@ public sealed class CustomerOrderWorkflow : ICustomerOrderWorkflow
 
         return $"{prefix}{number}";
     }
+
+    private static void MapOldMetal(
+    OldMetalTransactionSaveModel source,
+    OldMetalTransaction target)
+    {
+        target.TransDate = source.TransDate;
+        target.TransType = source.TransType;
+
+        target.CustGkey = source.CustGkey;
+        target.CustMobile = source.CustMobile;
+
+        target.ProductGkey = source.ProductGkey;
+        target.ProductId = source.ProductId;
+        target.ProductCategory = source.ProductCategory;
+
+        target.Metal = source.Metal;
+        target.Purity = source.Purity;
+
+        target.TransactedRate = source.TransactedRate;
+
+        target.Uom = source.Uom;
+
+        target.GrossWeight = source.GrossWeight;
+        target.StoneWeight = source.StoneWeight;
+
+        target.WastagePercent = source.WastagePercent;
+        target.WastageWeight = source.WastageWeight;
+
+        target.NetWeight = source.NetWeight;
+
+        target.TotalProposedPrice =
+            source.TotalProposedPrice;
+
+        target.FinalPurchasePrice =
+            source.FinalPurchasePrice;
+
+        target.Remarks = source.Remarks;
+    }
+
+    private async Task<string> GenerateOldMetalTransactionNumberAsync(
+    string? transactionType,
+    CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(transactionType))
+        {
+            throw new InvalidOperationException(
+                "Old metal transaction type is required.");
+        }
+
+        var voucherType =
+            await _voucherTypeRepository.GetAsync(
+                x => x.DocumentType == transactionType);
+
+        if (voucherType == null)
+        {
+            throw new InvalidOperationException(
+                $"Voucher type '{transactionType}' is not configured.");
+        }
+
+        var nextNumber =
+            (voucherType.LastUsedNumber ?? 0) + 1;
+
+        voucherType.LastUsedNumber =
+            nextNumber;
+
+        var prefix =
+            voucherType.DocNbrPrefix ?? string.Empty;
+
+        var length =
+            voucherType.DocNbrLength ?? 4;
+
+        var formattedNumber =
+            nextNumber.ToString($"D{length}");
+
+        return $"{prefix}{formattedNumber}";
+    }
+
 }

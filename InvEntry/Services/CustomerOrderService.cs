@@ -1,82 +1,75 @@
-﻿using DevExpress.Xpf.Core.ReflectionExtensions;
+﻿using InvEntry.Contracts.CustomerOrders;
 using InvEntry.Models;
 using InvEntry.Utils.Options;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace InvEntry.Services
+namespace InvEntry.Services;
+
+public interface ICustomerOrderService
 {
-    public interface ICustomerOrderService
+    Task<CustomerOrder> GetCustomerOrder(string orderNbr);
+
+    Task<IEnumerable<CustomerOrder>> GetAll(
+        DateSearchOption options);
+
+    Task<IEnumerable<CustomerOrderLine>> GetLines(
+        string orderNbr);
+
+    Task<SaveCustomerOrderResponse> SaveAsync(
+        SaveCustomerOrderRequest request);
+
+    Task UpdateHeader(CustomerOrder customerOrder);
+}
+
+public class CustomerOrderService : ICustomerOrderService
+{
+    private readonly IMijmsApiService _mijmsApiService;
+
+    public CustomerOrderService(
+        IMijmsApiService mijmsApiService)
     {
-        Task<CustomerOrder> GetCustomerOrder(string orderNbr);
-
-        Task<CustomerOrder> CreateCustomerOrder(CustomerOrder customerOrder);
-
-        Task UpdateHeader(CustomerOrder customerOrder);
-
-        Task<IEnumerable<CustomerOrder>> GetAll(DateSearchOption options);
-
-        Task CreateCustomerOrderLine(CustomerOrderLine line);
-
-        Task CreateCustomerOrderLine(IEnumerable<CustomerOrderLine> line);
-
-        Task<IEnumerable<CustomerOrderLine>> GetLines(string orderNbr);
+        _mijmsApiService = mijmsApiService;
     }
 
-    public class CustomerOrderService : ICustomerOrderService
+    public async Task<CustomerOrder> GetCustomerOrder(
+        string orderNbr)
     {
-        private readonly IMijmsApiService _mijmsApiService;
+        return await _mijmsApiService.Get<CustomerOrder>(
+            $"api/customerOrder/{orderNbr}");
+    }
 
-        public CustomerOrderService(IMijmsApiService mijmsApiService)
-        {
-            _mijmsApiService = mijmsApiService;
-        }
+    public async Task<IEnumerable<CustomerOrder>> GetAll(
+        DateSearchOption options)
+    {
+        return await _mijmsApiService
+            .PostEnumerable<CustomerOrder, DateSearchOption>(
+                "api/customerOrder/filter",
+                options);
+    }
 
-        public async Task<CustomerOrder> GetCustomerOrder(string orderNbr)
-        {
-            return await _mijmsApiService.Get<CustomerOrder>($"api/customerOrder/{orderNbr}");
-        }
+    public async Task<IEnumerable<CustomerOrderLine>> GetLines(
+        string orderNbr)
+    {
+        return await _mijmsApiService
+            .GetEnumerable<CustomerOrderLine>(
+                $"api/customerOrderLine/{orderNbr}");
+    }
 
-        public async Task<CustomerOrder> CreateCustomerOrder(CustomerOrder orderNbr)
-        {
-            return await _mijmsApiService.Post($"api/customerOrder/", orderNbr);
-        }
+    public async Task<SaveCustomerOrderResponse> SaveAsync(
+    SaveCustomerOrderRequest request)
+    {
+        return await _mijmsApiService
+            .Post<SaveCustomerOrderRequest, SaveCustomerOrderResponse>(
+                "api/customerOrder/save",
+                request);
+    }
 
-        public async Task UpdateHeader(CustomerOrder orderNbr)
-        {
-            await _mijmsApiService.Put($"api/customerOrder/{orderNbr.OrderNbr}", orderNbr);
-        }
-
-        public async Task CreateCustomerOrderLine(CustomerOrderLine line)
-        {
-            await _mijmsApiService.Post($"api/customerOrderLine/", line);
-        }
-
-        public async Task CreateCustomerOrderLine(IEnumerable<CustomerOrderLine> lines)
-        {
-            var list = new List<Task>();
-
-            foreach (var line in lines)
-                list.Add(CreateCustomerOrderLine(line));
-
-            await Task.WhenAll(list);
-        }
-
-        public async Task<IEnumerable<CustomerOrderLine>> GetLines(string orderNbr)
-        {
-            return await _mijmsApiService.GetEnumerable<CustomerOrderLine>($"api/customerOrderLine/{orderNbr}");
-        }
-
-        public async Task<IEnumerable<CustomerOrder>> GetAll(DateSearchOption options)
-        {
-
-            return await _mijmsApiService.PostEnumerable<CustomerOrder, DateSearchOption>($"api/customerOrder/filter", options);
-
-
-        }
-
+    public async Task UpdateHeader(
+        CustomerOrder customerOrder)
+    {
+        await _mijmsApiService.Put(
+            $"api/customerOrder/{customerOrder.OrderNbr}",
+            customerOrder);
     }
 }

@@ -95,10 +95,10 @@
                                                  Content="Estimate "  HideMenuWhenSelected="True"/>  -->
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:CustomerOrdersListView}"
                                                  Content="Order List" HideMenuWhenSelected="True"/>
-                        <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />-->
+                        <!--Glyph="{dx:DXImage Office2013/Reports/InsertHeader_32x32.png}" />
                         <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:PurchaseOrderView}"
                                                                 Content="Custtomer PO"
-                                                                HideMenuWhenSelected="True" />
+                                                                HideMenuWhenSelected="True" /> -->
                     </dxwui:HamburgerSubMenu.Items>
                 </dxwui:HamburgerSubMenu>
                 <dxwui:HamburgerSubMenu Content="Finance" MoreButtonVisibilityMode="Hidden" 

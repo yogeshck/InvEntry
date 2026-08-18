@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace InvEntry.Services;
@@ -16,6 +17,9 @@ public interface IMijmsApiService
     Task<T> Get<T>(string url) where T : BaseEntity;
     Task<IEnumerable<T>> GetEnumerable<T>(string url) where T : BaseEntity;
     Task<T> Post<T>(string url, T data) where T : BaseEntity;
+
+    Task<TResponse> Post<TRequest, TResponse>( string url, TRequest value);
+
     Task<IEnumerable<T>> PostList<T>(string url, IEnumerable<T> data) where T : BaseEntity;
     Task Put<T>(string url, T data) where T : BaseEntity;
     Task Put<T>(string url, IEnumerable<T> data) where T : BaseEntity;
@@ -107,6 +111,65 @@ public class MijmsApiService : IMijmsApiService
         {
             Serilog.Log.Error(ex, "Error while get on {url}", url);
             return default;
+        }
+    }
+
+    public async Task<TResponse> Post<TRequest, TResponse>(
+        string url,
+        TRequest data)
+    {
+        try
+        {
+            var httpClient =
+                _httpClientFactory.CreateClient("mijms");
+
+            var completeUrl =
+                $"{httpClient.BaseAddress}{url}";
+
+            var httpResponse =
+                await httpClient.PostAsJsonAsync(
+                    completeUrl,
+                    data);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent =
+                    await httpResponse.Content.ReadAsStringAsync();
+
+                Serilog.Log.Error(
+                    "POST {Url} failed. Status: {StatusCode}, " +
+                    "Reason: {Reason}, Response: {Response}",
+                    url,
+                    httpResponse.StatusCode,
+                    httpResponse.ReasonPhrase,
+                    errorContent);
+
+                throw new HttpRequestException(
+                    $"POST '{url}' failed: " +
+                    $"{httpResponse.StatusCode} - " +
+                    $"{errorContent}");
+            }
+
+            var result =
+                await httpResponse.Content
+                    .ReadFromJsonAsync<TResponse>();
+
+            if (result is null)
+            {
+                throw new InvalidOperationException(
+                    $"POST '{url}' returned an empty response.");
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Error while POST on {Url}",
+                url);
+
+            throw;
         }
     }
 

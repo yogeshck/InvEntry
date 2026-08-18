@@ -7,6 +7,7 @@ using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using InvEntry.Extension;
 using InvEntry.Helpers;
+using InvEntry.Mappers.CustomerOrders;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
@@ -730,7 +731,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
     }
 
-
+    /*
     private async Task SaveNewOrderAsync()
     {
 
@@ -755,6 +756,28 @@ public partial class CustomerOrderViewModel : ObservableObject
         await ProcessOldMetalTransaction();
         await ProcessReceipts();
         await SaveLedgerTransactions();
+    }
+    */
+
+    private async Task SaveNewOrderAsync()
+    {
+        Header.OrderStatusFlag =
+            await _referenceLoader.GetCodeAsIntAsync(
+                "CUST_ORD_STATUS",
+                OrderStatusUI);
+
+        var request =
+            CustomerOrderRequestMapper.ToSaveRequest(Header);
+
+        var result =
+            await _customerOrderService.SaveAsync(request);
+
+        if (result is null)
+            throw new InvalidOperationException(
+                "Customer order save returned no result.");
+
+        Header.GKey = result.Gkey;
+        Header.OrderNbr = result.OrderNbr;
     }
 
     private async Task UpdateOrderAsync()
@@ -890,7 +913,8 @@ public partial class CustomerOrderViewModel : ObservableObject
             CustGkey = Header.CustGkey,
             CustMobile = Header.CustMobileNbr,
             TransDate = DateTime.Now,
-            Uom = "Grams"
+            Uom = "Grams",
+            TransType = "OG Purchase"
         };
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
