@@ -85,19 +85,24 @@
             </Style>
 
             <dx:DialogService x:Key="ds"
-                              DialogWindowStartupLocation="CenterOwner"
-                              SetWindowOwner="True">
+                  DialogWindowStartupLocation="CenterOwner"
+                  SetWindowOwner="True">
                 <dx:DialogService.DialogStyle>
                     <Style TargetType="dx:ThemedWindow">
-                        <Setter Property="SizeToContent" Value="WidthAndHeight"/>
-                        <Setter Property="ResizeMode" Value="NoResize"/>
-                        <Setter Property="Topmost" Value="True"/>
-                        <Setter Property="WindowKind" Value="Auto"/>
-                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="SizeToContent"
+                    Value="WidthAndHeight"/>
+                        <Setter Property="ResizeMode"
+                    Value="NoResize"/>
+                        <Setter Property="Topmost"
+                    Value="True"/>
+                        <Setter Property="WindowKind"
+                    Value="Auto"/>
+                        <Setter Property="FontSize"
+                    Value="14"/>
                     </Style>
                 </dx:DialogService.DialogStyle>
             </dx:DialogService>
-
+           
             <dx:DialogService x:Key="ReportDialogService"
                               DialogWindowStartupLocation="CenterOwner"
                               SetWindowOwner="True" Name="ReportDialogService">

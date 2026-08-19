@@ -16,6 +16,7 @@ using InvEntry.Services.Customers;
 using InvEntry.Services.Printing;
 using InvEntry.Tally;
 using InvEntry.ViewModels;
+using InvEntry.ViewModels.Common;
 using InvEntry.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -115,6 +116,7 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
+                 .AddTransient<CustomerEditViewModel>()
                  .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) =>
                  {
                      if (Application.Current.TryFindResource("ReportDialogService") is DialogService dialogService)
