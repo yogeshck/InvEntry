@@ -413,7 +413,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
             await PopulateOrderLines();
             await FetchAssociatedCustomer();
-            await EvaluateHeader();
+            await ResolveOrderStatusAsync();
             SelectedRows = Header.Lines;
             EvaluateForAllLines();
         }
@@ -427,55 +427,14 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
     }
 
-
-/*    [RelayCommand]
-    private async Task FetchCustomerOrderOld(EditValueChangedEventArgs args)
+    [RelayCommand]
+    private void ViewOrderSummary()
     {
-        if (args.NewValue is not string searchText) return;
-
-        searchText = searchText.Trim();
-
-        if (string.IsNullOrEmpty(searchText) || searchText.Length < 8)
-            return;
-
-        createCustomer = false;
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Order details..."));
-
-        Header = await _customerOrderService.GetCustomerOrder(searchText);
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-
         if (Header is null)
-        {
-            _messageBoxService.ShowMessage(" Order details not found.", "Order not found", MessageButton.OK);
             return;
-        }
 
-        CustomerPhoneNumber = Header.CustMobileNbr;
-        EvaluateHeader();
-         
-        var custOrdLines =  await _customerOrderService.GetLines(Header.OrderNbr);
-
-        Header.Lines = new (custOrdLines);
-
-        var args1 = new EditValueChangedEventArgs("", CustomerPhoneNumber);
-        await FetchCustomerCommand.ExecuteAsync(args1);
-
-        SelectedRows = Header.Lines;
-
-        //orderLinesUIGrid.ItemsSource = custOrdLines;
-
-        EvaluateForAllLines();
-
-        //FetchCustomer(CustomerPhoneNumber);
-    }*/
-
-/*    private async Task PopulateMtblRefNameList()
-    {
-        var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
-        MtblReferencesList = new(mtblRefList);
-    }*/
+        _dialogService.ShowOrderSummary(Header);
+    }
 
 
     [RelayCommand]
@@ -641,7 +600,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         //
         EvaluateForAllLines();
 
-        await EvaluateHeader();
+        await ResolveOrderStatusAsync();
 
         //
         // Existing customer:
@@ -762,7 +721,7 @@ public partial class CustomerOrderViewModel : ObservableObject
 
             EvaluateForAllLines();
 
-            await EvaluateHeader();
+            await ResolveOrderStatusAsync();
         }
         catch (Exception ex)
         {
@@ -777,16 +736,26 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private void EvaluateForAllLines()
     {
+        if (Header?.Lines is null)
+            return;
+
         foreach (var line in Header.Lines)
         {
             EvaluateFormula(line);
         }
+
+        RecalculateHeaderTotals();
     }
 
-    [RelayCommand]
-    private async Task EvaluateHeader()
+    private async Task ResolveOrderStatusAsync()
     {
-       OrderStatusUI = await _referenceLoader.GetCodeAsNameAsync("CUST_ORD_STATUS", Header.OrderStatusFlag.ToString());
+        if (Header is null)
+            return;
+
+        OrderStatusUI =
+            await _referenceLoader.GetCodeAsNameAsync(
+                "CUST_ORD_STATUS",
+                Header.OrderStatusFlag.ToString());
     }
 
     private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
@@ -811,26 +780,29 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async void CellUpdate(CellValueChangedEventArgs args)
+    private async Task CellUpdate(
+    CellValueChangedEventArgs args)
     {
         if (args.Row is CustomerOrderLine line)
         {
             EvaluateFormula(line);
         }
-        else
-        if (args.Row is LedgersTransactions orderRctLines)
+        else if (args.Row is LedgersTransactions receiptLine)
         {
-            EvaluateArRctLine(orderRctLines);
+            EvaluateArRctLine(receiptLine);
         }
-        else
-        if (args.Row is OldMetalTransaction oldMetalTransaction &&
-            args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
+        else if (
+            args.Row is OldMetalTransaction oldMetalTransaction &&
+            args.Column.FieldName !=
+                nameof(OldMetalTransaction.FinalPurchasePrice))
         {
-            EvaluateOldMetalTransactionsAsync(oldMetalTransaction);
+            await EvaluateOldMetalTransactionsAsync(
+                oldMetalTransaction);
         }
 
-        await EvaluateHeader();
+        RecalculateHeaderTotals();
     }
+
 
     [RelayCommand]
     private void EvaluateArRctLine(LedgersTransactions orderRctLines)
@@ -855,6 +827,86 @@ public partial class CustomerOrderViewModel : ObservableObject
         return true;
     }
 
+    private void RecalculateHeaderTotals()
+    {
+        if (Header is null)
+            return;
+
+        // ---------------------------------------------------------
+        // ORDER LINES
+        // ---------------------------------------------------------
+
+        var lines = Header.Lines?
+            .Where(x => x is not null)
+            .ToList()
+            ?? new List<CustomerOrderLine>();
+
+        Header.OrderedItems = lines.Count;
+
+        Header.TotalGrossWeight =
+            lines.Sum(x => x.ProdGrossWeight ?? 0M);
+
+        Header.TotalStoneWeight =
+            lines.Sum(x => x.ProdStoneWeight ?? 0M);
+
+        Header.TotalNetWeight =
+            lines.Sum(x => x.ProdNetWeight ?? 0M);
+
+        Header.TotalMakingCharges =
+            lines.Sum(x => x.MakingCharges ?? 0M);
+
+        Header.TotalTaxAmount =
+            lines.Sum(x => x.TaxAmount ?? 0M);
+
+        Header.TotalOrderAmount =
+            lines.Sum(x => x.OrderAmount ?? 0M);
+
+
+        // ---------------------------------------------------------
+        // OLD METAL
+        // ---------------------------------------------------------
+
+        var oldMetalLines = Header.OldMetalTransactions;
+
+        if (oldMetalLines is not null)
+        {
+            Header.OldMetalNetWeight =
+                oldMetalLines.Sum(
+                    x => x.NetWeight ?? 0M);
+        }
+        else
+        {
+            Header.OldMetalNetWeight = 0M;
+        }
+
+
+        // ---------------------------------------------------------
+        // ADVANCE / RECEIPTS
+        // ---------------------------------------------------------
+
+        var receiptLines = Header.AdvanceReceiptLines;
+
+        if (receiptLines is not null)
+        {
+            Header.AdvancePaidAmount =
+                receiptLines.Sum(
+                    x => x.TransactionAmount ?? 0M);
+        }
+        else
+        {
+            Header.AdvancePaidAmount = 0M;
+        }
+
+
+        // ---------------------------------------------------------
+        // BALANCE
+        // ---------------------------------------------------------
+
+        Header.BalanceAmount =
+            (Header.TotalOrderAmount ?? 0M) -
+            (Header.AdvancePaidAmount ?? 0M);
+    }
+        
     private void AssignLineNumbers()
     {
         for (int i = 0; i < Header.Lines.Count; i++)
@@ -1188,7 +1240,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         EvaluateForAllLines();
-        EvaluateHeader();
+        ResolveOrderStatusAsync();
 
         Messenger.Default.Send(
             "ProductIdUIName",

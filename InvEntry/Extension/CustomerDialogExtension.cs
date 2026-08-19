@@ -1,6 +1,7 @@
 ﻿using DevExpress.Mvvm;
 using InvEntry.Models;
 using InvEntry.ViewModels.Common;
+using InvEntry.ViewModels.CustomerOrders;
 using InvEntry.Views.Common;
 using System;
 using System.Threading.Tasks;
@@ -43,6 +44,22 @@ public static class CustomerDialogExtension
             return null;
 
         return dialogVM.CurrentCustomer;
+    }
+
+    public static void ShowOrderSummary(
+        this IDialogService dialogService,
+        CustomerOrder order)
+    {
+        var dialogVM =
+            DISource.Resolve<CustomerOrderSummaryViewModel>();
+
+        dialogVM.Initialize(order);
+
+        dialogService.ShowDialog(
+            null,
+            "Customer Order Summary",
+            "CustomerOrderSummaryView",
+            dialogVM);
     }
 
 }
