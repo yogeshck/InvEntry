@@ -22,17 +22,27 @@
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
 
+    <!-- =========================================================
+         RESOURCES
+         ========================================================= -->
+
     <UserControl.Resources>
+
+        <!-- GLOBAL EDITOR STYLE -->
 
         <Style TargetType="dxe:TextEdit">
             <Setter Property="Height" Value="35"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
 
+        <!--  GLOBAL BUTTON STYLE -->
+
         <Style TargetType="Button">
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
+
+        <!-- CARD -->
 
         <Style x:Key="CardBorderStyle"
                TargetType="Border">
@@ -46,10 +56,12 @@
                     Value="16"/>
         </Style>
 
+        <!-- SECTION TITLE -->
+
         <Style x:Key="SectionTitleStyle"
                TargetType="TextBlock">
             <Setter Property="FontSize"
-                    Value="12"/>
+                    Value="13"/>
             <Setter Property="FontWeight"
                     Value="SemiBold"/>
             <Setter Property="Opacity"
@@ -57,6 +69,8 @@
             <Setter Property="Margin"
                     Value="0,0,0,12"/>
         </Style>
+
+        <!-- FIELD LABEL -->
 
         <Style x:Key="FieldLabelStyle"
                TargetType="TextBlock">
@@ -70,49 +84,114 @@
                     Value="0,6,10,6"/>
         </Style>
 
+        <!-- WEIGHT -->
+
         <Style x:Key="NumberFormatWtStyle"
                TargetType="dxe:TextEditSettings">
+
             <Setter Property="MaskType"
                     Value="Numeric"/>
+
             <Setter Property="Mask"
-                    Value="######.000"/>
+                    Value="n3"/>
+
             <Setter Property="MaskShowPlaceHolders"
                     Value="False"/>
+
             <Setter Property="MaskUseAsDisplayFormat"
                     Value="True"/>
+
             <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator"
                     Value="False"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Right"/>
+
         </Style>
+
+        <!-- NUMBER / AMOUNT
+             1,25,000.00 -->
 
         <Style x:Key="NumberFormatStyle"
                TargetType="dxe:TextEdit">
+
             <Setter Property="MaskType"
                     Value="Numeric"/>
+
             <Setter Property="Mask"
-                    Value="#,##,##,##,###.00"/>
+                    Value="#,##,##0.00"/>
+
             <Setter Property="MaskShowPlaceHolders"
                     Value="False"/>
+
             <Setter Property="MaskUseAsDisplayFormat"
                     Value="True"/>
+
             <Setter Property="Height"
                     Value="35"/>
+
+            <Setter Property="FontSize"
+                    Value="14"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Right"/>
+
         </Style>
 
         <Style x:Key="NumberFormatEditSettingsStyle"
                TargetType="dxe:TextEditSettings">
+
             <Setter Property="MaskType"
                     Value="Numeric"/>
+
             <Setter Property="Mask"
-                    Value="#,##,##,##,###.00"/>
+                    Value="#,##,##0.00"/>
+
             <Setter Property="MaskShowPlaceHolders"
                     Value="False"/>
+
             <Setter Property="MaskUseAsDisplayFormat"
                     Value="True"/>
+
             <Setter Property="AllowNullInput"
                     Value="False"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Right"/>
+
+        </Style>
+
+        <!-- CURRENCY             ₹ 1,25,000.00 -->
+
+        <Style x:Key="CurrencyEditSettingsStyle"
+               TargetType="dxe:TextEditSettings">
+
+            <Setter Property="MaskType"
+                    Value="Numeric"/>
+
+            <Setter Property="Mask"
+                    Value="₹ #,##,##0.00"/>
+
+            <Setter Property="MaskShowPlaceHolders"
+                    Value="False"/>
+
+            <Setter Property="MaskUseAsDisplayFormat"
+                    Value="True"/>
+
+            <Setter Property="AllowNullInput"
+                    Value="False"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Right"/>
+
         </Style>
 
     </UserControl.Resources>
+
+
+    <!-- =========================================================
+         MAIN LAYOUT
+         ========================================================= -->
 
     <Grid Margin="16">
 
@@ -148,6 +227,9 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
+
+            <!-- PAGE TITLE -->
+
             <StackPanel Grid.Column="0">
 
                 <TextBlock Text="Customer Order"
@@ -161,34 +243,43 @@
 
             </StackPanel>
 
-            <StackPanel Grid.Column="1"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center">
 
-                <!-- SEARCH BOX - shown only when requested -->
+            <!-- ACTION AREA -->
+
+            <StackPanel Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center">
+
+
+                <!-- =================================================
+                     SEARCH BOX
+                     ================================================= -->
 
                 <Grid Margin="0,0,0,6">
 
                     <Grid.Style>
+
                         <Style TargetType="Grid">
 
                             <Setter Property="Visibility"
-                        Value="Collapsed"/>
+                                    Value="Collapsed"/>
 
                             <Style.Triggers>
 
                                 <DataTrigger Binding="{Binding IsOrderSearchVisible}"
-                                 Value="True">
+                                             Value="True">
 
                                     <Setter Property="Visibility"
-                                Value="Visible"/>
+                                            Value="Visible"/>
 
                                 </DataTrigger>
 
                             </Style.Triggers>
 
                         </Style>
+
                     </Grid.Style>
+
 
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="320"/>
@@ -198,19 +289,20 @@
 
 
                     <dxe:TextEdit Grid.Column="0"
-                      Name="OrderSearchText"
-                      EditValue="{Binding SearchText,
-                                          Mode=TwoWay,
-                                          UpdateSourceTrigger=PropertyChanged}"
-                      NullText="Enter order number..."
-                      Height="34">
+                                  Name="OrderSearchText"
+                                  EditValue="{Binding SearchText,
+                                                      Mode=TwoWay,
+                                                      UpdateSourceTrigger=PropertyChanged}"
+                                  NullText="Enter order number..."
+                                  Height="34"
+                                  FontSize="14">
 
                         <dxmvvm:Interaction.Behaviors>
 
                             <dxmvvm:EventToCommand
-                    EventName="EditValueChanged"
-                    Command="{Binding FetchCustomerOrderCommand}"
-                    PassEventArgsToCommand="True"/>
+                                EventName="EditValueChanged"
+                                Command="{Binding FetchCustomerOrderCommand}"
+                                PassEventArgsToCommand="True"/>
 
                         </dxmvvm:Interaction.Behaviors>
 
@@ -218,38 +310,41 @@
 
 
                     <Button Grid.Column="2"
-                Content="×"
-                Command="{Binding ToggleOrderSearchCommand}"
-                Width="32"
-                Height="34"
-                FontSize="17"
-                FontWeight="Bold"
-                Padding="0"/>
+                            Content="×"
+                            Command="{Binding ToggleOrderSearchCommand}"
+                            Width="32"
+                            Height="34"
+                            FontSize="17"
+                            FontWeight="Bold"
+                            Padding="0"/>
 
                 </Grid>
 
 
-                <!-- ACTION BUTTONS -->
+                <!-- =================================================
+                     ACTION BUTTONS
+                     ================================================= -->
 
                 <StackPanel Orientation="Horizontal"
-                HorizontalAlignment="Right">
+                            HorizontalAlignment="Right">
 
                     <Button Command="{Binding ToggleOrderSearchCommand}"
-                Height="36"
-                Padding="14,0"
-                Margin="0,0,8,0">
+                            Height="36"
+                            Padding="14,0"
+                            Margin="0,0,8,0">
 
                         <StackPanel Orientation="Horizontal">
 
                             <TextBlock Text="⌕"
-                           FontSize="17"
-                           FontWeight="Bold"
-                           Margin="0,0,6,0"
-                           VerticalAlignment="Center"/>
+                                       FontSize="17"
+                                       FontWeight="Bold"
+                                       Margin="0,0,6,0"
+                                       VerticalAlignment="Center"/>
 
                             <TextBlock Text="Find Order"
-                           FontWeight="Bold"
-                           VerticalAlignment="Center"/>
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
 
                         </StackPanel>
 
@@ -257,18 +352,18 @@
 
 
                     <Button Content="Reset"
-                Command="{Binding ResetCustomerOrderCommand}"
-                Width="100"
-                Height="36"
-                Margin="0,0,8,0"
-                FontWeight="Bold"/>
+                            Command="{Binding ResetCustomerOrderCommand}"
+                            Width="100"
+                            Height="36"
+                            Margin="0,0,8,0"
+                            FontWeight="Bold"/>
 
 
                     <Button Content="SAVE ORDER"
-                Command="{Binding CreateCustomerOrderCommand}"
-                Width="130"
-                Height="36"
-                FontWeight="Bold"/>
+                            Command="{Binding CreateCustomerOrderCommand}"
+                            Width="130"
+                            Height="36"
+                            FontWeight="Bold"/>
 
                 </StackPanel>
 
@@ -285,9 +380,13 @@
               Margin="0,0,0,14">
 
             <Grid.ColumnDefinitions>
+
                 <ColumnDefinition Width="0.9*"/>
+
                 <ColumnDefinition Width="16"/>
+
                 <ColumnDefinition Width="1.1*"/>
+
             </Grid.ColumnDefinitions>
 
 
@@ -302,6 +401,7 @@
 
                     <TextBlock Text="CUSTOMER"
                                Style="{StaticResource SectionTitleStyle}"/>
+
 
                     <Grid>
 
@@ -324,6 +424,7 @@
                                    Grid.Column="0"
                                    Text="Mobile"
                                    Style="{StaticResource FieldLabelStyle}"/>
+
 
                         <dxe:TextEdit Grid.Row="0"
                                       Grid.Column="1"
@@ -355,13 +456,14 @@
                                    Text="Name"
                                    Style="{StaticResource FieldLabelStyle}"/>
 
+
                         <dxe:TextEdit Grid.Row="1"
                                       Grid.Column="1"
                                       Name="CustomerNameUI"
                                       EditValue="{Binding Buyer.CustomerName}"
                                       IsReadOnly="{Binding CustomerReadOnly}"
                                       CharacterCasing="Upper"
-                                      FontSize="15">
+                                      FontSize="14">
 
                             <dxmvvm:Interaction.Behaviors>
                                 <behavior:FocusTextEditBehavior/>
@@ -377,6 +479,7 @@
                                    Text="City"
                                    Style="{StaticResource FieldLabelStyle}"/>
 
+
                         <dxe:TextEdit Grid.Row="2"
                                       Grid.Column="1"
                                       EditValue="{Binding Buyer.Address.City}"
@@ -391,6 +494,7 @@
                                    Grid.Column="0"
                                    Text="State"
                                    Style="{StaticResource FieldLabelStyle}"/>
+
 
                         <dxe:ComboBoxEdit Grid.Row="3"
                                           Grid.Column="1"
@@ -419,6 +523,9 @@
 
                 <StackPanel>
 
+
+                    <!-- CARD TITLE -->
+
                     <Grid Margin="0,0,0,12">
 
                         <Grid.ColumnDefinitions>
@@ -426,15 +533,18 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
+
                         <TextBlock Grid.Column="0"
                                    Text="ORDER INFORMATION"
                                    Style="{StaticResource SectionTitleStyle}"/>
+
 
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Center">
 
                             <TextBlock Text="Order # "
+                                       FontSize="13"
                                        FontWeight="SemiBold"
                                        Opacity="0.60"/>
 
@@ -447,15 +557,24 @@
                     </Grid>
 
 
+                    <!-- ORDER FIELDS -->
+
                     <Grid>
 
                         <Grid.ColumnDefinitions>
+
                             <ColumnDefinition Width="105"/>
+
                             <ColumnDefinition Width="*"/>
+
                             <ColumnDefinition Width="20"/>
+
                             <ColumnDefinition Width="130"/>
+
                             <ColumnDefinition Width="*"/>
+
                         </Grid.ColumnDefinitions>
+
 
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -464,23 +583,26 @@
                         </Grid.RowDefinitions>
 
 
-                        <!-- Row 0 -->
+                        <!-- ROW 0 -->
 
                         <TextBlock Grid.Row="0"
                                    Grid.Column="0"
                                    Text="Reference"
                                    Style="{StaticResource FieldLabelStyle}"/>
 
+
                         <dxe:TextEdit Grid.Row="0"
                                       Grid.Column="1"
                                       EditValue="{Binding Header.OrderRefNbr}"
-                                      Height="35"/>
+                                      Height="35"
+                                      FontSize="14"/>
 
 
                         <TextBlock Grid.Row="0"
                                    Grid.Column="3"
                                    Text="Order Date"
                                    Style="{StaticResource FieldLabelStyle}"/>
+
 
                         <dxe:DateEdit Grid.Row="0"
                                       Grid.Column="4"
@@ -489,23 +611,26 @@
                                       FontSize="14"/>
 
 
-                        <!-- Row 1 -->
+                        <!-- ROW 1 -->
 
                         <TextBlock Grid.Row="1"
                                    Grid.Column="0"
                                    Text="Order Type"
                                    Style="{StaticResource FieldLabelStyle}"/>
 
+
                         <dxe:TextEdit Grid.Row="1"
                                       Grid.Column="1"
                                       EditValue="{Binding Header.OrderType}"
-                                      Height="35"/>
+                                      Height="35"
+                                      FontSize="14"/>
 
 
                         <TextBlock Grid.Row="1"
                                    Grid.Column="3"
                                    Text="Expected Delivery"
                                    Style="{StaticResource FieldLabelStyle}"/>
+
 
                         <dxe:DateEdit Grid.Row="1"
                                       Grid.Column="4"
@@ -514,12 +639,13 @@
                                       FontSize="14"/>
 
 
-                        <!-- Row 2 -->
+                        <!-- ROW 2 -->
 
                         <TextBlock Grid.Row="2"
                                    Grid.Column="0"
                                    Text="Status"
                                    Style="{StaticResource FieldLabelStyle}"/>
+
 
                         <dxe:ComboBoxEdit Grid.Row="2"
                                           Grid.Column="1"
@@ -537,6 +663,7 @@
                                    Text="Delivered On"
                                    Style="{StaticResource FieldLabelStyle}"/>
 
+
                         <dxe:DateEdit Grid.Row="2"
                                       Grid.Column="4"
                                       EditValue="{Binding Header.DeliveryDate}"
@@ -553,52 +680,7 @@
 
 
         <!-- =====================================================
-             EXISTING ORDER SEARCH
-             ===================================================== -->
-
-        <Border Grid.Row="2"
-                Style="{StaticResource CardBorderStyle}"
-                Padding="12"
-                Margin="0,0,0,14">
-
-            <Grid>
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="170"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Column="0"
-                           Text="Find Existing Order"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
-
-                <dxe:TextEdit Grid.Column="1"
-                              Name="SearchText"
-                              NullText="Search by order number..."
-                              EditValue="{Binding SearchText}"
-                              Height="34"
-                              FontSize="14">
-
-                    <dxmvvm:Interaction.Behaviors>
-
-                        <dxmvvm:EventToCommand
-                            EventName="EditValueChanged"
-                            Command="{Binding FetchCustomerOrderCommand}"
-                            PassEventArgsToCommand="True"/>
-
-                    </dxmvvm:Interaction.Behaviors>
-
-                </dxe:TextEdit>
-
-            </Grid>
-
-        </Border>
-
-
-        <!-- =====================================================
-             EXISTING TAB SECTION STARTS HERE
+             ORDER WORKSPACE
              ===================================================== -->
 
         <dxlc:LayoutControl Grid.Row="2"
@@ -608,308 +690,422 @@
 
             <dxlc:LayoutGroup Orientation="Vertical">
 
-                <!--
-                    KEEP YOUR EXISTING:
 
-                    <dxlc:LayoutGroup View="Tabs">
-                        ...
-                    </dxlc:LayoutGroup>
-
-                    FROM THE OLD FILE HERE.
-                -->
-
-
-
-
+                <!-- =================================================
+                     TABS
+                     ================================================= -->
 
                 <dxlc:LayoutGroup View="Tabs"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch">
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch">
+
 
                     <!-- =====================================================
-         ORDER SPECIFICATION
-         ===================================================== -->
+                         ORDER SPECIFICATION
+                         ===================================================== -->
 
                     <dxlc:LayoutGroup Header="Order Specification"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
 
                         <dxlc:LayoutGroup.HeaderTemplate>
+
                             <DataTemplate>
+
                                 <TextBlock Text="{Binding}"
-                           FontSize="14"
-                           FontWeight="Bold"
-                           Margin="8,4"/>
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Margin="8,4"/>
+
                             </DataTemplate>
+
                         </dxlc:LayoutGroup.HeaderTemplate>
 
+
                         <dxlc:LayoutItem HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch">
+                                         VerticalAlignment="Stretch">
 
                             <dxb:BarManager AllowCustomization="False">
+
+
+                                <!-- PRODUCT TOOLBAR -->
 
                                 <dxb:BarManager.Bars>
 
                                     <dxb:Bar AllowCollapse="False"
-                             AllowQuickCustomization="False"
-                             AllowRemove="False"
-                             AllowCustomizationMenu="False"
-                             ShowDragWidget="False">
+                                             AllowQuickCustomization="False"
+                                             AllowRemove="False"
+                                             AllowCustomizationMenu="False"
+                                             ShowDragWidget="False">
 
-                                        <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
-                                         Content="Product / Design"
-                                         EditWidth="300"
-                                         EditHeight="32">
+                                        <dxb:BarEditItem
+                                            EditValue="{Binding ProductIdUI}"
+                                            Content="Product / Design"
+                                            EditWidth="300"
+                                            EditHeight="32">
 
                                             <dxb:BarEditItem.EditSettings>
+
                                                 <dxe:ComboBoxEditSettings
-                                    ItemsSource="{Binding ProductCategoryList}"/>
+                                                    ItemsSource="{Binding ProductCategoryList}"/>
+
                                             </dxb:BarEditItem.EditSettings>
 
                                         </dxb:BarEditItem>
 
+
                                         <dxb:BarButtonItem
-                            Content="Add"
-                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
-                            Command="{Binding FetchProductCommand}"
-                            GlyphSize="Large"
-                            GlyphAlignment="Left"
-                            BarItemDisplayMode="ContentAndGlyph"/>
+                                            Content="Add"
+                                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
+                                            Command="{Binding FetchProductCommand}"
+                                            GlyphSize="Large"
+                                            GlyphAlignment="Left"
+                                            BarItemDisplayMode="ContentAndGlyph"/>
 
                                     </dxb:Bar>
 
                                 </dxb:BarManager.Bars>
 
 
+                                <!-- =================================================
+                                     ORDER LINE GRID
+                                     ================================================= -->
+
                                 <dxg:GridControl
-                    x:Name="orderLinesUIGrid"
-                    ItemsSource="{Binding Header.Lines}"
-                    DeleteKeyBehavior="DeleteFocusedRow"
-                    SelectedItems="{Binding SelectedRows}"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    FontSize="13">
+                                    x:Name="orderLinesUIGrid"
+                                    ItemsSource="{Binding Header.Lines}"
+                                    DeleteKeyBehavior="DeleteFocusedRow"
+                                    SelectedItems="{Binding SelectedRows}"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    FontSize="14">
+
 
                                     <dxg:GridControl.Resources>
 
                                         <Style x:Key="boldHeader"
-                               TargetType="dxg:BaseGridHeader">
+                                               TargetType="dxg:BaseGridHeader">
+
                                             <Setter Property="FontWeight"
-                                    Value="Bold"/>
+                                                    Value="Bold"/>
+
                                             <Setter Property="FontSize"
-                                    Value="13"/>
+                                                    Value="14"/>
+
                                         </Style>
+
 
                                         <Style TargetType="dxg:GridColumn">
+
                                             <Setter Property="HeaderStyle"
-                                    Value="{StaticResource boldHeader}"/>
+                                                    Value="{StaticResource boldHeader}"/>
+
                                         </Style>
 
+
                                         <Style TargetType="dxe:TextEdit">
+
                                             <Setter Property="Width"
-                                    Value="Auto"/>
+                                                    Value="Auto"/>
+
+                                            <Setter Property="FontSize"
+                                                    Value="14"/>
+
                                             <Setter Property="EditValuePostMode"
-                                    Value="Immediate"/>
+                                                    Value="Immediate"/>
+
                                         </Style>
 
                                     </dxg:GridControl.Resources>
 
+
+                                    <!-- =============================================
+                                         ORDER LINE COLUMNS
+                                         ============================================= -->
+
                                     <dxg:GridControl.Columns>
 
-                                        <!-- =====================================================
-         ORNAMENT / PRODUCT
-         ===================================================== -->
 
-                                        <dxg:GridColumn FieldName="ProductId"
-                    Header="Product"
-                    Width="105"
-                    ReadOnly="True"/>
+                                        <!-- ORNAMENT -->
 
-                                        <dxg:GridColumn FieldName="ProductName"
-                    Header="Ornament / Description"
-                    Width="180"
-                    ReadOnly="True"/>
-
-                                        <dxg:GridColumn FieldName="ProductPurity"
-                    Header="Purity"
-                    Width="65"
-                    ReadOnly="True"/>
+                                        <dxg:GridColumn
+                                            FieldName="ProductId"
+                                            Header="Product"
+                                            Width="105"
+                                            ReadOnly="True"/>
 
 
-                                        <!-- =====================================================
-         ORDER SPECIFICATION
-         ===================================================== -->
+                                        <dxg:GridColumn
+                                            FieldName="ProductName"
+                                            Header="Ornament / Description"
+                                            Width="180"
+                                            ReadOnly="True"/>
 
-                                        <dxg:GridColumn FieldName="ProdQty"
-                    Header="Qty"
-                    Width="50"/>
 
-                                        <dxg:GridColumn FieldName="ProdGrossWeight"
-                    Header="Gross Wt."
-                    Width="95">
+                                        <dxg:GridColumn
+                                            FieldName="ProductPurity"
+                                            Header="Purity"
+                                            Width="65"
+                                            ReadOnly="True"/>
 
-                                            <dxg:GridColumn.EditSettings>
-                                                <dxe:TextEditSettings
-                Style="{StaticResource NumberFormatWtStyle}"/>
-                                            </dxg:GridColumn.EditSettings>
 
-                                        </dxg:GridColumn>
+                                        <!-- QUANTITY -->
 
-                                        <dxg:GridColumn FieldName="ProdStoneWeight"
-                    Header="Stone Wt."
-                    Width="80">
+                                        <dxg:GridColumn
+                                            FieldName="ProdQty"
+                                            Header="Qty"
+                                            Width="50"/>
+
+
+                                        <!-- GROSS WEIGHT -->
+
+                                        <dxg:GridColumn
+                                            FieldName="ProdGrossWeight"
+                                            Header="Gross Wt."
+                                            Width="95">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-                Style="{StaticResource NumberFormatWtStyle}"/>
-                                            </dxg:GridColumn.EditSettings>
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
 
-                                        </dxg:GridColumn>
-
-                                        <dxg:GridColumn FieldName="ProdNetWeight"
-                    Header="Net Wt."
-                    Width="90"
-                    ReadOnly="True">
-
-                                            <dxg:GridColumn.EditSettings>
-                                                <dxe:TextEditSettings
-                Style="{StaticResource NumberFormatWtStyle}"/>
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
 
-                                        <!-- =====================================================
-         CUSTOMER REQUIREMENT
-         ===================================================== -->
+                                        <!-- STONE WEIGHT -->
 
-                                        <dxg:GridColumn FieldName="OrderType"
-                    Header="Order Type"
-                    Width="100"/>
-
-                                        <dxg:GridColumn FieldName="OrderItemDueDate"
-                    Header="Required By"
-                    Width="105">
+                                        <dxg:GridColumn
+                                            FieldName="ProdStoneWeight"
+                                            Header="Stone Wt."
+                                            Width="85">
 
                                             <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- NET WEIGHT -->
+
+                                        <dxg:GridColumn
+                                            FieldName="ProdNetWeight"
+                                            Header="Net Wt."
+                                            Width="90"
+                                            ReadOnly="True">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- ORDER TYPE -->
+
+                                        <dxg:GridColumn
+                                            FieldName="OrderType"
+                                            Header="Order Type"
+                                            Width="100"/>
+
+
+                                        <!-- REQUIRED DATE -->
+
+                                        <dxg:GridColumn
+                                            FieldName="OrderItemDueDate"
+                                            Header="Required By"
+                                            Width="105">
+
+                                            <dxg:GridColumn.EditSettings>
+
                                                 <dxe:DateEditSettings
-                DisplayFormat="dd-MMM-yyyy"/>
+                                                    DisplayFormat="dd-MMM-yyyy"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="ItemNotes"
-                    Header="Design / Special Instructions"
-                    Width="240"/>
+
+                                        <!-- SPECIAL INSTRUCTIONS -->
+
+                                        <dxg:GridColumn
+                                            FieldName="ItemNotes"
+                                            Header="Design / Special Instructions"
+                                            Width="240"/>
 
 
-                                        <!-- =====================================================
-         VALUATION
-         ===================================================== -->
+                                        <!-- METAL RATE -->
 
-                                        <dxg:GridColumn FieldName="MetalRate"
-                Header="Metal Rate"
-                Width="95"
-                ReadOnly="True">
-                                            <dxg:GridColumn.EditSettings>
-                                                <dxe:TextEditSettings
-            Style="{StaticResource NumberFormatEditSettingsStyle}"/>
-                                            </dxg:GridColumn.EditSettings>
-                                        </dxg:GridColumn>
-
-                                        <dxg:GridColumn FieldName="VaPercent"
-                    Header="VA %"
-                    Width="60">
+                                        <dxg:GridColumn
+                                            FieldName="MetalRate"
+                                            Header="Metal Rate"
+                                            Width="105"
+                                            ReadOnly="True">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-                Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+                                                    Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="MakingCharges"
-                Header="Making"
-                Width="90">
+
+                                        <!-- VA % -->
+
+                                        <dxg:GridColumn
+                                            FieldName="VaPercent"
+                                            Header="VA %"
+                                            Width="65">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-            Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+                                                    Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="VaPercent"
-                Header="VA %"
-                Width="65">
+
+                                        <!-- MAKING -->
+
+                                        <dxg:GridColumn
+                                            FieldName="MakingCharges"
+                                            Header="Making"
+                                            Width="100">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-            Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+                                                    Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="VaAmount"
-                Header="VA Amount"
-                Width="90"
-                ReadOnly="True"/>
 
-                                        <dxg:GridColumn FieldName="TaxAmount"
-                Header="Tax"
-                Width="90"
-                ReadOnly="True"/>
+                                        <!-- VA AMOUNT -->
 
-                                        <dxg:GridColumn FieldName="OrderAmount"
-                Header="Est. Amount"
-                Width="110"
-                ReadOnly="True"/>
+                                        <dxg:GridColumn
+                                            FieldName="VaAmount"
+                                            Header="VA Amount"
+                                            Width="105"
+                                            ReadOnly="True">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- TAX -->
+
+                                        <dxg:GridColumn
+                                            FieldName="TaxAmount"
+                                            Header="Tax"
+                                            Width="95"
+                                            ReadOnly="True">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- ESTIMATED AMOUNT -->
+
+                                        <dxg:GridColumn
+                                            FieldName="OrderAmount"
+                                            Header="Est. Amount"
+                                            Width="130"
+                                            ReadOnly="True">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource CurrencyEditSettingsStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
 
                                     </dxg:GridControl.Columns>
+
+
+                                    <!-- =============================================
+                                         ORDER TOTALS
+                                         ============================================= -->
 
                                     <dxg:GridControl.TotalSummary>
 
                                         <dxg:GridSummaryItem
-                            SummaryType="Sum"
-                            FieldName="InvlTaxableAmount"
-                            DisplayFormat="Taxable: {0:n2}"/>
+                                            SummaryType="Sum"
+                                            FieldName="ProdGrossWeight"
+                                            DisplayFormat="{}{0:N3}"/>
 
                                         <dxg:GridSummaryItem
-                            SummaryType="Sum"
-                            FieldName="InvlTotal"
-                            DisplayFormat="Total: {0:n2}"/>
+                                            SummaryType="Sum"
+                                            FieldName="ProdNetWeight"
+                                            DisplayFormat="{}{0:N3}"/>
+
+                                        <dxg:GridSummaryItem
+                                            SummaryType="Sum"
+                                            FieldName="OrderAmount"
+                                            DisplayFormat="₹ {0:N2}"/>
 
                                     </dxg:GridControl.TotalSummary>
+
+
+                                    <!-- GRID VIEW -->
 
                                     <dxg:GridControl.View>
 
                                         <dxg:TableView
-                            AutoWidth="True"
-                            NewItemRowPosition="None"
-                            AllowGrouping="False"
-                            AllowBestFit="True"
-                            ShowGroupPanel="False"
-                            TotalSummaryPosition="Bottom"
-                            NavigationStyle="Cell"
-                            ShowIndicator="False">
+                                            AutoWidth="True"
+                                            NewItemRowPosition="None"
+                                            AllowGrouping="False"
+                                            AllowBestFit="True"
+                                            ShowGroupPanel="False"
+                                            TotalSummaryPosition="Bottom"
+                                            NavigationStyle="Cell"
+                                            ShowIndicator="False">
 
                                             <dxmvvm:Interaction.Behaviors>
 
                                                 <dxmvvm:EventToCommand
-                                    EventName="CellValueChanged"
-                                    Command="{Binding CellUpdateCommand}"
-                                    PassEventArgsToCommand="True"/>
+                                                    EventName="CellValueChanged"
+                                                    Command="{Binding CellUpdateCommand}"
+                                                    PassEventArgsToCommand="True"/>
 
                                             </dxmvvm:Interaction.Behaviors>
+
 
                                             <dxg:TableView.RowCellMenuCustomizations>
 
                                                 <dxb:BarButtonItem
-                                    Content="Delete Row"
-                                    CommandParameter="{Binding Row.Row}"
-                                    Command="{Binding DataContext.DeleteSingleRowCommand,
-                                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
-                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
+                                                    Content="Delete Row"
+                                                    CommandParameter="{Binding Row.Row}"
+                                                    Command="{Binding DataContext.DeleteSingleRowCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
 
                                             </dxg:TableView.RowCellMenuCustomizations>
 
@@ -927,65 +1123,87 @@
 
 
                     <!-- =====================================================
-         OLD METAL
-         ===================================================== -->
+                         OLD METAL
+                         ===================================================== -->
 
                     <dxlc:LayoutGroup Header="Old Metal"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
 
                         <dxlc:LayoutGroup.HeaderTemplate>
+
                             <DataTemplate>
+
                                 <TextBlock Text="{Binding}"
-                           FontSize="14"
-                           FontWeight="Bold"
-                           Margin="8,4"/>
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Margin="8,4"/>
+
                             </DataTemplate>
+
                         </dxlc:LayoutGroup.HeaderTemplate>
 
+
                         <dxlc:LayoutItem HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch">
+                                         VerticalAlignment="Stretch">
 
                             <dxb:BarManager AllowCustomization="False">
+
+
+                                <!-- OLD METAL TOOLBAR -->
 
                                 <dxb:BarManager.Bars>
 
                                     <dxb:Bar AllowCollapse="False"
-                             AllowQuickCustomization="False"
-                             AllowRemove="False"
-                             AllowCustomizationMenu="False"
-                             ShowDragWidget="False">
+                                             AllowQuickCustomization="False"
+                                             AllowRemove="False"
+                                             AllowCustomizationMenu="False"
+                                             ShowDragWidget="False">
 
                                         <dxb:BarButtonItem
-                            Content="Add Old Metal"
-                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
-                            Command="{Binding EvaluateOldMetalTransactionCommand}"
-                            GlyphSize="Large"
-                            GlyphAlignment="Left"
-                            BarItemDisplayMode="ContentAndGlyph"/>
+                                            Content="Add Old Metal"
+                                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
+                                            Command="{Binding EvaluateOldMetalTransactionCommand}"
+                                            GlyphSize="Large"
+                                            GlyphAlignment="Left"
+                                            BarItemDisplayMode="ContentAndGlyph"/>
+
                                     </dxb:Bar>
 
                                 </dxb:BarManager.Bars>
 
 
+                                <!-- =================================================
+                                     OLD METAL GRID
+                                     ================================================= -->
+
                                 <dxg:GridControl
-                    ItemsSource="{Binding Header.OldMetalTransactions}"
-                    DeleteKeyBehavior="DeleteFocusedRow"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    FontSize="13">
+                                    ItemsSource="{Binding Header.OldMetalTransactions}"
+                                    DeleteKeyBehavior="DeleteFocusedRow"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    FontSize="14">
+
 
                                     <dxg:GridControl.Resources>
 
                                         <Style x:Key="oldMetalHeader"
-                               TargetType="dxg:BaseGridHeader">
+                                               TargetType="dxg:BaseGridHeader">
+
                                             <Setter Property="FontWeight"
-                                    Value="Bold"/>
+                                                    Value="Bold"/>
+
+                                            <Setter Property="FontSize"
+                                                    Value="14"/>
+
                                         </Style>
 
+
                                         <Style TargetType="dxg:GridColumn">
+
                                             <Setter Property="HeaderStyle"
-                                    Value="{StaticResource oldMetalHeader}"/>
+                                                    Value="{StaticResource oldMetalHeader}"/>
+
                                         </Style>
 
                                     </dxg:GridControl.Resources>
@@ -993,109 +1211,213 @@
 
                                     <dxg:GridControl.Columns>
 
-                                        <dxg:GridColumn FieldName="ProductId"
-                                        Header="Metal"
-                                        Width="110">
+
+                                        <!-- METAL -->
+
+                                        <dxg:GridColumn
+                                            FieldName="ProductId"
+                                            Header="Metal"
+                                            Width="110">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:ComboBoxEditSettings
-                                    ItemsSource="{Binding MetalList}"/>
+                                                    ItemsSource="{Binding MetalList}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="Purity"
-                                        Header="Purity"
-                                        Width="70"
-                                        ReadOnly="True"/>
 
-                                        <dxg:GridColumn FieldName="TransactedRate"
-                                        Header="Rate"
-                                        Width="90"/>
+                                        <!-- PURITY -->
 
-                                        <dxg:GridColumn FieldName="GrossWeight"
-                                        Header="Gross Wt."
-                                        Width="90">
+                                        <dxg:GridColumn
+                                            FieldName="Purity"
+                                            Header="Purity"
+                                            Width="70"
+                                            ReadOnly="True"/>
+
+
+                                        <!-- RATE -->
+
+                                        <dxg:GridColumn
+                                            FieldName="TransactedRate"
+                                            Header="Rate"
+                                            Width="105">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-                                    Style="{StaticResource NumberFormatWtStyle}"/>
+                                                    Style="{StaticResource NumberFormatEditSettingsStyle}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="StoneWeight"
-                                        Header="Stone Wt."
-                                        Width="90">
+
+                                        <!-- GROSS -->
+
+                                        <dxg:GridColumn
+                                            FieldName="GrossWeight"
+                                            Header="Gross Wt."
+                                            Width="95">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-                                    Style="{StaticResource NumberFormatWtStyle}"/>
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="WastageWeight"
-                                        Header="Wastage Wt."
-                                        Width="100">
+
+                                        <!-- STONE -->
+
+                                        <dxg:GridColumn
+                                            FieldName="StoneWeight"
+                                            Header="Stone Wt."
+                                            Width="95">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:TextEditSettings
-                                    Style="{StaticResource NumberFormatWtStyle}"/>
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
-                                        <dxg:GridColumn FieldName="NetWeight"
-                                        Header="Net Wt."
-                                        Width="90"
-                                        ReadOnly="True"/>
 
-                                        <dxg:GridColumn FieldName="Uom"
-                                        Header="UOM"
-                                        Width="70"
-                                        ReadOnly="True"/>
+                                        <!-- WASTAGE -->
 
-                                        <dxg:GridColumn FieldName="TotalProposedPrice"
-                                        Header="Proposed Value"
-                                        Width="130"
-                                        ReadOnly="True"/>
+                                        <dxg:GridColumn
+                                            FieldName="WastageWeight"
+                                            Header="Wastage Wt."
+                                            Width="105">
 
-                                        <dxg:GridColumn FieldName="FinalPurchasePrice"
-                                        Header="Final Value"
-                                        Width="120"/>
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- NET -->
+
+                                        <dxg:GridColumn
+                                            FieldName="NetWeight"
+                                            Header="Net Wt."
+                                            Width="95"
+                                            ReadOnly="True">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource NumberFormatWtStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- UOM -->
+
+                                        <dxg:GridColumn
+                                            FieldName="Uom"
+                                            Header="UOM"
+                                            Width="70"
+                                            ReadOnly="True"/>
+
+
+                                        <!-- PROPOSED VALUE -->
+
+                                        <dxg:GridColumn
+                                            FieldName="TotalProposedPrice"
+                                            Header="Proposed Value"
+                                            Width="145"
+                                            ReadOnly="True">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource CurrencyEditSettingsStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
+
+
+                                        <!-- FINAL VALUE -->
+
+                                        <dxg:GridColumn
+                                            FieldName="FinalPurchasePrice"
+                                            Header="Final Value"
+                                            Width="135">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource CurrencyEditSettingsStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
 
                                     </dxg:GridControl.Columns>
 
 
+                                    <!-- OLD METAL SUMMARY -->
+
+                                    <dxg:GridControl.TotalSummary>
+
+                                        <dxg:GridSummaryItem
+                                            SummaryType="Sum"
+                                            FieldName="NetWeight"
+                                            DisplayFormat="Net: {0:N3}"/>
+
+                                        <dxg:GridSummaryItem
+                                            SummaryType="Sum"
+                                            FieldName="FinalPurchasePrice"
+                                            DisplayFormat="Value: ₹ {0:N2}"/>
+
+                                    </dxg:GridControl.TotalSummary>
+
+
+                                    <!-- OLD METAL VIEW -->
+
                                     <dxg:GridControl.View>
 
                                         <dxg:TableView
-                            AutoWidth="True"
-                            AllowGrouping="False"
-                            AllowBestFit="True"
-                            ShowGroupPanel="False"
-                            TotalSummaryPosition="Bottom"
-                            NavigationStyle="Cell"
-                            ShowIndicator="False">
+                                            AutoWidth="True"
+                                            AllowGrouping="False"
+                                            AllowBestFit="True"
+                                            ShowGroupPanel="False"
+                                            TotalSummaryPosition="Bottom"
+                                            NavigationStyle="Cell"
+                                            ShowIndicator="False">
 
                                             <dxmvvm:Interaction.Behaviors>
 
                                                 <dxmvvm:EventToCommand
-                                    EventName="CellValueChanged"
-                                    Command="{Binding CellUpdateCommand}"
-                                    PassEventArgsToCommand="True"/>
+                                                    EventName="CellValueChanged"
+                                                    Command="{Binding CellUpdateCommand}"
+                                                    PassEventArgsToCommand="True"/>
 
                                             </dxmvvm:Interaction.Behaviors>
+
 
                                             <dxg:TableView.RowCellMenuCustomizations>
 
                                                 <dxb:BarButtonItem
-                                    Content="Delete Row"
-                                    CommandParameter="{Binding Row.Row}"
-                                    Command="{Binding DataContext.DeleteSingleRowCommand,
-                                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
-                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
+                                                    Content="Delete Row"
+                                                    CommandParameter="{Binding Row.Row}"
+                                                    Command="{Binding DataContext.DeleteSingleRowCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
 
                                             </dxg:TableView.RowCellMenuCustomizations>
 
@@ -1113,65 +1435,87 @@
 
 
                     <!-- =====================================================
-         ADVANCE / RECEIPTS
-         ===================================================== -->
+                         ADVANCE / RECEIPTS
+                         ===================================================== -->
 
                     <dxlc:LayoutGroup Header="Advance / Receipts"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch">
 
                         <dxlc:LayoutGroup.HeaderTemplate>
+
                             <DataTemplate>
+
                                 <TextBlock Text="{Binding}"
-                           FontSize="14"
-                           FontWeight="Bold"
-                           Margin="8,4"/>
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Margin="8,4"/>
+
                             </DataTemplate>
+
                         </dxlc:LayoutGroup.HeaderTemplate>
 
+
                         <dxlc:LayoutItem HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch">
+                                         VerticalAlignment="Stretch">
 
                             <dxb:BarManager AllowCustomization="False">
+
+
+                                <!-- RECEIPT TOOLBAR -->
 
                                 <dxb:BarManager.Bars>
 
                                     <dxb:Bar AllowCollapse="False"
-                             AllowQuickCustomization="False"
-                             AllowRemove="False"
-                             AllowCustomizationMenu="False"
-                             ShowDragWidget="False">
+                                             AllowQuickCustomization="False"
+                                             AllowRemove="False"
+                                             AllowCustomizationMenu="False"
+                                             ShowDragWidget="False">
 
                                         <dxb:BarButtonItem
-                            Content="Add Receipt"
-                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
-                            Command="{Binding ProcessAdvReceiptsCommand}"
-                            GlyphSize="Large"
-                            GlyphAlignment="Left"
-                            BarItemDisplayMode="ContentAndGlyph"/>
+                                            Content="Add Receipt"
+                                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
+                                            Command="{Binding ProcessAdvReceiptsCommand}"
+                                            GlyphSize="Large"
+                                            GlyphAlignment="Left"
+                                            BarItemDisplayMode="ContentAndGlyph"/>
 
                                     </dxb:Bar>
 
                                 </dxb:BarManager.Bars>
 
+
+                                <!-- =================================================
+                                     ADVANCE GRID
+                                     ================================================= -->
+
                                 <dxg:GridControl
-                    ItemsSource="{Binding Header.AdvanceReceiptLines}"
-                    DeleteKeyBehavior="DeleteFocusedRow"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    FontSize="13">
+                                    ItemsSource="{Binding Header.AdvanceReceiptLines}"
+                                    DeleteKeyBehavior="DeleteFocusedRow"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    FontSize="14">
+
 
                                     <dxg:GridControl.Resources>
 
                                         <Style x:Key="receiptHeader"
-                               TargetType="dxg:BaseGridHeader">
+                                               TargetType="dxg:BaseGridHeader">
+
                                             <Setter Property="FontWeight"
-                                    Value="Bold"/>
+                                                    Value="Bold"/>
+
+                                            <Setter Property="FontSize"
+                                                    Value="14"/>
+
                                         </Style>
 
+
                                         <Style TargetType="dxg:GridColumn">
+
                                             <Setter Property="HeaderStyle"
-                                    Value="{StaticResource receiptHeader}"/>
+                                                    Value="{StaticResource receiptHeader}"/>
+
                                         </Style>
 
                                     </dxg:GridControl.Resources>
@@ -1179,64 +1523,86 @@
 
                                     <dxg:GridControl.Columns>
 
+
+                                        <!-- PAYMENT MODE -->
+
                                         <dxg:GridColumn
-                            FieldName="TransType"
-                            Header="Payment Mode"
-                            Width="180">
+                                            FieldName="TransType"
+                                            Header="Payment Mode"
+                                            Width="180">
 
                                             <dxg:GridColumn.EditSettings>
+
                                                 <dxe:ComboBoxEditSettings
-                                    ItemsSource="{Binding PaymentModeList}"/>
+                                                    ItemsSource="{Binding PaymentModeList}"/>
+
                                             </dxg:GridColumn.EditSettings>
 
                                         </dxg:GridColumn>
 
+
+                                        <!-- AMOUNT -->
+
                                         <dxg:GridColumn
-                            FieldName="TransactionAmount"
-                            Header="Amount"
-                            Width="180"/>
+                                            FieldName="TransactionAmount"
+                                            Header="Amount"
+                                            Width="180">
+
+                                            <dxg:GridColumn.EditSettings>
+
+                                                <dxe:TextEditSettings
+                                                    Style="{StaticResource CurrencyEditSettingsStyle}"/>
+
+                                            </dxg:GridColumn.EditSettings>
+
+                                        </dxg:GridColumn>
 
                                     </dxg:GridControl.Columns>
 
 
+                                    <!-- RECEIPT SUMMARY -->
+
                                     <dxg:GridControl.TotalSummary>
 
                                         <dxg:GridSummaryItem
-                            SummaryType="Sum"
-                            FieldName="TransactionAmount"
-                            DisplayFormat="Advance Received: {0:n2}"/>
+                                            SummaryType="Sum"
+                                            FieldName="TransactionAmount"
+                                            DisplayFormat="Advance Received: ₹ {0:N2}"/>
 
                                     </dxg:GridControl.TotalSummary>
 
 
+                                    <!-- RECEIPT VIEW -->
+
                                     <dxg:GridControl.View>
 
                                         <dxg:TableView
-                            AutoWidth="True"
-                            AllowGrouping="False"
-                            AllowBestFit="True"
-                            ShowGroupPanel="False"
-                            TotalSummaryPosition="Bottom"
-                            NavigationStyle="Cell"
-                            ShowIndicator="False">
+                                            AutoWidth="True"
+                                            AllowGrouping="False"
+                                            AllowBestFit="True"
+                                            ShowGroupPanel="False"
+                                            TotalSummaryPosition="Bottom"
+                                            NavigationStyle="Cell"
+                                            ShowIndicator="False">
 
                                             <dxmvvm:Interaction.Behaviors>
 
                                                 <dxmvvm:EventToCommand
-                                    EventName="CellValueChanged"
-                                    Command="{Binding CellUpdateCommand}"
-                                    PassEventArgsToCommand="True"/>
+                                                    EventName="CellValueChanged"
+                                                    Command="{Binding CellUpdateCommand}"
+                                                    PassEventArgsToCommand="True"/>
 
                                             </dxmvvm:Interaction.Behaviors>
+
 
                                             <dxg:TableView.RowCellMenuCustomizations>
 
                                                 <dxb:BarButtonItem
-                                    Content="Delete Row"
-                                    CommandParameter="{Binding Row.Row}"
-                                    Command="{Binding DataContext.DeleteSingleRowCommand,
-                                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
-                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
+                                                    Content="Delete Row"
+                                                    CommandParameter="{Binding Row.Row}"
+                                                    Command="{Binding DataContext.DeleteSingleRowCommand,
+                                                                      RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
+                                                    Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
 
                                             </dxg:TableView.RowCellMenuCustomizations>
 
@@ -1254,45 +1620,44 @@
 
                 </dxlc:LayoutGroup>
 
-
             </dxlc:LayoutGroup>
+
         </dxlc:LayoutControl>
 
-        <!-- =========================================================
-     CUSTOMER ORDER SUMMARY
-     ========================================================= -->
 
         <!-- =========================================================
-     VALIDATION / ERROR PANEL
-     ========================================================= -->
+             VALIDATION / ERROR PANEL
+             ========================================================= -->
 
         <Border Grid.Row="3"
-        Margin="12,4,12,4"
-        Padding="12,8"
-        CornerRadius="6"
-        BorderThickness="1"
-        BorderBrush="#E5A3A3"
-        Background="#FFF5F5">
+                Margin="12,4,12,4"
+                Padding="12,8"
+                CornerRadius="6"
+                BorderThickness="1"
+                BorderBrush="#E5A3A3"
+                Background="#FFF5F5">
 
             <Border.Style>
+
                 <Style TargetType="Border">
 
                     <Setter Property="Visibility"
-                    Value="Collapsed"/>
+                            Value="Collapsed"/>
 
                     <Style.Triggers>
 
                         <DataTrigger Binding="{Binding HasValidationErrors}"
-                             Value="True">
+                                     Value="True">
 
                             <Setter Property="Visibility"
-                            Value="Visible"/>
+                                    Value="Visible"/>
 
                         </DataTrigger>
 
                     </Style.Triggers>
 
                 </Style>
+
             </Border.Style>
 
 
@@ -1304,23 +1669,25 @@
                 </Grid.ColumnDefinitions>
 
 
-                <!-- Error indicator -->
+                <!-- ERROR ICON -->
 
                 <TextBlock Grid.Column="0"
-                   Text="⚠"
-                    Foreground="#D92D20"                           
-                   FontSize="18"
-                   Margin="0,0,10,0"
-                   VerticalAlignment="Top"/>
+                           Text="⚠"
+                           Foreground="#D92D20"
+                           FontSize="18"
+                           Margin="0,0,10,0"
+                           VerticalAlignment="Top"/>
 
+
+                <!-- ERROR CONTENT -->
 
                 <StackPanel Grid.Column="1">
 
                     <TextBlock Text="Please correct the following"
-                                          Foreground="#B42318"
-                       FontWeight="Bold"
-                       FontSize="13"
-                       Margin="0,0,0,4"/>
+                               Foreground="#B42318"
+                               FontWeight="Bold"
+                               FontSize="14"
+                               Margin="0,0,0,4"/>
 
 
                     <ItemsControl ItemsSource="{Binding ValidationErrors}">
@@ -1330,11 +1697,11 @@
                             <DataTemplate>
 
                                 <TextBlock Text="{Binding}"
-                       Foreground="#B42318"
-                       FontSize="13"
-                       FontWeight="SemiBold"
-                       TextWrapping="Wrap"
-                       Margin="0,2,0,2"/>
+                                           Foreground="#B42318"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap"
+                                           Margin="0,2,0,2"/>
 
                             </DataTemplate>
 
@@ -1347,146 +1714,156 @@
             </Grid>
 
         </Border>
-        
+
+
         <!-- =========================================================
-     COMPACT ORDER STATUS / SUMMARY STRIP
-     ========================================================= -->
+             COMPACT ORDER STATUS / SUMMARY STRIP
+             ========================================================= -->
 
         <Border Grid.Row="4"
-        Margin="0,8,0,0"
-        Padding="12,8"
-        BorderBrush="#DCDCDC"
-        BorderThickness="1"
-        CornerRadius="6">
+                Margin="0,8,0,0"
+                Padding="12,8"
+                BorderBrush="#DCDCDC"
+                BorderThickness="1"
+                CornerRadius="6">
 
             <Grid>
 
                 <Grid.ColumnDefinitions>
+
                     <ColumnDefinition Width="Auto"/>
+
                     <ColumnDefinition Width="25"/>
 
                     <ColumnDefinition Width="Auto"/>
+
                     <ColumnDefinition Width="35"/>
 
                     <ColumnDefinition Width="*"/>
 
                     <ColumnDefinition Width="Auto"/>
+
                     <ColumnDefinition Width="25"/>
 
                     <ColumnDefinition Width="Auto"/>
+
                 </Grid.ColumnDefinitions>
 
 
-                <!-- ==========================
-             ITEM COUNT
-             ========================== -->
+                <!-- =================================================
+                     ITEM COUNT
+                     ================================================= -->
 
                 <StackPanel Grid.Column="0"
-                    Orientation="Horizontal"
-                    VerticalAlignment="Center">
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
 
                     <TextBlock Text="Items"
-                       FontSize="12"
-                       Opacity="0.60"
-                       VerticalAlignment="Center"/>
+                               FontSize="13"
+                               Opacity="0.60"
+                               VerticalAlignment="Center"/>
 
                     <TextBlock Text="{Binding Header.OrderedItems}"
-                       FontSize="14"
-                       FontWeight="Bold"
-                       Margin="7,0,0,0"
-                       VerticalAlignment="Center"/>
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Margin="7,0,0,0"
+                               VerticalAlignment="Center"/>
 
                 </StackPanel>
 
 
-                <!-- separator -->
+                <!-- SEPARATOR -->
 
                 <Border Grid.Column="1"
-                Width="1"
-                Height="20"
-                Background="#DCDCDC"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"/>
+                        Width="1"
+                        Height="20"
+                        Background="#DCDCDC"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
 
 
-                <!-- ==========================
-             GROSS WEIGHT
-             ========================== -->
+                <!-- =================================================
+                     GROSS WEIGHT
+                     ================================================= -->
 
                 <StackPanel Grid.Column="2"
-                    Orientation="Horizontal"
-                    VerticalAlignment="Center">
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
 
                     <TextBlock Text="Gross"
-                       FontSize="12"
-                       Opacity="0.60"
-                       VerticalAlignment="Center"/>
+                               FontSize="13"
+                               Opacity="0.60"
+                               VerticalAlignment="Center"/>
 
-                    <TextBlock Text="{Binding Header.TotalGrossWeight,
-                                     StringFormat={}{0:N3}}"
-                       FontSize="14"
-                       FontWeight="Bold"
-                       Margin="7,0,0,0"
-                       VerticalAlignment="Center"/>
+                    <TextBlock
+                        Text="{Binding Header.TotalGrossWeight,
+                                       StringFormat={}{0:N3}}"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        Margin="7,0,0,0"
+                        VerticalAlignment="Center"/>
 
                     <TextBlock Text=" g"
-                       FontSize="11"
-                       Opacity="0.60"
-                       VerticalAlignment="Center"/>
+                               FontSize="12"
+                               Opacity="0.60"
+                               VerticalAlignment="Center"/>
 
                 </StackPanel>
 
 
-                <!-- ==========================
-             ESTIMATED ORDER VALUE
-             ========================== -->
+                <!-- =================================================
+                     ESTIMATED ORDER VALUE
+                     ================================================= -->
 
                 <StackPanel Grid.Column="5"
-                    Orientation="Horizontal"
-                    VerticalAlignment="Center">
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
 
                     <TextBlock Text="Estimated Value"
-                       FontSize="12"
-                       Opacity="0.60"
-                       VerticalAlignment="Center"/>
+                               FontSize="13"
+                               Opacity="0.60"
+                               VerticalAlignment="Center"/>
 
-                    <TextBlock Text="{Binding Header.TotalOrderAmount,
-                                     StringFormat=₹ {0:N2}}"
-                       FontSize="15"
-                       FontWeight="Bold"
-                       Margin="8,0,0,0"
-                       VerticalAlignment="Center"/>
+                    <TextBlock
+                        Text="{Binding Header.TotalOrderAmount,
+                                       StringFormat=₹ {0:N2}}"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"/>
 
                 </StackPanel>
 
 
-                <!-- separator -->
+                <!-- SEPARATOR -->
 
                 <Border Grid.Column="6"
-                Width="1"
-                Height="20"
-                Background="#DCDCDC"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"/>
+                        Width="1"
+                        Height="20"
+                        Background="#DCDCDC"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
 
 
-                <!-- ==========================
-             SUMMARY BUTTON
-             ========================== -->
+                <!-- =================================================
+                     SUMMARY BUTTON
+                     ================================================= -->
 
                 <Button Grid.Column="7"
-                Content="View Summary"
-                Height="30"
-                Padding="14,3"
-                FontWeight="Bold"
-                Command="{Binding ViewOrderSummaryCommand}"/>
+                        Content="View Summary"
+                        Height="32"
+                        Padding="14,3"
+                        FontSize="14"
+                        FontWeight="Bold"
+                        BorderThickness="1"
+                        BorderBrush="#8A8A8A"
+                        Command="{Binding ViewOrderSummaryCommand}"/>
+
 
             </Grid>
 
         </Border>
 
-
     </Grid>
 
 </UserControl>
-    

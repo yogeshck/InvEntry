@@ -4,10 +4,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Width="620"
-             Height="500"
-             d:DesignWidth="620"
-             d:DesignHeight="500">
+             Width="500"
+             Height="670"
+             d:DesignWidth="500"
+             d:DesignHeight="670">
 
     <UserControl.Resources>
 
@@ -34,154 +34,160 @@
 
     </UserControl.Resources>
 
-    <Grid Margin="20">
+    <Border Margin="8"
+        Padding="14"
+        BorderBrush="#BDBDBD"
+        BorderThickness="1"
+        CornerRadius="8">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid Margin="20">
 
-        <!-- =====================================================
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- =====================================================
              HEADER
              ===================================================== -->
 
-        <StackPanel Grid.Row="0"
+            <StackPanel Grid.Row="0"
                     Margin="0,0,0,16">
 
-            <TextBlock Text="Order Summary"
+                <TextBlock Text="Order Summary"
                        FontSize="22"
                        FontWeight="SemiBold"/>
 
-            <StackPanel Orientation="Horizontal"
+                <StackPanel Orientation="Horizontal"
                         Margin="0,4,0,0">
 
-                <TextBlock Text="Order # "
+                    <TextBlock Text="Order # "
                            Opacity="0.55"/>
 
-                <TextBlock Text="{Binding Order.OrderNbr}"
+                    <TextBlock Text="{Binding Order.OrderNbr}"
                            FontWeight="SemiBold"/>
+
+                </StackPanel>
 
             </StackPanel>
 
-        </StackPanel>
 
-
-        <!-- =====================================================
+            <!-- =====================================================
              ORDER VALUES
              ===================================================== -->
 
-        <Border Grid.Row="1"
+            <Border Grid.Row="1"
                 BorderBrush="#DCDCDC"
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="15"
                 Margin="0,0,0,12">
 
-            <Grid>
+                <Grid>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="38"/>
-                </Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="38"/>
+                    </Grid.RowDefinitions>
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="180"/>
-                </Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0"
+                    <TextBlock Grid.Row="0"
                            Grid.ColumnSpan="2"
                            Text="ORDER"
                            Style="{StaticResource SummarySectionTitle}"
                            Margin="0,0,0,8"/>
 
-                <!-- Items -->
+                    <!-- Items -->
 
-                <TextBlock Grid.Row="1"
+                    <TextBlock Grid.Row="1"
                            Text="Items"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="1"
+                    <TextBlock Grid.Row="1"
                            Grid.Column="1"
                            Text="{Binding Order.OrderedItems}"
                            Style="{StaticResource SummaryValue}"/>
 
-                <!-- Gross -->
+                    <!-- Gross -->
 
-                <TextBlock Grid.Row="2"
+                    <TextBlock Grid.Row="2"
                            Text="Gross Weight"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="2"
+                    <TextBlock Grid.Row="2"
                            Grid.Column="1"
                            Text="{Binding Order.TotalGrossWeight,
                                           StringFormat={}{0:N3} g}"
                            Style="{StaticResource SummaryValue}"/>
 
-                <!-- Net -->
+                    <!-- Net -->
 
-                <TextBlock Grid.Row="3"
+                    <TextBlock Grid.Row="3"
                            Text="Net Weight"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="3"
+                    <TextBlock Grid.Row="3"
                            Grid.Column="1"
                            Text="{Binding Order.TotalNetWeight,
                                           StringFormat={}{0:N3} g}"
                            Style="{StaticResource SummaryValue}"/>
 
-                <!-- Making -->
+                    <!-- Making -->
 
-                <TextBlock Grid.Row="4"
+                    <TextBlock Grid.Row="4"
                            Text="Making Charges"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="4"
+                    <TextBlock Grid.Row="4"
                            Grid.Column="1"
                            Text="{Binding Order.TotalMakingCharges,
                                           StringFormat=₹ {0:N2}}"
                            Style="{StaticResource SummaryValue}"/>
 
-                <!-- Tax -->
+                    <!-- Tax -->
 
-                <TextBlock Grid.Row="5"
+                    <TextBlock Grid.Row="5"
                            Text="Tax"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="5"
+                    <TextBlock Grid.Row="5"
                            Grid.Column="1"
                            Text="{Binding Order.TotalTaxAmount,
                                           StringFormat=₹ {0:N2}}"
                            Style="{StaticResource SummaryValue}"/>
 
-                <!-- Total -->
+                    <!-- Total -->
 
-                <Border Grid.Row="6"
+                    <Border Grid.Row="6"
                         Grid.ColumnSpan="2"
                         BorderBrush="#E4E4E4"
                         BorderThickness="0,1,0,0"
                         Padding="0,8,0,0">
 
-                    <Grid>
+                        <Grid>
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="180"/>
-                        </Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="180"/>
+                            </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Estimated Order Value"
+                            <TextBlock Text="Estimated Order Value"
                                    FontSize="14"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"/>
 
-                        <TextBlock Grid.Column="1"
+                            <TextBlock Grid.Column="1"
                                    Text="{Binding Order.TotalOrderAmount,
                                                   StringFormat=₹ {0:N2}}"
                                    FontSize="18"
@@ -189,102 +195,102 @@
                                    HorizontalAlignment="Right"
                                    VerticalAlignment="Center"/>
 
-                    </Grid>
+                        </Grid>
 
-                </Border>
+                    </Border>
 
-            </Grid>
+                </Grid>
 
-        </Border>
+            </Border>
 
 
-        <!-- =====================================================
+            <!-- =====================================================
              CUSTOMER CONTRIBUTION
              ===================================================== -->
 
-        <Border Grid.Row="2"
+            <Border Grid.Row="2"
                 BorderBrush="#DCDCDC"
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="15"
                 Margin="0,0,0,12">
 
-            <Grid>
+                <Grid>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                </Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="32"/>
+                    </Grid.RowDefinitions>
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="180"/>
-                </Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0"
+                    <TextBlock Grid.Row="0"
                            Grid.ColumnSpan="2"
                            Text="CUSTOMER CONTRIBUTION"
                            Style="{StaticResource SummarySectionTitle}"
                            Margin="0,0,0,8"/>
 
-                <TextBlock Grid.Row="1"
+                    <TextBlock Grid.Row="1"
                            Text="Old Metal Net Weight"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="1"
+                    <TextBlock Grid.Row="1"
                            Grid.Column="1"
                            Text="{Binding Order.OldMetalNetWeight,
                                           StringFormat={}{0:N3} g}"
                            Style="{StaticResource SummaryValue}"/>
 
-                <TextBlock Grid.Row="2"
+                    <TextBlock Grid.Row="2"
                            Text="Advance Received"
                            Style="{StaticResource SummaryLabel}"/>
 
-                <TextBlock Grid.Row="2"
+                    <TextBlock Grid.Row="2"
                            Grid.Column="1"
                            Text="{Binding Order.AdvancePaidAmount,
                                           StringFormat=₹ {0:N2}}"
                            Style="{StaticResource SummaryValue}"/>
 
-            </Grid>
+                </Grid>
 
-        </Border>
+            </Border>
 
 
-        <!-- =====================================================
+            <!-- =====================================================
              BALANCE
              ===================================================== -->
 
-        <Border Grid.Row="3"
+            <Border Grid.Row="3"
                 BorderBrush="#D0D0D0"
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="16">
 
-            <Grid>
+                <Grid>
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
+                    <StackPanel Grid.Column="0">
 
-                    <TextBlock Text="ESTIMATED BALANCE"
+                        <TextBlock Text="ESTIMATED BALANCE"
                                FontSize="12"
                                FontWeight="Bold"
                                Opacity="0.65"/>
 
-                    <TextBlock Text="Remaining value against this order"
+                        <TextBlock Text="Remaining value against this order"
                                FontSize="11"
                                Opacity="0.50"
                                Margin="0,3,0,0"/>
 
-                </StackPanel>
+                    </StackPanel>
 
-                <TextBlock Grid.Column="1"
+                    <TextBlock Grid.Column="1"
                            Text="{Binding Order.BalanceAmount,
                                           StringFormat=₹ {0:N2}}"
                            FontSize="22"
@@ -292,10 +298,11 @@
                            VerticalAlignment="Center"
                            Margin="25,0,0,0"/>
 
-            </Grid>
+                </Grid>
 
-        </Border>
+            </Border>
 
-    </Grid>
+        </Grid>
 
+    </Border>
 </UserControl>

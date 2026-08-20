@@ -3,7 +3,6 @@ using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace InvEntry.Services
@@ -16,6 +15,8 @@ namespace InvEntry.Services
         Task<OldMetalTransaction> CreateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
 
         Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
+
+        Task<IEnumerable<OldMetalTransaction>> GetByDocRefNbr(string docRefNbr);
 
         Task <string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
 
@@ -37,21 +38,6 @@ namespace InvEntry.Services
             return await _mijmsApiService.Post($"api/OldMetalTransaction/", oldMetalTransaction);
         }
 
-        /*        public async Task<string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
-                {
-                    var list = new List<Task>();
-                    var transNbr = "";
-
-                    foreach (var line in lines) 
-                    {
-                        list.Add(CreateOldMetalTransaction(line));
-                        transNbr = line.TransNbr;
-                    }
-
-                    await Task.WhenAll(list);
-
-                    return transNbr;
-                }*/
 
         public async Task<string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
         {
@@ -64,13 +50,7 @@ namespace InvEntry.Services
 
             var results = await Task.WhenAll(tasks);
 
-/*            if (results.Length == 0)
-            {
-                throw new InvalidOperationException("No transactions were created because 'lines' was empty.");
-            }*/
-
             return results.LastOrDefault()?.TransNbr;
-
 
         }
 
@@ -79,6 +59,16 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<OldMetalTransaction>($"api/OldMetalTransaction/{transNbr}");
         }
 
+        public async Task<IEnumerable<OldMetalTransaction>> GetByDocRefNbr(string docRefNbr)
+        {
+            if(string.IsNullOrWhiteSpace(docRefNbr))
+                return Enumerable.Empty<OldMetalTransaction>();
+
+            return await _mijmsApiService
+                .GetEnumerable<OldMetalTransaction>(
+                    $"api/OldMetalTransaction/docRefNbr/{Uri.EscapeDataString(docRefNbr)}");
+        }
+        
         public async Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
         {
             await _mijmsApiService.Put($"api/OldMetalTransaction/", oldMetalTransaction);

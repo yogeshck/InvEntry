@@ -3,6 +3,7 @@ using DataAccess.Repository;
 using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
 
+
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DataAccess.Controllers
@@ -53,6 +54,14 @@ namespace DataAccess.Controllers
         public Voucher? Get(string voucherNbr)
         {
             return _voucher.Get(x => x.VoucherNbr==voucherNbr);
+        }
+
+        [HttpGet("refDocNbr/{refDocNbr}")]
+        public IEnumerable<Voucher> GetByRefDocNbr(string refDocNbr)
+        {
+            return _voucher.GetList(
+                x => x.RefDocNbr == refDocNbr &&
+                     x.VoucherType == "Advance Receipt");
         }
 
         // POST api/<VoucherController>

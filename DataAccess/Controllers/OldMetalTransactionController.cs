@@ -45,6 +45,14 @@ namespace DataAccess.Controllers
             return _oldMetalTransaction.Get(x => x.TransNbr == transNbr);
         }
 
+        // GET api/<OldMetalTransactionController>/5
+        [HttpGet("docRefNbr/{docRefNbr}")]
+        public IEnumerable<OldMetalTransaction> GetByDocRefNbr(string docRefNbr)
+        {
+            return _oldMetalTransaction.GetList(x => x.DocRefNbr == docRefNbr);
+        }
+
+
         // POST api/<OldMetalTransactionController>
         [HttpPost]
         public OldMetalTransaction Post([FromBody] OldMetalTransaction value)

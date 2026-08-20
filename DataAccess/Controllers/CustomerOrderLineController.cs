@@ -48,12 +48,7 @@ namespace DataAccess.Controllers
             _customerOrderLineRepository.Update(value);
         }
 
-        // DELETE api/<CustomerOrderLineController>/5
-/*        [HttpDelete("{orderLineNbr}")]
-        public void Delete(long orderLineNbr)
-        {
-            _customerOrderLineRepository.Remove(Get(orderLineNbr));
-        }*/
+
 
     }
 

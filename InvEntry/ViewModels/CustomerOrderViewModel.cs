@@ -368,7 +368,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
 
-        private async Task PopulateOrderLines()
+    private async Task PopulateOrderLines()
     {
         var lines =
             (await _customerOrderService
@@ -423,10 +423,17 @@ public partial class CustomerOrderViewModel : ObservableObject
             CustomerPhoneNumber = Header.CustMobileNbr;
 
             await PopulateOrderLines();
+            await PopulateOldMetalTransactions();
+            await PopulateAdvanceReceipts();
+
             await FetchAssociatedCustomer();
             await ResolveOrderStatusAsync();
-            SelectedRows = Header.Lines;
+
+            //SelectedRows = Header.Lines;
+
             EvaluateForAllLines();
+            RecalculateHeaderTotals();
+
         }
         catch (Exception ex)
         {
@@ -466,6 +473,17 @@ public partial class CustomerOrderViewModel : ObservableObject
         CustomerState = null;
         //SalesPerson = null;
         //invBalanceChk = false;  //reset to false for next invoice
+    }
+
+    private async Task PopulateOldMetalTransactions()
+    {
+        var items =
+            await _oldMetalTransactionService
+                .GetByDocRefNbr(Header.OrderNbr);
+
+        Header.OldMetalTransactions =
+            new ObservableCollection<OldMetalTransaction>(
+                items ?? Enumerable.Empty<OldMetalTransaction>());
     }
 
     private bool CanDeleteRows()
@@ -1552,6 +1570,34 @@ public partial class CustomerOrderViewModel : ObservableObject
 
         return Voucher;
 
+    }
+
+    private async Task PopulateAdvanceReceipts()
+    {
+        var vouchers =
+            await _voucherService
+                .GetByRefDocNbr(Header.OrderNbr);
+
+        var receipts =
+            (vouchers ?? Enumerable.Empty<Voucher>())
+            .Select(v => new LedgersTransactions
+            {
+                TransactionDate = v.TransDate,
+                DocumentNbr = v.RefDocNbr,
+                DocumentDate = v.RefDocDate,
+
+                TransType = v.Mode,
+
+                TransactionAmount =
+                    v.TransAmount,
+
+                DrCr = "Dr"
+            })
+            .ToList();
+
+        Header.AdvanceReceiptLines =
+            new ObservableCollection<LedgersTransactions>(
+                receipts);
     }
 
     private async Task<Voucher> SaveVoucher(Voucher voucher)

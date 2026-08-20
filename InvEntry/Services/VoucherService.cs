@@ -17,7 +17,10 @@ public interface IVoucherService
 
     Task<IEnumerable<Voucher>> GetAll(DateSearchOption options);
 
+    Task<IEnumerable<Voucher>> GetByRefDocNbr(string docRefNbr);
+
     Task UpdateVoucher(Voucher voucher);
+
 }
 
 public class VoucherService : IVoucherService
@@ -38,6 +41,18 @@ public class VoucherService : IVoucherService
     public async Task<Voucher> GetVoucher(string voucherId)
     {
         return await _mijmsApiService.Get<Voucher>($"api/Voucher/{voucherId}");
+    }
+
+    public async Task<IEnumerable<Voucher>> GetByRefDocNbr(string refDocNbr)
+    {
+
+        if (string.IsNullOrWhiteSpace(refDocNbr))
+            return Enumerable.Empty<Voucher>();
+
+        return await _mijmsApiService
+            .GetEnumerable<Voucher>(
+                $"api/Voucher/RefDocNbr/{Uri.EscapeDataString(refDocNbr)}");
+
     }
 
     public async Task<IEnumerable<Voucher>> GetAll(DateSearchOption options)
