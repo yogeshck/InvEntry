@@ -1,126 +1,350 @@
 ﻿<Application x:Class="InvEntry.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
              xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
-             xmlns:converter="clr-namespace:InvEntry.Converters" 
              xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              xmlns:dxp="http://schemas.devexpress.com/winfx/2008/xaml/printing"
              xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
              xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
-             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"             
-             xmlns:conv="clr-namespace:InvEntry.Converters"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+
+             xmlns:converter="clr-namespace:InvEntry.Converters"
+
              StartupUri="MainWindow.xaml"
              DispatcherUnhandledException="Application_DispatcherUnhandledException"
              Exit="Application_Exit">
+
     <Application.Resources>
+
         <ResourceDictionary>
 
-            <!-- Global style for all bar text -->
-            <Style x:Key="BarTextStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="20"/>
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="VerticalAlignment" Value="Center"/>
-                <Setter Property="Margin" Value="5,0"/>
+            <!-- =====================================================
+                 SHARED APPLICATION DESIGN SYSTEM
+
+                 These resources contain the common visual language
+                 used by:
+                   Customer Order
+                   GRN
+                   Invoice
+                   Estimate
+                   Purchase
+                   Stock Adjustment
+                   etc.
+
+                 IMPORTANT:
+                 These dictionaries should NOT hard-code page
+                 backgrounds. DevExpress theme controls light/dark.
+                 ===================================================== -->
+
+            <ResourceDictionary.MergedDictionaries>
+
+                <ResourceDictionary
+                    Source="/InvEntry;component/Resources/AppStyles.xaml"/>
+
+                <ResourceDictionary
+                    Source="/InvEntry;component/Resources/ValidationStyles.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+
+
+            <!-- =====================================================
+                 BAR STYLES
+                 ===================================================== -->
+
+            <!-- Global style for bar text -->
+
+            <Style x:Key="BarTextStyle"
+                   TargetType="TextBlock">
+
+                <Setter Property="FontSize"
+                        Value="20"/>
+
+                <Setter Property="FontWeight"
+                        Value="Bold"/>
+
+                <Setter Property="VerticalAlignment"
+                        Value="Center"/>
+
+                <Setter Property="Margin"
+                        Value="5,0"/>
+
             </Style>
 
-            <!-- Title style -->
-            <Style x:Key="BarTitleTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BarTextStyle}">
-                <Setter Property="FontSize" Value="22"/>
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="Margin" Value="10,0,20,0"/>
+
+            <!-- Bar title -->
+
+            <Style x:Key="BarTitleTextStyle"
+                   TargetType="TextBlock"
+                   BasedOn="{StaticResource BarTextStyle}">
+
+                <Setter Property="FontSize"
+                        Value="22"/>
+
+                <Setter Property="FontWeight"
+                        Value="Bold"/>
+
+                <Setter Property="Margin"
+                        Value="10,0,20,0"/>
+
             </Style>
 
-            <!-- Title template -->
+
+            <!-- Bar title template -->
+
             <DataTemplate x:Key="BarTitleTemplate">
-                <TextBlock Text="{Binding}" Style="{StaticResource BarTitleTextStyle}" />   
+
+                <TextBlock
+                    Text="{Binding}"
+                    Style="{StaticResource BarTitleTextStyle}"/>
+
             </DataTemplate>
-            
+
+
+            <!-- =====================================================
+                 GLOBAL GRID ROW STYLE
+                 ===================================================== -->
+
             <Style TargetType="dxg:RowControl">
-                <Setter Property="Height" Value="30"/>
-                <Setter Property="FontSize" Value="13"/>
+
+                <Setter Property="Height"
+                        Value="30"/>
+
+                <Setter Property="FontSize"
+                        Value="13"/>
+
             </Style>
 
-            <Style TargetType="TextBlock" x:Key="LayoutTabHeaderStyle">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
+
+            <!-- =====================================================
+                 TAB HEADER
+                 ===================================================== -->
+
+            <Style x:Key="LayoutTabHeaderStyle"
+                   TargetType="TextBlock">
+
+                <Setter Property="FontSize"
+                        Value="14"/>
+
+                <Setter Property="FontWeight"
+                        Value="SemiBold"/>
+
             </Style>
 
-            <Style x:Key="EditableGridViewStyle" TargetType="dxg:TableView">
-                <Setter Property="AllowEditing" Value="True"/>
-                <Setter Property="NavigationStyle" Value="Cell"/>
-                <Setter Property="AllowGrouping" Value="False"/>
-                <Setter Property="AllowBestFit" Value="True"/>
-                <Setter Property="ShowGroupPanel" Value="False"/>
-                <Setter Property="TotalSummaryPosition" Value="Bottom"/>
-                <Setter Property="NewItemRowPosition" Value="Bottom"/>
+
+            <!-- =====================================================
+                 EDITABLE GRID VIEW
+                 ===================================================== -->
+
+            <Style x:Key="EditableGridViewStyle"
+                   TargetType="dxg:TableView">
+
+                <Setter Property="AllowEditing"
+                        Value="True"/>
+
+                <Setter Property="NavigationStyle"
+                        Value="Cell"/>
+
+                <Setter Property="AllowGrouping"
+                        Value="False"/>
+
+                <Setter Property="AllowBestFit"
+                        Value="True"/>
+
+                <Setter Property="ShowGroupPanel"
+                        Value="False"/>
+
+                <Setter Property="TotalSummaryPosition"
+                        Value="Bottom"/>
+
+                <Setter Property="NewItemRowPosition"
+                        Value="Bottom"/>
+
             </Style>
 
-            <!-- Style for all text-based editors -->
+
+            <!-- =====================================================
+                 GLOBAL EDITORS
+
+                 These are implicit styles.
+
+                 Existing screens automatically receive these.
+                 We standardise on the Customer Order dimensions:
+                    FontSize = 14
+                    Height   = 35
+                 ===================================================== -->
+
+
+            <!-- TEXT EDIT -->
+
             <Style TargetType="{x:Type dxe:TextEdit}">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Height" Value="32"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+                <Setter Property="FontSize"
+                        Value="14"/>
+
+                <Setter Property="Height"
+                        Value="35"/>
+
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center"/>
+
             </Style>
 
-            <!-- Style for DateEdit -->
+
+            <!-- DATE EDIT -->
+
             <Style TargetType="{x:Type dxe:DateEdit}">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Height" Value="32"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+                <Setter Property="FontSize"
+                        Value="14"/>
+
+                <Setter Property="Height"
+                        Value="35"/>
+
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center"/>
+
             </Style>
 
-            <!-- Style for ComboBoxEdit -->
+
+            <!-- COMBO BOX EDIT -->
+
             <Style TargetType="{x:Type dxe:ComboBoxEdit}">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Height" Value="32"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+                <Setter Property="FontSize"
+                        Value="14"/>
+
+                <Setter Property="Height"
+                        Value="35"/>
+
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center"/>
+
             </Style>
+
+
+            <!-- =====================================================
+                 MESSAGE BOX
+                 ===================================================== -->
 
             <Style TargetType="dx:DXMessageBox">
-                <Setter Property="FontSize" Value="18"/>
+
+                <Setter Property="FontSize"
+                        Value="18"/>
+
             </Style>
+
+
+            <!-- =====================================================
+                 GRID HEADER
+
+                 Customer Order uses 14px bold grid headers,
+                 therefore make this application-wide.
+                 ===================================================== -->
 
             <Style TargetType="dxg:BaseGridHeader">
-                <Setter Property="FontWeight" Value="Bold"/>
+
+                <Setter Property="FontWeight"
+                        Value="Bold"/>
+
+                <Setter Property="FontSize"
+                        Value="14"/>
+
             </Style>
 
-            <dx:DialogService x:Key="ds"
-                  DialogWindowStartupLocation="CenterOwner"
-                  SetWindowOwner="True">
+
+            <!-- =====================================================
+                 STANDARD DIALOG SERVICE
+                 ===================================================== -->
+
+            <dx:DialogService
+                x:Key="ds"
+                DialogWindowStartupLocation="CenterOwner"
+                SetWindowOwner="True">
+
                 <dx:DialogService.DialogStyle>
+
                     <Style TargetType="dx:ThemedWindow">
+
                         <Setter Property="SizeToContent"
-                    Value="WidthAndHeight"/>
+                                Value="WidthAndHeight"/>
+
                         <Setter Property="ResizeMode"
-                    Value="NoResize"/>
+                                Value="NoResize"/>
+
                         <Setter Property="Topmost"
-                    Value="True"/>
+                                Value="True"/>
+
                         <Setter Property="WindowKind"
-                    Value="Auto"/>
+                                Value="Auto"/>
+
                         <Setter Property="FontSize"
-                    Value="14"/>
+                                Value="14"/>
+
                     </Style>
+
                 </dx:DialogService.DialogStyle>
+
             </dx:DialogService>
-           
-            <dx:DialogService x:Key="ReportDialogService"
-                              DialogWindowStartupLocation="CenterOwner"
-                              SetWindowOwner="True" Name="ReportDialogService">
+
+
+            <!-- =====================================================
+                 REPORT DIALOG SERVICE
+                 ===================================================== -->
+
+            <dx:DialogService
+                x:Key="ReportDialogService"
+                Name="ReportDialogService"
+                DialogWindowStartupLocation="CenterOwner"
+                SetWindowOwner="True">
+
                 <dx:DialogService.DialogStyle>
+
                     <Style TargetType="dx:ThemedWindow">
-                        <Setter Property="SizeToContent" Value="WidthAndHeight"/>
-                        <Setter Property="Topmost" Value="True"/>
-                        <Setter Property="WindowKind" Value="Auto"/>
+
+                        <Setter Property="SizeToContent"
+                                Value="WidthAndHeight"/>
+
+                        <Setter Property="Topmost"
+                                Value="True"/>
+
+                        <Setter Property="WindowKind"
+                                Value="Auto"/>
+
                     </Style>
+
                 </dx:DialogService.DialogStyle>
+
             </dx:DialogService>
 
-            <converter:FormulaConverter x:Key="FormulaConverter"/>
 
-            <Image x:Key="diamondSvg" Source="\Images\diamond.svg" />
-            <Image x:Key="goldSvg" Source="\Images\gold.svg" />
-            <Image x:Key="silverSvg" Source="\Images\silver.svg" />
+            <!-- =====================================================
+                 CONVERTERS
+                 ===================================================== -->
+
+            <converter:FormulaConverter
+                x:Key="FormulaConverter"/>
+
+
+            <!-- =====================================================
+                 APPLICATION IMAGES
+                 ===================================================== -->
+
+            <Image
+                x:Key="diamondSvg"
+                Source="\Images\diamond.svg"/>
+
+            <Image
+                x:Key="goldSvg"
+                Source="\Images\gold.svg"/>
+
+            <Image
+                x:Key="silverSvg"
+                Source="\Images\silver.svg"/>
+
+
         </ResourceDictionary>
 
     </Application.Resources>
+
 </Application>

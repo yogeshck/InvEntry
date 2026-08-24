@@ -13,12 +13,16 @@ namespace DataAccess.Controllers
 
         private IRepositoryBase<GrnHeader> _grnHeaderRepository;
         private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GrnController( IRepositoryBase<GrnHeader> grnHeaderRepository,
-                              IRepositoryBase<VoucherType> voucherTypeRepo)
+        public GrnController(
+            IRepositoryBase<GrnHeader> grnHeaderRepository,
+            IRepositoryBase<VoucherType> voucherTypeRepo,
+            IUnitOfWork unitOfWork)
         {
             _grnHeaderRepository = grnHeaderRepository;
-            _voucherTypeRepo = voucherTypeRepo; 
+            _voucherTypeRepo = voucherTypeRepo;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<GrnController>
@@ -53,21 +57,32 @@ namespace DataAccess.Controllers
 
         // POST api/<GrnController>
         [HttpPost]
-        public GrnHeader Post([FromBody] GrnHeader value)
+        public async Task<ActionResult<GrnHeader>> Post(
+                    [FromBody] GrnHeader value)
         {
+            var voucherType =
+                _voucherTypeRepo.Get(x => x.DocumentType == "GRN");
 
-            var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "GRN");  
+            if (voucherType is null)
+            {
+                return BadRequest(
+                    "Voucher type configuration for GRN was not found.");
+            }
 
-            voucherType.LastUsedNumber++;
+            voucherType.LastUsedNumber =
+                voucherType.LastUsedNumber.GetValueOrDefault() + 1;
+
+            value.GrnNbr =
+                $"{voucherType.DocNbrPrefix}" +
+                $"{voucherType.LastUsedNumber.Value:D4}";
 
             _voucherTypeRepo.Update(voucherType);
 
-            DocumentPrefixFormat = voucherType.DocNbrPrefix;
-
-            value.GrnNbr = string.Format("{0}{1}", DocumentPrefixFormat, voucherType?.LastUsedNumber?.ToString("D4"));
-
             _grnHeaderRepository.Add(value);
-            return value;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(value);
         }
 
         // PUT api/<GrnController>/5

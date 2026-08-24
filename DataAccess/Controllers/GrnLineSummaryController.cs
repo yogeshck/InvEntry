@@ -10,10 +10,13 @@ namespace DataAccess.Controllers
     {
 
         private IRepositoryBase<GrnLineSummary> _grnLineSumryRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GrnLineSummaryController(IRepositoryBase<GrnLineSummary> grnLineSummaryRepo)
+        public GrnLineSummaryController(IRepositoryBase<GrnLineSummary> grnLineSummaryRepo,
+                            IUnitOfWork unitOfWork)
         {
-            _grnLineSumryRepo = grnLineSummaryRepo;
+                _grnLineSumryRepo = grnLineSummaryRepo;
+                _unitOfWork = unitOfWork;
         }
 
         // GET: api/<GrnLineSummaryController>
@@ -23,20 +26,23 @@ namespace DataAccess.Controllers
             return _grnLineSumryRepo.GetAll();
         }
 
-        // GET api/<GrnLineSummaryController>/5
         [HttpGet("{grnHdrGkey}")]
-        public async Task<IActionResult> GetByHdrGKey(int grnHdrGkey)
+        public IActionResult GetByHdrGKey(int grnHdrGkey)
         {
-            return Ok(_grnLineSumryRepo.GetList(x => x.GrnHdrGkey == grnHdrGkey));
-
+            return Ok(
+                _grnLineSumryRepo.GetList(
+                    x => x.GrnHdrGkey == grnHdrGkey));
         }
 
-        // POST api/<GrnLineSummaryController>
         [HttpPost]
-        public GrnLineSummary Post([FromBody] GrnLineSummary value)
+        public async Task<ActionResult<GrnLineSummary>> Post(
+            [FromBody] GrnLineSummary value)
         {
             _grnLineSumryRepo.Add(value);
-            return value;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(value);
         }
 
     }

@@ -124,6 +124,20 @@ public partial class CustomerOrderViewModel : ObservableObject
     [ObservableProperty]
     private DateSearchOption _searchOption;
 
+    [ObservableProperty]
+    private bool _isEditMode;
+
+    [ObservableProperty]
+    private bool _isExistingOrder;
+
+    public bool IsOrderReadOnly =>
+    IsExistingOrder && !IsEditMode;
+
+    public string SaveButtonText =>
+        IsExistingOrder
+            ? "UPDATE ORDER"
+            : "SAVE ORDER";
+
     private bool createCustomer = false;
     private bool updateOrder = false;
     private bool invBalanceChk = false;
@@ -264,6 +278,18 @@ public partial class CustomerOrderViewModel : ObservableObject
         }
 
         todaysRate = (decimal)metalPrice;
+    }
+
+    partial void OnIsEditModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsOrderReadOnly));
+        OnPropertyChanged(nameof(SaveButtonText));
+    }
+
+    partial void OnIsExistingOrderChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsOrderReadOnly));
+        OnPropertyChanged(nameof(SaveButtonText));
     }
 
     private void displayRateErrorMsg()
@@ -473,6 +499,44 @@ public partial class CustomerOrderViewModel : ObservableObject
         CustomerState = null;
         //SalesPerson = null;
         //invBalanceChk = false;  //reset to false for next invoice
+    }
+
+    [RelayCommand]
+    private void EditOrder()
+    {
+        if (Header?.GKey <= 0)
+            return;
+
+        IsEditMode = true;
+
+        ValidationErrors.Clear();
+        HasValidationErrors = false;
+    }
+
+    [RelayCommand]
+    private async Task CancelEditOrder()
+    {
+        if (!IsExistingOrder ||
+            string.IsNullOrWhiteSpace(Header?.OrderNbr))
+            return;
+
+        var result =
+            _messageBoxService.ShowMessage(
+                "Discard the changes made to this order?",
+                "Cancel Edit",
+                MessageButton.YesNo,
+                MessageIcon.Question,
+                MessageResult.No);
+
+        if (result != MessageResult.Yes)
+            return;
+
+        //await ReloadCurrentOrderAsync();
+
+        IsEditMode = false;
+
+        ValidationErrors.Clear();
+        HasValidationErrors = false;
     }
 
     private async Task PopulateOldMetalTransactions()

@@ -2,44 +2,100 @@
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace DataAccess.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class DailyRateController : BaseController<DailyRate>
     {
-        public DailyRateController(IRepositoryBase<DailyRate> repository) : base(repository)
+        public DailyRateController(
+            IRepositoryBase<DailyRate> repository,
+            IUnitOfWork unitOfWork)
+            : base(repository, unitOfWork)
         {
         }
 
-        // GET api/<DailyRateController>/latest
+
+        // =========================================================
+        // GET: api/dailyrate/latest
+        // =========================================================
+
         [HttpGet("latest")]
         public IEnumerable<DailyRate> GetLatest()
         {
-            return _repository.GetList(x => x.EffectiveDate.Date >= DateTime.Now.Date.AddDays(-1) && x.IsDisplay);
+            return _repository.GetList(
+                x =>
+                    x.EffectiveDate.Date >=
+                    DateTime.Now.Date.AddDays(-1)
+                    && x.IsDisplay);
         }
+
+
+        // =========================================================
+        // POST: api/dailyrate/save
+        // =========================================================
 
         [HttpPost("save")]
-        public IEnumerable<DailyRate> PostList([FromBody] IEnumerable<DailyRate> data) 
+        public async Task<ActionResult<IEnumerable<DailyRate>>> PostList(
+            [FromBody] IEnumerable<DailyRate> data)
         {
-            _repository.AddRange(data);
-            return data;
+            if (data is null)
+                return BadRequest();
+
+            var rates = data.ToList();
+
+            if (rates.Count == 0)
+                return Ok(rates);
+
+            _repository.AddRange(rates);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(rates);
         }
+
+
+        // =========================================================
+        // PUT: api/dailyrate/{id}
+        // =========================================================
 
         [HttpPut("{id}")]
-        public DailyRate Put(long id, [FromBody] DailyRate data)
+        public async Task<ActionResult<DailyRate>> Put(
+            long id,
+            [FromBody] DailyRate data)
         {
+            if (data is null)
+                return BadRequest();
+
             _repository.Update(data);
-            return data;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(data);
         }
 
+
+        // =========================================================
+        // PUT: api/dailyrate/update
+        // =========================================================
+
         [HttpPut("update")]
-        public IEnumerable<DailyRate> Put([FromBody] IEnumerable<DailyRate> data)
+        public async Task<ActionResult<IEnumerable<DailyRate>>> Put(
+            [FromBody] IEnumerable<DailyRate> data)
         {
-            _repository.BulkUpdate(data);
-            return data;
+            if (data is null)
+                return BadRequest();
+
+            var rates = data.ToList();
+
+            if (rates.Count == 0)
+                return Ok(rates);
+
+            _repository.BulkUpdate(rates);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(rates);
         }
     }
 }

@@ -7,37 +7,63 @@ using System;
 
 namespace DataAccess.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public abstract class BaseController<T> : ControllerBase where T : class
-    {
-
-        protected readonly IRepositoryBase<T> _repository;
-
-        public BaseController(IRepositoryBase<T> repository)
+        [Route("api/[controller]")]
+        [ApiController]
+        public abstract class BaseController<T> : ControllerBase
+            where T : class
         {
-            _repository = repository;
-        }
+            protected readonly IRepositoryBase<T> _repository;
+            protected readonly IUnitOfWork _unitOfWork;
 
-        // GET: api/<BaseController>
-        [HttpGet]
-        public IEnumerable<T> Get()
-        {
-            return _repository.GetAll();
-        }
+            protected BaseController(
+                IRepositoryBase<T> repository,
+                IUnitOfWork unitOfWork)
+            {
+                _repository = repository;
+                _unitOfWork = unitOfWork;
+            }
 
-        // GET api/<BaseController>/5
-        public virtual T? GetValue<TProperty>(Expression<Func<T, bool>> predicate)
-        {
-            return _repository.Get(predicate);
-        }
 
-        // POST api/<BaseController>
-        [HttpPost]
-        public T Post([FromBody] T value)
-        {
-            _repository.Add(value);
-            return value;
+            // =========================================================
+            // GET: api/<controller>
+            // =========================================================
+
+            [HttpGet]
+            public virtual IEnumerable<T> Get()
+            {
+                return _repository.GetAll();
+            }
+
+
+            // =========================================================
+            // Generic lookup helper
+            // =========================================================
+
+            public virtual T? GetValue<TProperty>(
+                Expression<Func<T, bool>> predicate)
+            {
+                return _repository.Get(predicate);
+            }
+
+
+            // =========================================================
+            // POST: api/<controller>
+            // =========================================================
+
+            [HttpPost]
+            public virtual async Task<ActionResult<T>> Post(
+                [FromBody] T value)
+            {
+                if (value is null)
+                    return BadRequest();
+
+                _repository.Add(value);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return Ok(value);
+            }
         }
-    }
+    
+
 }
