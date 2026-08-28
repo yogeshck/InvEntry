@@ -7,78 +7,183 @@ using System.Threading.Tasks;
 
 namespace InvEntry.Services
 {
-
     public interface IOldMetalTransactionService
     {
-        Task<OldMetalTransaction> GetOldMetalTransaction(string voucherId);
+        Task<OldMetalTransaction>
+            GetOldMetalTransaction(
+                string voucherId);
 
-        Task<OldMetalTransaction> CreateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
+        Task<OldMetalTransaction>
+            CreateOldMetalTransaction(
+                OldMetalTransaction oldMetalTransaction);
 
-        Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction);
+        Task UpdateOldMetalTransaction(
+            OldMetalTransaction oldMetalTransaction);
 
-        Task<IEnumerable<OldMetalTransaction>> GetByDocRefNbr(string docRefNbr);
+        Task<IEnumerable<OldMetalTransaction>>
+            GetByDocRefNbr(
+                string docRefNbr);
 
-        Task <string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines);
+        Task<string>
+            CreateOldMetalTransaction(
+                IEnumerable<OldMetalTransaction> lines);
 
-        Task<IEnumerable<OldMetalTransaction>> GetAll(DateSearchOption options);
+        Task<IEnumerable<OldMetalTransaction>>
+            GetAll(
+                DateSearchOption options);
     }
 
-    public class OldMetalTransactionService : IOldMetalTransactionService
+
+    public class OldMetalTransactionService
+        : IOldMetalTransactionService
     {
+        private readonly IMijmsApiService
+            _mijmsApiService;
 
-        private readonly IMijmsApiService _mijmsApiService;
 
-        public OldMetalTransactionService(IMijmsApiService mijmsApiService)
+        public OldMetalTransactionService(
+            IMijmsApiService mijmsApiService)
         {
-            _mijmsApiService = mijmsApiService;
+            _mijmsApiService =
+                mijmsApiService;
         }
 
-        public async Task<OldMetalTransaction> CreateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
+
+        // ============================================================
+        // CREATE SINGLE
+        // ============================================================
+
+        public async Task<OldMetalTransaction>
+            CreateOldMetalTransaction(
+                OldMetalTransaction oldMetalTransaction)
         {
-            return await _mijmsApiService.Post($"api/OldMetalTransaction/", oldMetalTransaction);
+            ArgumentNullException.ThrowIfNull(
+                oldMetalTransaction);
+
+            return await _mijmsApiService
+                .Post(
+                    "api/OldMetalTransaction/",
+                    oldMetalTransaction);
         }
 
 
-        public async Task<string> CreateOldMetalTransaction(IEnumerable<OldMetalTransaction> lines)
-        {
-            var tasks = new List<Task<OldMetalTransaction>>();
+        // ============================================================
+        // CREATE COMPLETE OLD METAL PURCHASE
+        //
+        // One HTTP request.
+        // One transaction number.
+        // ============================================================
 
-            foreach (var line in lines)
+        public async Task<string>
+            CreateOldMetalTransaction(
+                IEnumerable<OldMetalTransaction> lines)
+        {
+            ArgumentNullException.ThrowIfNull(lines);
+
+            var transactionLines =
+                lines.ToList();
+
+            if (transactionLines.Count == 0)
             {
-                tasks.Add(CreateOldMetalTransaction(line));
+                throw new InvalidOperationException(
+                    "No old metal transaction lines were supplied.");
             }
 
-            var results = await Task.WhenAll(tasks);
-
-            return results.LastOrDefault()?.TransNbr;
-
+            /*
+             * IMPORTANT:
+             *
+             * Generic order is:
+             *
+             * <TRequest, TResponse>
+             *
+             * Request:
+             * List<OldMetalTransaction>
+             *
+             * Response:
+             * string transaction number
+             */
+            return await _mijmsApiService
+                .Post<List<OldMetalTransaction>, string>(
+                    "api/OldMetalTransaction/batch",
+                    transactionLines);
         }
 
-        public async Task<OldMetalTransaction> GetOldMetalTransaction(string transNbr)
+
+        // ============================================================
+        // GET BY TRANSACTION NUMBER
+        // ============================================================
+
+        public async Task<OldMetalTransaction>
+            GetOldMetalTransaction(
+                string transNbr)
         {
-            return await _mijmsApiService.Get<OldMetalTransaction>($"api/OldMetalTransaction/{transNbr}");
+            if (string.IsNullOrWhiteSpace(
+                    transNbr))
+            {
+                return null!;
+            }
+
+            return await _mijmsApiService
+                .Get<OldMetalTransaction>(
+                    $"api/OldMetalTransaction/{Uri.EscapeDataString(transNbr)}");
         }
 
-        public async Task<IEnumerable<OldMetalTransaction>> GetByDocRefNbr(string docRefNbr)
+
+        // ============================================================
+        // GET BY DOCUMENT REFERENCE
+        // ============================================================
+
+        public async Task<IEnumerable<OldMetalTransaction>>
+            GetByDocRefNbr(
+                string docRefNbr)
         {
-            if(string.IsNullOrWhiteSpace(docRefNbr))
-                return Enumerable.Empty<OldMetalTransaction>();
+            if (string.IsNullOrWhiteSpace(
+                    docRefNbr))
+            {
+                return Enumerable
+                    .Empty<OldMetalTransaction>();
+            }
 
             return await _mijmsApiService
                 .GetEnumerable<OldMetalTransaction>(
                     $"api/OldMetalTransaction/docRefNbr/{Uri.EscapeDataString(docRefNbr)}");
         }
-        
-        public async Task UpdateOldMetalTransaction(OldMetalTransaction oldMetalTransaction)
+
+
+        // ============================================================
+        // UPDATE
+        // ============================================================
+
+        public async Task UpdateOldMetalTransaction(
+            OldMetalTransaction oldMetalTransaction)
         {
-            await _mijmsApiService.Put($"api/OldMetalTransaction/", oldMetalTransaction);
+            ArgumentNullException.ThrowIfNull(
+                oldMetalTransaction);
+
+            await _mijmsApiService
+                .Put(
+                    "api/OldMetalTransaction/",
+                    oldMetalTransaction);
         }
 
-        public async Task<IEnumerable<OldMetalTransaction>> GetAll(DateSearchOption options)
-        {
-            return await _mijmsApiService.PostEnumerable<OldMetalTransaction, DateSearchOption>($"api/OldMetalTransaction/filter", options);
-        }
 
+        // ============================================================
+        // FILTER
+        // ============================================================
+
+        public async Task<IEnumerable<OldMetalTransaction>>
+            GetAll(
+                DateSearchOption options)
+        {
+            ArgumentNullException.ThrowIfNull(
+                options);
+
+            return await _mijmsApiService
+                .PostEnumerable<
+                    OldMetalTransaction,
+                    DateSearchOption>(
+                    "api/OldMetalTransaction/filter",
+                    options);
+        }
     }
-
 }

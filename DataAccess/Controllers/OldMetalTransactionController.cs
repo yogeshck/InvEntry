@@ -2,98 +2,566 @@
 using DataAccess.Repository;
 using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DataAccess.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OldMetalTransactionController : ControllerBase
+    public class OldMetalTransactionController
+        : BaseController<OldMetalTransaction>
     {
-        private string DocumentPrefixFormat = "";  
+        private readonly IRepositoryBase<VoucherType>
+            _voucherTypeRepo;
 
-        private readonly IRepositoryBase<OldMetalTransaction> _oldMetalTransaction;
-        private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
 
-        public OldMetalTransactionController(   IRepositoryBase<OldMetalTransaction> oldMetalTransactionRepo,
-                                                IRepositoryBase<VoucherType> voucherTypeRepo)
+        public OldMetalTransactionController(
+            IRepositoryBase<OldMetalTransaction>
+                oldMetalTransactionRepo,
+
+            IRepositoryBase<VoucherType>
+                voucherTypeRepo,
+
+            IUnitOfWork
+                unitOfWork)
+
+            : base(
+                oldMetalTransactionRepo,
+                unitOfWork)
         {
-            _oldMetalTransaction = oldMetalTransactionRepo;
-            _voucherTypeRepo = voucherTypeRepo;
+            _voucherTypeRepo =
+                voucherTypeRepo;
         }
 
-        // GET: api/<OldMetalTransactionController>
-        [HttpGet]
-        public IEnumerable<OldMetalTransaction> Get()
-        {
-            return _oldMetalTransaction.GetAll();
-        }
 
-        // GET: api/<OldMetalTransactionController>/24-Sep-2024/25-Sep-2024
+        // ============================================================
+        // FILTER BY DATE
+        // ============================================================
+
         [HttpPost("filter")]
-        public IEnumerable<OldMetalTransaction> FilterTrans([FromBody] DateSearchOption criteria)
+        public IEnumerable<OldMetalTransaction>
+            FilterTrans(
+                [FromBody] DateSearchOption criteria)
         {
-            return _oldMetalTransaction.GetList(x => x.TransDate.HasValue && x.TransDate.Value.Date >= criteria.From.Date &&
-                                                        x.TransDate.Value.Date <= criteria.To.Date);
+            if (criteria is null)
+            {
+                return Enumerable
+                    .Empty<OldMetalTransaction>();
+            }
+
+            return _repository.GetList(
+                x =>
+                    x.TransDate.HasValue &&
+                    x.TransDate.Value.Date >=
+                        criteria.From.Date &&
+                    x.TransDate.Value.Date <=
+                        criteria.To.Date);
         }
 
-        // GET api/<OldMetalTransactionController>/5
+
+        // ============================================================
+        // GET BY TRANSACTION NUMBER
+        // ============================================================
+
         [HttpGet("{transNbr}")]
-        public OldMetalTransaction? Get(string transNbr)
+        public OldMetalTransaction? Get(
+            string transNbr)
         {
-            return _oldMetalTransaction.Get(x => x.TransNbr == transNbr);
+            if (string.IsNullOrWhiteSpace(
+                    transNbr))
+            {
+                return null;
+            }
+
+            return _repository.Get(
+                x =>
+                    x.TransNbr ==
+                    transNbr);
         }
 
-        // GET api/<OldMetalTransactionController>/5
+
+        // ============================================================
+        // GET ALL LINES BY TRANSACTION NUMBER
+        //
+        // Useful for report / preview later.
+        // ============================================================
+
+        [HttpGet("lines/{transNbr}")]
+        public IEnumerable<OldMetalTransaction>
+            GetLines(
+                string transNbr)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    transNbr))
+            {
+                return Enumerable
+                    .Empty<OldMetalTransaction>();
+            }
+
+            return _repository.GetList(
+                x =>
+                    x.TransNbr ==
+                    transNbr);
+        }
+
+
+        // ============================================================
+        // GET BY DOCUMENT REFERENCE NUMBER
+        // ============================================================
+
         [HttpGet("docRefNbr/{docRefNbr}")]
-        public IEnumerable<OldMetalTransaction> GetByDocRefNbr(string docRefNbr)
+        public IEnumerable<OldMetalTransaction>
+            GetByDocRefNbr(
+                string docRefNbr)
         {
-            return _oldMetalTransaction.GetList(x => x.DocRefNbr == docRefNbr);
+            if (string.IsNullOrWhiteSpace(
+                    docRefNbr))
+            {
+                return Enumerable
+                    .Empty<OldMetalTransaction>();
+            }
+
+            return _repository.GetList(
+                x =>
+                    x.DocRefNbr ==
+                    docRefNbr);
         }
 
 
-        // POST api/<OldMetalTransactionController>
+        // ============================================================
+        // CREATE SINGLE OLD METAL TRANSACTION
+        //
+        // Keep for backward compatibility.
+        //
+        // BaseController Post cannot be used directly because this
+        // entity requires a generated TransNbr.
+        // ============================================================
+
         [HttpPost]
-        public OldMetalTransaction Post([FromBody] OldMetalTransaction value)
+        public override async Task<ActionResult<OldMetalTransaction>>
+            Post(
+                [FromBody] OldMetalTransaction value)
         {
+            if (value is null)
+            {
+                return BadRequest(
+                    "Old Metal Transaction is required.");
+            }
 
-            var docType = _voucherTypeRepo.Get(x => x.DocumentType == value.TransType);
+            if (string.IsNullOrWhiteSpace(
+                    value.TransType))
+            {
+                return BadRequest(
+                    "Transaction type is required.");
+            }
 
-            docType.LastUsedNumber++;
+            try
+            {
+                var transactionNumber =
+                    GenerateTransactionNumber(
+                        value.TransType);
 
-            _voucherTypeRepo.Update(docType);
+                value.TransNbr =
+                    transactionNumber;
 
-            DocumentPrefixFormat = docType.DocNbrPrefix;
+                _repository.Add(
+                    value);
 
-            value.TransNbr = string.Format("{0}{1}", DocumentPrefixFormat,
-                                                        docType?.LastUsedNumber?.ToString("D4"));
+                /*
+                 * VoucherType update +
+                 * transaction insert are persisted
+                 * by one UnitOfWork.
+                 */
+                await _unitOfWork
+                    .SaveChangesAsync();
 
-            _oldMetalTransaction.Add(value);
-            return value;
+                return Ok(value);
+            }
+            catch (Exception ex)
+            {
+                return Problem(
+                    title:
+                        "Unable to save Old Metal Transaction",
+
+                    detail:
+                        ex.Message,
+
+                    statusCode:
+                        StatusCodes
+                            .Status500InternalServerError);
+            }
         }
 
-        // PUT api/<OldMetalTransactionController>/5
+
+        // ============================================================
+        // CREATE COMPLETE OLD METAL PURCHASE
+        //
+        // ONE document number for ALL lines.
+        // ONE UnitOfWork SaveChangesAsync().
+        // ============================================================
+
+        [HttpPost("batch")]
+        public async Task<ActionResult<string>>
+            PostBatch(
+                [FromBody] List<OldMetalTransaction> lines)
+        {
+            // --------------------------------------------------------
+            // BASIC REQUEST VALIDATION
+            // --------------------------------------------------------
+
+            if (lines is null ||
+                lines.Count == 0)
+            {
+                return BadRequest(
+                    "At least one Old Metal Transaction line is required.");
+            }
+
+            var firstLine =
+                lines[0];
+
+            if (firstLine is null)
+            {
+                return BadRequest(
+                    "First Old Metal Transaction line is invalid.");
+            }
+
+
+            // --------------------------------------------------------
+            // TRANSACTION TYPE
+            // --------------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                    firstLine.TransType))
+            {
+                return BadRequest(
+                    "Transaction type is required.");
+            }
+
+
+            // --------------------------------------------------------
+            // CUSTOMER
+            // --------------------------------------------------------
+
+            if (!firstLine.CustGkey.HasValue ||
+                firstLine.CustGkey <= 0)
+            {
+                return BadRequest(
+                    "A valid customer is required.");
+            }
+
+
+            // --------------------------------------------------------
+            // VALIDATE ALL LINES BEFORE TOUCHING DATABASE
+            // --------------------------------------------------------
+
+            for (var index = 0;
+                 index < lines.Count;
+                 index++)
+            {
+                var line =
+                    lines[index];
+
+                var lineNumber =
+                    index + 1;
+
+                if (line is null)
+                {
+                    return BadRequest(
+                        $"Line {lineNumber} is invalid.");
+                }
+
+                if (string.IsNullOrWhiteSpace(
+                        line.ProductId))
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Product is required.");
+                }
+
+                if (line.GrossWeight
+                        .GetValueOrDefault() <= 0M)
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Gross weight must be greater than zero.");
+                }
+
+                if (line.StoneWeight
+                        .GetValueOrDefault() < 0M)
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Stone weight cannot be negative.");
+                }
+
+                if (line.StoneWeight
+                        .GetValueOrDefault() >
+                    line.GrossWeight
+                        .GetValueOrDefault())
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Stone weight cannot exceed gross weight.");
+                }
+
+                if (line.NetWeight
+                        .GetValueOrDefault() <= 0M)
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Net weight must be greater than zero.");
+                }
+
+                if (line.TransactedRate
+                        .GetValueOrDefault() <= 0M)
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Transacted rate must be greater than zero.");
+                }
+
+                if (line.FinalPurchasePrice
+                        .GetValueOrDefault() <= 0M)
+                {
+                    return BadRequest(
+                        $"Line {lineNumber}: Final purchase amount must be greater than zero.");
+                }
+            }
+
+
+            try
+            {
+                // ----------------------------------------------------
+                // GENERATE ONLY ONE DOCUMENT NUMBER
+                // ----------------------------------------------------
+
+                var transactionNumber =
+                    GenerateTransactionNumber(
+                        firstLine.TransType);
+
+
+                // ----------------------------------------------------
+                // APPLY COMMON DOCUMENT INFORMATION
+                // ----------------------------------------------------
+
+                foreach (var line in lines)
+                {
+                    line.TransNbr =
+                        transactionNumber;
+
+                    /*
+                     * Prevent different types accidentally
+                     * being included in one purchase.
+                     */
+                    line.TransType =
+                        firstLine.TransType;
+
+                    /*
+                     * Same customer for the whole purchase.
+                     */
+                    line.CustGkey =
+                        firstLine.CustGkey;
+
+                    line.CustMobile =
+                        firstLine.CustMobile;
+
+                    /*
+                     * Same purchase date if another line
+                     * accidentally contains a different one.
+                     */
+                    line.TransDate =
+                        firstLine.TransDate;
+
+                    /*
+                     * Default UOM for Old Metal.
+                     */
+                    if (string.IsNullOrWhiteSpace(
+                            line.Uom))
+                    {
+                        line.Uom =
+                            "Grams";
+                    }
+
+                    _repository.Add(
+                        line);
+                }
+
+
+                // ----------------------------------------------------
+                // IMPORTANT
+                //
+                // VoucherType.LastUsedNumber update +
+                // every OldMetalTransaction insert
+                // are persisted together.
+                // ----------------------------------------------------
+
+                await _unitOfWork
+                    .SaveChangesAsync();
+
+
+                // ----------------------------------------------------
+                // RETURN TRANSACTION NUMBER
+                // ----------------------------------------------------
+
+                return Ok(
+                    transactionNumber);
+            }
+            catch (Exception ex)
+            {
+                return Problem(
+                    title:
+                        "Unable to save Old Metal Purchase",
+
+                    detail:
+                        ex.Message,
+
+                    statusCode:
+                        StatusCodes
+                            .Status500InternalServerError);
+            }
+        }
+
+
+        // ============================================================
+        // UPDATE SINGLE OLD METAL TRANSACTION
+        // ============================================================
+
         [HttpPut]
-        public void Put([FromBody] OldMetalTransaction value)
+        public async Task<IActionResult> Put(
+            [FromBody] OldMetalTransaction value)
         {
-            _oldMetalTransaction.Update(value);
+            if (value is null)
+            {
+                return BadRequest(
+                    "Old Metal Transaction is required.");
+            }
+
+            try
+            {
+                _repository.Update(
+                    value);
+
+                await _unitOfWork
+                    .SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(
+                    title:
+                        "Unable to update Old Metal Transaction",
+
+                    detail:
+                        ex.Message,
+
+                    statusCode:
+                        StatusCodes
+                            .Status500InternalServerError);
+            }
         }
 
-        // DELETE api/<OldMetalTransactionController>/5
+
+        // ============================================================
+        // DELETE COMPLETE OLD METAL PURCHASE
+        //
+        // Because multiple lines now have the SAME TransNbr,
+        // deleting a document must delete all its lines.
+        // ============================================================
+
         [HttpDelete("{transNbr}")]
-        public void Delete(string transNbr)
+        public async Task<IActionResult> Delete(
+            string transNbr)
         {
+            if (string.IsNullOrWhiteSpace(
+                    transNbr))
+            {
+                return BadRequest(
+                    "Transaction number is required.");
+            }
 
-            var oldMetalTransaction = _oldMetalTransaction.Get(x => x.TransNbr == transNbr);
+            try
+            {
+                var transactions =
+                    _repository
+                        .GetList(
+                            x =>
+                                x.TransNbr ==
+                                transNbr)
+                        .ToList();
 
-            if (oldMetalTransaction is not null)
-                _oldMetalTransaction.Remove(oldMetalTransaction);
+                if (transactions.Count == 0)
+                {
+                    return NotFound(
+                        $"Old Metal Purchase '{transNbr}' was not found.");
+                }
+
+                foreach (var transaction
+                         in transactions)
+                {
+                    _repository.Remove(
+                        transaction);
+                }
+
+                await _unitOfWork
+                    .SaveChangesAsync();
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return Problem(
+                    title:
+                        "Unable to delete Old Metal Purchase",
+
+                    detail:
+                        ex.Message,
+
+                    statusCode:
+                        StatusCodes
+                            .Status500InternalServerError);
+            }
+        }
 
 
+        // ============================================================
+        // DOCUMENT NUMBER GENERATION
+        // ============================================================
+
+        private string GenerateTransactionNumber(
+            string transactionType)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    transactionType))
+            {
+                throw new InvalidOperationException(
+                    "Transaction type is required.");
+            }
+
+            var docType =
+                _voucherTypeRepo.Get(
+                    x =>
+                        x.DocumentType ==
+                        transactionType);
+
+            if (docType is null)
+            {
+                throw new InvalidOperationException(
+                    $"Voucher type '{transactionType}' was not found.");
+            }
+
+            docType.LastUsedNumber =
+                docType.LastUsedNumber
+                    .GetValueOrDefault()
+                + 1;
+
+            _voucherTypeRepo.Update(
+                docType);
+
+            var prefix =
+                docType.DocNbrPrefix
+                ?? string.Empty;
+
+            return
+                $"{prefix}" +
+                $"{docType.LastUsedNumber.Value:D4}";
         }
     }
-
-
 }
-
