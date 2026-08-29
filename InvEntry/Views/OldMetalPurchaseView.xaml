@@ -742,458 +742,537 @@
              ITEM CARD
              ======================================================== -->
 
-            <Border Grid.Row="3"
-                Margin="16,0,16,16"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="0">
+        <!-- ========================================================
+     ITEM CARD
+     ======================================================== -->
 
-                <Grid>
+        <Border Grid.Row="3"
+        Margin="16,0,16,16"
+        BorderThickness="1"
+        CornerRadius="8"
+        Padding="0">
 
-                    <Grid.RowDefinitions>
+            <Grid>
 
-                        <!-- Entry -->
-                        <RowDefinition Height="Auto"/>
+                <Grid.RowDefinitions>
 
-                        <!-- Grid -->
-                        <RowDefinition Height="*"/>
+                    <!-- Entry -->
+                    <RowDefinition Height="Auto"/>
 
-                        <!-- Summary -->
-                        <RowDefinition Height="Auto"/>
+                    <!-- Grid -->
+                    <RowDefinition Height="*"/>
 
-                    </Grid.RowDefinitions>
+                    <!-- Summary -->
+                    <RowDefinition Height="Auto"/>
 
-
-                    <!-- =================================================
-                     ITEM ENTRY BAR
-                     ================================================= -->
-
-                    <Border Grid.Row="0"
-                        BorderThickness="0,0,0,1"
-                        Padding="14,10">
-
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-
-                                <ColumnDefinition Width="Auto"/>
-
-                                <ColumnDefinition Width="280"/>
-
-                                <ColumnDefinition Width="10"/>
-
-                                <ColumnDefinition Width="Auto"/>
-
-                                <ColumnDefinition Width="*"/>
-
-                            </Grid.ColumnDefinitions>
+                </Grid.RowDefinitions>
 
 
-                            <TextBlock Grid.Column="0"
-                                   Text="ITEM DETAILS"
-                                   Foreground="{StaticResource AccentBrush}"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,18,0"/>
+                <!-- =================================================
+             ITEM ENTRY BAR
+             ================================================= -->
+
+                <Border Grid.Row="0"
+                BorderThickness="0,0,0,1"
+                Padding="14,10">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="Auto"/>
+
+                            <ColumnDefinition Width="280"/>
+
+                            <ColumnDefinition Width="10"/>
+
+                            <ColumnDefinition Width="Auto"/>
+
+                            <ColumnDefinition Width="10"/>
+
+                            <ColumnDefinition Width="Auto"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
 
 
-                            <!-- =========================================
-                             PRODUCT
-                             ========================================= -->
+                        <!-- =========================================
+                     SECTION TITLE
+                     ========================================= -->
 
-                            <dxe:ComboBoxEdit
-                            Grid.Column="1"
-                            x:Name="ProductIdUIName"
-                            ItemsSource="{Binding MetalList}"
-                            EditValue="{Binding ProductIdUI,
+                        <TextBlock Grid.Column="0"
+                           Text="ITEM DETAILS"
+                           Foreground="{StaticResource AccentBrush}"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="0,0,18,0"/>
+
+
+                        <!-- =========================================
+                     PRODUCT
+                     ========================================= -->
+
+                        <dxe:ComboBoxEdit
+                    Grid.Column="1"
+                    x:Name="ProductIdUIName"
+                    ItemsSource="{Binding MetalList}"
+                    EditValue="{Binding ProductIdUI,
                                         UpdateSourceTrigger=PropertyChanged}"
-                            IsTextEditable="True"
-                            NullText="Select / enter old metal product"/>
+                    IsTextEditable="True"
+                    IsEnabled="{Binding CanEditPurchase}"
+                    NullText="Select / enter old metal product">
 
 
-                            <!-- =========================================
-                             ADD
-                             ========================================= -->
+                            <!--
+                        ENTER on product selector
+                        executes Add Item
+                    -->
 
-                            <dx:SimpleButton
-                            Grid.Column="3"
-                            Content="Add Item"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
-                            Command="{Binding FetchProductCommand}"/>
-
-                        </Grid>
-
-                    </Border>
-
-
-                    <!-- =================================================
-                     OLD METAL GRID
-                     ================================================= -->
-
-                    <dxg:GridControl
-                    Grid.Row="1"
-                    ItemsSource="{Binding OmTransUIList}"
-                    SelectedItems="{Binding SelectedRows}"
-                    BorderThickness="0"
-                    FontSize="13"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch">
-
-
-                        <!-- =============================================
-                         GRID EDITOR BEHAVIOUR
-                         ============================================= -->
-
-                        <dxg:GridControl.Resources>
-
-                            <Style TargetType="dxe:TextEdit">
-
-                                <Setter Property="EditValuePostMode"
-                                    Value="Immediate"/>
-
-                                <Setter Property="HorizontalContentAlignment"
-                                    Value="Right"/>
-
-                            </Style>
-
-                        </dxg:GridControl.Resources>
-
-
-                        <!-- =============================================
-                         COLUMNS
-                         ============================================= -->
-
-                        <dxg:GridControl.Columns>
-
-
-                            <!-- PRODUCT -->
-
-                            <dxg:GridColumn
-                            FieldName="ProductId"
-                            Header="Product"
-                            Width="140"
-                            ReadOnly="True"/>
-
-
-                            <!-- METAL -->
-
-                            <dxg:GridColumn
-                            FieldName="Metal"
-                            Header="Metal"
-                            Width="75"
-                            ReadOnly="True"/>
-
-
-                            <!-- PURITY -->
-
-                            <dxg:GridColumn
-                            FieldName="Purity"
-                            Header="Purity"
-                            Width="75"
-                            ReadOnly="True"/>
-
-
-                            <!-- RATE -->
-
-                            <dxg:GridColumn
-                            FieldName="TransactedRate"
-                            Header="Rate"
-                            Width="100"
-                            ReadOnly="True">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource AmountEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- GROSS WEIGHT -->
-
-                            <dxg:GridColumn
-                            FieldName="GrossWeight"
-                            Header="Gross Wt."
-                            Width="95">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource WeightEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- STONE WEIGHT -->
-
-                            <dxg:GridColumn
-                            FieldName="StoneWeight"
-                            Header="Stone Wt."
-                            Width="95">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource WeightEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- WASTAGE % -->
-
-                            <dxg:GridColumn
-                            FieldName="WastagePercent"
-                            Header="Wastage %"
-                            Width="90">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource AmountEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- WASTAGE WEIGHT -->
-
-                            <dxg:GridColumn
-                            FieldName="WastageWeight"
-                            Header="Wastage Wt."
-                            Width="100"
-                            ReadOnly="True">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource WeightEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- NET WEIGHT -->
-
-                            <dxg:GridColumn
-                            FieldName="NetWeight"
-                            Header="Net Wt."
-                            Width="95"
-                            ReadOnly="True">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource WeightEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- PROPOSED AMOUNT -->
-
-                            <dxg:GridColumn
-                            FieldName="TotalProposedPrice"
-                            Header="Proposed"
-                            Width="115"
-                            ReadOnly="True">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource AmountEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- FINAL PURCHASE AMOUNT -->
-
-                            <dxg:GridColumn
-                            FieldName="FinalPurchasePrice"
-                            Header="Final Amount"
-                            Width="120">
-
-                                <dxg:GridColumn.EditSettings>
-
-                                    <dxe:TextEditSettings
-                                    Style="{StaticResource AmountEditSettingsStyle}"/>
-
-                                </dxg:GridColumn.EditSettings>
-
-                            </dxg:GridColumn>
-
-
-                            <!-- REMARKS -->
-
-                            <dxg:GridColumn
-                            FieldName="Remarks"
-                            Header="Remarks"
-                            Width="150"/>
-
-                        </dxg:GridControl.Columns>
-
-
-                        <!-- =============================================
-                         TABLE VIEW
-                         ============================================= -->
-
-                        <dxg:GridControl.View>
-
-                            <dxg:TableView
-                            AllowGrouping="False"
-                            ShowGroupPanel="False"
-                            AllowBestFit="True"
-                            AutoWidth="True"
-                            ShowIndicator="False"
-                            NavigationStyle="Cell"
-                            NewItemRowPosition="None">
-
-
-                                <dxmvvm:Interaction.Behaviors>
-
-                                    <dxmvvm:EventToCommand
-                                    EventName="CellValueChanged"
-                                    Command="{Binding CellUpdateCommand}"
-                                    PassEventArgsToCommand="True"/>
+                            <dxmvvm:Interaction.Behaviors>
 
                                 <dxmvvm:KeyToCommand
-        KeyGesture="Delete"
-        Command="{Binding DeleteSelectedRowsCommand}"/>
-                                    
+                            KeyGesture="Enter"
+                            Command="{Binding FetchProductCommand}"/>
+
                             </dxmvvm:Interaction.Behaviors>
 
-                            </dxg:TableView>
-
-                        </dxg:GridControl.View>
-
-                    </dxg:GridControl>
+                        </dxe:ComboBoxEdit>
 
 
-                    <!-- =================================================
-                     SUMMARY BAR
-                     ================================================= -->
+                        <!-- =========================================
+                     ADD ITEM
+                     ========================================= -->
 
-                    <Border Grid.Row="2"
-                        BorderThickness="0,1,0,0"
-                        Padding="14,10">
-
-                        <Grid>
-
-                            <Grid.ColumnDefinitions>
-
-                                <ColumnDefinition Width="*"/>
-
-                                <ColumnDefinition Width="Auto"/>
-
-                            </Grid.ColumnDefinitions>
+                        <dx:SimpleButton
+                    Grid.Column="3"
+                    Content="Add Item"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
+                    Command="{Binding FetchProductCommand}"/>
 
 
-                            <!-- =========================================
-                             WEIGHT TOTALS
-                             ========================================= -->
+                        <!-- =========================================
+                     REMOVE SELECTED ROW(S)
+                     ========================================= -->
 
-                            <StackPanel Grid.Column="0"
-                                    Orientation="Horizontal">
+                        <dx:SimpleButton
+                    Grid.Column="5"
+                    Content="Remove"
+                    Style="{StaticResource ToolbarButtonStyle}"
+                    Glyph="{dx:DXImage 'Images/Actions/Delete_32x32.png'}"
+                    Command="{Binding DeleteSelectedRowsCommand}"/>
 
 
-                                <!-- GROSS -->
+                        <!-- =========================================
+                     SHORTCUT HINT
+                     ========================================= -->
 
-                                <StackPanel Margin="0,0,30,0">
+                        <TextBlock
+                    Grid.Column="6"
+                    Text="Select row and press Delete to remove"
+                    FontSize="11"
+                    Opacity="0.55"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right"
+                    Margin="15,0,5,0"/>
 
-                                    <TextBlock
-                                    Text="GROSS WEIGHT"
-                                    Style="{StaticResource FieldLabelStyle}"/>
+                    </Grid>
 
-                                    <TextBlock
-                                    Text="{Binding TotalGrossWeight,
+                </Border>
+
+
+                <!-- =================================================
+             OLD METAL GRID
+             ================================================= -->
+
+                <dxg:GridControl
+            x:Name="OldMetalGrid"
+            Grid.Row="1"
+            ItemsSource="{Binding OmTransUIList}"
+            SelectedItems="{Binding SelectedRows}"
+            BorderThickness="0"
+            FontSize="13"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+
+
+                    <!-- =============================================
+                 GRID EDITORS
+                 ============================================= -->
+
+                    <dxg:GridControl.Resources>
+
+                        <Style TargetType="dxe:TextEdit">
+
+                            <Setter Property="EditValuePostMode"
+                            Value="Immediate"/>
+
+                            <Setter Property="HorizontalContentAlignment"
+                            Value="Right"/>
+
+                        </Style>
+
+                    </dxg:GridControl.Resources>
+
+
+                    <!-- =============================================
+                 COLUMNS
+                 ============================================= -->
+
+                    <dxg:GridControl.Columns>
+
+
+                        <!-- PRODUCT -->
+
+                        <dxg:GridColumn
+                    FieldName="ProductId"
+                    Header="Product"
+                    Width="140"
+                    ReadOnly="True"/>
+
+
+                        <!-- METAL -->
+
+                        <dxg:GridColumn
+                    FieldName="Metal"
+                    Header="Metal"
+                    Width="75"
+                    ReadOnly="True"/>
+
+
+                        <!-- PURITY -->
+
+                        <dxg:GridColumn
+                    FieldName="Purity"
+                    Header="Purity"
+                    Width="75"
+                    ReadOnly="True"/>
+
+
+                        <!-- RATE -->
+
+                        <dxg:GridColumn
+                    FieldName="TransactedRate"
+                    Header="Rate"
+                    Width="100"
+                    ReadOnly="True">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource AmountEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- GROSS WEIGHT -->
+
+                        <dxg:GridColumn
+                    FieldName="GrossWeight"
+                    Header="Gross Wt."
+                    Width="95">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource WeightEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- STONE WEIGHT -->
+
+                        <dxg:GridColumn
+                    FieldName="StoneWeight"
+                    Header="Stone Wt."
+                    Width="95">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource WeightEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- WASTAGE % -->
+
+                        <dxg:GridColumn
+                    FieldName="WastagePercent"
+                    Header="Wastage %"
+                    Width="90">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource AmountEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- WASTAGE WEIGHT -->
+
+                        <dxg:GridColumn
+                    FieldName="WastageWeight"
+                    Header="Wastage Wt."
+                    Width="100"
+                    ReadOnly="True">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource WeightEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- NET WEIGHT -->
+
+                        <dxg:GridColumn
+                    FieldName="NetWeight"
+                    Header="Net Wt."
+                    Width="95"
+                    ReadOnly="True">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource WeightEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- PROPOSED AMOUNT -->
+
+                        <dxg:GridColumn
+                    FieldName="TotalProposedPrice"
+                    Header="Proposed"
+                    Width="115"
+                    ReadOnly="True">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource AmountEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- FINAL PURCHASE AMOUNT -->
+
+                        <dxg:GridColumn
+                    FieldName="FinalPurchasePrice"
+                    Header="Final Amount"
+                    Width="120">
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                            Style="{StaticResource AmountEditSettingsStyle}"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+                        </dxg:GridColumn>
+
+
+                        <!-- REMARKS -->
+
+                        <dxg:GridColumn
+                    FieldName="Remarks"
+                    Header="Remarks"
+                    Width="150"/>
+
+                    </dxg:GridControl.Columns>
+
+
+                    <!-- =============================================
+                 TABLE VIEW
+                 ============================================= -->
+
+                    <dxg:GridControl.View>
+
+                        <dxg:TableView
+                    x:Name="OldMetalTableView"
+                    AllowGrouping="False"
+                    ShowGroupPanel="False"
+                    AllowBestFit="True"
+                    AutoWidth="True"
+                    ShowIndicator="False"
+                    NavigationStyle="Cell"
+                    NewItemRowPosition="None"
+                    MultiSelectMode="Row"
+                    AllowEditing="{Binding CanEditPurchase}">
+
+
+                            <dxmvvm:Interaction.Behaviors>
+
+
+                                <!--
+                            Recalculate line whenever operator
+                            changes weight / wastage / amount.
+                        -->
+
+                                <dxmvvm:EventToCommand
+                            EventName="CellValueChanged"
+                            Command="{Binding CellUpdateCommand}"
+                            PassEventArgsToCommand="True"/>
+
+
+                                <!--
+                            DELETE KEY
+
+                            Selected row(s) are available in
+                            ViewModel.SelectedRows.
+                        -->
+
+                                <dxmvvm:KeyToCommand
+                            KeyGesture="Delete"
+                            Command="{Binding DeleteSelectedRowsCommand}"/>
+
+
+                            </dxmvvm:Interaction.Behaviors>
+
+                        </dxg:TableView>
+
+                    </dxg:GridControl.View>
+
+                </dxg:GridControl>
+
+
+                <!-- =================================================
+             SUMMARY BAR
+             ================================================= -->
+
+                <Border Grid.Row="2"
+                BorderThickness="0,1,0,0"
+                Padding="14,10">
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="*"/>
+
+                            <ColumnDefinition Width="Auto"/>
+
+                        </Grid.ColumnDefinitions>
+
+
+                        <!-- =========================================
+                     WEIGHT TOTALS
+                     ========================================= -->
+
+                        <StackPanel
+                    Grid.Column="0"
+                    Orientation="Horizontal">
+
+
+                            <!-- GROSS -->
+
+                            <StackPanel
+                        Margin="0,0,30,0">
+
+                                <TextBlock
+                            Text="GROSS WEIGHT"
+                            Style="{StaticResource FieldLabelStyle}"/>
+
+                                <TextBlock
+                            Text="{Binding TotalGrossWeight,
                                            StringFormat={}{0:N3} g}"
-                                    FontWeight="SemiBold"
-                                    FontSize="16"/>
-
-                                </StackPanel>
-
-
-                                <!-- STONE -->
-
-                                <StackPanel Margin="0,0,30,0">
-
-                                    <TextBlock
-                                    Text="STONE WEIGHT"
-                                    Style="{StaticResource FieldLabelStyle}"/>
-
-                                    <TextBlock
-                                    Text="{Binding TotalStoneWeight,
-                                           StringFormat={}{0:N3} g}"
-                                    FontWeight="SemiBold"
-                                    FontSize="16"/>
-
-                                </StackPanel>
-
-
-                                <!-- NET -->
-
-                                <StackPanel>
-
-                                    <TextBlock
-                                    Text="NET WEIGHT"
-                                    Style="{StaticResource FieldLabelStyle}"/>
-
-                                    <TextBlock
-                                    Text="{Binding TotalNetWeight,
-                                           StringFormat={}{0:N3} g}"
-                                    Foreground="{StaticResource SuccessBrush}"
-                                    FontWeight="SemiBold"
-                                    FontSize="16"/>
-
-                                </StackPanel>
+                            FontWeight="SemiBold"
+                            FontSize="16"/>
 
                             </StackPanel>
 
 
-                            <!-- =========================================
-                             PURCHASE TOTAL
-                             ========================================= -->
+                            <!-- STONE -->
 
-                            <StackPanel Grid.Column="1"
-                                    HorizontalAlignment="Right">
+                            <StackPanel
+                        Margin="0,0,30,0">
 
                                 <TextBlock
-                                Text="FINAL PURCHASE AMOUNT"
-                                FontWeight="SemiBold"
-                                FontSize="11"
-                                Opacity="0.70"
-                                HorizontalAlignment="Right"/>
+                            Text="STONE WEIGHT"
+                            Style="{StaticResource FieldLabelStyle}"/>
 
                                 <TextBlock
-                                Text="{Binding TotalPurchaseAmount,
+                            Text="{Binding TotalStoneWeight,
+                                           StringFormat={}{0:N3} g}"
+                            FontWeight="SemiBold"
+                            FontSize="16"/>
+
+                            </StackPanel>
+
+
+                            <!-- NET -->
+
+                            <StackPanel>
+
+                                <TextBlock
+                            Text="NET WEIGHT"
+                            Style="{StaticResource FieldLabelStyle}"/>
+
+                                <TextBlock
+                            Text="{Binding TotalNetWeight,
+                                           StringFormat={}{0:N3} g}"
+                            Foreground="{StaticResource SuccessBrush}"
+                            FontWeight="SemiBold"
+                            FontSize="16"/>
+
+                            </StackPanel>
+
+                        </StackPanel>
+
+
+                        <!-- =========================================
+                     FINAL TOTAL
+                     ========================================= -->
+
+                        <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Right">
+
+                            <TextBlock
+                        Text="FINAL PURCHASE AMOUNT"
+                        FontWeight="SemiBold"
+                        FontSize="11"
+                        Opacity="0.70"
+                        HorizontalAlignment="Right"/>
+
+                            <TextBlock
+                        Text="{Binding TotalPurchaseAmount,
                                        StringFormat=₹ {0:N2}}"
-                                Foreground="{StaticResource AccentBrush}"
-                                FontSize="24"
-                                FontWeight="Bold"
-                                HorizontalAlignment="Right"/>
+                        Foreground="{StaticResource AccentBrush}"
+                        FontSize="24"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Right"/>
 
-                            </StackPanel>
+                        </StackPanel>
 
-                        </Grid>
+                    </Grid>
 
-                    </Border>
+                </Border>
 
-                </Grid>
+            </Grid>
 
-            </Border>
+        </Border>
 
-        </Grid>
+
+    </Grid>
 
     </UserControl>
