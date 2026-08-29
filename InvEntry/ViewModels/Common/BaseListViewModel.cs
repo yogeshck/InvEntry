@@ -1,92 +1,95 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using InvEntry.Models.UI;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
-namespace InvEntry.ViewModels.Common;
+namespace InvEntry.ViewModels;
 
 public abstract partial class BaseListViewModel<T>
     : ObservableObject
-    where T : class
 {
     // ============================================================
-    // DATA
+    // FIELDS
+    // ============================================================
+
+    private readonly ListViewDefinition _definition;
+
+
+    // ============================================================
+    // OBSERVABLE PROPERTIES
     // ============================================================
 
     [ObservableProperty]
     private ObservableCollection<T> items = new();
 
+
     [ObservableProperty]
     private T? selectedItem;
 
-
-    // ============================================================
-    // SEARCH
-    // ============================================================
 
     [ObservableProperty]
     private ListSearchOption searchOption = new();
 
 
-    // ============================================================
-    // UI STATE
-    // ============================================================
-
     [ObservableProperty]
     private bool isBusy;
 
+
     [ObservableProperty]
-    private string statusMessage =
-        string.Empty;
+    private string statusMessage = string.Empty;
 
 
     // ============================================================
-    // CONFIGURATION
+    // CONSTRUCTOR
     // ============================================================
 
-    public ObservableCollection<ListColumnDefinition> Columns
+    protected BaseListViewModel(
+        ListViewDefinition definition)
     {
-        get;
-    } = new();
+        _definition =
+            definition ??
+            throw new ArgumentNullException(
+                nameof(definition));
+    }
 
-
-    public ListFilterDefinition FilterDefinition
-    {
-        get;
-        protected set;
-    } = new();
-
-
-    public virtual string Title =>
-        "LIST";
-
-
-    public virtual string Description =>
-        string.Empty;
-
-
-    public virtual bool SupportsDocumentPrint =>
-        false;
-
-
-    public DateTime Today =>
-        DateTime.Today;
-
-    public virtual bool CanExportExcel =>
-    false;
-
-    public virtual bool CanExportPdf =>
-        false;
-
-    public virtual bool CanBulkPrint =>
-        false;
 
     // ============================================================
-    // FILTER VISIBILITY
+    // UI DEFINITION
+    // ============================================================
+
+    public ListViewDefinition Definition =>
+        _definition;
+
+
+    public string Title =>
+        _definition.Title;
+
+
+    public string Description =>
+        _definition.Description;
+
+
+    public IReadOnlyList<ListColumnDefinition> Columns =>
+        _definition.Columns;
+
+
+    public ListFilterDefinition FilterDefinition =>
+        _definition.Filter;
+
+
+    public IReadOnlyList<RowFormatDefinition> RowFormats =>
+        _definition.RowFormats;
+
+
+    public bool SupportsDocumentPrint =>
+        _definition.SupportsDocumentPrint;
+
+
+    // ============================================================
+    // FILTER HELPERS
     // ============================================================
 
     public bool HasAdditionalFilter =>
@@ -104,29 +107,17 @@ public abstract partial class BaseListViewModel<T>
         ListFilterType.Selection;
 
 
-    // ============================================================
-    // CONSTRUCTOR
-    // ============================================================
-
-    protected BaseListViewModel()
-    {
-        SearchOption.From =
-            DateTime.Today.AddDays(-1);
-
-        SearchOption.To =
-            DateTime.Today;
-    }
+    public DateTime Today =>
+        DateTime.Today;
 
 
     // ============================================================
-    // INITIALIZE
+    // DATA RETRIEVAL
     // ============================================================
 
-    [RelayCommand]
-    private async Task InitializeAsync()
-    {
-        await RefreshAsync();
-    }
+    protected abstract Task<IEnumerable<T>>
+        LoadItemsAsync(
+            ListSearchOption search);
 
 
     // ============================================================
@@ -139,24 +130,31 @@ public abstract partial class BaseListViewModel<T>
     }
 
 
-    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    [RelayCommand(
+        CanExecute = nameof(CanRefresh))]
     private async Task RefreshAsync()
     {
         if (IsBusy)
             return;
 
+
         try
         {
             IsBusy = true;
 
-            StatusMessage = "Loading records...";
+            StatusMessage =
+                "Loading records...";
 
-            SelectedItem = null;
+            SelectedItem = default;
+
 
             var result =
-                await LoadItemsAsync(SearchOption);
+                await LoadItemsAsync(
+                    SearchOption);
+
 
             Items.Clear();
+
 
             if (result is not null)
             {
@@ -166,6 +164,7 @@ public abstract partial class BaseListViewModel<T>
                 }
             }
 
+
             StatusMessage =
                 Items.Count == 1
                     ? "1 record"
@@ -174,7 +173,8 @@ public abstract partial class BaseListViewModel<T>
         catch (Exception ex)
         {
             Items.Clear();
-            SelectedItem = null;
+
+            SelectedItem = default;
 
             StatusMessage =
                 $"Unable to load records: {ex.Message}";
@@ -185,16 +185,9 @@ public abstract partial class BaseListViewModel<T>
         }
     }
 
-    // ============================================================
-    // MODULE DATA SOURCE
-    // ============================================================
-
-    protected abstract Task<IEnumerable<T>> LoadItemsAsync(
-        ListSearchOption search);
-
 
     // ============================================================
-    // DOCUMENT PRINT
+    // PRINT
     // ============================================================
 
     private bool CanPrintSelected()
@@ -245,30 +238,5 @@ public abstract partial class BaseListViewModel<T>
 
         PrintSelectedCommand
             .NotifyCanExecuteChanged();
-    }
-
-
-    // ============================================================
-    // HELPER
-    // ============================================================
-
-    protected void ConfigureFilter(
-        ListFilterDefinition definition)
-    {
-        FilterDefinition =
-            definition;
-
-
-        OnPropertyChanged(
-            nameof(FilterDefinition));
-
-        OnPropertyChanged(
-            nameof(HasAdditionalFilter));
-
-        OnPropertyChanged(
-            nameof(IsTextFilter));
-
-        OnPropertyChanged(
-            nameof(IsSelectionFilter));
     }
 }

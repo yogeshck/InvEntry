@@ -4,7 +4,7 @@ using DevExpress.Xpf.Grid;
 using InvEntry.Helpers;
 using InvEntry.Models.UI;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 
@@ -12,20 +12,21 @@ namespace InvEntry.Behavior;
 
 public class DynamicGridColumnsBehavior : Behavior<GridControl>
 {
+
     public static readonly DependencyProperty ColumnsProperty =
-        DependencyProperty.Register(
-            nameof(Columns),
-            typeof(ObservableCollection<ListColumnDefinition>),
-            typeof(DynamicGridColumnsBehavior),
-            new PropertyMetadata(
-                null,
-                OnColumnsChanged));
+    DependencyProperty.Register(
+        nameof(Columns),
+        typeof(IEnumerable<ListColumnDefinition>),
+        typeof(DynamicGridColumnsBehavior),
+        new PropertyMetadata(
+            null,
+            OnColumnsChanged));
 
 
-    public ObservableCollection<ListColumnDefinition>? Columns
+    public IEnumerable<ListColumnDefinition>? Columns
     {
         get =>
-            (ObservableCollection<ListColumnDefinition>?)
+            (IEnumerable<ListColumnDefinition>?)
             GetValue(ColumnsProperty);
 
         set =>
@@ -33,7 +34,6 @@ public class DynamicGridColumnsBehavior : Behavior<GridControl>
                 ColumnsProperty,
                 value);
     }
-
 
     // ============================================================
     // ATTACH / DETACH

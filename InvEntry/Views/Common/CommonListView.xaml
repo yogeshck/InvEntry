@@ -572,7 +572,10 @@
                 <dxmvvm:Interaction.Behaviors>
 
                     <behavior:DynamicGridColumnsBehavior
-                        Columns="{Binding Columns}"/>
+        Columns="{Binding Columns}"/>
+
+                    <behavior:DynamicGridFormattingBehavior
+        RowFormats="{Binding RowFormats}"/>
 
                 </dxmvvm:Interaction.Behaviors>
 
@@ -609,24 +612,6 @@
                         EditorButtonShowMode="ShowOnlyInEditor"
 
                         AllowPerPixelScrolling="False">
-
-
-                        <!-- =====================================
-                             INVOICE OUTSTANDING CONDITION
-
-                             Currently Invoice-specific.
-                             We can make this metadata-driven
-                             when other lists require conditions.
-                             ===================================== -->
-
-                        <dxg:TableView.FormatConditions>
-
-                            <dxg:FormatCondition
-                                Expression="[InvBalance] &gt; 0"
-                                PredefinedFormatName="RedText"
-                                ApplyToRow="True"/>
-
-                        </dxg:TableView.FormatConditions>
 
                     </dxg:TableView>
 

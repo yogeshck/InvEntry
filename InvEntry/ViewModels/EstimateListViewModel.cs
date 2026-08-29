@@ -1,74 +1,77 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using DevExpress.Mvvm;
-using DevExpress.Xpf.Grid;
+﻿using DevExpress.Mvvm;
 using InvEntry.Extension;
 using InvEntry.Models;
+using InvEntry.Models.UI;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace InvEntry.ViewModels;
 
-public partial class EstimateListViewModel : ObservableObject
+public class EstimateListViewModel
+    : BaseListViewModel<EstimateHeader>
 {
-
     private readonly IEstimateService _estimateService;
-    private readonly IDialogService _reportDialogService;
 
-    [ObservableProperty]
-    private ObservableCollection<EstimateHeader> _estimates;
+    private readonly IDialogService
+        _reportDialogService;
 
-    [ObservableProperty]
-    private DateSearchOption _searchOption;
 
-    [ObservableProperty]
-    private EstimateHeader _SelectedEstimate;
+    public EstimateListViewModel(
+        IEstimateService estimateService,
 
-    [ObservableProperty]
-    private DateTime _Today = DateTime.Today;
+        [FromKeyedServices("ReportDialogService")]
+        IDialogService reportDialogService)
 
-    public EstimateListViewModel(IEstimateService estimateService,
-                                [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
+        : base(
+            EstimateListDefinition.Create())
     {
-        _estimateService = estimateService;
-        _reportDialogService = reportDialogService;
-        _searchOption = new();
-        SearchOption.To = Today;
-        SearchOption.From = Today.AddDays(-1);
+        _estimateService =
+            estimateService;
 
-        Task.Run(RefreshEstimateAsync).Wait();
-    }
-
-    [RelayCommand]
-    private async Task RefreshEstimateAsync()
-    {
-        var estimateResult = await _estimateService.GetAll(SearchOption);
-        if (estimateResult is not null)
-            Estimates = new(estimateResult);
-    }
-
-    [RelayCommand(CanExecute = nameof(CanPrintEstimate))]
-    private void PrintEstimate()
-    {
-        _reportDialogService.PrintPreviewEstimate(SelectedEstimate.EstNbr, SelectedEstimate.GKey);
-            
-            //PrintPreviewEstimate(SelectedEstimate.EstNbr);
-    }
-
-    private bool CanPrintEstimate()
-    {
-        return SelectedEstimate is not null;
-    }
-
-    [RelayCommand]
-    private void SelectionChanged()
-    {
-        PrintEstimateCommand.NotifyCanExecuteChanged();
+        _reportDialogService =
+            reportDialogService;
     }
 
 
+    protected override async Task<IEnumerable<EstimateHeader>>
+        LoadItemsAsync(
+            ListSearchOption search)
+    {
+        var option =
+            new DateSearchOption
+            {
+                From = search.From,
+                To = search.To
+            };
+
+
+        var result =
+            await _estimateService.GetAll(
+                option);
+
+
+        return result ??
+               Enumerable.Empty<EstimateHeader>();
+    }
+
+
+    protected override void PrintItem(
+        EstimateHeader item)
+    {
+        if (string.IsNullOrWhiteSpace(
+                item.EstNbr))
+        {
+            return;
+        }
+
+
+        _reportDialogService
+            .PrintPreviewEstimate(
+                item.EstNbr,
+                item.GKey);
+    }
 }
