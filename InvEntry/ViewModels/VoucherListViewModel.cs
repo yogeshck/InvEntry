@@ -1,215 +1,73 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using DevExpress.Mvvm;
+﻿using DevExpress.Mvvm;
 using DevExpress.Xpf.Core;
-using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Models;
-using InvEntry.Reports;
+using InvEntry.Models.UI;
 using InvEntry.Services;
-using InvEntry.Tally;
-using InvEntry.Tally.Model;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.ObjectModel;
-using System.Data.SqlClient;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using IDialogService = DevExpress.Mvvm.IDialogService;
-
 
 namespace InvEntry.ViewModels;
 
-public partial class VoucherListViewModel: ObservableObject
+public class VoucherListViewModel
+    : BaseListViewModel<VoucherDbView>
 {
-    private readonly IVoucherDbViewService _voucherDbViewService;
-    private readonly IDialogService _reportDialogService;
-    private readonly ITallyXMLService _xmlService;
-    private readonly IMtblLedgersService _mtblLedgersService;
+    private readonly IVoucherDbViewService
+        _voucherDbViewService;
 
-    private readonly IReportFactoryService _reportFactoryService;
+    private readonly IDialogService
+        _reportDialogService;
 
-    [ObservableProperty]
-    private ObservableCollection<VoucherDbView> _vouchersView;
 
-    [ObservableProperty]
-    private DateSearchOption _searchOption;
+    public VoucherListViewModel(
+        IVoucherDbViewService voucherDbViewService,
 
-    [ObservableProperty]
-    private ObservableCollection<string> _statementTypeOptionList;
+        [FromKeyedServices("ReportDialogService")]
+        IDialogService reportDialogService)
 
-    [ObservableProperty]
-    private VoucherDbView _selectedVoucher;
-
-    [ObservableProperty]
-    private DateTime _Today = DateTime.Today;
-
-    [ObservableProperty]
-    private ObservableCollection<MtblLedger> _masterLedgerList;
-
-    public  VoucherListViewModel(IVoucherDbViewService voucherDbViewService,
-            ITallyXMLService xmlService,
-            IMtblLedgersService mtblLedgersService,
-            IReportFactoryService reportFactoryService,
-            [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
+        : base(VoucherListDefinition.Create())
     {
-        _voucherDbViewService = voucherDbViewService;
-        _reportDialogService = reportDialogService;
-        _mtblLedgersService = mtblLedgersService;
-        _xmlService = xmlService;
-        _reportFactoryService = reportFactoryService;
+        _voucherDbViewService =
+            voucherDbViewService;
 
-        _searchOption = new();
-        SearchOption.To = Today;
-        SearchOption.From = Today.AddDays(-2);
-        SearchOption.Filter1 ??= "Cash";
-
-        PopulateStatmentTypeOpionList();
-        //PopulateMasterLedgerList();
-
-        Task.Run(init).Wait();
+        _reportDialogService =
+            reportDialogService;
     }
 
-    private void PopulateStatmentTypeOpionList()
+
+    protected override async Task<IEnumerable<VoucherDbView>>
+        LoadItemsAsync(
+            ListSearchOption search)
     {
-
-        StatementTypeOptionList = new();
-
-        StatementTypeOptionList.Add("Cash");
-        StatementTypeOptionList.Add("Petty Cash");
-
-    }
-
-    private async void init()
-    {
-
-        await PopulateMasterLedgerList();
-        await RefreshVoucherAsync();
-    }
-
-    private async Task PopulateMasterLedgerList()
-    {
-        var masterLedgerList = await _mtblLedgersService.GetAll();
-            //GetLedgerList("Indirect Expenses");  //hard-coded need to be dynamic
-
-        if (masterLedgerList is not null)
-        {
-            MasterLedgerList = new(masterLedgerList);
-            //AccountGroupList = new(MasterLedgerList.Select(x => x.LedgerName));
-        }
-
-    }
-
-    private void SetOpeningBalance(string type)
-    {
-
-    }
-
-    [RelayCommand]
-    private async Task RefreshVoucherAsync()
-    {
-        VouchersView = new();
-
-
-       // SearchOption.BookType = null;
-
-        var vouchersResult = await _voucherDbViewService.GetAll(SearchOption);
-        if (vouchersResult is not null)
-        {
-
-            foreach (var voucher in vouchersResult)
+        var option =
+            new DateSearchOption
             {
-            //    voucher.FromLedgerName
-             //   = MasterLedgerList?.FirstOrDefault(x => x.GKey == voucher.FromLedgerGkey).LedgerName;
+                From = search.From,
+                To = search.To,
 
-                VouchersView.Add(voucher);
+                Filter1 =
+                    string.IsNullOrWhiteSpace(
+                        search.FilterValue)
+                        ? null
+                        : search.FilterValue
+            };
 
-            }
-            //RecdAmount = (Vouchers.Select(x => x.TransType == "Receipt")).TransAmount;
 
-        }    
+        var result =
+            await _voucherDbViewService
+                .GetAll(option);
+
+
+        return result ?? [];
     }
 
-    [RelayCommand] //CanExecute = nameof(CanPrintStatement))]
-    private void StatementPrint()
+
+    protected override void PrintItem(
+        VoucherDbView item)
     {
-        //var printed = PrintHelper.Print(_reportFactoryService.CreateFinStatementReport(SearchOption.From, SearchOption.To));
-
-        var report = _reportFactoryService.CreateFinStatementReport((DateTime)SearchOption.From,
-                                                (DateTime)SearchOption.To, 
-                                                SearchOption.Filter1);
-
- //       PrintHelper.ShowPrintPreviewDialog(Application.Current.MainWindow,report);
-
-        //if (printed.HasValue && printed.Value)
-        //    _messageBoxService.ShowMessage("Estimate printed Successfully", "Estimate print", MessageButton.OK, MessageIcon.None);
-    
+        _reportDialogService
+            .PrintPreviewVoucher(item.GKey);
     }
-
-    [RelayCommand(CanExecute = nameof(CanPrintVoucher))]
-    private void PrintVoucher()
-    {
-        var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
-
-        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-        _reportDialogService.PrintPreviewVoucher(SelectedVoucher.GKey);
-
-        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-        PrintPreviewVoucherCommand.NotifyCanExecuteChanged();
-        PrintVoucherCommand.NotifyCanExecuteChanged();
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-
-    }
-
-    private bool CanPrintVoucher()
-    {
-        return SelectedVoucher is not null;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanPrintVoucher))]
-    private void PrintPreviewVoucher()
-    {
-        _reportDialogService.PrintPreviewVoucher(SelectedVoucher.GKey);
-        //ResetVoucher();
-    }
-
-    [RelayCommand]
-    private void SelectionChanged()
-    {
-        PrintVoucherCommand.NotifyCanExecuteChanged();
-    }
-
-    //[RelayCommand]
-    //private async Task SendToTally()
-    //{
-    //    if (_SelectedVoucher is null)
-    //        return;
-
-    //    TallyMessageBuilder tallyMessageBuilder = new TallyMessageBuilder(TallyXMLMessageType.SendVoucherToTally, "MATHA THANGA MALIGAI");
-
-    //   // TallyXmlMesage tallyXmlMsg = new TallyXmlMesage();
-    //   // tallyXmlMsg.HEADER = new TallyHeader();
-    //   // tallyXmlMsg.HEADER.TallyRequest = TallyRequestEnum.Import;
-
-    //    TallyVoucher tallyVoucer = new TallyVoucher();
-
-    //    /*
-    //     * SET more values as needed to send to tally
-    //     */
-    //    tallyVoucer.VOUCHERNUMBER = _SelectedVoucher?.VoucherNbr;
-    //    tallyVoucer.DATE = _SelectedVoucher?.VoucherDate?.ToString("yyyyMMdd");
-    //    //tallyVoucer.VCHTYPE = //asdlkfjlksadjf;
-
-    //  //  tallyXmlMsg.BODY = new TallyBody();
-
-    //     tallyMessageBuilder.AddVoucher(tallyVoucer);
-
-    //    await _xmlService.SendToTally(tallyMessageBuilder.Build());
-    //    //await _xmlService.SendToTally(tallyXmlMsg);
-    //}
-
-
 }

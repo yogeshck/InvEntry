@@ -53,6 +53,16 @@ public abstract partial class BaseListViewModel<T>
             definition ??
             throw new ArgumentNullException(
                 nameof(definition));
+
+        SearchOption.From =
+            DateTime.Today.AddDays(
+            definition.DefaultFromDays);
+
+        SearchOption.To = DateTime.Today;
+
+        SearchOption.FilterValue =
+            definition.Filter.DefaultValue;
+
     }
 
 

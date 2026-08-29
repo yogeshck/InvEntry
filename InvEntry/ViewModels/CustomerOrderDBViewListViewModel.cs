@@ -1,69 +1,45 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using DevExpress.Mvvm;
-using InvEntry.Extension;
-using InvEntry.Models;
+﻿using InvEntry.Models;
+using InvEntry.Models.UI;
 using InvEntry.Services;
-using InvEntry.Tally;
-using InvEntry.Tally.Model;
 using InvEntry.Utils.Options;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using DevExpress.Xpf.Printing;
-using IDialogService = DevExpress.Mvvm.IDialogService;
-using InvEntry.Reports;
-using System.Windows;
 using System.Collections.Generic;
-using DevExpress.XtraPivotGrid.Data;
-using System.Windows.Documents;
-using DevExpress.Mvvm.Native;
-using System.Linq;
-using DevExpress.XtraGrid.Views.Items;
+using System.Threading.Tasks;
 
 namespace InvEntry.ViewModels;
 
-public partial class CustomerOrderDBViewListViewModel : ObservableObject
+public class CustomerOrderDBViewListViewModel
+    : BaseListViewModel<CustomerOrderDBView>
 {
+    private readonly ICustomerOrderDbViewService
+        _customerOrderDbViewService;
 
-    private readonly ICustomerOrderDbViewService _customerOrderDbViewService;
-    private readonly IDialogService _reportDialogService;
 
-    [ObservableProperty]
-    private ObservableCollection<CustomerOrderDBView> _customerOrderDBViews;
-
-    [ObservableProperty]
-    private DateSearchOption _dateSearchOption;
-
-    [ObservableProperty]
-    private CustomerOrderDBView _SelectedOrder;
-
-    [ObservableProperty]
-    private DateTime _Today = DateTime.Today;
-
-    public CustomerOrderDBViewListViewModel(ICustomerOrderDbViewService customerOrderDbViewService,
-                             [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
+    public CustomerOrderDBViewListViewModel(
+        ICustomerOrderDbViewService customerOrderDbViewService)
+        : base(CustomerOrderListDefinition.Create())
     {
-        _customerOrderDbViewService = customerOrderDbViewService;
-        _reportDialogService = reportDialogService;
-        _dateSearchOption = new();
-        DateSearchOption.To = Today;
-        DateSearchOption.From = Today.AddDays(-1);
-
-        Task.Run(RefreshCustomerOrder).Wait();
-
+        _customerOrderDbViewService =
+            customerOrderDbViewService;
     }
 
-    [RelayCommand]
-    private async Task RefreshCustomerOrder()
+
+    protected override async Task<IEnumerable<CustomerOrderDBView>>
+        LoadItemsAsync(
+            ListSearchOption search)
     {
-        var customerOrders = await _customerOrderDbViewService.GetAll(DateSearchOption);
+        var option =
+            new DateSearchOption
+            {
+                From = search.From,
+                To = search.To
+            };
 
-        if (customerOrders is not null)
 
-            CustomerOrderDBViews = new(customerOrders);
+        var result =
+            await _customerOrderDbViewService
+                .GetAll(option);
 
+
+        return result ?? [];
     }
-
 }

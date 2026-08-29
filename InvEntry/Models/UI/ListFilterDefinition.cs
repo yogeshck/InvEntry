@@ -11,11 +11,9 @@ public enum ListFilterType
 
 public sealed class ListFilterDefinition
 {
-    public string Label { get; set; } =
-        string.Empty;
+    public string Label { get; set; } = string.Empty;
 
-    public string Placeholder { get; set; } =
-        string.Empty;
+    public string Placeholder { get; set; } = string.Empty;
 
     public ListFilterType Type { get; set; } =
         ListFilterType.None;
@@ -23,4 +21,5 @@ public sealed class ListFilterDefinition
     public ObservableCollection<string> Options { get; set; } =
         new();
 
+    public string? DefaultValue { get; set; }
 }

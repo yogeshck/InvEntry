@@ -20,4 +20,7 @@ public sealed class ListViewDefinition
         new();
 
     public bool SupportsDocumentPrint { get; set; }
+
+    public int DefaultFromDays { get; set; } = -1;
+
 }
