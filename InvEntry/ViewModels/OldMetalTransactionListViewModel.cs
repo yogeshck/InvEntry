@@ -1,88 +1,87 @@
-﻿ using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using DevExpress.Charts.Designer.Native;
-using DevExpress.Mvvm;
-using DevExpress.Xpf.Grid;
+﻿using DevExpress.Mvvm;
 using InvEntry.Extension;
 using InvEntry.Models;
+using InvEntry.Models.UI;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace InvEntry.ViewModels;
 
-public partial class OldMetalTransactionListViewModel: ObservableObject
+public class OldMetalTransactionListViewModel
+    : BaseListViewModel<OldMetalTransaction>
 {
-    private readonly IOldMetalTransactionService _oldMetalTransService;
-    private readonly IDialogService _reportDialogService;
+    private readonly IOldMetalTransactionService
+        _oldMetalTransService;
 
-    [ObservableProperty]
-    private ObservableCollection<OldMetalTransaction> _oldMetalTransaction;
+    private readonly IDialogService
+        _reportDialogService;
 
-    [ObservableProperty]
-    private DateSearchOption _searchOption;
 
-    [ObservableProperty]
-    private OldMetalTransaction _selectedTransaction;
+    public OldMetalTransactionListViewModel(
+        IOldMetalTransactionService oldMetalTransService,
+        IDialogService reportDialogService)
 
-    [ObservableProperty]
-    private DateTime _Today = DateTime.Today;
-
-    public OldMetalTransactionListViewModel (IOldMetalTransactionService oldMetalTransService, 
-                                IDialogService reportDialogService
-                                )
+        : base(OldMetalTransactionListDefinition.Create())
     {
-        _oldMetalTransService = oldMetalTransService;
-        _reportDialogService = reportDialogService;
+        _oldMetalTransService =
+            oldMetalTransService;
 
-        _searchOption = new();
-        SearchOption.To = Today;
-        SearchOption.From = Today.AddDays(-1);
-
-        Task.Run(RefreshOldMetalTransAsync).Wait();
-
+        _reportDialogService =
+            reportDialogService;
     }
 
-    [RelayCommand]
-    private async Task RefreshOldMetalTransAsync()
+
+    protected override async Task<IEnumerable<OldMetalTransaction>>
+        LoadItemsAsync(ListSearchOption search)
     {
-        var oldMetalTransResult = await _oldMetalTransService.GetAll(SearchOption);
-
-        if (oldMetalTransResult is not null)
-            OldMetalTransaction = new(oldMetalTransResult);
-
-    }
-
-    [RelayCommand(CanExecute = nameof(CanPrintDeliveryNote))]
-    private void PrintDeliveryNote()
-    {
-
-        if (SelectedTransaction.TransType.Equals("OG Purchase"))
+        var option = new DateSearchOption
         {
-            _reportDialogService.PrintPreviewOMPurchase(SelectedTransaction.TransNbr);
-        }
-        else
+            From = search.From,
+            To = search.To,
+
+            Filter1 =
+                string.IsNullOrWhiteSpace(search.FilterValue)
+                    ? null
+                    : search.FilterValue.Trim()
+        };
+
+
+        var result =
+            await _oldMetalTransService.GetAll(option);
+
+
+        return result ?? [];
+    }
+
+
+    protected override void PrintItem(
+        OldMetalTransaction item)
+    {
+        if (item.TransType == "OG Purchase")
         {
-            _reportDialogService.PrintPreviewDeliveryNote(SelectedTransaction.DocRefNbr, 
-                                                            (int)SelectedTransaction.DocRefGkey, null);
+            if (string.IsNullOrWhiteSpace(item.TransNbr))
+                return;
 
+            _reportDialogService
+                .PrintPreviewOMPurchase(item.TransNbr);
+
+            return;
         }
 
 
-        //PrintPreviewEstimate(SelectedEstimate.EstNbr);
-    }
+        if (string.IsNullOrWhiteSpace(item.DocRefNbr) ||
+            item.DocRefGkey is null)
+        {
+            return;
+        }
 
-    private bool CanPrintDeliveryNote()
-    {
-        return SelectedTransaction is not null;
-    }
 
-    [RelayCommand]
-    private void SelectionChanged()
-    {
-        PrintDeliveryNoteCommand.NotifyCanExecuteChanged();
+        _reportDialogService
+            .PrintPreviewDeliveryNote(
+                item.DocRefNbr,
+                item.DocRefGkey.Value,
+                null);
     }
 }
