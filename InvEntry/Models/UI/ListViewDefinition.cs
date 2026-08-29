@@ -23,4 +23,6 @@ public sealed class ListViewDefinition
 
     public int DefaultFromDays { get; set; } = -1;
 
+    public int DefaultToDays { get; set; } = 0;
+
 }

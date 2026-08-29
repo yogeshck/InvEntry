@@ -157,11 +157,6 @@ public class DynamicGridColumnsBehavior : Behavior<GridControl>
         if (definition is null)
             return;
 
-
-        // ============================================================
-        // CONFIDENTIAL / MASKED VALUE
-        // ============================================================
-
         if (definition.MaskValue)
         {
             e.DisplayText =
@@ -172,102 +167,82 @@ public class DynamicGridColumnsBehavior : Behavior<GridControl>
             return;
         }
 
-
-        // ============================================================
-        // NULL VALUE
-        // ============================================================
-
         if (e.Value is null)
             return;
-
-
-        // ============================================================
-        // DISPLAY FORMATTING
-        // ============================================================
 
         switch (definition.ColumnType)
         {
             case ListColumnType.Currency:
                 {
-                    if (TryGetDecimal(
-                            e.Value,
-                            out var amount))
+                    if (TryGetDecimal(e.Value, out var amount))
                     {
                         e.DisplayText =
-                            amount.ToString(
-                                definition.Format ?? "N2");
+                            amount == 0
+                                ? "-"
+                                : amount.ToString(
+                                    definition.Format ?? "N2");
                     }
 
                     break;
                 }
-
 
             case ListColumnType.Decimal:
                 {
-                    if (TryGetDecimal(
-                            e.Value,
-                            out var decimalValue))
+                    if (TryGetDecimal(e.Value, out var decimalValue))
                     {
                         e.DisplayText =
-                            decimalValue.ToString(
-                                definition.Format ?? "N2");
+                            decimalValue == 0
+                                ? "-"
+                                : decimalValue.ToString(
+                                    definition.Format ?? "N2");
                     }
 
                     break;
                 }
-
 
             case ListColumnType.Weight:
                 {
-                    if (TryGetDecimal(
-                            e.Value,
-                            out var weight))
+                    if (TryGetDecimal(e.Value, out var weight))
                     {
                         e.DisplayText =
-                            weight.ToString(
-                                definition.Format ?? "N3");
+                            definition.ShowZeroAsDash && weight == 0
+                                ? "-"
+                                : weight.ToString(
+                                    definition.Format ?? "N3");
                     }
 
                     break;
                 }
-
 
             case ListColumnType.Integer:
                 {
-                    if (TryGetDecimal(
-                            e.Value,
-                            out var integerValue))
+                    if (TryGetDecimal(e.Value, out var integerValue))
                     {
                         e.DisplayText =
-                            integerValue.ToString(
-                                definition.Format ?? "N0");
+                            definition.ShowZeroAsDash && integerValue == 0
+                                ? "-"
+                                : integerValue.ToString(
+                                    definition.Format ?? "N0");
                     }
 
                     break;
                 }
-
 
             case ListColumnType.Date:
                 {
-                    if (TryGetDateTime(
-                            e.Value,
-                            out var date))
+                    if (TryGetDateTime(e.Value, out var date))
                     {
                         e.DisplayText =
                             date.ToString(
-                                definition.Format ??
-                                "dd-MMM-yyyy");
+                                definition.Format ?? "dd-MMM-yyyy");
                     }
 
                     break;
                 }
 
-
             case ListColumnType.DateTime:
                 {
-                    if (TryGetDateTime(
-                            e.Value,
-                            out var dateTime))
+                    if (TryGetDateTime(e.Value, out var dateTime))
                     {
                         e.DisplayText =
                             dateTime.ToString(

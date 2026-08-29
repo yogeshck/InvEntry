@@ -54,15 +54,22 @@ public abstract partial class BaseListViewModel<T>
             throw new ArgumentNullException(
                 nameof(definition));
 
+        InitializeSearchOptions();
+
+    }
+
+    private void InitializeSearchOptions()
+    {
         SearchOption.From =
             DateTime.Today.AddDays(
-            definition.DefaultFromDays);
+                _definition.DefaultFromDays);
 
-        SearchOption.To = DateTime.Today;
+        SearchOption.To =
+            DateTime.Today.AddDays(
+                _definition.DefaultToDays);
 
         SearchOption.FilterValue =
-            definition.Filter.DefaultValue;
-
+            _definition.Filter.DefaultValue;
     }
 
 

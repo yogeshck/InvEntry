@@ -49,5 +49,7 @@ namespace InvEntry.Models.UI
 
         public int VisibleLastCharacters { get; set; } = 4;
 
+        public bool ShowZeroAsDash { get; set; }
+
     }
 }
