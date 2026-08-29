@@ -1,77 +1,380 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using DevExpress.Mvvm;
-using DevExpress.Xpf.Grid;
+﻿using DevExpress.Mvvm;
 using InvEntry.Extension;
 using InvEntry.Models;
+using InvEntry.Models.UI;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
+using InvEntry.ViewModels.Common;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace InvEntry.ViewModels;
 
-public partial class InvoiceListViewModel : ObservableObject
+public class InvoiceListViewModel
+    : BaseListViewModel<InvoiceHeader>
 {
     private readonly IInvoiceService _invoiceService;
+
     private readonly IDialogService _reportDialogService;
 
-    [ObservableProperty]
-    private ObservableCollection<InvoiceHeader> _invoices;
 
-    [ObservableProperty]
-    private DateSearchOption _searchOption;
+    // ============================================================
+    // SCREEN
+    // ============================================================
 
-    [ObservableProperty]
-    private InvoiceHeader _SelectedInvoice;
+    public override string Title =>
+        "INVOICE LIST";
 
-    [ObservableProperty]
-    private string _custMobileFilter;
 
-    [ObservableProperty]
-    private DateTime _Today = DateTime.Today;
+    public override string Description =>
+        "Browse, search, export and print invoices";
 
-    public InvoiceListViewModel(IInvoiceService invoiceService, 
-        [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService) 
+
+    public override bool SupportsDocumentPrint =>
+        true;
+
+
+    // ============================================================
+    // CONSTRUCTOR
+    // ============================================================
+
+    public InvoiceListViewModel(
+        IInvoiceService invoiceService,
+        [FromKeyedServices("ReportDialogService")]
+        IDialogService reportDialogService)
     {
-        _invoiceService = invoiceService;
-        _reportDialogService = reportDialogService;
+        _invoiceService =
+            invoiceService;
 
-        Invoices = null;
-        _searchOption = new();
-        SearchOption.To = Today;
-        SearchOption.From = Today.AddDays(-1);
-        Task.Run(RefreshInvoicesAsync).Wait();
+        _reportDialogService =
+            reportDialogService;
+
+
+        ConfigureFilter(
+            new ListFilterDefinition
+            {
+                Label =
+                    "Customer Mobile",
+
+                Placeholder =
+                    "Enter mobile number",
+
+                Type =
+                    ListFilterType.Text
+            });
+
+
+        ConfigureColumns();
     }
 
-    [RelayCommand]
-    private async Task RefreshInvoicesAsync()
+
+    // ============================================================
+    // COLUMNS
+    // ============================================================
+
+    private void ConfigureColumns()
     {
 
-        //options to be expanded - all / outstanding / by customer mobile / in between dates
-        var invoicesResult = await _invoiceService.GetAll(SearchOption);
-        if (invoicesResult is not null)
-            Invoices = null;
-            Invoices = new(invoicesResult);
+        Columns.Add(new()
+        {
+            FieldName = nameof(InvoiceHeader.CustMobile),
+            Header = "Mobile #",
+            Width = 110,
+
+            MaskValue = true,
+            VisibleLastCharacters = 4
+        });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.InvNbr),
+
+                Header =
+                    "Invoice #",
+
+                Width =
+                    110
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.InvDate),
+
+                Header =
+                    "Invoice Date",
+
+                Width =
+                    110,
+
+                ColumnType =
+                    ListColumnType.Date
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.GrossRcbAmount),
+
+                Header =
+                    "Invoice Amount",
+
+                Width =
+                    130,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.DiscountAmount),
+
+                Header =
+                    "Discount",
+
+                Width =
+                    105,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.AdvanceAdj),
+
+                Header =
+                    "Advance",
+
+                Width =
+                    105,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.RdAmountAdj),
+
+                Header =
+                    "RD",
+
+                Width =
+                    115,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.AmountPayable),
+
+                Header =
+                    "Receivable",
+
+                Width =
+                    115,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.RecdAmount),
+
+                Header =
+                    "Received",
+
+                Width =
+                    115,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.InvBalance),
+
+                Header =
+                    "Balance",
+
+                Width =
+                    115,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.InvRefund),
+
+                Header =
+                    "Refund",
+
+                Width =
+                    115,
+
+                ColumnType =
+                    ListColumnType.Currency,
+
+                ShowSummary =
+                    true,
+
+                SummaryFormat =
+                    "₹ {0:N2}"
+            });
+
+
+        Columns.Add(
+            new()
+            {
+                FieldName =
+                    nameof(InvoiceHeader.PaymentDueDate),
+
+                Header =
+                    "Due Date",
+
+                Width =
+                    110,
+
+                ColumnType =
+                    ListColumnType.Date
+            });
     }
 
-    [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
-    private void PrintInvoice()
+
+    // ============================================================
+    // DATA
+    // ============================================================
+
+    protected override async Task<IEnumerable<InvoiceHeader>>
+        LoadItemsAsync(
+            ListSearchOption search)
     {
-        _reportDialogService.PrintPreview(SelectedInvoice.InvNbr);
+        /*
+         * Preserve your existing service/API contract.
+         */
+
+        var option =
+            new DateSearchOption
+            {
+                From =
+                    search.From,
+
+                To =
+                    search.To,
+
+                Filter1 =
+                    search.FilterValue
+            };
+
+
+        var result =
+            await _invoiceService
+                .GetAll(
+                    option);
+
+
+        return
+            result ??
+            Enumerable.Empty<InvoiceHeader>();
     }
 
-    private bool CanPrintInvoice()
+
+    // ============================================================
+    // PRINT
+    // ============================================================
+
+    protected override void PrintItem(
+        InvoiceHeader item)
     {
-        return SelectedInvoice is not null;
-    }
+        if (string.IsNullOrWhiteSpace(
+                item.InvNbr))
+        {
+            return;
+        }
 
-    [RelayCommand]
-    private void SelectionChanged() 
-    {
-        PrintInvoiceCommand.NotifyCanExecuteChanged();
-    }
 
+        _reportDialogService
+            .PrintPreview(
+                item.InvNbr);
+    }
 }

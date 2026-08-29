@@ -1,0 +1,689 @@
+﻿<UserControl
+    x:Class="InvEntry.Views.Common.CommonListView"
+
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+    xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+
+    xmlns:behavior="clr-namespace:InvEntry.Behavior"
+
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+    mc:Ignorable="d"
+
+    d:DesignWidth="1400"
+    d:DesignHeight="800">
+
+    <!-- =========================================================
+         LOAD
+         ========================================================= -->
+
+    <dxmvvm:Interaction.Behaviors>
+
+        <dxmvvm:EventToCommand
+            EventName="Loaded"
+            Command="{Binding RefreshCommand}"/>
+
+    </dxmvvm:Interaction.Behaviors>
+
+
+    <!-- =========================================================
+         LOCAL STYLES
+
+         IMPORTANT:
+         No hard-coded background colours.
+         Application/DevExpress theme remains responsible
+         for light/dark appearance.
+         ========================================================= -->
+
+    <UserControl.Resources>
+
+        <!-- Section caption -->
+
+        <Style x:Key="SectionCaptionStyle"
+                TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+            Value="11"/>
+
+            <Setter Property="FontWeight"
+            Value="SemiBold"/>
+
+            <Setter Property="Opacity"
+            Value="0.60"/>
+
+        </Style>
+
+
+        <!-- Filter label -->
+
+        <Style x:Key="FilterLabelStyle"
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+                    Value="11"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Setter Property="Opacity"
+                    Value="0.65"/>
+
+            <Setter Property="Margin"
+                    Value="2,0,0,6"/>
+
+        </Style>
+
+
+        <!-- Toolbar button -->
+
+        <Style x:Key="ToolbarButtonStyle"
+               TargetType="{x:Type dx:SimpleButton}">
+
+            <Setter Property="Height"
+                    Value="36"/>
+
+            <Setter Property="Padding"
+                    Value="14,0"/>
+
+            <Setter Property="Margin"
+                    Value="6,0,0,0"/>
+
+            <Setter Property="FontSize"
+                    Value="13"/>
+
+        </Style>
+
+
+        <!-- Search button -->
+
+        <Style x:Key="SearchButtonStyle"
+               TargetType="{x:Type dx:SimpleButton}">
+
+            <Setter Property="Height"
+                    Value="36"/>
+
+            <Setter Property="MinWidth"
+                    Value="105"/>
+
+            <Setter Property="Padding"
+                    Value="16,0"/>
+
+            <Setter Property="FontSize"
+                    Value="13"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+        </Style>
+
+    </UserControl.Resources>
+
+
+    <!-- =========================================================
+         PAGE
+         ========================================================= -->
+
+    <Grid Margin="22,18,22,14">
+
+        <Grid.RowDefinitions>
+
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Filter -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Results heading -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Grid -->
+            <RowDefinition Height="*"/>
+
+            <!-- Status -->
+            <RowDefinition Height="Auto"/>
+
+        </Grid.RowDefinitions>
+
+
+        <!-- =====================================================
+             HEADER
+             ===================================================== -->
+
+        <Grid Grid.Row="0"
+              Margin="2,0,2,18">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+
+            <!-- TITLE -->
+
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center">
+
+                <TextBlock
+                    Text="{Binding Title}"
+                    FontSize="25"
+                    FontWeight="SemiBold"/>
+
+                <TextBlock
+                    Text="{Binding Description}"
+                    FontSize="13"
+                    Opacity="0.62"
+                    Margin="0,4,0,0"/>
+
+            </StackPanel>
+
+
+            <!-- REFRESH -->
+
+            <dx:SimpleButton
+                Grid.Column="1"
+
+                Style="{StaticResource ToolbarButtonStyle}"
+
+                Content="Refresh"
+
+                Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+
+                Command="{Binding RefreshCommand}"
+
+                VerticalAlignment="Center"/>
+
+        </Grid>
+
+
+        <!-- =====================================================
+             FILTER CARD
+             ===================================================== -->
+
+        <Border
+            Grid.Row="1"
+
+            BorderThickness="1"
+            CornerRadius="8"
+
+            Padding="16,13,16,16"
+
+            Margin="0,0,0,17">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="Auto"/>
+
+                </Grid.RowDefinitions>
+
+
+                <!-- FILTER HEADING -->
+
+                <Grid Grid.Row="0"
+                      Margin="0,0,0,10">
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+                    <TextBlock
+                        Grid.Column="0"
+
+                        Text="FILTERS"
+
+                        Style="{StaticResource SectionCaptionStyle}"/>
+
+
+                    <TextBlock
+                        Grid.Column="1"
+
+                        Text="Set the criteria and search"
+
+                        FontSize="11"
+                        Opacity="0.45"/>
+
+                </Grid>
+
+
+                <!-- FILTER CONTROLS -->
+
+                <Grid Grid.Row="1">
+
+                    <Grid.ColumnDefinitions>
+
+                        <!-- From -->
+                        <ColumnDefinition Width="170"/>
+
+                        <ColumnDefinition Width="14"/>
+
+                        <!-- To -->
+                        <ColumnDefinition Width="170"/>
+
+                        <ColumnDefinition Width="14"/>
+
+                        <!-- Optional filter -->
+                        <ColumnDefinition Width="250"/>
+
+                        <ColumnDefinition Width="14"/>
+
+                        <!-- Search -->
+                        <ColumnDefinition Width="Auto"/>
+
+                        <!-- remaining space -->
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+                    <!-- =========================================
+                         FROM DATE
+                         ========================================= -->
+
+                    <StackPanel Grid.Column="0">
+
+                        <TextBlock
+                            Text="FROM DATE"
+                            Style="{StaticResource FilterLabelStyle}"/>
+
+
+                        <dxe:DateEdit
+                            EditValue="{Binding SearchOption.From,
+                                                UpdateSourceTrigger=PropertyChanged}"
+
+                            Height="36"
+
+                            VerticalContentAlignment="Center"/>
+
+                    </StackPanel>
+
+
+                    <!-- =========================================
+                         TO DATE
+                         ========================================= -->
+
+                    <StackPanel Grid.Column="2">
+
+                        <TextBlock
+                            Text="TO DATE"
+                            Style="{StaticResource FilterLabelStyle}"/>
+
+
+                        <dxe:DateEdit
+                            EditValue="{Binding SearchOption.To,
+                                                UpdateSourceTrigger=PropertyChanged}"
+
+                            MaxValue="{Binding Today}"
+
+                            Height="36"
+
+                            VerticalContentAlignment="Center"/>
+
+                    </StackPanel>
+
+
+                    <!-- =========================================
+                         OPTIONAL TEXT FILTER
+                         ========================================= -->
+
+                    <StackPanel Grid.Column="4">
+
+                        <StackPanel.Style>
+
+                            <Style TargetType="StackPanel">
+
+                                <Setter Property="Visibility"
+                                        Value="Collapsed"/>
+
+                                <Style.Triggers>
+
+                                    <DataTrigger
+                                        Binding="{Binding IsTextFilter}"
+                                        Value="True">
+
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible"/>
+
+                                    </DataTrigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </StackPanel.Style>
+
+
+                        <TextBlock
+                            Text="{Binding FilterDefinition.Label}"
+                            Style="{StaticResource FilterLabelStyle}"/>
+
+
+                        <dxe:TextEdit
+                            EditValue="{Binding SearchOption.FilterValue,
+                                                UpdateSourceTrigger=PropertyChanged}"
+
+                            NullText="{Binding FilterDefinition.Placeholder}"
+
+                            Height="36"
+
+                            VerticalContentAlignment="Center">
+
+                            <dxmvvm:Interaction.Behaviors>
+
+                                <dxmvvm:KeyToCommand
+                                    KeyGesture="Enter"
+                                    Command="{Binding RefreshCommand}"/>
+
+                            </dxmvvm:Interaction.Behaviors>
+
+                        </dxe:TextEdit>
+
+                    </StackPanel>
+
+
+                    <!-- =========================================
+                         OPTIONAL SELECTION FILTER
+                         ========================================= -->
+
+                    <StackPanel Grid.Column="4">
+
+                        <StackPanel.Style>
+
+                            <Style TargetType="StackPanel">
+
+                                <Setter Property="Visibility"
+                                        Value="Collapsed"/>
+
+                                <Style.Triggers>
+
+                                    <DataTrigger
+                                        Binding="{Binding IsSelectionFilter}"
+                                        Value="True">
+
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible"/>
+
+                                    </DataTrigger>
+
+                                </Style.Triggers>
+
+                            </Style>
+
+                        </StackPanel.Style>
+
+
+                        <TextBlock
+                            Text="{Binding FilterDefinition.Label}"
+                            Style="{StaticResource FilterLabelStyle}"/>
+
+
+                        <dxe:ComboBoxEdit
+                            ItemsSource="{Binding FilterDefinition.Options}"
+
+                            EditValue="{Binding SearchOption.FilterValue,
+                                                UpdateSourceTrigger=PropertyChanged}"
+
+                            IsTextEditable="False"
+
+                            Height="36"
+
+                            VerticalContentAlignment="Center"/>
+
+                    </StackPanel>
+
+
+                    <!-- =========================================
+                         SEARCH
+                         ========================================= -->
+
+                    <dx:SimpleButton
+                        Grid.Column="6"
+
+                        Style="{StaticResource SearchButtonStyle}"
+
+                        Content="Search"
+
+                        Glyph="{dx:DXImage 'Images/Find/Find_16x16.png'}"
+
+                        Command="{Binding RefreshCommand}"
+
+                        VerticalAlignment="Bottom"/>
+
+                </Grid>
+
+            </Grid>
+
+        </Border>
+
+
+        <!-- =====================================================
+             RESULTS HEADER
+             ===================================================== -->
+
+        <Grid
+            Grid.Row="2"
+            Margin="3,0,3,9">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+
+            <!-- LEFT -->
+
+            <StackPanel
+                Grid.Column="0"
+                Orientation="Horizontal"
+                VerticalAlignment="Center">
+
+                <TextBlock
+                    Text="RESULTS"
+                    Style="{StaticResource SectionCaptionStyle}"
+                    VerticalAlignment="Center"/>
+
+
+                <Border
+                    Margin="10,0,0,0"
+                    Padding="8,3"
+                    CornerRadius="10"
+                    BorderThickness="1">
+
+                    <TextBlock
+                        Text="{Binding Items.Count,
+                                       StringFormat={}{0:N0} records}"
+
+                        FontSize="11"
+                        FontWeight="SemiBold"
+                        Opacity="0.70"/>
+
+                </Border>
+
+            </StackPanel>
+
+
+            <!-- PRINT SELECTED -->
+
+            <dx:SimpleButton
+                Grid.Column="1"
+
+                Style="{StaticResource ToolbarButtonStyle}"
+
+                Content="Print Selected"
+
+                Glyph="{dx:DXImage 'Images/Print/Print_32x32.png'}"
+
+                Command="{Binding PrintSelectedCommand}"
+
+                VerticalAlignment="Center"/>
+
+        </Grid>
+
+
+        <!-- =====================================================
+             GRID CARD
+             ===================================================== -->
+
+        <Border
+            Grid.Row="3"
+
+            BorderThickness="1"
+            CornerRadius="8"
+
+            ClipToBounds="True">
+
+            <dxg:GridControl
+                x:Name="ListGrid"
+
+                ItemsSource="{Binding Items}"
+
+                SelectedItem="{Binding SelectedItem,
+                                       Mode=TwoWay}"
+
+                AutoGenerateColumns="None">
+
+
+                <!-- =============================================
+                     DYNAMIC COLUMNS
+                     ============================================= -->
+
+                <dxmvvm:Interaction.Behaviors>
+
+                    <behavior:DynamicGridColumnsBehavior
+                        Columns="{Binding Columns}"/>
+
+                </dxmvvm:Interaction.Behaviors>
+
+
+                <!-- =============================================
+                     VIEW
+                     ============================================= -->
+
+                <dxg:GridControl.View>
+
+                    <dxg:TableView
+                        x:Name="ListTableView"
+
+                        AllowEditing="False"
+
+                        AllowGrouping="False"
+
+                        ShowGroupPanel="False"
+
+                        ShowAutoFilterRow="True"
+
+                        ShowTotalSummary="True"
+
+                        NavigationStyle="Row"
+
+                        AutoWidth="False"
+
+                        AllowBestFit="True"
+
+                        FontSize="13"
+
+                        ShowIndicator="False"
+
+                        EditorButtonShowMode="ShowOnlyInEditor"
+
+                        AllowPerPixelScrolling="False">
+
+
+                        <!-- =====================================
+                             INVOICE OUTSTANDING CONDITION
+
+                             Currently Invoice-specific.
+                             We can make this metadata-driven
+                             when other lists require conditions.
+                             ===================================== -->
+
+                        <dxg:TableView.FormatConditions>
+
+                            <dxg:FormatCondition
+                                Expression="[InvBalance] &gt; 0"
+                                PredefinedFormatName="RedText"
+                                ApplyToRow="True"/>
+
+                        </dxg:TableView.FormatConditions>
+
+                    </dxg:TableView>
+
+                </dxg:GridControl.View>
+
+            </dxg:GridControl>
+
+        </Border>
+
+
+        <!-- =====================================================
+             STATUS BAR
+             ===================================================== -->
+
+        <Grid
+            Grid.Row="4"
+            Margin="4,9,4,0">
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+
+            <!-- STATUS -->
+
+            <StackPanel
+                Grid.Column="0"
+                Orientation="Horizontal">
+
+                <TextBlock
+                    Text="{Binding StatusMessage}"
+                    FontSize="12"
+                    Opacity="0.62"
+                    VerticalAlignment="Center"/>
+
+            </StackPanel>
+
+
+            <!-- HELP -->
+
+            <TextBlock
+                Grid.Column="1"
+
+                Text="Select a record to print"
+
+                FontSize="12"
+
+                Opacity="0.48"
+
+                VerticalAlignment="Center"/>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>
