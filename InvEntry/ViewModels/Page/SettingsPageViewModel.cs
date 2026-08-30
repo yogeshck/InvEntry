@@ -89,11 +89,11 @@ public partial class SettingsPageViewModel : ObservableObject
             HistoryDailyMetalRate =
                 new ObservableCollection<DailyRate>(
                     DailyMetalRate
-                        .Where(x =>
-                            x.GKey != 0 &&
-                            x.EffectiveDate.Date < DateTime.Today)
+                        .Where(x => x.GKey != 0)
                         .OrderByDescending(x => x.EffectiveDate)
+                        .ThenByDescending(x => x.GKey)
                         .Take(10));
+
         }
         finally
         {
