@@ -19,10 +19,24 @@ public sealed class ListViewDefinition
     public List<RowFormatDefinition> RowFormats { get; set; } =
         new();
 
+
+    // ============================================================
+    // ACTIONS
+    // ============================================================
+
     public bool SupportsDocumentPrint { get; set; }
+
+    public bool SupportsOpen { get; set; }
+
+    public string OpenButtonText { get; set; } =
+        "Open";
+
+
+    // ============================================================
+    // DEFAULT SEARCH RANGE
+    // ============================================================
 
     public int DefaultFromDays { get; set; } = -1;
 
     public int DefaultToDays { get; set; } = 0;
-
 }

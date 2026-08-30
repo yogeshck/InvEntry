@@ -1,0 +1,80 @@
+﻿namespace InvEntry.Contracts.Invoices;
+
+public sealed class InvoiceHeaderSaveModel
+{
+    public int Gkey { get; set; }
+
+    public string? InvNbr { get; set; }
+
+    public DateTime? InvDate { get; set; }
+
+    public string? CustMobile { get; set; }
+
+    public string? PlaceOfSeller { get; set; }
+
+    public string? PlaceOfSupply { get; set; }
+
+    public DateTime? PaymentDueDate { get; set; }
+
+    public decimal? InvlTaxableAmount { get; set; }
+
+    public decimal? AdvanceAdj { get; set; }
+
+    public decimal? RdAmountAdj { get; set; }
+
+    public decimal? OldGoldAmount { get; set; }
+
+    public decimal? OldSilverAmount { get; set; }
+
+    public decimal? DiscountPercent { get; set; }
+
+    public decimal? DiscountAmount { get; set; }
+
+    public decimal? RoundOff { get; set; }
+
+    public decimal? AmountPayable { get; set; }
+
+    public decimal? RecdAmount { get; set; }
+
+    public decimal? InvBalance { get; set; }
+
+    public decimal? InvRefund { get; set; }
+
+    public string? InvNotes { get; set; }
+
+    public bool IsTaxApplicable { get; set; }
+
+    public string? TaxType { get; set; }
+
+    public decimal? CgstPercent { get; set; }
+
+    public decimal? SgstPercent { get; set; }
+
+    public decimal? IgstPercent { get; set; }
+
+    public decimal? CgstAmount { get; set; }
+
+    public decimal? SgstAmount { get; set; }
+
+    public decimal? IgstAmount { get; set; }
+
+    public string? PaymentMode { get; set; }
+
+    public decimal? GrossRcbAmount { get; set; }
+
+    public decimal? InvlTaxTotal { get; set; }
+
+    public int? TenantGkey { get; set; }
+
+    public int? CustGkey { get; set; }
+
+    public string? GstLocSeller { get; set; }
+
+    public string? GstLocBuyer { get; set; }
+
+    public string? SalesPerson { get; set; }
+
+    public string Status { get; set; } =
+    InvoiceStatus.Draft;
+
+}

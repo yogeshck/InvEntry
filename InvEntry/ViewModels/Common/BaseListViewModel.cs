@@ -104,6 +104,12 @@ public abstract partial class BaseListViewModel<T>
     public bool SupportsDocumentPrint =>
         _definition.SupportsDocumentPrint;
 
+    public bool SupportsOpen =>
+    _definition.SupportsOpen;
+
+
+    public string OpenButtonText =>
+        _definition.OpenButtonText;
 
     // ============================================================
     // FILTER HELPERS
@@ -202,6 +208,37 @@ public abstract partial class BaseListViewModel<T>
         }
     }
 
+    // ============================================================
+    // OPEN / EDIT
+    // ============================================================
+
+    private bool CanOpenSelected()
+    {
+        return
+            !IsBusy &&
+            SupportsOpen &&
+            SelectedItem is not null;
+    }
+
+
+    [RelayCommand(
+        CanExecute = nameof(CanOpenSelected))]
+    private async Task OpenSelectedAsync()
+    {
+        if (SelectedItem is null)
+            return;
+
+        await OpenItemAsync(
+            SelectedItem);
+    }
+
+
+    protected virtual Task OpenItemAsync(
+        T item)
+    {
+        return Task.CompletedTask;
+    }
+
 
     // ============================================================
     // PRINT
@@ -242,10 +279,12 @@ public abstract partial class BaseListViewModel<T>
     partial void OnSelectedItemChanged(
         T? value)
     {
+        OpenSelectedCommand
+            .NotifyCanExecuteChanged();
+
         PrintSelectedCommand
             .NotifyCanExecuteChanged();
     }
-
 
     partial void OnIsBusyChanged(
         bool value)
@@ -253,7 +292,11 @@ public abstract partial class BaseListViewModel<T>
         RefreshCommand
             .NotifyCanExecuteChanged();
 
+        OpenSelectedCommand
+            .NotifyCanExecuteChanged();
+
         PrintSelectedCommand
             .NotifyCanExecuteChanged();
     }
+
 }

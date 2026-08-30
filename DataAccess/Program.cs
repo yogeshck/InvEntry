@@ -92,6 +92,8 @@ builder.Services.AddScoped<
                         ICustomerOrderWorkflow,
                         CustomerOrderWorkflow>();
 
+builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
+
 var app = builder.Build();
 
 app.UseSwagger();

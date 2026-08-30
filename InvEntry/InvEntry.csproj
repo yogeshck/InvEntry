@@ -51,11 +51,11 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\InvEntry.Contracts\InvEntry.Contracts.csproj" />
     <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
     <ProjectReference Include="..\InvEntry.Tally\InvEntry.Tally.csproj" />
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
     <ProjectReference Include="..\InvEntry.LabelGenerator\InvEntry.LabelGenerator.csproj" />
+	<ProjectReference Include="..\InvEntry.Contracts\InvEntry.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

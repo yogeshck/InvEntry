@@ -27,8 +27,6 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<DailyRepStockSumryMovement> DailyRepStockSumryMovements { get; set; }
 
-    public virtual DbSet<DailyStockMovementDbView> DailyStockMovementDbViews { get; set; }
-
     public virtual DbSet<DailyStockSummary> DailyStockSummaries { get; set; }
 
     public virtual DbSet<EstimateHeader> EstimateHeaders { get; set; }
@@ -115,12 +113,10 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
 
-/*    protected override void OnConfiguring(
-                DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer(connectionString));
-        //    "Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
-*/
+        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CustomerOrder>(entity =>
@@ -579,47 +575,6 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT");
             entity.Property(e => e.ReportDate).HasColumnName("REPORT_DATE");
-        });
-
-        modelBuilder.Entity<DailyStockMovementDbView>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToView("DAILY_STOCK_MOVEMENT_DB_VIEW");
-
-            entity.Property(e => e.MovementDate).HasColumnName("MOVEMENT_DATE");
-            entity.Property(e => e.ProductCategory)
-                .HasMaxLength(255)
-                .IsUnicode(false)
-                .HasColumnName("PRODUCT_CATEGORY");
-            entity.Property(e => e.RefNbr)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("REF_NBR");
-            entity.Property(e => e.StockinGrossWeight)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("STOCKIN_GROSS_WEIGHT");
-            entity.Property(e => e.StockinNetWeight)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("STOCKIN_NET_WEIGHT");
-            entity.Property(e => e.StockinQty).HasColumnName("STOCKIN_QTY");
-            entity.Property(e => e.StockinStoneWeight)
-                .HasColumnType("decimal(10, 3)")
-                .HasColumnName("STOCKIN_STONE_WEIGHT");
-            entity.Property(e => e.StockoutGrossWeight)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCKOUT_GROSS_WEIGHT");
-            entity.Property(e => e.StockoutNetWeight)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCKOUT_NET_WEIGHT");
-            entity.Property(e => e.StockoutQty).HasColumnName("STOCKOUT_QTY");
-            entity.Property(e => e.StockoutStoneWeight)
-                .HasColumnType("decimal(18, 3)")
-                .HasColumnName("STOCKOUT_STONE_WEIGHT");
-            entity.Property(e => e.Type)
-                .HasMaxLength(7)
-                .IsUnicode(false)
-                .HasColumnName("TYPE");
         });
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
@@ -1333,6 +1288,7 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("DISCOUNT_PERCENT");
+            entity.Property(e => e.FinalisedOn).HasColumnName("FINALISED_ON");
             entity.Property(e => e.GrossRcbAmount)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("GROSS_RCB_AMOUNT");
@@ -1433,6 +1389,11 @@ public partial class MijmsContext : DbContext
                 .HasDefaultValueSql("('0.00')")
                 .HasColumnType("decimal(4, 2)")
                 .HasColumnName("SGST_PERCENT");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("DRAFT")
+                .HasColumnName("STATUS");
             entity.Property(e => e.TaxType)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -1713,7 +1674,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.TransactionType)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("TRANSACTION_TYPE");
+                .HasColumnName("transaction_type");
         });
 
         modelBuilder.Entity<MtblReference>(entity =>
@@ -1911,9 +1872,7 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("ORG_BANK_DETAILS");
 
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedNever()
-                .HasColumnName("GKEY");
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.BankAccountNbr)
                 .HasMaxLength(200)
                 .IsUnicode(false)
@@ -3030,7 +2989,7 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<StockVerifyScan>(entity =>
         {
-            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__1630EB62E2A9B55D");
+            entity.HasKey(e => e.Gkey).HasName("PK__StockVer__1630EB62F93C6C28");
 
             entity.ToTable("StockVerifyScan");
 
@@ -3038,7 +2997,9 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.ScanTime).HasDefaultValueSql("(sysdatetime())");
-            entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<Voucher>(entity =>

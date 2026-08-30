@@ -1,29 +1,29 @@
 ﻿using DevExpress.Xpf.WindowsUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using InvEntry.ViewModels;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace InvEntry.Views.Page
 {
-    /// <summary>
-    /// Interaction logic for InvoiceEntryPage.xaml
-    /// </summary>
     public partial class InvoiceEntryPage : NavigationPage
     {
         public InvoiceEntryPage()
         {
             InitializeComponent();
+
+            Loaded += InvoiceEntryPage_Loaded;
+        }
+
+        private async void InvoiceEntryPage_Loaded(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (InvoiceViewControl?.DataContext
+                is not InvoiceViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.LoadPendingDraftAsync();
         }
     }
 }

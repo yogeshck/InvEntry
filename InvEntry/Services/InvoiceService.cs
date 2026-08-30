@@ -1,31 +1,57 @@
-﻿using InvEntry.Models;
+﻿using InvEntry.Contracts.Invoices;
+using InvEntry.Models;
 using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace InvEntry.Services
 {
+
     public interface IInvoiceService
     {
-        Task<InvoiceHeader> GetHeader(string invNbr);
+        // =====================================================
+        // NEW INVOICE LIFECYCLE
+        // =====================================================
 
-        Task<InvoiceHeader> CreateHeader(InvoiceHeader invHdr);
+        Task<SaveInvoiceResponse> SaveDraftAsync(
+            SaveInvoiceRequest request);
 
-        Task UpdateHeader(InvoiceHeader invHdr);
+        Task<InvoiceEditResponse> GetForEditAsync(
+            int invoiceGkey);
 
-        Task<IEnumerable<InvoiceHeader>>  GetAll(DateSearchOption options);
+        Task<IEnumerable<InvoiceHeader>> GetDraftsAsync(
+            DateSearchOption options);
 
-        //Task<IEnumerable<InvoiceHeader>> GetInvList(string custMobile);
+        Task<FinaliseInvoiceResponse> FinaliseAsync(
+            int invoiceGkey); 
 
-        Task<IEnumerable<InvoiceHeader>> GetOutStanding(DateSearchOption options);
+        // =====================================================
+        // EXISTING / LEGACY
+        // =====================================================
 
-        Task CreateInvoiceLine(InvoiceLine line);
+        Task<InvoiceHeader> GetHeader(
+            string invNbr);
 
-        Task CreateInvoiceLine(IEnumerable<InvoiceLine> line);
+        Task<InvoiceHeader> CreateHeader(
+            InvoiceHeader invHdr);
+
+        Task UpdateHeader(
+            InvoiceHeader invHdr);  
+
+        Task<IEnumerable<InvoiceHeader>> GetAll(
+            DateSearchOption options);
+
+        Task<IEnumerable<InvoiceHeader>> GetOutStanding(
+            DateSearchOption options);
+
+        Task CreateInvoiceLine(
+            InvoiceLine line);
+
+        Task CreateInvoiceLine(
+            IEnumerable<InvoiceLine> line);
     }
+
 
     public class InvoiceService : IInvoiceService
     {
@@ -54,6 +80,21 @@ namespace InvEntry.Services
         public async Task CreateInvoiceLine(InvoiceLine line)
         {
             await _mijmsApiService.Post($"api/invoiceline/", line);
+        }
+
+        public async Task<FinaliseInvoiceResponse> FinaliseAsync(
+            int invoiceGkey)
+        {
+            if (invoiceGkey <= 0)
+            {
+                throw new ArgumentException(
+                    "A valid invoice GKey is required.",
+                    nameof(invoiceGkey));
+            }
+
+            return await _mijmsApiService
+                .PostResponse<FinaliseInvoiceResponse>(
+                    $"api/invoice/{invoiceGkey}/finalise");
         }
 
         public async Task CreateInvoiceLine(IEnumerable<InvoiceLine> lines)
@@ -96,5 +137,34 @@ namespace InvEntry.Services
             return await _mijmsApiService.PostEnumerable<InvoiceHeader, DateSearchOption>($"api/invoice/outstanding", options);
 
         }
+
+        public async Task<IEnumerable<InvoiceHeader>> GetDraftsAsync(
+            DateSearchOption options)
+        {
+            return await _mijmsApiService
+                .PostEnumerable<InvoiceHeader, DateSearchOption>(
+                    "api/invoice/drafts/filter",
+                    options);
+        }
+
+
+        public async Task<InvoiceEditResponse> GetForEditAsync(
+            int invoiceGkey)
+        {
+            return await _mijmsApiService
+                .GetResponse<InvoiceEditResponse>(
+                    $"api/invoice/{invoiceGkey}/edit");
+        }
+
+
+        public async Task<SaveInvoiceResponse> SaveDraftAsync(
+            SaveInvoiceRequest request)
+        {
+            return await _mijmsApiService
+                .Post<SaveInvoiceRequest, SaveInvoiceResponse>(
+                    "api/invoice/draft",
+                    request);
+        }
+
     }
 }

@@ -19,13 +19,10 @@ public interface IMijmsApiService
     Task<T> Post<T>(string url, T data)
         where T : BaseEntity;
 
-    /// <summary>
-    /// Use when request and response types are different.
-    ///
-    /// Example:
-    /// Request  = List&lt;OldMetalTransaction&gt;
-    /// Response = string
-    /// </summary>
+    Task<TResponse> GetResponse<TResponse>(string url);
+
+    Task<TResponse> PostResponse<TResponse>(string url);
+
     Task<TResponse> Post<TRequest, TResponse>(
         string url,
         TRequest data);
@@ -699,4 +696,143 @@ public class MijmsApiService : IMijmsApiService
                 isInit);
         }
     }
+
+    // ============================================================
+    // GET GENERIC RESPONSE
+    //
+    // Used when the API response is a DTO / contract type
+    // and does NOT inherit BaseEntity.
+    //
+    // Examples:
+    //      InvoiceEditResponse
+    //      FinaliseInvoiceResponse
+    // ============================================================
+
+    public async Task<TResponse> GetResponse<TResponse>(
+        string url)
+    {
+        try
+        {
+            var httpClient =
+                _httpClientFactory
+                    .CreateClient("mijms");
+
+            var completeUrl =
+                $"{httpClient.BaseAddress}{url}";
+
+            var httpResponse =
+                await httpClient
+                    .GetAsync(completeUrl);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent =
+                    await httpResponse.Content
+                        .ReadAsStringAsync();
+
+                Serilog.Log.Error(
+                    "GET {Url} failed. Status: {StatusCode}, Response: {Response}",
+                    url,
+                    httpResponse.StatusCode,
+                    errorContent);
+
+                throw new HttpRequestException(
+                    $"GET '{url}' failed: " +
+                    $"{httpResponse.StatusCode} - " +
+                    $"{errorContent}");
+            }
+
+            var result =
+                await httpResponse.Content
+                    .ReadFromJsonAsync<TResponse>();
+
+            if (result is null)
+            {
+                throw new InvalidOperationException(
+                    $"GET '{url}' returned an empty response.");
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Error while generic GET on {Url}",
+                url);
+
+            throw;
+        }
+    }
+
+    // ============================================================
+    // POST GENERIC RESPONSE - NO REQUEST BODY
+    //
+    // Used for command-style endpoints where the identifier is
+    // supplied in the URL and the API returns a DTO / contract.
+    //
+    // Examples:
+    //      POST api/invoice/123/finalise
+    //          -> FinaliseInvoiceResponse
+    // ============================================================
+
+    public async Task<TResponse> PostResponse<TResponse>(
+        string url)
+    {
+        try
+        {
+            var httpClient =
+                _httpClientFactory
+                    .CreateClient("mijms");
+
+            var completeUrl =
+                $"{httpClient.BaseAddress}{url}";
+
+            var httpResponse =
+                await httpClient.PostAsync(
+                    completeUrl,
+                    content: null);
+
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent =
+                    await httpResponse.Content
+                        .ReadAsStringAsync();
+
+                Serilog.Log.Error(
+                    "POST {Url} failed. Status: {StatusCode}, Reason: {Reason}, Response: {Response}",
+                    url,
+                    httpResponse.StatusCode,
+                    httpResponse.ReasonPhrase,
+                    errorContent);
+
+                throw new HttpRequestException(
+                    $"POST '{url}' failed: " +
+                    $"{httpResponse.StatusCode} - " +
+                    $"{errorContent}");
+            }
+
+            var result =
+                await httpResponse.Content
+                    .ReadFromJsonAsync<TResponse>();
+
+            if (result is null)
+            {
+                throw new InvalidOperationException(
+                    $"POST '{url}' returned an empty response.");
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Error while generic body-less POST on {Url}",
+                url);
+
+            throw;
+        }
+    }
+
 }

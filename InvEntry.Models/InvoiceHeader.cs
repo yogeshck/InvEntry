@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using InvEntry.Models;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using InvEntry.Contracts.Invoices;
 
 namespace InvEntry.Models;
 
@@ -133,6 +133,9 @@ public partial class InvoiceHeader : BaseEntity
 
     [ObservableProperty]
     private string? salesPerson;
+
+    [ObservableProperty]
+    private string status = InvoiceStatus.Draft;
 
     [ObservableProperty]
     [property: JsonIgnore]

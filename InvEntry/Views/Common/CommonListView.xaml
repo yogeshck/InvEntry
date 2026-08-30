@@ -526,18 +526,103 @@
 
             <!-- PRINT SELECTED -->
 
-            <dx:SimpleButton
-                Grid.Column="1"
+            <StackPanel
+    Grid.Column="1"
+    Orientation="Horizontal"
+    VerticalAlignment="Center">
 
-                Style="{StaticResource ToolbarButtonStyle}"
 
-                Content="Print Selected"
+                <!-- =========================================
+         OPEN / EDIT SELECTED
+         ========================================= -->
 
-                Glyph="{dx:DXImage 'Images/Print/Print_32x32.png'}"
+                <dx:SimpleButton
+        Margin="0,0,8,0"
 
-                Command="{Binding PrintSelectedCommand}"
+        Content="{Binding OpenButtonText}"
 
-                VerticalAlignment="Center"/>
+        Glyph="{dx:DXImage 'Images/Actions/Edit_16x16.png'}"
+
+        Command="{Binding OpenSelectedCommand}"
+
+        VerticalAlignment="Center">
+
+                    <dx:SimpleButton.Style>
+
+                        <Style
+                TargetType="{x:Type dx:SimpleButton}"
+                BasedOn="{StaticResource ToolbarButtonStyle}">
+
+                            <Setter
+                    Property="Visibility"
+                    Value="Collapsed"/>
+
+                            <Style.Triggers>
+
+                                <DataTrigger
+                        Binding="{Binding SupportsOpen}"
+                        Value="True">
+
+                                    <Setter
+                            Property="Visibility"
+                            Value="Visible"/>
+
+                                </DataTrigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </dx:SimpleButton.Style>
+
+                </dx:SimpleButton>
+
+
+                <!-- =========================================
+         PRINT SELECTED
+         ========================================= -->
+
+                <dx:SimpleButton
+
+        Content="Print Selected"
+
+        Glyph="{dx:DXImage 'Images/Print/Print_32x32.png'}"
+
+        Command="{Binding PrintSelectedCommand}"
+
+        VerticalAlignment="Center">
+
+                    <dx:SimpleButton.Style>
+
+                        <Style
+                TargetType="{x:Type dx:SimpleButton}"
+                BasedOn="{StaticResource ToolbarButtonStyle}">
+
+                            <Setter
+                    Property="Visibility"
+                    Value="Collapsed"/>
+
+                            <Style.Triggers>
+
+                                <DataTrigger
+                        Binding="{Binding SupportsDocumentPrint}"
+                        Value="True">
+
+                                    <Setter
+                            Property="Visibility"
+                            Value="Visible"/>
+
+                                </DataTrigger>
+
+                            </Style.Triggers>
+
+                        </Style>
+
+                    </dx:SimpleButton.Style>
+
+                </dx:SimpleButton>
+
+            </StackPanel>
 
         </Grid>
 

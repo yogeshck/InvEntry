@@ -426,52 +426,75 @@
                  SALES
                  ================================================= -->
 
+            <!-- =================================================
+     SALES
+     ================================================= -->
+
             <dxwui:HamburgerSubMenu
-                Content="Sales"
+    Content="Sales"
 
-                MoreButtonVisibilityMode="Hidden"
+    MoreButtonVisibilityMode="Hidden"
 
-                Glyph="{dx:DXImage
-                    'SvgImages/Business Objects/BO_Sale.svg'}">
+    Glyph="{dx:DXImage
+        'SvgImages/Business Objects/BO_Sale.svg'}">
 
 
                 <dxwui:HamburgerSubMenu.Items>
 
 
-                    <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type page:InvoiceEntryPage}"
-
-                        Content="New Invoice"
-
-                        HideMenuWhenSelected="False"/>
-
+                    <!-- NEW INVOICE -->
 
                     <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type views:InvoiceListView}"
+            NavigationTargetType=
+                "{x:Type page:InvoiceEntryPage}"
 
-                        Content="Invoice List"
+            Content="New Invoice"
 
-                        HideMenuWhenSelected="True"/>
+            HideMenuWhenSelected="False"/>
 
 
-                    <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type views:OldMetalPurchaseView}"
-
-                        Content="Old Gold Purchase"
-
-                        HideMenuWhenSelected="True"/>
-
+                    <!-- DRAFT INVOICES -->
 
                     <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type page:OSVoucherView}"
+            NavigationTargetType=
+                "{x:Type views:Invoice.DraftInvoiceListView}"
 
-                        Content="Outstanding Entry"
+            Content="Draft Invoices"
 
-                        HideMenuWhenSelected="True"/>
+            HideMenuWhenSelected="True"/>
+
+
+                    <!-- FINAL INVOICES -->
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+            NavigationTargetType=
+                "{x:Type views:InvoiceListView}"
+
+            Content="Invoice List"
+
+            HideMenuWhenSelected="True"/>
+
+
+                    <!-- OLD GOLD PURCHASE -->
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+            NavigationTargetType=
+                "{x:Type views:OldMetalPurchaseView}"
+
+            Content="Old Gold Purchase"
+
+            HideMenuWhenSelected="True"/>
+
+
+                    <!-- OUTSTANDING -->
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+            NavigationTargetType=
+                "{x:Type page:OSVoucherView}"
+
+            Content="Outstanding Entry"
+
+            HideMenuWhenSelected="True"/>
 
 
                 </dxwui:HamburgerSubMenu.Items>

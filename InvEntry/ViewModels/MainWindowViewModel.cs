@@ -3,13 +3,12 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Core;
 using InvEntry.Extension;
+using InvEntry.Models;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using InvEntry.Models;
-using System.Collections.ObjectModel;
 
 namespace InvEntry.ViewModels
 {
@@ -72,11 +71,35 @@ namespace InvEntry.ViewModels
                 dispatcher;
 
 
+            // -----------------------------------------------------
+            // Wait Indicator Messages
+            // -----------------------------------------------------
+
             Messenger.Default.Register<WaitIndicatorVM>(
                 this,
                 MessageType.WaitIndicator,
                 SetWaitIndicator);
 
+
+            // -----------------------------------------------------
+            // Application Navigation Messages
+            //
+            // Child ViewModels must NOT inject/use their own
+            // INavigationService because that service may not be
+            // attached to the MainWindow NavigationFrame.
+            //
+            // MainWindow owns the actual FrameNavigationService.
+            // -----------------------------------------------------
+
+            Messenger.Default.Register<string>(
+                this,
+                "NavigateToPage",
+                NavigateToPage);
+
+
+            // -----------------------------------------------------
+            // Application Version
+            // -----------------------------------------------------
 
             Version =
                 $"Version : " +
@@ -98,7 +121,9 @@ namespace InvEntry.ViewModels
 
             // Rates are calculated properties.
             // Notify the UI after Settings have been loaded.
+
             OnPropertyChanged(nameof(HeaderRates));
+
 
             // -----------------------------------------------------
             // Startup Navigation
@@ -118,16 +143,44 @@ namespace InvEntry.ViewModels
 
 
         // =========================================================
+        // APPLICATION NAVIGATION
+        // =========================================================
+
+        private void NavigateToPage(
+            string pageName)
+        {
+            if (string.IsNullOrWhiteSpace(pageName))
+                return;
+
+            _dispatcher.Invoke(() =>
+            {
+                NavigationService.Navigate(
+                    pageName);
+
+                GoBackCommand.NotifyCanExecuteChanged();
+            });
+        }
+
+
+        // =========================================================
         // BACK NAVIGATION
         // =========================================================
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanGoBack))]
         private void GoBack()
         {
             if (NavigationService?.CanGoBack == true)
             {
                 NavigationService.GoBack();
             }
+
+            GoBackCommand.NotifyCanExecuteChanged();
+        }
+
+
+        private bool CanGoBack()
+        {
+            return NavigationService?.CanGoBack == true;
         }
 
 

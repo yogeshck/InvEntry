@@ -54,11 +54,19 @@
                                     BarItemDisplayMode="ContentAndGlyph" GlyphAlignment="Top"
                                    GlyphSize="Large" Command="{Binding PrintPreviewInvoiceCommand}"/>
                 <dxb:BarItemSeparator/>
-                <dxb:BarButtonItem x:Name="Save" Content="Save Invoice"
+                <dxb:BarButtonItem x:Name="Save" Content="Save Draft"
                                     BarItemDisplayMode="ContentAndGlyph"
                                     GlyphAlignment="Top"
                                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
-                                    GlyphSize="Large" Command="{Binding CreateInvoiceCommand}"/>
+                                    GlyphSize="Large" Command="{Binding SaveDraftInvoiceCommand}"/>
+                <dxb:BarItemSeparator/>
+                <dxb:BarButtonItem x:Name="Finalise"
+                   Content="Finalise Invoice"
+                   BarItemDisplayMode="ContentAndGlyph"
+                   GlyphAlignment="Top"
+                   Glyph="{dx:DXImage 'Images/Actions/Apply_32x32.png'}"
+                   GlyphSize="Large"
+                   Command="{Binding FinaliseInvoiceCommand}"/>
                 <dxb:BarStaticItem Content="{Binding Gold22C.PriceDisplay, 
                                     Source={ext:DISource Type=viewmodels:SettingsPageViewModel}}"
                                     Alignment="Far" BarItemDisplayMode="ContentAndGlyph" TextBlock.FontSize="20"

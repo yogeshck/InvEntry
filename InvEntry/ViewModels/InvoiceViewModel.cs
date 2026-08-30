@@ -1,16 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DevExpress.DataAccess.Native.Json;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
-using DevExpress.Xpf.Core.ConditionalFormatting.Native;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
+using InvEntry.Contracts.Invoices;
 using InvEntry.Extension;
 using InvEntry.Helper;
 using InvEntry.Helpers;
+using InvEntry.Mappers.Invoices;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
@@ -22,9 +22,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing.Text;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Windows;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
 namespace InvEntry.ViewModels;
@@ -141,6 +142,9 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IReportFactoryService _reportFactoryService;
+    private readonly InvoiceEditSession _invoiceEditSession;
+    private bool _isLoadingDraft;
+
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
     private Dictionary<string, Action<InvoiceHeader, decimal?>> copyHeaderExpression;
@@ -176,6 +180,7 @@ public partial class InvoiceViewModel : ObservableObject
         IMtblLedgersService mtblLedgersService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
+        InvoiceEditSession invoiceEditSession,
         ReferenceLoader referenceLoader,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
@@ -199,7 +204,7 @@ public partial class InvoiceViewModel : ObservableObject
         _voucherService = voucherService;
         _invoiceArReceiptService = invoiceArReceiptService;
         _mtblReferencesService = mtblReferencesService;
-
+        _invoiceEditSession = invoiceEditSession;
         _referenceLoader = referenceLoader;
 
         //_productTransactionSummaryService = productTransactionSummaryService;
@@ -226,10 +231,133 @@ public partial class InvoiceViewModel : ObservableObject
         PopulateMtblRefNameList();
         PopulateMetalList();
         PopulateTaxList();
+
+
         //PopulateSalesPersonList();
 
         //PopulateUnboundHeaderDataMap();
     }
+
+    private async Task LoadDraftSafeAsync(
+    InvoiceEditResponse draft)
+    {
+        try
+        {
+            await Task.Yield();
+
+            await LoadDraftAsync(draft);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                $"Unable to load draft invoice.\n\n{ex.Message}",
+                "Draft Invoice",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+    }
+
+    public async Task LoadPendingDraftAsync()
+    {
+        var draft =
+            _invoiceEditSession.TakeDraft();
+
+        if (draft is null)
+            return;
+
+        await LoadDraftSafeAsync(draft);
+    }
+
+    private async Task LoadDraftAsync(
+        InvoiceEditResponse draft)
+    {
+        if (draft?.Header is null)
+            return;
+
+        _isLoadingDraft = true;
+
+        Messenger.Default.Send(
+            MessageType.WaitIndicator,
+            WaitIndicatorVM.ShowIndicator(
+                "Loading draft invoice..."));
+
+        try
+        {
+            Header = MapDraftHeader(draft.Header);
+
+            foreach (var source in draft.Lines)
+            {
+                Header.Lines.Add(
+                    MapDraftLine(source));
+            }
+
+            foreach (var source in draft.OldMetalTransactions)
+            {
+                Header.OldMetalTransactions.Add(
+                    MapDraftOldMetal(source));
+            }
+
+            foreach (var source in draft.Receipts)
+            {
+                Header.ReceiptLines.Add(
+                    MapDraftReceipt(source));
+            }
+
+            CustomerPhoneNumber =
+                Header.CustMobile;
+
+            if (!string.IsNullOrWhiteSpace(Header.CustMobile))
+            {
+                Buyer =
+                    await _customerService
+                        .GetCustomer(Header.CustMobile);
+            }
+
+            if (Buyer is not null)
+            {
+                createCustomer = false;
+                updateCustomer = true;
+
+                CustName = Buyer.CustomerName;
+                CustCity = Buyer.Address?.City;
+
+                if (Buyer.Address is not null)
+                {
+                    CustomerState =
+                        await _referenceLoader
+                            .GetValueAsync(
+                                "CUST_STATE",
+                                Buyer.Address.GstStateCode);
+                }
+            }
+
+            InvLineChk =
+                Header.Lines.Count > 0;
+
+            PayRctChk =
+                Header.ReceiptLines.Count > 0;
+
+            invBalanceChk = false;
+        }
+        finally
+        {
+            _isLoadingDraft = false;
+
+            CreateInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+            PrintInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+            PrintPreviewInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
+
 
     private void SetMetalPrice()
     {
@@ -698,6 +826,272 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
+    private bool CanFinaliseInvoice()
+    {
+        if (Header is null)
+            return false;
+
+        return Header.GKey > 0 &&
+               InvoiceStatus.IsDraft(Header.Status);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanFinaliseInvoice))]
+    private async Task FinaliseInvoice()
+    {
+        try
+        {
+            if (Header is null)
+                return;
+
+            if (Header.GKey <= 0)
+            {
+                DXMessageBox.Show(
+                    "Please save the invoice as Draft before finalising.",
+                    "Finalise Invoice",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            if (!InvoiceStatus.IsDraft(Header.Status))
+            {
+                DXMessageBox.Show(
+                    $"Only a Draft invoice can be finalised.\n\n" +
+                    $"Current status: {Header.Status}",
+                    "Finalise Invoice",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            if (Header.Lines is null ||
+                Header.Lines.Count == 0)
+            {
+                DXMessageBox.Show(
+                    "Invoice must contain at least one item before finalising.",
+                    "Finalise Invoice",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
+            }
+
+            var confirmation =
+                DXMessageBox.Show(
+                    $"Finalise DRAFT-{Header.GKey}?\n\n" +
+                    "Once finalised, this invoice can no longer be edited.",
+                    "Finalise Invoice",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+            if (confirmation != MessageBoxResult.Yes)
+                return;
+
+            var result =
+                await _invoiceService.FinaliseAsync(
+                    Header.GKey);
+
+            Header.InvNbr =
+                result.InvNbr;
+
+            Header.Status =
+                result.Status;
+
+            //Header.FinalisedOn =
+            //    result.FinalisedOn;
+
+            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+
+            DXMessageBox.Show(
+                $"Invoice finalised successfully.\n\n" +
+                $"Invoice Number: {result.InvNbr}",
+                "Invoice Finalised",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (HttpRequestException ex)
+        {
+            DXMessageBox.Show(
+                $"Unable to finalise invoice.\n\n{ex.Message}",
+                "Finalisation Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        catch (Exception ex)
+        {
+            DXMessageBox.Show(
+                $"Invoice finalisation failed.\n\n{ex.Message}",
+                "Finalisation Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private bool CanSaveDraftInvoice()
+    {
+        if (Header is null)
+            return false;
+
+        return !InvoiceStatus.IsFinal(Header.Status) &&
+               !InvoiceStatus.IsCancelled(Header.Status);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSaveDraftInvoice))]
+    private async Task SaveDraftInvoice()
+    {
+        try
+        {
+            if (Header is null)
+                return;
+
+            if (Header.Lines is null ||
+                Header.Lines.Count == 0)
+            {
+                _messageBoxService.ShowMessage(
+                    "Please enter at least one invoice item before saving the draft.",
+                    "Draft Invoice",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                return;
+            }
+
+            if (Buyer is null ||
+                string.IsNullOrWhiteSpace(Buyer.CustomerName))
+            {
+                _messageBoxService.ShowMessage(
+                    "Please enter customer information before saving the draft.",
+                    "Customer Information",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                return;
+            }
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(
+                    "Saving draft invoice..."));
+
+            // ---------------------------------------------------------
+            // CUSTOMER
+            // ---------------------------------------------------------
+
+            if (createCustomer)
+            {
+                Buyer =
+                    await _customerService
+                        .CreateCustomer(Buyer);
+
+                createCustomer = false;
+                updateCustomer = true;
+            }
+            else if (updateCustomer)
+            {
+                if (CustName != Buyer.CustomerName)
+                {
+                    await _customerService
+                        .UpdateCustomer(Buyer);
+                }
+
+                if (Buyer.Address is not null &&
+                    CustCity != Buyer.Address.City)
+                {
+                    await _addressService
+                        .UpdateAddress(Buyer.Address);
+                }
+            }
+
+            Header.CustGkey =
+                (int?)Buyer.GKey;
+
+            Header.CustMobile =
+                Buyer.MobileNbr;
+
+            Header.Status =
+                InvoiceStatus.Draft;
+
+            // ---------------------------------------------------------
+            // LINE NUMBERS
+            // ---------------------------------------------------------
+
+            for (var index = 0;
+                 index < Header.Lines.Count;
+                 index++)
+            {
+                Header.Lines[index].InvLineNbr =
+                    index + 1;
+            }
+
+            // ---------------------------------------------------------
+            // MAP ENTIRE AGGREGATE
+            // ---------------------------------------------------------
+
+            var request =
+                InvoiceRequestMapper.ToSaveRequest(Header);
+
+            // ---------------------------------------------------------
+            // ONE BACKEND WORKFLOW CALL
+            // ---------------------------------------------------------
+
+            var result =
+                await _invoiceService
+                    .SaveDraftAsync(request);
+
+            // ---------------------------------------------------------
+            // UPDATE CURRENT UI MODEL
+            // ---------------------------------------------------------
+
+            Header.GKey =
+                result.Gkey;
+
+            Header.InvNbr =
+                string.IsNullOrWhiteSpace(result.InvNbr)
+                    ? null
+                    : result.InvNbr;
+
+            Header.Status =
+                result.Status;
+
+            createCustomer = false;
+            updateCustomer = true;
+
+            CustName =
+                Buyer.CustomerName;
+
+            CustCity =
+                Buyer.Address?.City;
+
+            _messageBoxService.ShowMessage(
+                $"Draft invoice DRAFT-{Header.GKey} saved successfully.",
+                "Draft Saved",
+                MessageButton.OK,
+                MessageIcon.Information);
+
+            SaveDraftInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                $"Unable to save draft invoice.\n\n{ex.Message}",
+                "Draft Save Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
+
     private bool CanCreateInvoice()
     {
         return string.IsNullOrEmpty(Header?.InvNbr);
@@ -1052,26 +1446,36 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CellUpdate(CellValueChangedEventArgs args)
+    private void CellUpdate(
+    CellValueChangedEventArgs args)
     {
+        if (_isLoadingDraft)
+            return;
+
+        if (args?.Row is null)
+            return;
+
         if (args.Row is InvoiceLine line)
         {
             EvaluateFormula(line);
         }
-        else
-        if (args.Row is InvoiceArReceipt arInvRctline)
+        else if (args.Row is InvoiceArReceipt arInvRctLine)
         {
-            EvaluateArRctLine(arInvRctline);
+            EvaluateArRctLine(arInvRctLine);
         }
-        else
-        if (args.Row is OldMetalTransaction oldMetalTransaction &&
-            args.Column.FieldName != nameof(OldMetalTransaction.FinalPurchasePrice))
+        else if (
+            args.Row is OldMetalTransaction oldMetalTransaction &&
+            args.Column?.FieldName !=
+                nameof(OldMetalTransaction.FinalPurchasePrice))
         {
-            _ = EvaluateOldMetalTransactionLineAsync(oldMetalTransaction);
+            _ =
+                EvaluateOldMetalTransactionLineAsync(
+                    oldMetalTransaction);
         }
 
         EvaluateHeader();
     }
+
 
     [RelayCommand]
     private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
@@ -1207,6 +1611,12 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void EvaluateHeader()
     {
+
+        if (_isLoadingDraft)
+            return;
+
+        if (Header is null)
+            return;
 
         // Header.AdvanceAdj = FilterReceiptTransactions("Advance");
         // Header.RdAmountAdj = FilterReceiptTransactions("RD");
@@ -1740,6 +2150,13 @@ public partial class InvoiceViewModel : ObservableObject
 
     private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
     {
+
+        if (_isLoadingDraft)
+            return;
+
+        if (item is null)
+            return;
+
         var formulas = FormulaStore.Instance.GetFormulas<T>();
 
         foreach (var formula in formulas)
@@ -1792,4 +2209,236 @@ public partial class InvoiceViewModel : ObservableObject
 
         return true;
     }
+
+    private InvoiceHeader MapDraftHeader(
+    InvoiceHeaderSaveModel source)
+    {
+        return new InvoiceHeader
+        {
+            GKey = source.Gkey,
+            InvNbr = source.InvNbr,
+            InvDate = source.InvDate,
+            CustMobile = source.CustMobile,
+            CustGkey = source.CustGkey,
+
+            PlaceOfSeller = source.PlaceOfSeller,
+            PlaceOfSupply = source.PlaceOfSupply,
+            PaymentDueDate = source.PaymentDueDate,
+
+            InvlTaxableAmount = source.InvlTaxableAmount,
+
+            AdvanceAdj = source.AdvanceAdj,
+            RdAmountAdj = source.RdAmountAdj,
+
+            OldGoldAmount = source.OldGoldAmount,
+            OldSilverAmount = source.OldSilverAmount,
+
+            DiscountPercent = source.DiscountPercent,
+            DiscountAmount = source.DiscountAmount,
+
+            RoundOff = source.RoundOff,
+            AmountPayable = source.AmountPayable,
+            RecdAmount = source.RecdAmount,
+
+            InvBalance = source.InvBalance,
+            InvRefund = source.InvRefund,
+            InvNotes = source.InvNotes,
+
+            IsTaxApplicable = source.IsTaxApplicable,
+            TaxType = source.TaxType,
+
+            CgstPercent = source.CgstPercent,
+            SgstPercent = source.SgstPercent,
+            IgstPercent = source.IgstPercent,
+
+            CgstAmount = source.CgstAmount,
+            SgstAmount = source.SgstAmount,
+            IgstAmount = source.IgstAmount,
+
+            PaymentMode = source.PaymentMode,
+
+            GrossRcbAmount = source.GrossRcbAmount,
+            InvlTaxTotal = source.InvlTaxTotal,
+
+            TenantGkey = source.TenantGkey,
+
+            GstLocSeller = source.GstLocSeller,
+            GstLocBuyer = source.GstLocBuyer,
+
+            SalesPerson = source.SalesPerson,
+
+            Status = source.Status
+        };
+    }
+
+    private InvoiceLine MapDraftLine(
+    InvoiceLineSaveModel source)
+    {
+        return new InvoiceLine
+        {
+            GKey = source.Gkey,
+
+            HsnCode = source.HsnCode,
+            InvLineNbr = source.InvLineNbr,
+            InvNote = source.InvNote,
+
+            InvlBilledPrice = source.InvlBilledPrice,
+            InvlGrossAmt = source.InvlGrossAmt,
+            InvlMakingCharges = source.InvlMakingCharges,
+            InvlOtherCharges = source.InvlOtherCharges,
+            InvlPayableAmt = source.InvlPayableAmt,
+            InvlStoneAmount = source.InvlStoneAmount,
+            InvlTaxableAmount = source.InvlTaxableAmount,
+            InvlWastageAmt = source.InvlWastageAmt,
+
+            IsTaxable = source.IsTaxable,
+
+            ItemNotes = source.ItemNotes,
+            ItemPacked = source.ItemPacked,
+
+            ProdCategory = source.ProdCategory,
+            ProdGrossWeight = source.ProdGrossWeight,
+            ProdNetWeight = source.ProdNetWeight,
+            ProdQty = source.ProdQty,
+            ProdStoneWeight = source.ProdStoneWeight,
+
+            ProductDesc = source.ProductDesc,
+            ProductGkey = source.ProductGkey,
+            ProductName = source.ProductName,
+            ProdPackCode = source.ProdPackCode,
+            ProductPurity = source.ProductPurity,
+
+            TaxAmount = source.TaxAmount,
+            TaxPercent = source.TaxPercent,
+            TaxType = source.TaxType,
+
+            VaAmount = source.VaAmount,
+            VaPercent = source.VaPercent,
+
+            InvoiceHdrGkey = source.InvoiceHdrGkey,
+            InvoiceId = source.InvoiceId,
+
+            TenantGkey = source.TenantGkey,
+
+            InvlCgstPercent = source.InvlCgstPercent,
+            InvlCgstAmount = source.InvlCgstAmount,
+
+            InvlIgstPercent = source.InvlIgstPercent,
+            InvlIgstAmount = source.InvlIgstAmount,
+
+            InvlSgstPercent = source.InvlSgstPercent,
+            InvlSgstAmount = source.InvlSgstAmount,
+
+            InvlTotal = source.InvlTotal,
+
+            ProductId = source.ProductId,
+            ProductSku = source.ProductSku,
+
+            Metal = source.Metal
+        };
+    }
+
+    private OldMetalTransaction MapDraftOldMetal(
+    InvoiceOldMetalSaveModel source)
+    {
+        return new OldMetalTransaction
+        {
+            GKey = source.Gkey,
+
+            TransNbr = source.TransNbr,
+            TransDate = source.TransDate,
+            TransType = source.TransType,
+
+            DocRefGkey = source.DocRefGkey,
+            DocRefNbr = source.DocRefNbr,
+            DocRefDate = source.DocRefDate,
+
+            CustGkey = source.CustGkey,
+            CustMobile = source.CustMobile,
+
+            ProductGkey = source.ProductGkey,
+            ProductId = source.ProductId,
+            ProductCategory = source.ProductCategory,
+
+            Metal = source.Metal,
+            Purity = source.Purity,
+
+            TransactedRate = source.TransactedRate,
+
+            GrossWeight = source.GrossWeight,
+            StoneWeight = source.StoneWeight,
+            WastageWeight = source.WastageWeight,
+            NetWeight = source.NetWeight,
+
+            TotalProposedPrice = source.TotalProposedPrice,
+            FinalPurchasePrice = source.FinalPurchasePrice,
+
+            DocRefType = source.DocRefType,
+
+           // TenantGkey = source.TenantGkey
+        };
+    }
+
+    private InvoiceArReceipt MapDraftReceipt(
+    InvoiceReceiptSaveModel source)
+    {
+        return new InvoiceArReceipt
+        {
+            GKey = source.Gkey,
+
+            SeqNbr = source.SeqNbr,
+
+            CustGkey = source.CustGkey,
+
+            InvoiceGkey = source.InvoiceGkey,
+            InvoiceNbr = source.InvoiceNbr,
+
+            InvoiceReceivableAmount =
+                source.InvoiceReceivableAmount,
+
+            BalBeforeAdj =
+                source.BalBeforeAdj,
+
+            AdjustedAmount =
+                source.AdjustedAmount,
+
+            BalanceAfterAdj =
+                source.BalanceAfterAdj,
+
+            TransactionType =
+                source.TransactionType,
+
+            ModeOfReceipt =
+                source.ModeOfReceipt,
+
+            InternalVoucherNbr =
+                source.InternalVoucherNbr,
+
+            InternalVoucherDate =
+                source.InternalVoucherDate,
+
+            InvoiceReceiptNbr =
+                source.InvoiceReceiptNbr,
+
+            Status =
+                source.Status,
+
+            BankName =
+                source.BankName,
+
+            ExternalTransactionId =
+                source.ExternalTransactionId,
+
+            ExternalTransactionDate =
+                source.ExternalTransactionDate,
+
+            OtherReference =
+                source.OtherReference,
+
+        //    TenantGkey =
+        //        source.TenantGkey
+        };
+    }
+
+
 }

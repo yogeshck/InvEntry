@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
+    <ProjectReference Include="..\InvEntry.Contracts\InvEntry.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

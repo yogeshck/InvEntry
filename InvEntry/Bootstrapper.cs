@@ -14,6 +14,7 @@ using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Services.Customers;
 using InvEntry.Services.Printing;
+using InvEntry.Store;
 using InvEntry.Tally;
 using InvEntry.ViewModels;
 using InvEntry.ViewModels.Common;
@@ -98,6 +99,7 @@ public sealed class Bootstrapper
              .ConfigureServices((ctx, services) => services
                  .AddHostedService<DataInitService>()
                  .AddSingleton(dispatcher)
+                 .AddSingleton<InvoiceEditSession>()
                  .AddSingleton<IMessageBoxService>(_ =>
                  {
                      DXMessageBoxService messageBoxService = null;
@@ -120,6 +122,7 @@ public sealed class Bootstrapper
                  .AddTransient<IDailyRateDefinitionService, DailyRateDefinitionService>()
                  .AddTransient<CustomerEditViewModel>()
                  .AddTransient<CustomerOrderSummaryViewModel>()
+                 .AddTransient<DraftInvoiceListViewModel>()
                  .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) =>
                  {
                      if (Application.Current.TryFindResource("ReportDialogService") is DialogService dialogService)
