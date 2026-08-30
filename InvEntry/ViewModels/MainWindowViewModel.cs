@@ -2,82 +2,173 @@
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Core;
-using DevExpress.Xpo.Helpers;
 using InvEntry.Extension;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-  
 using System.Windows.Threading;
 
 namespace InvEntry.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
     {
-        [ObservableProperty]
-        private INavigationService _navigationService;
+        private readonly SettingsPageViewModel _settingsPageViewModel;
+        private readonly Dispatcher _dispatcher;
+
+
+        // =========================================================
+        // NAVIGATION
+        // =========================================================
 
         [ObservableProperty]
-        private bool _WaitIndicatorVisible;
+        private INavigationService navigationService;
+
+
+        // =========================================================
+        // WAIT INDICATOR
+        // =========================================================
 
         [ObservableProperty]
-        private string _WaitIndicatorContent;
+        private bool waitIndicatorVisible;
 
         [ObservableProperty]
-        private string _Version;
+        private string? waitIndicatorContent;
 
-        public decimal? GoldRate
-            => _settingsPageViewModel?.Gold22C?.Price;
 
-        public decimal? SilverRate
-            => _settingsPageViewModel?.Silver?.Price;
+        // =========================================================
+        // APPLICATION INFORMATION
+        // =========================================================
 
-        public decimal? DiamondRate
-            => _settingsPageViewModel?.Diamond?.Price;
+        [ObservableProperty]
+        private string version = string.Empty;
 
-        private SettingsPageViewModel _settingsPageViewModel;
-        private Dispatcher Dispatcher;
 
-        public MainWindowViewModel(INavigationService navigationService, 
+        // =========================================================
+        // CURRENT RATES
+        // =========================================================
+
+        public decimal? GoldRate =>
+            _settingsPageViewModel.Gold22C?.Price;
+
+        public decimal? SilverRate =>
+            _settingsPageViewModel.Silver?.Price;
+
+        public decimal? DiamondRate =>
+            _settingsPageViewModel.Diamond?.Price;
+
+
+        // =========================================================
+        // CONSTRUCTOR
+        // =========================================================
+
+        public MainWindowViewModel(
+            INavigationService navigationService,
             SettingsPageViewModel settingsPageViewModel,
             Dispatcher dispatcher)
         {
-            _navigationService = navigationService;
-            _settingsPageViewModel = settingsPageViewModel;
-            Messenger.Default.Register<WaitIndicatorVM>(this, MessageType.WaitIndicator, SetWaitIndicator);
+            NavigationService = navigationService;
 
-            Version = $"Version : {Assembly.GetEntryAssembly()!.GetName().Version}";
-            Dispatcher = dispatcher;
+            _settingsPageViewModel =
+                settingsPageViewModel;
+
+            _dispatcher =
+                dispatcher;
+
+
+            Messenger.Default.Register<WaitIndicatorVM>(
+                this,
+                MessageType.WaitIndicator,
+                SetWaitIndicator);
+
+
+            Version =
+                $"Version : " +
+                $"{Assembly.GetEntryAssembly()!.GetName().Version}";
         }
+
+
+        // =========================================================
+        // WINDOW LOADED
+        // =========================================================
 
         [RelayCommand]
         private async Task OnLoaded()
         {
-            await _settingsPageViewModel.LoadedCommand.ExecuteAsync(null);
+            await _settingsPageViewModel
+                .LoadedCommand
+                .ExecuteAsync(null);
 
-            if(_settingsPageViewModel.IsAllPriceUpdated())
-                NavigationService.Navigate("InvoiceEntryPage");
+
+            // Rates are calculated properties.
+            // Notify the UI after Settings have been loaded.
+
+            OnPropertyChanged(nameof(GoldRate));
+            OnPropertyChanged(nameof(SilverRate));
+            OnPropertyChanged(nameof(DiamondRate));
+
+
+            // -----------------------------------------------------
+            // Startup Navigation
+            // -----------------------------------------------------
+
+            if (_settingsPageViewModel.IsAllPriceUpdated())
+            {
+                NavigationService.Navigate(
+                    "InvoiceEntryPage");
+            }
             else
-                NavigationService.Navigate("SettingsPage");
+            {
+                NavigationService.Navigate(
+                    "SettingsPage");
+            }
         }
 
-        private void SetWaitIndicator(WaitIndicatorVM vm)
+
+        // =========================================================
+        // BACK NAVIGATION
+        // =========================================================
+
+        [RelayCommand]
+        private void GoBack()
         {
-            Dispatcher.Invoke(() =>
+            if (NavigationService?.CanGoBack == true)
+            {
+                NavigationService.GoBack();
+            }
+        }
+
+
+        // =========================================================
+        // WAIT INDICATOR
+        // =========================================================
+
+        private void SetWaitIndicator(
+            WaitIndicatorVM vm)
+        {
+            _dispatcher.Invoke(() =>
             {
                 if (vm.IsVisible)
-                    SplashScreenManager.CreateWaitIndicator(vm, topmost: true).Show(owner: Application.Current.MainWindow);
+                {
+                    SplashScreenManager
+                        .CreateWaitIndicator(
+                            vm,
+                            topmost: true)
+                        .Show(
+                            owner:
+                            Application.Current.MainWindow);
+                }
                 else
+                {
                     SplashScreenManager.CloseAll();
+                }
             });
 
-            WaitIndicatorContent = vm.Status;
-            WaitIndicatorVisible = vm.IsVisible;
-        }
 
+            WaitIndicatorContent =
+                vm.Status;
+
+            WaitIndicatorVisible =
+                vm.IsVisible;
+        }
     }
 }
