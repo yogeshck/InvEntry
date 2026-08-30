@@ -117,6 +117,7 @@ public sealed class Bootstrapper
 
                      return new DialogService();
                  })
+                 .AddTransient<IDailyRateDefinitionService, DailyRateDefinitionService>()
                  .AddTransient<CustomerEditViewModel>()
                  .AddTransient<CustomerOrderSummaryViewModel>()
                  .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) =>

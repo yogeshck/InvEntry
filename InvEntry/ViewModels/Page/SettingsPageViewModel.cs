@@ -11,12 +11,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using InvEntry.Models.UI;
 
 namespace InvEntry.ViewModels;
 
 public partial class SettingsPageViewModel : ObservableObject
 {
     private readonly IMijmsApiService _mijmsApiService;
+    private readonly IDailyRateDefinitionService _rateDefinitionService;
 
     [ObservableProperty]
     private ObservableCollection<DailyRate> dailyMetalRate = new();
@@ -27,11 +29,18 @@ public partial class SettingsPageViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<DailyRate> historyDailyMetalRate = new();
 
+    [ObservableProperty]
+    private ObservableCollection<DailyRate> headerRates = new();
+
+    [ObservableProperty]
+    private ObservableCollection<DailyRateDefinition>  rateDefinitions = new();
 
     public SettingsPageViewModel(
-        IMijmsApiService mijmsApiService)
+       IMijmsApiService mijmsApiService,
+       IDailyRateDefinitionService rateDefinitionService)
     {
         _mijmsApiService = mijmsApiService;
+        _rateDefinitionService = rateDefinitionService;
     }
 
 
@@ -57,13 +66,13 @@ public partial class SettingsPageViewModel : ObservableObject
                     .GetEnumerable<DailyRate>(
                         "api/dailyrate/latest");
 
-            foreach (var rate in dailyRates ?? [])
+/*            foreach (var rate in dailyRates ?? [])
             {
                 System.Diagnostics.Debug.WriteLine(
                     $"{rate.Metal} | " +
                     $"{rate.EffectiveDate:dd-MMM-yyyy HH:mm:ss} | " +
                     $"{rate.Price}");
-            }
+            }*/
 
             DailyMetalRate =
                 dailyRates is null
@@ -75,11 +84,17 @@ public partial class SettingsPageViewModel : ObservableObject
             // Current configured rates
             // -------------------------------------------------
 
-            var rateDefinitions =
-                GetRateDefinitions();
+            var definitions =
+                await _rateDefinitionService
+                    .GetDefinitionsAsync();
 
+            RateDefinitions =
+                new ObservableCollection<DailyRateDefinition>(
+                    definitions);
 
-            BuildTodayRates(rateDefinitions);
+            BuildTodayRates();
+
+            RefreshRateCollections();
 
 
             // -------------------------------------------------
@@ -110,87 +125,100 @@ public partial class SettingsPageViewModel : ObservableObject
     // Later this comes from your Metal / Reference master.
     // =========================================================
 
-    private static List<DailyRate> GetRateDefinitions()
-    {
-        return
-        [
-            new DailyRate
-            {
-                Metal = "GOLD",
-                Purity = "916",
-                Carat = "22 KT",
-                IsDisplay = true
-            },
+    /*    private static List<DailyRate> GetRateDefinitions()
+        {
+            return
+            [
+                new DailyRate
+                {
+                    Metal = "GOLD",
+                    Purity = "916",
+                    Carat = "22 KT",
+                    IsDisplay = true
+                },
 
-            new DailyRate
-            {
-                Metal = "GOLD.18KT",
-                Purity = "750",
-                Carat = "18 KT",
-                IsDisplay = true
-            },
+                new DailyRate
+                {
+                    Metal = "GOLD.18KT",
+                    Purity = "750",
+                    Carat = "18 KT",
+                    IsDisplay = true
+                },
 
-            new DailyRate
-            {
-                Metal = "SILVER",
-                Purity = "XX",
-                Carat = null,
-                IsDisplay = true
-            },
+                new DailyRate
+                {
+                    Metal = "SILVER",
+                    Purity = "XX",
+                    Carat = null,
+                    IsDisplay = true
+                },
 
-            new DailyRate
-            {
-                Metal = "DIAMOND",
-                Purity = "XX",
-                Carat = null,
-                IsDisplay = true
-            }
-        ];
-    }
+                new DailyRate
+                {
+                    Metal = "DIAMOND",
+                    Purity = "XX",
+                    Carat = null,
+                    IsDisplay = true
+                }
+            ];
+        }*/
 
 
     // =========================================================
     // BUILD TODAY'S RATE COLLECTION
     // =========================================================
 
-    private void BuildTodayRates(
-        IEnumerable<DailyRate> definitions)
+    private void BuildTodayRates()
     {
         TodayDailyMetalRate.Clear();
 
-        foreach (var definition in definitions)
+
+        var activeDefinitions =
+            RateDefinitions
+                .Where(x => x.TrackDailyRate)
+                .OrderBy(x => x.DisplayOrder);
+
+
+        foreach (var definition in activeDefinitions)
         {
             var latestRate =
                 DailyMetalRate
-                    .Where(x => IsSame(x, definition))
-                    .OrderByDescending(x => x.EffectiveDate)
-                    .ThenByDescending(x => x.GKey)
+                    .Where(x =>
+                        IsSame(
+                            x,
+                            definition))
+                    .OrderByDescending(
+                        x => x.EffectiveDate)
+                    .ThenByDescending(
+                        x => x.GKey)
                     .FirstOrDefault();
 
-            // IMPORTANT:
-            // Never put the actual database entity into the editable collection.
-            // Create an editable copy with GKey = 0.
+
             TodayDailyMetalRate.Add(
                 new DailyRate
                 {
+                    // Always editable/new.
+                    // Historical DB record is never modified.
                     GKey = 0,
 
                     Metal = definition.Metal,
+
                     Purity = definition.Purity,
+
                     Carat = definition.Carat,
 
-                    // Show the latest existing price.
                     Price = latestRate?.Price,
 
-                    // This will become the actual save time
-                    // when the user changes/saves the rate.
                     EffectiveDate =
                         latestRate?.EffectiveDate
                         ?? DateTime.Now,
 
-                    IsDisplay = definition.IsDisplay
+                    IsDisplay = true
                 });
         }
+
+        RefreshHeaderRates();
+
     }
 
 
@@ -319,6 +347,12 @@ public partial class SettingsPageViewModel : ObservableObject
             }
 
 
+            // Rebuild current cards using newly saved
+            // records as the latest rates.
+            BuildTodayRates();
+
+
+            // Refresh recent change history.
             RefreshRateCollections();
 
 
@@ -336,6 +370,34 @@ public partial class SettingsPageViewModel : ObservableObject
         }
     }
 
+    private void RefreshHeaderRates()
+    {
+        HeaderRates.Clear();
+
+
+        var definitions =
+            RateDefinitions
+                .Where(x =>
+                    x.TrackDailyRate &&
+                    x.ShowInHeader)
+                .OrderBy(x =>
+                    x.DisplayOrder);
+
+
+        foreach (var definition in definitions)
+        {
+            var rate =
+                TodayDailyMetalRate
+                    .FirstOrDefault(x =>
+                        IsSame(
+                            x,
+                            definition));
+
+            if (rate is not null)
+                HeaderRates.Add(rate);
+        }
+    }
+
     private void RefreshRateCollections()
     {
         HistoryDailyMetalRate =
@@ -346,6 +408,35 @@ public partial class SettingsPageViewModel : ObservableObject
                     .ThenByDescending(x => x.GKey)
                     .Take(10));
     }
+
+/*    public IEnumerable<DailyRate> HeaderRates
+    {
+        get
+        {
+            var headerDefinitions =
+                RateDefinitions
+                    .Where(x =>
+                        x.TrackDailyRate &&
+                        x.ShowInHeader)
+                    .OrderBy(x =>
+                        x.DisplayOrder);
+
+
+            foreach (var definition
+                     in headerDefinitions)
+            {
+                var rate =
+                    TodayDailyMetalRate
+                        .FirstOrDefault(x =>
+                            IsSame(
+                                x,
+                                definition));
+
+                if (rate is not null)
+                    yield return rate;
+            }
+        }
+    }*/
 
     // =========================================================
     // VALIDATION
@@ -419,25 +510,46 @@ public partial class SettingsPageViewModel : ObservableObject
         if (x is null || y is null)
             return false;
 
-
         return
             string.Equals(
                 x.Metal,
                 y.Metal,
                 StringComparison.OrdinalIgnoreCase)
-
             &&
-
             string.Equals(
                 x.Purity,
                 y.Purity,
                 StringComparison.OrdinalIgnoreCase)
-
             &&
-
             string.Equals(
                 x.Carat,
                 y.Carat,
                 StringComparison.OrdinalIgnoreCase);
     }
+
+
+    private static bool IsSame(
+        DailyRate? rate,
+        DailyRateDefinition? definition)
+    {
+        if (rate is null || definition is null)
+            return false;
+
+        return
+            string.Equals(
+                rate.Metal,
+                definition.Metal,
+                StringComparison.OrdinalIgnoreCase)
+            &&
+            string.Equals(
+                rate.Purity,
+                definition.Purity,
+                StringComparison.OrdinalIgnoreCase)
+            &&
+            string.Equals(
+                rate.Carat,
+                definition.Carat,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
 }

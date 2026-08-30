@@ -301,43 +301,39 @@
 
                     <!-- Dynamic Metal Rates -->
                     <ItemsControl
-        ItemsSource="{Binding HeaderRates}"
-        VerticalAlignment="Center">
+    ItemsSource="{Binding HeaderRates}">
 
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-
                                 <StackPanel
-                    Orientation="Horizontal"/>
-
+                Orientation="Horizontal"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
 
                         <ItemsControl.ItemTemplate>
-
                             <DataTemplate>
 
                                 <StackPanel
-                    Orientation="Horizontal"
-                    VerticalAlignment="Center"
-                    Margin="0,0,22,0">
+                Orientation="Horizontal"
+                Margin="0,0,20,0"
+                VerticalAlignment="Center">
 
-                                    <!-- Metal -->
                                     <TextBlock
-                        Text="{Binding Metal}"
-                        Style="{StaticResource RateCaptionStyle}"
-                        Margin="0,0,7,0"/>
+                    Text="{Binding Metal}"
+                    FontSize="10"
+                    FontWeight="SemiBold"
+                    Opacity="0.60"
+                    Margin="0,0,6,0"/>
 
-                                    <!-- Rate -->
                                     <TextBlock
-                        Text="{Binding Price,
-                               StringFormat={}{0:N2}}"
-                        Style="{StaticResource RateValueStyle}"/>
+                    Text="{Binding Price,
+                           StringFormat={}{0:N2}}"
+                    FontSize="14"
+                    FontWeight="SemiBold"/>
 
                                 </StackPanel>
 
                             </DataTemplate>
-
                         </ItemsControl.ItemTemplate>
 
                     </ItemsControl>
