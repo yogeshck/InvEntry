@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
-using DevExpress.Utils.Html.Internal;
 using DevExpress.Xpf.Core;
 using InvEntry.Extension;
 using InvEntry.Models;
@@ -10,227 +9,435 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace InvEntry.ViewModels
+namespace InvEntry.ViewModels;
+
+public partial class SettingsPageViewModel : ObservableObject
 {
-    public partial class SettingsPageViewModel : ObservableObject
+    private readonly IMijmsApiService _mijmsApiService;
+
+    [ObservableProperty]
+    private ObservableCollection<DailyRate> dailyMetalRate = new();
+
+    [ObservableProperty]
+    private ObservableCollection<DailyRate> todayDailyMetalRate = new();
+
+    [ObservableProperty]
+    private ObservableCollection<DailyRate> historyDailyMetalRate = new();
+
+
+    public SettingsPageViewModel(
+        IMijmsApiService mijmsApiService)
     {
-        [ObservableProperty]
-        private ObservableCollection<DailyRate> dailyMetalRate;
+        _mijmsApiService = mijmsApiService;
+    }
 
-        [ObservableProperty]
-        private ObservableCollection<DailyRate> todayDailyMetalRate;
 
-        [ObservableProperty]
-        private ObservableCollection<DailyRate> historyDailyMetalRate;
+    // =========================================================
+    // LOAD
+    // =========================================================
 
-        [ObservableProperty]
-        private DailyRate _Gold22C;
+    [RelayCommand]
+    private async Task OnLoaded()
+    {
+        var wait =
+            WaitIndicatorVM.ShowIndicator(
+                "Fetching daily rate details...");
 
-        [ObservableProperty]
-        private DailyRate _Gold18KT;
+        Messenger.Default.Send(
+            MessageType.WaitIndicator,
+            wait);
 
-        [ObservableProperty]
-        private DailyRate _Silver;
-
-        [ObservableProperty]
-        private DailyRate _Diamond;
-
-        private readonly IMijmsApiService _mijmsApiService;
-
-        public SettingsPageViewModel(IMijmsApiService mijmsApiService)
+        try
         {
-            _mijmsApiService = mijmsApiService;
-            _Gold22C = new DailyRate()
+            var dailyRates =
+                await _mijmsApiService
+                    .GetEnumerable<DailyRate>(
+                        "api/dailyrate/latest");
+
+            foreach (var rate in dailyRates ?? [])
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"{rate.Metal} | " +
+                    $"{rate.EffectiveDate:dd-MMM-yyyy HH:mm:ss} | " +
+                    $"{rate.Price}");
+            }
+
+            DailyMetalRate =
+                dailyRates is null
+                    ? new()
+                    : new(dailyRates);
+
+
+            // -------------------------------------------------
+            // Current configured rates
+            // -------------------------------------------------
+
+            var rateDefinitions =
+                GetRateDefinitions();
+
+
+            BuildTodayRates(rateDefinitions);
+
+
+            // -------------------------------------------------
+            // Recent history
+            // -------------------------------------------------
+
+            HistoryDailyMetalRate =
+                new ObservableCollection<DailyRate>(
+                    DailyMetalRate
+                        .Where(x =>
+                            x.GKey != 0 &&
+                            x.EffectiveDate.Date < DateTime.Today)
+                        .OrderByDescending(x => x.EffectiveDate)
+                        .Take(10));
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
+
+
+    // =========================================================
+    // TEMPORARY CONFIGURATION
+    //
+    // Later this comes from your Metal / Reference master.
+    // =========================================================
+
+    private static List<DailyRate> GetRateDefinitions()
+    {
+        return
+        [
+            new DailyRate
             {
                 Metal = "GOLD",
                 Purity = "916",
                 Carat = "22 KT",
-                EffectiveDate = DateTime.Now.Date,
                 IsDisplay = true
-            };
+            },
 
-            _Gold18KT = new DailyRate()
+            new DailyRate
             {
                 Metal = "GOLD.18KT",
                 Purity = "750",
                 Carat = "18 KT",
-                EffectiveDate = DateTime.Now.Date,
                 IsDisplay = true
-            };
+            },
 
-            _Silver = new DailyRate()
+            new DailyRate
             {
                 Metal = "SILVER",
                 Purity = "XX",
                 Carat = null,
-                EffectiveDate = DateTime.Now.Date,
                 IsDisplay = true
-            };
+            },
 
-            _Diamond = new DailyRate()
+            new DailyRate
             {
-                Metal = "Diamond",
+                Metal = "DIAMOND",
                 Purity = "XX",
                 Carat = null,
-                EffectiveDate = DateTime.Now.Date,
                 IsDisplay = true
-            };
-        }
-
-        [RelayCommand]
-        private async Task OnLoaded()
-        {
-            var vm = WaitIndicatorVM.ShowIndicator("Fetching Daily rate details...");
-            Messenger.Default.Send(MessageType.WaitIndicator, vm);
-
-            var dailyRates = await _mijmsApiService.GetEnumerable<DailyRate>("api/dailyrate/latest");
-
-            if (dailyRates is null)
-            {
-                DailyMetalRate = new();
-                TodayDailyMetalRate = new();
-                HistoryDailyMetalRate = new();
-
             }
-            else {
-                DailyMetalRate = new(dailyRates);
+        ];
+    }
 
-                TodayDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date == DateTime.Now.Date));
-                HistoryDailyMetalRate = new(DailyMetalRate.Where(x => x.EffectiveDate.Date != DateTime.Now.Date));
 
-            }
-            GenerateTodayRate();
+    // =========================================================
+    // BUILD TODAY'S RATE COLLECTION
+    // =========================================================
 
-            Messenger.Default.Send(MessageType.WaitIndicator, vm);
-        }
+    private void BuildTodayRates(
+        IEnumerable<DailyRate> definitions)
+    {
+        TodayDailyMetalRate.Clear();
 
-        private async Task DailyRateUpdate()
+        foreach (var definition in definitions)
         {
-            foreach( var dailyRate in TodayDailyMetalRate )
-            {
-                await SaveDailyRate(dailyRate);
-            }
-        }
+            var latestRate =
+                DailyMetalRate
+                    .Where(x => IsSame(x, definition))
+                    .OrderByDescending(x => x.EffectiveDate)
+                    .ThenByDescending(x => x.GKey)
+                    .FirstOrDefault();
 
-        [RelayCommand]
-        private async Task SaveAllDailyRate()
-        {
-            if (!TodayDailyMetalRate.Where(x => x.GKey == 0).Any())
-                 await DailyRateUpdate(); // return;
-
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Saving..."));
-
-            var savedRates = await _mijmsApiService.PostList<DailyRate>("api/dailyrate/save", TodayDailyMetalRate.Where(x => x.GKey == 0));
-
-            if (savedRates is null) return;
-
-            foreach(var savedRate in savedRates)
-            {
-                if(TodayDailyMetalRate.Any(x => IsSame(x, savedRate)))
+            // IMPORTANT:
+            // Never put the actual database entity into the editable collection.
+            // Create an editable copy with GKey = 0.
+            TodayDailyMetalRate.Add(
+                new DailyRate
                 {
-                    TodayDailyMetalRate.First(x => IsSame(x, savedRate)).GKey = savedRate.GKey;
-                }
+                    GKey = 0,
+
+                    Metal = definition.Metal,
+                    Purity = definition.Purity,
+                    Carat = definition.Carat,
+
+                    // Show the latest existing price.
+                    Price = latestRate?.Price,
+
+                    // This will become the actual save time
+                    // when the user changes/saves the rate.
+                    EffectiveDate =
+                        latestRate?.EffectiveDate
+                        ?? DateTime.Now,
+
+                    IsDisplay = definition.IsDisplay
+                });
+        }
+    }
+
+
+    // =========================================================
+    // SAVE ALL
+    // =========================================================
+
+    [RelayCommand]
+    private async Task SaveAllDailyRate()
+    {
+        if (TodayDailyMetalRate.Count == 0)
+            return;
+
+        var missingRates =
+            TodayDailyMetalRate
+                .Where(x => !x.Price.HasValue)
+                .ToList();
+
+        if (missingRates.Count > 0)
+        {
+            var metals =
+                string.Join(
+                    ", ",
+                    missingRates.Select(x => x.Metal));
+
+            DXMessageBox.Show(
+                $"Please enter the rate for: {metals}",
+                "Rate Required",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // Find only rates whose PRICE actually changed
+        // ---------------------------------------------------------
+
+        var changedRates =
+            TodayDailyMetalRate
+                .Where(current =>
+                {
+                    var latest =
+                        DailyMetalRate
+                            .Where(history =>
+                                IsSame(history, current))
+                            .OrderByDescending(
+                                history =>
+                                    history.EffectiveDate)
+                            .ThenByDescending(
+                                history =>
+                                    history.GKey)
+                            .FirstOrDefault();
+
+                    return latest is null ||
+                           latest.Price != current.Price;
+                })
+                .ToList();
+
+
+        if (changedRates.Count == 0)
+        {
+            DXMessageBox.Show(
+                "There are no rate changes to save.",
+                "Daily Rate",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            return;
+        }
+
+
+        Messenger.Default.Send(
+            MessageType.WaitIndicator,
+            WaitIndicatorVM.ShowIndicator(
+                "Saving rate changes..."));
+
+
+        try
+        {
+            // -----------------------------------------------------
+            // IMPORTANT:
+            //
+            // Every changed rate becomes a NEW record.
+            // No PUT / UPDATE.
+            // -----------------------------------------------------
+
+            var saveTime = DateTime.Now;
+
+            var newRates =
+                changedRates
+                    .Select(x =>
+                        new DailyRate
+                        {
+                            GKey = 0,
+
+                            Metal = x.Metal,
+                            Purity = x.Purity,
+                            Carat = x.Carat,
+
+                            Price = x.Price,
+
+                            EffectiveDate = saveTime,
+
+                            IsDisplay = x.IsDisplay
+                        })
+                    .ToList();
+
+
+            var savedRates =
+                await _mijmsApiService
+                    .PostList<DailyRate>(
+                        "api/dailyrate/save",
+                        newRates);
+
+
+            if (savedRates is null)
+                return;
+
+
+            // Add newly saved rows to our local history.
+            foreach (var savedRate in savedRates)
+            {
+                DailyMetalRate.Add(savedRate);
             }
 
-            GenerateTodayRate();
 
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+            RefreshRateCollections();
 
-            DXMessageBox.Show("Sucessfully saved...", "Success", 
-                                MessageBoxButton.OK, MessageBoxImage.Information, 
-                                MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+
+            DXMessageBox.Show(
+                "Rate changes saved successfully.",
+                "Success",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
-
-        [RelayCommand]
-        private async Task SaveDailyRate(DailyRate rate)
+        finally
         {
-            if (rate is null) return;
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
 
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Saving..."));
+    private void RefreshRateCollections()
+    {
+        HistoryDailyMetalRate =
+            new ObservableCollection<DailyRate>(
+                DailyMetalRate
+                    .Where(x => x.GKey != 0)
+                    .OrderByDescending(x => x.EffectiveDate)
+                    .ThenByDescending(x => x.GKey)
+                    .Take(10));
+    }
 
-            if (rate.GKey == 0)
+    // =========================================================
+    // VALIDATION
+    // =========================================================
+
+    public bool IsAllPriceUpdated()
+    {
+        if (TodayDailyMetalRate.Count == 0)
+            return false;
+
+
+        return TodayDailyMetalRate.All(x =>
+            x.EffectiveDate.Date ==
+                DateTime.Today &&
+            x.Price.HasValue);
+    }
+
+
+    // =========================================================
+    // RATE LOOKUP
+    // =========================================================
+
+    public decimal? GetPrice(string metalType)
+    {
+        if (string.IsNullOrWhiteSpace(metalType))
+            return 0M;
+
+
+        return TodayDailyMetalRate
+            .FirstOrDefault(x =>
+                string.Equals(
+                    x.Metal,
+                    metalType,
+                    StringComparison.OrdinalIgnoreCase))
+            ?.Price ?? 0M;
+    }
+
+
+    // Keep this for compatibility with existing code.
+    public decimal? GetPrice(MetalType metalType)
+    {
+        return GetPrice(
+            metalType switch
             {
-                var savedRate = await _mijmsApiService.Post("api/dailyrate/", rate);
-                TodayDailyMetalRate.FirstOrDefault(x => IsSame(x, savedRate)).GKey = savedRate.GKey;
-            }
-            else
-            {
-                await _mijmsApiService.Put($"api/dailyrate/{rate.GKey}", rate);
-            }
+                MetalType.Gold =>
+                    "GOLD",
 
-            GenerateTodayRate();
+                MetalType.Gold18KT =>
+                    "GOLD.18KT",
 
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+                MetalType.Silver =>
+                    "SILVER",
 
-           // DXMessageBox.Show("Sucessfully saved rates", "Sucess", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
-        }
+                MetalType.Diamond =>
+                    "DIAMOND",
 
-        private void GenerateTodayRate()
-        {
-            if (!TodayDailyMetalRate.Any(x => IsSame(x, Gold22C)))
-                TodayDailyMetalRate.Add(Gold22C);
-            else
-                Gold22C = TodayDailyMetalRate.First(x => IsSame(x, Gold22C));
+                _ =>
+                    string.Empty
+            });
+    }
 
-            if (!TodayDailyMetalRate.Any(x => IsSame(x, Gold18KT)))
-                TodayDailyMetalRate.Add(Gold18KT);
-            else
-                Gold18KT = TodayDailyMetalRate.First(x => IsSame(x, Gold18KT));
 
-            if (!TodayDailyMetalRate.Any(x => IsSame(x, Silver)))
-                TodayDailyMetalRate.Add(Silver);
-            else
-                Silver = TodayDailyMetalRate.First(x => IsSame(x, Silver));
+    // =========================================================
+    // HELPERS
+    // =========================================================
 
-            if (!TodayDailyMetalRate.Any(x => IsSame(x, Diamond)))
-                TodayDailyMetalRate.Add(Diamond);
-            else
-                Diamond = TodayDailyMetalRate.First(x => IsSame(x, Diamond));
-        }
+    private static bool IsSame(
+        DailyRate? x,
+        DailyRate? y)
+    {
+        if (x is null || y is null)
+            return false;
 
-        private bool IsSame(DailyRate x, DailyRate y)
-            => x is not null
-                && y is not null
-                && x.Metal.Equals(y.Metal, StringComparison.OrdinalIgnoreCase)
-                && ((x.Carat is null && y.Carat is null)  || x.Carat.Equals(y.Carat, StringComparison.OrdinalIgnoreCase))
-                && x.Purity.Equals(y.Purity, StringComparison.OrdinalIgnoreCase);
 
-        public bool IsAllPriceUpdated()
-        {
-            var date = DateTime.Now.Date;
+        return
+            string.Equals(
+                x.Metal,
+                y.Metal,
+                StringComparison.OrdinalIgnoreCase)
 
-            return Gold22C.EffectiveDate.Date == date && Gold22C.Price.HasValue
-                    && Gold18KT.EffectiveDate.Date == date && Gold18KT.Price.HasValue
-                    && Silver.EffectiveDate.Date == date && Silver.Price.HasValue
-                    && Diamond.EffectiveDate.Date == date && Diamond.Price.HasValue;
-        }
+            &&
 
-        public decimal? GetPrice(MetalType metalType)
-        {
-            return metalType switch
-            {
-                MetalType.Gold => Gold22C.Price,
-                MetalType.Gold18KT => Gold18KT.Price,
-                MetalType.Silver => Silver.Price,
-                MetalType.Diamond => Diamond.Price,
-                _ => 0M
-            };
-        }
+            string.Equals(
+                x.Purity,
+                y.Purity,
+                StringComparison.OrdinalIgnoreCase)
 
-        public decimal? GetPrice(string metalType)
-        {
-            return metalType switch
-            {
-                var s when s.Equals("GOLD", StringComparison.OrdinalIgnoreCase) => Gold22C.Price,
-                var s when s.Equals("GOLD.18KT", StringComparison.OrdinalIgnoreCase) => Gold18KT.Price,
-                var s when s.Equals("Silver", StringComparison.OrdinalIgnoreCase) => Silver.Price,
-                var s when s.Equals("Diamond", StringComparison.OrdinalIgnoreCase) => Diamond.Price,
-                _ => 0M
-            };
-        }
+            &&
+
+            string.Equals(
+                x.Carat,
+                y.Carat,
+                StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -1,66 +1,653 @@
-﻿<dxwui:NavigationPage x:Class="InvEntry.Views.Page.SettingsPage"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
-             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
-             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
-             xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
-             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
-             xmlns:local="clr-namespace:InvEntry.Views.Page"
-             xmlns:views="clr-namespace:InvEntry.Views"
-             xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
-             xmlns:ext="clr-namespace:InvEntry.Extension"
-             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
-             mc:Ignorable="d" 
-             xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
-             DataContext="{ext:DISource Type=viewmodels:SettingsPageViewModel}" 
-             d:DesignHeight="450" d:DesignWidth="800">
+﻿<dxwui:NavigationPage
+    x:Class="InvEntry.Views.Page.SettingsPage"
+
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+
+    xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+    xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+    xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+
+    xmlns:ext="clr-namespace:InvEntry.Extension"
+    xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+
+    mc:Ignorable="d"
+
+    DataContext="{ext:DISource Type=viewmodels:SettingsPageViewModel}"
+
+    d:DesignHeight="850"
+    d:DesignWidth="1400">
+
+
+    <!-- =========================================================
+         PAGE EVENTS
+         ========================================================= -->
+
     <dxmvvm:Interaction.Behaviors>
-        <dxmvvm:EventToCommand EventName="Loaded" Command="{Binding LoadedCommand}"/>
+
+        <dxmvvm:EventToCommand
+            EventName="Loaded"
+            Command="{Binding LoadedCommand}"/>
+
     </dxmvvm:Interaction.Behaviors>
+
+
+    <!-- =========================================================
+         RESOURCES
+         ========================================================= -->
+
     <dxwui:NavigationPage.Resources>
+
+
+        <!-- =====================================================
+             CURRENT RATE CARD
+             ===================================================== -->
+
         <DataTemplate x:Key="DailyRateItemTemplate">
-            <StackPanel Margin="20">
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" Width="250" IsTabStop="False" FontSize="14" FontWeight="Bold"/>
-                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" Width="250" IsTabStop="False" FontSize="14" FontWeight="Bold"/>
-                <dxe:TextEdit Text="{Binding Carat}"
-                              IsReadOnly="True"
-                              Width="250"
-                              IsTabStop="False"
-                              FontSize="14"
-                              FontWeight="Bold" />
-                <dxe:DateEdit Text="{Binding EffectiveDate}" IsReadOnly="True" 
-                              DisplayFormatString="dd-MM-yyyy" MaskUseAsDisplayFormat="True" Width="250" IsTabStop="False"
-                              FontSize="14"
-                              FontWeight="Bold" />
-                <dxe:TextEdit EditValue="{Binding Price}" Width="250" NullText="Today Price" MaskType="Numeric" FontSize="14" FontWeight="Bold"/>
-            </StackPanel>
+
+            <Border
+                Width="250"
+                MinHeight="205"
+                Margin="0,0,14,14"
+                Padding="18"
+                CornerRadius="8"
+                BorderThickness="1">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="16"/>
+
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                        <RowDefinition Height="14"/>
+
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+
+
+                    <!-- =========================================
+                         METAL
+                         ========================================= -->
+
+                    <TextBlock
+                        Grid.Row="0"
+
+                        Text="{Binding Metal}"
+
+                        FontSize="18"
+                        FontWeight="SemiBold"/>
+
+
+                    <!-- =========================================
+                         PURITY / CARAT
+                         ========================================= -->
+
+                    <StackPanel
+                        Grid.Row="1"
+
+                        Orientation="Horizontal"
+
+                        Margin="0,4,0,0">
+
+
+                        <TextBlock
+                            Text="Purity "
+                            FontSize="11"
+                            Opacity="0.50"/>
+
+
+                        <TextBlock
+                            Text="{Binding Purity}"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Opacity="0.75"/>
+
+
+                        <TextBlock
+                            Text="   •   "
+                            Opacity="0.35"/>
+
+
+                        <TextBlock
+                            Text="{Binding Carat}"
+                            FontSize="11"
+                            FontWeight="SemiBold"
+                            Opacity="0.75"/>
+
+
+                    </StackPanel>
+
+
+                    <!-- =========================================
+                         RATE LABEL
+                         ========================================= -->
+
+                    <TextBlock
+                        Grid.Row="3"
+
+                        Text="CURRENT RATE"
+
+                        FontSize="10"
+                        FontWeight="SemiBold"
+
+                        Opacity="0.55"
+
+                        Margin="0,0,0,5"/>
+
+
+                    <!-- =========================================
+                         RATE ENTRY
+                         ========================================= -->
+
+                    <dxe:TextEdit
+                        Grid.Row="4"
+
+                        EditValue="{Binding Price,
+                                    UpdateSourceTrigger=PropertyChanged}"
+
+                        Height="42"
+
+                        NullText="Enter rate"
+
+                        FontSize="18"
+                        FontWeight="SemiBold"
+
+                        HorizontalContentAlignment="Right"
+
+                        MaskType="Numeric"
+                        Mask="n2"
+
+                        MaskUseAsDisplayFormat="True"
+
+                        SelectAllOnMouseUp="True"/>
+
+
+                    <!-- =========================================
+                         EFFECTIVE DATE LABEL
+                         ========================================= -->
+
+                    <TextBlock
+                        Grid.Row="6"
+
+                        Text="EFFECTIVE DATE / TIME "
+
+                        FontSize="10"
+                        FontWeight="SemiBold"
+
+                        Opacity="0.50"/>
+
+
+                    <!-- =========================================
+                         EFFECTIVE DATE
+                         ========================================= -->
+
+                    <TextBlock
+                        Grid.Row="7"
+
+                        Text="{Binding EffectiveDate,
+                               StringFormat={}{0:dd-MMM-yyyy hh:mm tt}}"
+
+                        FontSize="12"
+                        FontWeight="Medium"
+
+                        Margin="0,4,0,0"/>
+
+
+                </Grid>
+
+            </Border>
+
         </DataTemplate>
 
-        <DataTemplate x:Key="HistoryDailyRateItemTemplate">
-            <StackPanel>
-                <dxe:TextEdit Text="{Binding Metal}" IsReadOnly="True" IsTabStop="False"/>
-                <dxe:TextEdit Text="{Binding Purity}" IsReadOnly="True" IsTabStop="False"/>
-                <dxe:TextEdit Text="{Binding Carat}" IsReadOnly="True" IsTabStop="False"/>
-                <dxe:TextEdit Text="{Binding EffectiveDate}" IsReadOnly="True" IsTabStop="False"/>
-                <dxe:TextEdit EditValue="{Binding Price}" IsReadOnly="True" IsTabStop="False"/>
-            </StackPanel>
-        </DataTemplate>
+
     </dxwui:NavigationPage.Resources>
-    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Margin="70,0,0,0">
-        <StackPanel Orientation="Horizontal" Margin="50">
-            <Label Content="Today's Rate" FontSize="20" />
-            <dx:SimpleButton Content="Save" Command="{Binding SaveAllDailyRateCommand}" FontSize="18"
-                             Glyph="{dx:DXImage 'Images/Save/SaveAll_32x32.png'}"
-                             Background="Transparent" Margin="20,0,0,0"/>
-        </StackPanel>
-        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource DailyRateItemTemplate}"
-                                ItemsSource="{Binding TodayDailyMetalRate}" Orientation="Horizontal" Width="1500"/>
-        <Label Content="Yesterday's Rate" FontSize="20" Margin="50"/>
-        <dxlc:FlowLayoutControl ItemTemplate="{StaticResource HistoryDailyRateItemTemplate}"
-                                ItemsSource="{Binding HistoryDailyMetalRate}" Orientation="Horizontal"/>
-    </StackPanel>
+
+
+
+    <!-- =========================================================
+         PAGE
+         ========================================================= -->
+
+    <Grid Margin="24">
+
+
+        <Grid.RowDefinitions>
+
+            <!-- Header -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- Current Rates -->
+            <RowDefinition Height="Auto"/>
+
+            <!-- History -->
+            <RowDefinition Height="*"/>
+
+        </Grid.RowDefinitions>
+
+
+
+        <!-- =====================================================
+             PAGE HEADER
+             ===================================================== -->
+
+        <Grid
+            Grid.Row="0"
+            Margin="0,0,0,20">
+
+
+            <Grid.ColumnDefinitions>
+
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="Auto"/>
+
+            </Grid.ColumnDefinitions>
+
+
+            <!-- TITLE -->
+
+            <StackPanel
+                Grid.Column="0"
+                VerticalAlignment="Center">
+
+
+                <TextBlock
+                    Text="PRICE SETTING"
+
+                    FontSize="24"
+                    FontWeight="SemiBold"/>
+
+
+                <TextBlock
+                    Text="Update the current metal rates used for transactions"
+
+                    FontSize="12"
+
+                    Opacity="0.60"
+
+                    Margin="0,4,0,0"/>
+
+
+            </StackPanel>
+
+
+
+            <!-- SAVE -->
+
+            <dx:SimpleButton
+                Grid.Column="1"
+
+                Content="Save Current Rates"
+
+                Command="{Binding SaveAllDailyRateCommand}"
+
+                Height="40"
+
+                Padding="16,0"
+
+                VerticalAlignment="Center"
+
+                FontSize="13"
+                FontWeight="SemiBold"
+
+                Glyph="{dx:DXImage
+                        'Images/Save/SaveAll_32x32.png'}"/>
+
+
+        </Grid>
+
+
+
+        <!-- =====================================================
+             CURRENT RATES CARD
+             ===================================================== -->
+
+        <Border
+            Grid.Row="1"
+
+            Padding="20"
+
+            CornerRadius="8"
+            BorderThickness="1"
+
+            Margin="0,0,0,18">
+
+
+            <StackPanel>
+
+
+                <!-- SECTION HEADER -->
+
+                <Grid Margin="0,0,0,16">
+
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+                    <StackPanel>
+
+
+                        <TextBlock
+                            Text="CURRENT RATES"
+
+                            FontSize="14"
+                            FontWeight="SemiBold"/>
+
+
+                        <TextBlock
+                            Text="Enter the latest rate for each tracked metal"
+
+                            FontSize="11"
+
+                            Opacity="0.55"
+
+                            Margin="0,3,0,0"/>
+
+
+                    </StackPanel>
+
+
+                    <!--
+                        Future configuration button.
+
+                        Enable this after we add:
+                        ManageRateConfigurationCommand
+
+                    <dx:SimpleButton
+                        Grid.Column="1"
+                        Content="Manage Rates"
+                        Command="{Binding ManageRateConfigurationCommand}"
+                        Padding="12,5"
+                        VerticalAlignment="Center"/>
+                    -->
+
+
+                </Grid>
+
+
+
+                <!-- =================================================
+                     DYNAMIC RATE CARDS
+
+                     GOLD / SILVER / DIAMOND / PLATINUM etc.
+                     are NOT hard-coded here.
+
+                     Everything comes from:
+                     TodayDailyMetalRate
+                     ================================================= -->
+
+                <dxlc:FlowLayoutControl
+
+                    ItemsSource="{Binding TodayDailyMetalRate}"
+
+                    ItemTemplate=
+                        "{StaticResource DailyRateItemTemplate}"
+
+                    Orientation="Horizontal"/>
+
+
+            </StackPanel>
+
+
+        </Border>
+
+
+
+        <!-- =====================================================
+             RECENT RATE CHANGES
+             ===================================================== -->
+
+        <Border
+            Grid.Row="2"
+
+            Padding="20"
+
+            CornerRadius="8"
+            BorderThickness="1">
+
+
+            <Grid>
+
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+
+                    <RowDefinition Height="*"/>
+
+                </Grid.RowDefinitions>
+
+
+
+                <!-- =================================================
+                     HISTORY HEADER
+                     ================================================= -->
+
+                <Grid
+                    Grid.Row="0"
+                    Margin="0,0,0,14">
+
+
+                    <Grid.ColumnDefinitions>
+
+                        <ColumnDefinition Width="*"/>
+
+                        <ColumnDefinition Width="Auto"/>
+
+                    </Grid.ColumnDefinitions>
+
+
+                    <StackPanel>
+
+
+                        <TextBlock
+                            Text="RECENT RATE CHANGES"
+
+                            FontSize="14"
+                            FontWeight="SemiBold"/>
+
+
+                        <TextBlock
+                            Text="Recent changes to tracked metal rates"
+
+                            FontSize="11"
+
+                            Opacity="0.55"
+
+                            Margin="0,3,0,0"/>
+
+
+                    </StackPanel>
+
+
+                    <TextBlock
+                        Grid.Column="1"
+
+                        Text="Latest Updates"
+
+                        FontSize="11"
+
+                        Opacity="0.50"
+
+                        VerticalAlignment="Center"/>
+
+
+                </Grid>
+
+
+
+                <!-- =================================================
+                     HISTORY GRID
+                     ================================================= -->
+
+                <dxg:GridControl
+                    Grid.Row="1"
+
+                    ItemsSource=
+                        "{Binding HistoryDailyMetalRate}"
+
+                    AutoGenerateColumns="None"
+
+                    SelectionMode="Row">
+
+
+                    <dxg:GridControl.Columns>
+
+
+                        <!-- METAL -->
+
+                        <dxg:GridColumn
+                            FieldName="Metal"
+
+                            Header="Metal"
+
+                            Width="140"
+
+                            ReadOnly="True"/>
+
+
+
+                        <!-- PURITY -->
+
+                        <dxg:GridColumn
+                            FieldName="Purity"
+
+                            Header="Purity"
+
+                            Width="100"
+
+                            ReadOnly="True"/>
+
+
+
+                        <!-- CARAT -->
+
+                        <dxg:GridColumn
+                            FieldName="Carat"
+
+                            Header="Carat"
+
+                            Width="100"
+
+                            ReadOnly="True"/>
+
+
+
+                        <!-- EFFECTIVE DATE -->
+
+                        <dxg:GridColumn
+                            FieldName="EffectiveDate"
+
+                            Header="Effective Date / Time"
+
+                            Width="170"
+
+                            ReadOnly="True">
+
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:DateEditSettings
+                                    DisplayFormat="dd-MMM-yyyy hh:mm tt"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+
+                        </dxg:GridColumn>
+
+
+
+                        <!-- RATE -->
+
+                        <dxg:GridColumn
+                            FieldName="Price"
+
+                            Header="Rate"
+
+                            Width="150"
+
+                            ReadOnly="True">
+
+
+                            <dxg:GridColumn.EditSettings>
+
+                                <dxe:TextEditSettings
+                                    DisplayFormat="N2"
+
+                                    HorizontalContentAlignment=
+                                        "Right"/>
+
+                            </dxg:GridColumn.EditSettings>
+
+
+                        </dxg:GridColumn>
+
+
+                    </dxg:GridControl.Columns>
+
+
+
+                    <!-- =================================================
+                         GRID VIEW
+                         ================================================= -->
+
+                    <dxg:GridControl.View>
+
+
+                        <dxg:TableView
+
+                            ShowGroupPanel="False"
+
+                            ShowAutoFilterRow="False"
+
+                            ShowIndicator="False"
+
+                            AllowEditing="False"
+
+                            AllowGrouping="False"
+
+                            AllowSorting="True"
+
+                            NavigationStyle="Row"
+
+                            AutoWidth="True"
+
+                            VerticalScrollbarVisibility="Auto"/>
+
+
+                    </dxg:GridControl.View>
+
+
+                </dxg:GridControl>
+
+
+            </Grid>
+
+
+        </Border>
+
+
+    </Grid>
+
+
 </dxwui:NavigationPage>
- 

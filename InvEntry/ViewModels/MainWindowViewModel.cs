@@ -3,10 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Core;
 using InvEntry.Extension;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using InvEntry.Models;
+using System.Collections.ObjectModel;
 
 namespace InvEntry.ViewModels
 {
@@ -47,14 +50,8 @@ namespace InvEntry.ViewModels
         // CURRENT RATES
         // =========================================================
 
-        public decimal? GoldRate =>
-            _settingsPageViewModel.Gold22C?.Price;
-
-        public decimal? SilverRate =>
-            _settingsPageViewModel.Silver?.Price;
-
-        public decimal? DiamondRate =>
-            _settingsPageViewModel.Diamond?.Price;
+        public ObservableCollection<DailyRate> HeaderRates
+            => _settingsPageViewModel.TodayDailyMetalRate;
 
 
         // =========================================================
@@ -101,11 +98,7 @@ namespace InvEntry.ViewModels
 
             // Rates are calculated properties.
             // Notify the UI after Settings have been loaded.
-
-            OnPropertyChanged(nameof(GoldRate));
-            OnPropertyChanged(nameof(SilverRate));
-            OnPropertyChanged(nameof(DiamondRate));
-
+            OnPropertyChanged(nameof(HeaderRates));
 
             // -----------------------------------------------------
             // Startup Navigation

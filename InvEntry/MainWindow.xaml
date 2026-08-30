@@ -295,126 +295,66 @@
                      ================================================= -->
 
                 <StackPanel
-                    Grid.Column="3"
+    Grid.Column="3"
+    Orientation="Horizontal"
+    VerticalAlignment="Center">
 
+                    <!-- Dynamic Metal Rates -->
+                    <ItemsControl
+        ItemsSource="{Binding HeaderRates}"
+        VerticalAlignment="Center">
+
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+
+                                <StackPanel
+                    Orientation="Horizontal"/>
+
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <StackPanel
                     Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="0,0,22,0">
 
-                    VerticalAlignment="Center">
+                                    <!-- Metal -->
+                                    <TextBlock
+                        Text="{Binding Metal}"
+                        Style="{StaticResource RateCaptionStyle}"
+                        Margin="0,0,7,0"/>
 
+                                    <!-- Rate -->
+                                    <TextBlock
+                        Text="{Binding Price,
+                               StringFormat={}{0:N2}}"
+                        Style="{StaticResource RateValueStyle}"/>
 
-                    <!-- GOLD -->
+                                </StackPanel>
 
-                    <StackPanel
-                        Orientation="Horizontal"
+                            </DataTemplate>
 
-                        VerticalAlignment="Center"
+                        </ItemsControl.ItemTemplate>
 
-                        Margin="0,0,24,0">
-
-
-                        <TextBlock
-                            Text="GOLD"
-
-                            Style=
-                                "{StaticResource RateCaptionStyle}"
-
-                            Margin="0,0,7,0"/>
-
-
-                        <TextBlock
-                            Text="{Binding GoldRate,
-                                   StringFormat={}{0:N2}}"
-
-                            Style=
-                                "{StaticResource RateValueStyle}"/>
+                    </ItemsControl>
 
 
-                    </StackPanel>
-
-
-
-                    <!-- SILVER -->
-
-                    <StackPanel
-                        Orientation="Horizontal"
-
-                        VerticalAlignment="Center"
-
-                        Margin="0,0,24,0">
-
-
-                        <TextBlock
-                            Text="SILVER"
-
-                            Style=
-                                "{StaticResource RateCaptionStyle}"
-
-                            Margin="0,0,7,0"/>
-
-
-                        <TextBlock
-                            Text="{Binding SilverRate,
-                                   StringFormat={}{0:N2}}"
-
-                            Style=
-                                "{StaticResource RateValueStyle}"/>
-
-
-                    </StackPanel>
-
-
-
-                    <!-- DIAMOND -->
-
-                    <StackPanel
-                        Orientation="Horizontal"
-
-                        VerticalAlignment="Center"
-
-                        Margin="0,0,24,0">
-
-
-                        <TextBlock
-                            Text="DIAMOND"
-
-                            Style=
-                                "{StaticResource RateCaptionStyle}"
-
-                            Margin="0,0,7,0"/>
-
-
-                        <TextBlock
-                            Text="{Binding DiamondRate,
-                                   StringFormat={}{0:N2}}"
-
-                            Style=
-                                "{StaticResource RateValueStyle}"/>
-
-
-                    </StackPanel>
-
-
-
-                    <!-- VERSION -->
-
+                    <!-- Version -->
                     <Border
-                        Padding="10,5"
-
-                        CornerRadius="5">
-
+        Padding="10,5"
+        CornerRadius="5">
 
                         <TextBlock
-                            Text="{Binding Version}"
-
-                            FontSize="10"
-
-                            Opacity="0.60"
-
-                            VerticalAlignment="Center"/>
-
+            Text="{Binding Version}"
+            FontSize="10"
+            Opacity="0.60"
+            VerticalAlignment="Center"/>
 
                     </Border>
-
 
                 </StackPanel>
 
@@ -434,7 +374,7 @@
 
             NavigationTarget="{Binding ElementName=frame}"
 
-            OpenPaneWidth="245"
+            OpenPaneWidth="210"
 
             AllowBuiltInNavigation="True"
 
