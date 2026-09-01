@@ -18,6 +18,8 @@ using InvEntry.Services;
 using InvEntry.Store;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
+using InvEntry.ViewModels.Invoices;
+using InvEntry.Views.Invoice;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
 namespace InvEntry.ViewModels;
@@ -297,11 +300,11 @@ public partial class InvoiceViewModel : ObservableObject
                     MapDraftOldMetal(source));
             }
 
-            foreach (var source in draft.Receipts)
+/*            foreach (var source in draft.Receipts)
             {
                 Header.ReceiptLines.Add(
                     MapDraftReceipt(source));
-            }
+            }*/
 
             CustomerPhoneNumber =
                 Header.CustMobile;
@@ -334,8 +337,8 @@ public partial class InvoiceViewModel : ObservableObject
             InvLineChk =
                 Header.Lines.Count > 0;
 
-            PayRctChk =
-                Header.ReceiptLines.Count > 0;
+            PayRctChk = false;
+             //   Header.ReceiptLines.Count > 0;
 
             invBalanceChk = false;
         }
@@ -709,12 +712,83 @@ public partial class InvoiceViewModel : ObservableObject
         return (decimal)metalPrice;
     }
 
+    private InvoiceSettlementViewModel ShowSettlementDialog()
+    {
+        if (Header is null || Header.GKey <= 0)
+        {
+            _messageBoxService.ShowMessage(
+                "Please save the invoice as Draft before finalising.",
+                "Invoice Not Saved",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return null;
+        }
+
+        // Make sure the latest invoice calculations are reflected.
+        EvaluateHeader();
+
+        var settlementViewModel =
+            new InvoiceSettlementViewModel
+            {
+                InvoiceGkey = Header.GKey,
+
+                // Draft invoices intentionally don't have an official
+                // invoice number yet.
+                InvoiceNumber =
+                    !string.IsNullOrWhiteSpace(Header.InvNbr)
+                        ? Header.InvNbr
+                        : $"DRAFT-{Header.GKey}",
+
+                CustomerName = CustName,
+                CustomerMobile = Header.CustMobile,
+
+                // We'll refine this summary mapping after testing.
+                InvoiceAmount =
+                    Header.GrossRcbAmount.GetValueOrDefault(),
+
+                OldGoldAdjustment =
+                    Header.OldGoldAmount.GetValueOrDefault(),
+
+                OldSilverAdjustment =
+                    Header.OldSilverAmount.GetValueOrDefault(),
+
+                AdvanceAdjustment =
+                    Header.AdvanceAdj.GetValueOrDefault(),
+
+                RdAdjustment =
+                    Header.RdAmountAdj.GetValueOrDefault(),
+
+                // IMPORTANT:
+                // This is the existing Invoice calculation's signed
+                // settlement position.
+                NetSettlementAmount =
+                    Header.AmountPayable.GetValueOrDefault()
+            };
+
+        var settlementView =
+            new InvoiceSettlementView(
+                settlementViewModel)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+        var confirmed =
+            settlementView.ShowDialog() == true;
+
+        return confirmed
+            ? settlementViewModel
+            : null;
+
+    }
+
     private void displayRateErrorMsg()
     {
         _messageBoxService.ShowMessage($"Todays Rate not entered in system, set the rate and start invoicing....",
                                         "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
 
     }
+
 
     private async Task EvaluateOldMetalTransactionLineAsync(OldMetalTransaction oldMetalTransaction)
     {
@@ -725,8 +799,12 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (OldMetalProductView is null)
         {
-            _messageBoxService.ShowMessage($"No Product found for {OldMetalProductView}, Please make sure it exists",
-                "Product not found", MessageButton.OK, MessageIcon.Error);
+            _messageBoxService.ShowMessage(
+                $"No Product found for {oldMetalTransaction.ProductId}. Please make sure it exists.",
+                "Product not found",
+                MessageButton.OK,
+                MessageIcon.Error);
+
             return;
         }
 
@@ -838,97 +916,56 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanFinaliseInvoice))]
     private async Task FinaliseInvoice()
     {
-        try
+        if (Header is null || Header.GKey <= 0)
         {
-            if (Header is null)
-                return;
+            _messageBoxService.ShowMessage(
+                "Please save the invoice as Draft before finalising.",
+                "Invoice Not Saved",
+                MessageButton.OK,
+                MessageIcon.Warning);
 
-            if (Header.GKey <= 0)
-            {
-                DXMessageBox.Show(
-                    "Please save the invoice as Draft before finalising.",
-                    "Finalise Invoice",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-
-                return;
-            }
-
-            if (!InvoiceStatus.IsDraft(Header.Status))
-            {
-                DXMessageBox.Show(
-                    $"Only a Draft invoice can be finalised.\n\n" +
-                    $"Current status: {Header.Status}",
-                    "Finalise Invoice",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return;
-            }
-
-            if (Header.Lines is null ||
-                Header.Lines.Count == 0)
-            {
-                DXMessageBox.Show(
-                    "Invoice must contain at least one item before finalising.",
-                    "Finalise Invoice",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return;
-            }
-
-            var confirmation =
-                DXMessageBox.Show(
-                    $"Finalise DRAFT-{Header.GKey}?\n\n" +
-                    "Once finalised, this invoice can no longer be edited.",
-                    "Finalise Invoice",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-            if (confirmation != MessageBoxResult.Yes)
-                return;
-
-            var result =
-                await _invoiceService.FinaliseAsync(
-                    Header.GKey);
-
-            Header.InvNbr =
-                result.InvNbr;
-
-            Header.Status =
-                result.Status;
-
-            //Header.FinalisedOn =
-            //    result.FinalisedOn;
-
-            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
-            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
-
-            DXMessageBox.Show(
-                $"Invoice finalised successfully.\n\n" +
-                $"Invoice Number: {result.InvNbr}",
-                "Invoice Finalised",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            return;
         }
-        catch (HttpRequestException ex)
+
+        if (!InvoiceStatus.IsDraft(Header.Status))
         {
-            DXMessageBox.Show(
-                $"Unable to finalise invoice.\n\n{ex.Message}",
-                "Finalisation Failed",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            _messageBoxService.ShowMessage(
+                "Only Draft invoices can be finalised.",
+                "Invalid Invoice Status",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return;
         }
-        catch (Exception ex)
-        {
-            DXMessageBox.Show(
-                $"Invoice finalisation failed.\n\n{ex.Message}",
-                "Finalisation Failed",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
+
+        // Recalculate before opening settlement.
+        EvaluateHeader();
+
+        var settlement = ShowSettlementDialog();
+
+        if (settlement is null)
+            return;
+
+        var request =
+            InvoiceRequestMapper.ToFinaliseRequest(
+                Header.GKey,
+                settlement);
+
+        // ---------------------------------------------------------
+        // Temporary checkpoint.
+        // Backend call comes next.
+        // ---------------------------------------------------------
+
+        _messageBoxService.ShowMessage(
+            $"Settlement ready for finalisation.\n\n" +
+            $"Receipts : {request.Receipts.Count}\n" +
+            $"Refunds  : {request.Refunds.Count}\n" +
+            $"Credit   : {request.CreditAmount:N2}",
+            "Settlement Ready",
+            MessageButton.OK,
+            MessageIcon.Information);
     }
+
 
     private bool CanSaveDraftInvoice()
     {
@@ -944,17 +981,21 @@ public partial class InvoiceViewModel : ObservableObject
     {
         try
         {
+            // =========================================================
+            // VALIDATION
+            // =========================================================
+
             if (Header is null)
                 return;
 
             if (Header.Lines is null ||
                 Header.Lines.Count == 0)
             {
-                _messageBoxService.ShowMessage(
+                DXMessageBox.Show(
                     "Please enter at least one invoice item before saving the draft.",
                     "Draft Invoice",
-                    MessageButton.OK,
-                    MessageIcon.Warning);
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
 
                 return;
             }
@@ -971,14 +1012,20 @@ public partial class InvoiceViewModel : ObservableObject
                 return;
             }
 
-            Messenger.Default.Send(
-                MessageType.WaitIndicator,
-                WaitIndicatorVM.ShowIndicator(
-                    "Saving draft invoice..."));
 
-            // ---------------------------------------------------------
+            // =========================================================
+            // PROCESSING INDICATOR
+            //
+            // Start this AFTER validation so we don't briefly display
+            // the wait indicator when validation fails.
+            // =========================================================
+
+            await ShowProcessingAsync(
+                "Saving draft invoice. Please wait...");
+
+            // =========================================================
             // CUSTOMER
-            // ---------------------------------------------------------
+            // =========================================================
 
             if (createCustomer)
             {
@@ -1005,18 +1052,38 @@ public partial class InvoiceViewModel : ObservableObject
                 }
             }
 
+
+            // =========================================================
+            // UPDATE CUSTOMER REFERENCES ON INVOICE
+            // =========================================================
+
             Header.CustGkey =
                 (int?)Buyer.GKey;
 
             Header.CustMobile =
                 Buyer.MobileNbr;
 
+
+            // =========================================================
+            // DRAFT STATE
+            //
+            // Backend will also enforce DRAFT, but keep the client model
+            // consistent before mapping.
+            // =========================================================
+
             Header.Status =
                 InvoiceStatus.Draft;
 
-            // ---------------------------------------------------------
+            if (Header.GKey <= 0)
+            {
+                // A new Draft must NOT consume an official invoice number.
+                Header.InvNbr = null;
+            }
+
+
+            // =========================================================
             // LINE NUMBERS
-            // ---------------------------------------------------------
+            // =========================================================
 
             for (var index = 0;
                  index < Header.Lines.Count;
@@ -1026,24 +1093,32 @@ public partial class InvoiceViewModel : ObservableObject
                     index + 1;
             }
 
-            // ---------------------------------------------------------
-            // MAP ENTIRE AGGREGATE
-            // ---------------------------------------------------------
+            var isNewDraft = Header.GKey <= 0;
+
+            // =========================================================
+            // MAP COMPLETE INVOICE AGGREGATE
+            // =========================================================
 
             var request =
-                InvoiceRequestMapper.ToSaveRequest(Header);
+                InvoiceRequestMapper
+                    .ToDraftSaveRequest(Header);
 
-            // ---------------------------------------------------------
-            // ONE BACKEND WORKFLOW CALL
-            // ---------------------------------------------------------
+
+            // =========================================================
+            // SAVE
+            //
+            // IMPORTANT:
+            // Exactly ONE backend workflow call.
+            // =========================================================
 
             var result =
                 await _invoiceService
                     .SaveDraftAsync(request);
 
-            // ---------------------------------------------------------
+
+            // =========================================================
             // UPDATE CURRENT UI MODEL
-            // ---------------------------------------------------------
+            // =========================================================
 
             Header.GKey =
                 result.Gkey;
@@ -1056,6 +1131,11 @@ public partial class InvoiceViewModel : ObservableObject
             Header.Status =
                 result.Status;
 
+
+            // =========================================================
+            // CUSTOMER STATE
+            // =========================================================
+
             createCustomer = false;
             updateCustomer = true;
 
@@ -1065,30 +1145,62 @@ public partial class InvoiceViewModel : ObservableObject
             CustCity =
                 Buyer.Address?.City;
 
-            _messageBoxService.ShowMessage(
-                $"Draft invoice DRAFT-{Header.GKey} saved successfully.",
-                "Draft Saved",
-                MessageButton.OK,
-                MessageIcon.Information);
+
+            // =========================================================
+            // REFRESH COMMAND STATE
+            // =========================================================
 
             SaveDraftInvoiceCommand
                 .NotifyCanExecuteChanged();
 
-            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+            FinaliseInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+
+            // =========================================================
+            // SUCCESS
+            // =========================================================
+
+            DXMessageBox.Show(
+                $"Draft invoice saved successfully.\n\n" +
+                $"Draft Number: DRAFT-{result.Gkey}",
+                "Draft Saved",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            // Start a clean invoice only after the Draft
+            // has been successfully persisted.
+            if (isNewDraft)
+            {
+                ResetInvoice();
+            }
+
+        }
+        catch (HttpRequestException ex)
+        {
+            DXMessageBox.Show(
+                $"Unable to save draft invoice.\n\n" +
+                $"{ex.Message}",
+                "Save Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         catch (Exception ex)
         {
-            _messageBoxService.ShowMessage(
-                $"Unable to save draft invoice.\n\n{ex.Message}",
-                "Draft Save Error",
-                MessageButton.OK,
-                MessageIcon.Error);
+            DXMessageBox.Show(
+                $"Draft invoice could not be saved.\n\n" +
+                $"{ex.Message}",
+                "Save Failed",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         finally
         {
-            Messenger.Default.Send(
-                MessageType.WaitIndicator,
-                WaitIndicatorVM.HideIndicator());
+            // Always close the processing indicator:
+            // success, validation return after ShowProcessing,
+            // API failure, DB failure, etc.
+
+            HideProcessing();
         }
     }
 
@@ -1446,8 +1558,8 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CellUpdate(
-    CellValueChangedEventArgs args)
+    private async Task CellUpdate(
+        CellValueChangedEventArgs args)
     {
         if (_isLoadingDraft)
             return;
@@ -1461,6 +1573,9 @@ public partial class InvoiceViewModel : ObservableObject
         }
         else if (args.Row is InvoiceArReceipt arInvRctLine)
         {
+            // Temporary.
+            // Receipt handling will be removed from Draft
+            // in the next step.
             EvaluateArRctLine(arInvRctLine);
         }
         else if (
@@ -1468,12 +1583,12 @@ public partial class InvoiceViewModel : ObservableObject
             args.Column?.FieldName !=
                 nameof(OldMetalTransaction.FinalPurchasePrice))
         {
-            _ =
-                EvaluateOldMetalTransactionLineAsync(
-                    oldMetalTransaction);
+            await EvaluateOldMetalTransactionLineAsync(
+                oldMetalTransaction);
         }
 
         EvaluateHeader();
+
     }
 
 
@@ -1502,6 +1617,27 @@ public partial class InvoiceViewModel : ObservableObject
 
         oldMetalTransaction.EnrichOldMetalProductDetails(OldMetalProductView);
     }
+
+    private async Task ShowProcessingAsync(string message)
+    {
+        Messenger.Default.Send(
+            MessageType.WaitIndicator,
+            WaitIndicatorVM.ShowIndicator(message));
+
+        // Allow WPF to perform a render pass before
+        // starting the operation.
+        await Application.Current.Dispatcher.InvokeAsync(
+            () => { },
+            DispatcherPriority.Render);
+    }
+
+    private void HideProcessing()
+    {
+        Messenger.Default.Send(
+            MessageType.WaitIndicator,
+            WaitIndicatorVM.HideIndicator());
+    }
+
 
     [RelayCommand]
     private void EvaluateArRctLine(InvoiceArReceipt arInvRctLine)
@@ -1621,7 +1757,24 @@ public partial class InvoiceViewModel : ObservableObject
         // Header.AdvanceAdj = FilterReceiptTransactions("Advance");
         // Header.RdAmountAdj = FilterReceiptTransactions("RD");
 
-        Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
+        // =========================================================
+        // PAYMENT / RECEIPT VALUES
+        //
+        // A Draft invoice contains commercial values only.
+        // Payment settlement happens only during Finalisation.
+        // =========================================================
+
+        if (InvoiceStatus.IsDraft(Header.Status))
+        {
+            Header.RecdAmount = 0M;
+        }
+        else
+        {
+            Header.RecdAmount =
+                Header.ReceiptLines
+                    .Select(x => x.AdjustedAmount)
+                    .Sum();
+        }
 
         Header.OldGoldAmount = FilterMetalTransactions("OLD GOLD 18KT") + FilterMetalTransactions("OLD GOLD 22KT") + FilterMetalTransactions("OLD GOLD 916-22KT");
 
@@ -1672,18 +1825,52 @@ public partial class InvoiceViewModel : ObservableObject
 
         Header.AmountPayable = MathUtils.Normalize(payableValue);
 
-        Header.InvBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
+
+        // =========================================================
+        // DRAFT BALANCE
+        //
+        // During Draft:
+        //   Amount Payable = commercial invoice amount
+        //   Received       = 0
+        //   Balance        = full Amount Payable
+        //   Refund         = 0
+        //
+        // Actual settlement is performed only when Finalising.
+        // =========================================================
+
+        if (InvoiceStatus.IsDraft(Header.Status))
+        {
+            Header.RecdAmount = 0M;
+            Header.InvBalance =
+                Header.AmountPayable.GetValueOrDefault();
+
+            Header.InvRefund = 0M;
+
+            return;
+        }
+
+
+        // =========================================================
+        // LEGACY / NON-DRAFT CALCULATION
+        //
+        // Retained temporarily until the new Settlement workflow
+        // completely replaces the old receipt processing.
+        // =========================================================
+
+        Header.InvBalance =
+            MathUtils.Normalize(
+                Header.AmountPayable.GetValueOrDefault()) -
             (
                 Header.RecdAmount.GetValueOrDefault() +
-        //        Header.AdvanceAdj.GetValueOrDefault() +    //asked user to enter in invoice ar receipts
                 Header.RdAmountAdj.GetValueOrDefault()
-             );
-
+            );
 
         if (invBalanceChk)
         {
             ProcessInvBalance();
         }
+
+
     }
 
     private bool ProcessInvBalance()
@@ -2032,22 +2219,48 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void ResetInvoice()
     {
-
         SetHeader();
-        SetThisCompany();
-        //SetMasterLedger();
+
         Buyer = null;
-        //Header = null;
+
         CustomerPhoneNumber = null;
-        CustomerState = Company.State;
+        CustomerState = Company?.State;
+
         SalesPerson = null;
+
+        ProductIdUI = null;
+        ProductSku = null;
+        OldMetalIdUI = null;
+
+        createCustomer = false;
+        updateCustomer = false;
+
         InvLineChk = false;
         PayRctChk = false;
-        CreateInvoiceCommand.NotifyCanExecuteChanged();
-        invBalanceChk = false;  //reset to false for next invoice
+        invBalanceChk = false;
+
         CustName = null;
         CustCity = null;
 
+        CustomerReadOnly = false;
+
+        IsBalance = true;
+        IsRefund = false;
+
+        SaveDraftInvoiceCommand
+            .NotifyCanExecuteChanged();
+
+        FinaliseInvoiceCommand
+            .NotifyCanExecuteChanged();
+
+        CreateInvoiceCommand
+            .NotifyCanExecuteChanged();
+
+        PrintInvoiceCommand
+            .NotifyCanExecuteChanged();
+
+        PrintPreviewInvoiceCommand
+            .NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]
@@ -2103,8 +2316,8 @@ public partial class InvoiceViewModel : ObservableObject
         {
             InvDate = DateTime.Now,
             IsTaxApplicable = true,
-            //     GstLocSeller = Company.GstCode,
-            //    TenantGkey = Company.TenantGkey
+            Status = InvoiceStatus.Draft
+          
         };
     }
 

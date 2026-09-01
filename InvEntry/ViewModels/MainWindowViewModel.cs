@@ -1,13 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
-using DevExpress.Xpf.Core;
 using InvEntry.Extension;
 using InvEntry.Models;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Threading;
 
 namespace InvEntry.ViewModels
@@ -118,7 +116,6 @@ namespace InvEntry.ViewModels
                 .LoadedCommand
                 .ExecuteAsync(null);
 
-
             // Rates are calculated properties.
             // Notify the UI after Settings have been loaded.
 
@@ -126,15 +123,22 @@ namespace InvEntry.ViewModels
 
 
             // -----------------------------------------------------
-            // Startup Navigation
+            // Always establish the application's normal root page.
             // -----------------------------------------------------
 
-            if (_settingsPageViewModel.IsAllPriceUpdated())
-            {
-                NavigationService.Navigate(
-                    "InvoiceEntryPage");
-            }
-            else
+            NavigationService.Navigate(
+                "InvoiceEntryPage");
+
+
+            // -----------------------------------------------------
+            // If today's rates have not been entered,
+            // navigate to Settings on top of Invoice Entry.
+            //
+            // This preserves Invoice Entry in navigation history,
+            // allowing the user to press Back after entering rates.
+            // -----------------------------------------------------
+
+            if (!_settingsPageViewModel.IsAllPriceUpdated())
             {
                 NavigationService.Navigate(
                     "SettingsPage");
@@ -157,10 +161,9 @@ namespace InvEntry.ViewModels
                 NavigationService.Navigate(
                     pageName);
 
-                GoBackCommand.NotifyCanExecuteChanged();
+               // GoBackCommand.NotifyCanExecuteChanged();
             });
         }
-
 
         // =========================================================
         // BACK NAVIGATION
@@ -174,7 +177,6 @@ namespace InvEntry.ViewModels
                 NavigationService.GoBack();
             }
 
-            GoBackCommand.NotifyCanExecuteChanged();
         }
 
 
@@ -183,38 +185,42 @@ namespace InvEntry.ViewModels
             return NavigationService?.CanGoBack == true;
         }
 
+        // =========================================================
+        // NAVIGATION COMPLETED
+        // =========================================================
+
+        [RelayCommand]
+        private void NavigationCompleted()
+        {
+            GoBackCommand.NotifyCanExecuteChanged();
+        }
 
         // =========================================================
         // WAIT INDICATOR
         // =========================================================
 
-        private void SetWaitIndicator(
-            WaitIndicatorVM vm)
+        private void SetWaitIndicator(WaitIndicatorVM vm)
         {
-            _dispatcher.Invoke(() =>
+            if (vm is null)
+                return;
+
+            void UpdateIndicator()
             {
-                if (vm.IsVisible)
-                {
-                    SplashScreenManager
-                        .CreateWaitIndicator(
-                            vm,
-                            topmost: true)
-                        .Show(
-                            owner:
-                            Application.Current.MainWindow);
-                }
-                else
-                {
-                    SplashScreenManager.CloseAll();
-                }
-            });
+                WaitIndicatorContent = vm.Status;
+                WaitIndicatorVisible = vm.IsVisible;
+            }
 
-
-            WaitIndicatorContent =
-                vm.Status;
-
-            WaitIndicatorVisible =
-                vm.IsVisible;
+            if (_dispatcher.CheckAccess())
+            {
+                UpdateIndicator();
+            }
+            else
+            {
+                _dispatcher.Invoke(UpdateIndicator);
+            }
         }
+
     }
+
+
 }

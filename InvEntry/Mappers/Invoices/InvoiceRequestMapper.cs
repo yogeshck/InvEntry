@@ -1,5 +1,7 @@
 ﻿using InvEntry.Contracts.Invoices;
 using InvEntry.Models;
+using InvEntry.Models.Settlements;
+using InvEntry.ViewModels.Invoices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +10,7 @@ namespace InvEntry.Mappers.Invoices;
 
 public static class InvoiceRequestMapper
 {
-    public static SaveInvoiceRequest ToSaveRequest(
+    public static SaveInvoiceRequest ToDraftSaveRequest(
         InvoiceHeader source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -27,11 +29,89 @@ public static class InvoiceRequestMapper
                 .ToList()
                 ?? new List<InvoiceOldMetalSaveModel>(),
 
-            Receipts = source.ReceiptLines?
-                .Select(MapReceipt)
-                .ToList()
-                ?? new List<InvoiceReceiptSaveModel>()
+            // Draft invoices do NOT contain payment/settlement data.
+            // Payment information is supplied separately during Finalise.
+            Receipts = new List<InvoiceReceiptSaveModel>()
+
+            /*            Receipts = source.ReceiptLines?
+                            .Select(MapReceipt)
+                            .ToList()
+                            ?? new List<InvoiceReceiptSaveModel>()*/
         };
+    }
+
+    public static FinaliseInvoiceRequest ToFinaliseRequest(
+    int invoiceGkey,
+    InvoiceSettlementViewModel settlement)
+    {
+        ArgumentNullException.ThrowIfNull(settlement);
+
+        return new FinaliseInvoiceRequest
+        {
+            InvoiceGkey = invoiceGkey,
+
+            CreditAmount =
+                settlement.IsReceivable && settlement.UseCredit
+                    ? settlement.CreditAmount
+                    : 0M,
+
+            Receipts = settlement.Receipts
+                .Where(x => x.Amount > 0M)
+                .Select(x => MapSettlementLine(
+                    x,
+                    InvoiceSettlementType.Receipt))
+                .ToList(),
+
+            Refunds = settlement.Refunds
+                .Where(x => x.Amount > 0M)
+                .Select(x => MapSettlementLine(
+                    x,
+                    InvoiceSettlementType.Refund))
+                .ToList()
+        };
+    }
+
+    private static InvoiceSettlementSaveModel MapSettlementLine(
+        InvoiceSettlementLine source,
+        string settlementType)
+    {
+        return new InvoiceSettlementSaveModel
+        {
+            SettlementType = settlementType,
+
+            PaymentMode =
+                source.PaymentMode?.Trim() ?? string.Empty,
+
+            Amount = source.Amount,
+
+            TransactionId =
+                NullIfWhiteSpace(source.TransactionId),
+
+            TransactionDate =
+                source.TransactionDate,
+
+            InstrumentNumber =
+                NullIfWhiteSpace(source.InstrumentNumber),
+
+            InstrumentDate =
+                source.InstrumentDate,
+
+            BankName =
+                NullIfWhiteSpace(source.BankName),
+
+            CompanyBankAccountNbr =
+                NullIfWhiteSpace(source.CompanyBankAccountNbr),
+
+            OtherReference =
+                NullIfWhiteSpace(source.OtherReference)
+        };
+    }
+
+    private static string? NullIfWhiteSpace(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim();
     }
 
     // =========================================================

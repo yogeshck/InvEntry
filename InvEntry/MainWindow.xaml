@@ -389,31 +389,28 @@
 
 
                 <dxwui:NavigationFrame
-                    x:Name="frame"
+    x:Name="frame"
 
-                    BackNavigationMode="PreviousScreen"
+    BackNavigationMode="PreviousScreen"
 
-                    AnimationDelay="0"
+    AnimationDelay="0"
 
-                    AnimationType="None">
-
+    AnimationType="None">
 
                     <dxmvvm:Interaction.Behaviors>
 
+                        <dxmvvm:EventToCommand
+            EventName="Loaded"
+            Command="{Binding LoadedCommand}"/>
 
                         <dxmvvm:EventToCommand
-                            EventName="Loaded"
-
-                            Command="{Binding LoadedCommand}"/>
-
+            EventName="Navigated"
+            Command="{Binding NavigationCompletedCommand}"/>
 
                         <ext:AttachServiceBehavior
-                            AtachableService=
-                                "{Binding NavigationService}"/>
-
+            AtachableService="{Binding NavigationService}"/>
 
                     </dxmvvm:Interaction.Behaviors>
-
 
                 </dxwui:NavigationFrame>
 
@@ -839,61 +836,17 @@
 
         </dxb:BarContainerControl>
 
-
-
         <!-- =====================================================
-             GLOBAL WAIT INDICATOR
-             ===================================================== -->
+     GLOBAL WAIT INDICATOR
+     ===================================================== -->
 
         <dx:WaitIndicator
-            Grid.RowSpan="3"
-
-            DeferedVisibility=
-                "{Binding WaitIndicatorVisible}">
-
-
-            <dx:WaitIndicator.ContentTemplate>
-
-
-                <DataTemplate>
-
-
-                    <StackPanel
-                        Orientation="Vertical"
-
-                        HorizontalAlignment="Center">
-
-
-                        <TextBlock
-                            Text="Please wait"
-
-                            FontSize="18"
-
-                            FontWeight="SemiBold"
-
-                            HorizontalAlignment="Center"/>
-
-
-                        <TextBlock
-                            Text="{Binding}"
-
-                            Margin="0,6,0,0"
-
-                            Opacity="0.70"
-
-                            HorizontalAlignment="Center"/>
-
-
-                    </StackPanel>
-
-
-                </DataTemplate>
-
-
-            </dx:WaitIndicator.ContentTemplate>
-
-
-        </dx:WaitIndicator>
+    Grid.RowSpan="3"
+    Panel.ZIndex="9999"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    Visibility="Visible"
+    Content="TEST - WAIT INDICATOR"/>
 
 
     </Grid>
