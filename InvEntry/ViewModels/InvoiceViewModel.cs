@@ -766,6 +766,28 @@ public partial class InvoiceViewModel : ObservableObject
                     Header.AmountPayable.GetValueOrDefault()
             };
 
+        if (PaymentModeList is not null)
+        {
+            foreach (var mode in PaymentModeList)
+            {
+                if (!string.IsNullOrWhiteSpace(mode))
+                {
+                    AddPaymentModeIfMissing(
+                        settlementViewModel.PaymentModes,
+                        mode);
+                }
+            }
+        }
+
+        // Temporary release implementation.
+        //
+        // Advance Adj already exists in PAYMENT_MODE.
+        // RD Adj is added here as a fallback until it is
+        // added permanently to the reference table.
+        AddPaymentModeIfMissing(
+            settlementViewModel.PaymentModes,
+            "RD Adj");
+
         var settlementView =
             new InvoiceSettlementView(
                 settlementViewModel)
@@ -780,6 +802,20 @@ public partial class InvoiceViewModel : ObservableObject
             ? settlementViewModel
             : null;
 
+    }
+
+    private static void AddPaymentModeIfMissing(
+    ICollection<string> modes,
+    string mode)
+    {
+        if (!modes.Any(
+                x => string.Equals(
+                    x,
+                    mode,
+                    StringComparison.OrdinalIgnoreCase)))
+        {
+            modes.Add(mode);
+        }
     }
 
     private void displayRateErrorMsg()
@@ -951,19 +987,34 @@ public partial class InvoiceViewModel : ObservableObject
                 Header.GKey,
                 settlement);
 
-        // ---------------------------------------------------------
-        // Temporary checkpoint.
-        // Backend call comes next.
-        // ---------------------------------------------------------
+        try
+        {
+            var result =
+                await _invoiceService.FinaliseAsync(request);
 
-        _messageBoxService.ShowMessage(
-            $"Settlement ready for finalisation.\n\n" +
-            $"Receipts : {request.Receipts.Count}\n" +
-            $"Refunds  : {request.Refunds.Count}\n" +
-            $"Credit   : {request.CreditAmount:N2}",
-            "Settlement Ready",
-            MessageButton.OK,
-            MessageIcon.Information);
+            Header.InvNbr = result.InvNbr;
+            Header.Status = result.Status;
+
+            _messageBoxService.ShowMessage(
+                $"Invoice {result.InvNbr} has been finalised successfully.",
+                "Invoice Finalised",
+                MessageButton.OK,
+                MessageIcon.Information);
+
+            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+            CreateInvoiceCommand.NotifyCanExecuteChanged();
+            PrintInvoiceCommand.NotifyCanExecuteChanged();
+            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                $"Invoice could not be finalised.\n\n{ex.Message}",
+                "Finalisation Failed",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
     }
 
 
@@ -1161,18 +1212,42 @@ public partial class InvoiceViewModel : ObservableObject
             // SUCCESS
             // =========================================================
 
-            DXMessageBox.Show(
+/*            DXMessageBox.Show(
                 $"Draft invoice saved successfully.\n\n" +
                 $"Draft Number: DRAFT-{result.Gkey}",
                 "Draft Saved",
                 MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                MessageBoxImage.Information);*/
 
             // Start a clean invoice only after the Draft
             // has been successfully persisted.
             if (isNewDraft)
             {
-                ResetInvoice();
+                var finaliseNow =
+                    DXMessageBox.Show(
+                        $"Draft invoice saved successfully.\n\n" +
+                        $"Draft Number: DRAFT-{result.Gkey}\n\n" +
+                        "Do you want to settle and finalise this invoice now?",
+                        "Draft Saved",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                if (finaliseNow == MessageBoxResult.Yes)
+                {
+                    await FinaliseInvoice();
+                }
+                else
+                {
+                    ResetInvoice();
+                }
+            }
+            else
+            {
+                DXMessageBox.Show(
+                    $"Draft invoice DRAFT-{result.Gkey} updated successfully.",
+                    "Draft Saved",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
             }
 
         }

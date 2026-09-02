@@ -24,7 +24,7 @@ namespace InvEntry.Services
             DateSearchOption options);
 
         Task<FinaliseInvoiceResponse> FinaliseAsync(
-            int invoiceGkey); 
+            FinaliseInvoiceRequest request);  
 
         // =====================================================
         // EXISTING / LEGACY
@@ -83,18 +83,19 @@ namespace InvEntry.Services
         }
 
         public async Task<FinaliseInvoiceResponse> FinaliseAsync(
-            int invoiceGkey)
+            FinaliseInvoiceRequest request)
         {
-            if (invoiceGkey <= 0)
-            {
+            ArgumentNullException.ThrowIfNull(request);
+
+            if (request.InvoiceGkey <= 0)
                 throw new ArgumentException(
                     "A valid invoice GKey is required.",
-                    nameof(invoiceGkey));
-            }
+                    nameof(request));
 
             return await _mijmsApiService
-                .PostResponse<FinaliseInvoiceResponse>(
-                    $"api/invoice/{invoiceGkey}/finalise");
+                .Post<FinaliseInvoiceRequest, FinaliseInvoiceResponse>(
+                    $"api/invoice/{request.InvoiceGkey}/finalise",
+                    request);
         }
 
         public async Task CreateInvoiceLine(IEnumerable<InvoiceLine> lines)

@@ -13,7 +13,7 @@ public interface IInvoiceWorkflow
         CancellationToken cancellationToken = default);
 
     Task<FinaliseInvoiceResponse> FinaliseAsync(
-        int invoiceGkey,
+        FinaliseInvoiceRequest request,
         CancellationToken cancellationToken = default);
 
     Task CancelDraftAsync(

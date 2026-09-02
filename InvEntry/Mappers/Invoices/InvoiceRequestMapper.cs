@@ -50,6 +50,10 @@ public static class InvoiceRequestMapper
         {
             InvoiceGkey = invoiceGkey,
 
+
+            DiscountAmount =
+            settlement.DiscountAmount,
+
             CreditAmount =
                 settlement.IsReceivable && settlement.UseCredit
                     ? settlement.CreditAmount

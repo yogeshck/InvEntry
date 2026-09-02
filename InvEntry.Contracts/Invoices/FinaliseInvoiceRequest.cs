@@ -21,4 +21,7 @@ public class FinaliseInvoiceRequest
     /// This is not a cash/bank receipt.
     /// </summary>
     public decimal CreditAmount { get; set; }
+
+    public decimal DiscountAmount { get; set; }
+
 }

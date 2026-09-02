@@ -47,7 +47,8 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="FINALISE INVOICE"
+                    <TextBlock Text="FINALISE INVOICE   - RECEIPTS"
+                               Foreground="Black"
                            FontSize="20"
                            FontWeight="SemiBold"/>
 
@@ -55,38 +56,43 @@
                             Margin="0,8,0,0">
 
                         <TextBlock Text="Draft: "
-                               Foreground="Gray"/>
+                               Foreground="Black"/>
 
                         <TextBlock Text="{Binding InvoiceNumber}"
+                                   Foreground="Black"
                                FontWeight="SemiBold"/>
 
                         <TextBlock Text="   Customer: "
                                Margin="20,0,0,0"
-                               Foreground="Gray"/>
+                               Foreground="Black"/>
 
                         <TextBlock Text="{Binding CustomerName}"
                                FontWeight="SemiBold"/>
 
                         <TextBlock Text="{Binding CustomerMobile,
                                              StringFormat='  ({0})'}"
-                               Foreground="Gray"/>
+                               Foreground="Black"/>
                     </StackPanel>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1"
-                        HorizontalAlignment="Right">
+            HorizontalAlignment="Right">
 
-                    <TextBlock Text="NET SETTLEMENT"
-                           HorizontalAlignment="Right"
-                           Foreground="Gray"
-                           FontSize="11"/>
+                    <TextBlock Text="AMOUNT AFTER DISCOUNT"
+               HorizontalAlignment="Right"
+               Foreground="Black"
+               FontWeight="Bold"
+               FontSize="11"/>
 
-                    <TextBlock Text="{Binding NetSettlementAmount,
-                                          StringFormat='₹ {0:N2}'}"
-                           HorizontalAlignment="Right"
-                           FontSize="24"
-                           FontWeight="Bold"/>
+                    <TextBlock Text="{Binding AmountAfterDiscount,
+                              StringFormat='₹ {0:N2}'}"
+               HorizontalAlignment="Right"
+               Foreground="Red"
+               FontSize="24"
+               FontWeight="Bold"/>
+
                 </StackPanel>
+                
             </Grid>
         </Border>
 
@@ -95,12 +101,13 @@
         <!-- ===================================================== -->
 
         <Border Grid.Row="2"
-            Padding="15"
-            CornerRadius="8"
-            BorderBrush="#DDDDDD"
-            BorderThickness="1">
+        Padding="15"
+        CornerRadius="8"
+        BorderBrush="#DDDDDD"
+        BorderThickness="1">
 
             <Grid>
+
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="150"/>
@@ -112,45 +119,106 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="8"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Invoice Amount"/>
 
-                <TextBlock Grid.Column="1"
-                       Text="{Binding InvoiceAmount,
-                                      StringFormat='₹ {0:N2}'}"
-                       HorizontalAlignment="Right"
-                       FontWeight="SemiBold"/>
+                <!-- INVOICE AMOUNT -->
 
-                <TextBlock Grid.Column="2"
-                       Text="Old Gold / Silver"
-                       Margin="30,0,0,0"/>
+                <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   Text="Invoice Amount"/>
 
-                <TextBlock Grid.Column="3"
-           Text="{Binding OldGoldAdjustment,
-                          StringFormat='₹ {0:N2}'}"
-           HorizontalAlignment="Right"/>
+                <TextBlock Grid.Row="0"
+                   Grid.Column="1"
+                   Text="{Binding InvoiceAmount,
+                                  StringFormat='₹ {0:N2}'}"
+                   HorizontalAlignment="Right"
+                   FontWeight="SemiBold"/>
+
+
+                <!-- OLD GOLD / SILVER -->
+
+                <TextBlock Grid.Row="0"
+                   Grid.Column="2"
+                   Text="Old Gold / Silver"
+                   Margin="30,0,0,0"/>
+
+                <TextBlock Grid.Row="0"
+                   Grid.Column="3"
+                   Text="{Binding OldGoldAdjustment,
+                                  StringFormat='₹ {0:N2}'}"
+                   HorizontalAlignment="Right"/>
+
+
+                <!-- ADVANCE -->
 
                 <TextBlock Grid.Row="2"
-                       Text="Advance Adjustment"/>
+                   Grid.Column="0"
+                   Text="Advance Adjustment"/>
 
                 <TextBlock Grid.Row="2"
-                       Grid.Column="1"
-                       Text="{Binding AdvanceAdjustment,
-                                      StringFormat='₹ {0:N2}'}"
-                       HorizontalAlignment="Right"/>
+                   Grid.Column="1"
+                   Text="{Binding AdvanceAdjustment,
+                                  StringFormat='₹ {0:N2}'}"
+                   HorizontalAlignment="Right"/>
+
+
+                <!-- RD -->
 
                 <TextBlock Grid.Row="2"
-                       Grid.Column="2"
-                       Text="RD Adjustment"
-                       Margin="30,0,0,0"/>
+                   Grid.Column="2"
+                   Text="RD Adjustment"
+                   Margin="30,0,0,0"/>
 
                 <TextBlock Grid.Row="2"
-                       Grid.Column="3"
-                       Text="{Binding RdAdjustment,
-                                      StringFormat='₹ {0:N2}'}"
-                       HorizontalAlignment="Right"/>
+                   Grid.Column="3"
+                   Text="{Binding RdAdjustment,
+                                  StringFormat='₹ {0:N2}'}"
+                   HorizontalAlignment="Right"/>
+
+
+                <!-- DISCOUNT -->
+
+                <TextBlock Grid.Row="4"
+                   Grid.Column="0"
+                   Text="Discount"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center"/>
+
+                <dxe:TextEdit Grid.Row="4"
+                      Grid.Column="1"
+                      Height="28"
+                      EditValue="{Binding DiscountAmount,
+                                          Mode=TwoWay,
+                                          UpdateSourceTrigger=PropertyChanged}"
+                      Mask="n2"
+                      MaskType="Numeric"
+                      HorizontalContentAlignment="Right"/>
+
+
+                <!-- AMOUNT AFTER DISCOUNT -->
+
+                <TextBlock Grid.Row="4"
+                   Grid.Column="2"
+                   Text="Amount After Discount"
+                   Margin="30,0,0,0"
+                   FontWeight="Bold"
+                   VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Row="4"
+                   Grid.Column="3"
+                   Text="{Binding AmountAfterDiscount,
+                                  StringFormat='₹ {0:N2}'}"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Foreground="Red"/>
+
             </Grid>
+
         </Border>
 
         <!-- ===================================================== -->
@@ -213,8 +281,21 @@
                     </dxg:GridControl.View>
 
                     <dxg:GridColumn FieldName="PaymentMode"
-                                Header="Payment Mode"
-                                Width="160"/>
+                            Header="Payment Mode"
+                            Width="160">
+
+                        <dxg:GridColumn.EditSettings>
+
+                            <dxe:ComboBoxEditSettings
+                                ItemsSource="{Binding DataContext.PaymentModes,
+                                    RelativeSource={RelativeSource
+                                        AncestorType={x:Type dx:ThemedWindow}}}"
+                                IsTextEditable="False"
+                                ImmediatePopup="True"/>
+
+                        </dxg:GridColumn.EditSettings>
+
+                    </dxg:GridColumn>
 
                     <dxg:GridColumn FieldName="TransactionId"
                                 Header="Transaction / UTR"
@@ -362,8 +443,21 @@
                     </dxg:GridControl.View>
 
                     <dxg:GridColumn FieldName="PaymentMode"
-                                Header="Refund Mode"
-                                Width="160"/>
+                Header="Refund Mode"
+                Width="160">
+
+                        <dxg:GridColumn.EditSettings>
+
+                            <dxe:ComboBoxEditSettings
+            ItemsSource="{Binding DataContext.PaymentModes,
+                RelativeSource={RelativeSource
+                    AncestorType={x:Type dx:ThemedWindow}}}"
+            IsTextEditable="False"
+            ImmediatePopup="True"/>
+
+                        </dxg:GridColumn.EditSettings>
+
+                    </dxg:GridColumn>
 
                     <dxg:GridColumn FieldName="TransactionId"
                                 Header="Transaction / UTR"
@@ -483,7 +577,8 @@
                 Width="160"
                 Padding="10,7"
                 IsDefault="True"
-                IsEnabled="{Binding CanFinalise}"/>
+                IsEnabled="{Binding CanFinalise}"
+                            Click="ConfirmSettlement_Click"/>
 
         </StackPanel>
 

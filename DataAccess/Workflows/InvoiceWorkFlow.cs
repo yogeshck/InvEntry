@@ -11,6 +11,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IRepositoryBase<InvoiceArReceipt> _receiptRepository;
     private readonly IRepositoryBase<OldMetalTransaction> _oldMetalRepository;
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
+    private readonly IRepositoryBase<Voucher> _voucherRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public InvoiceWorkflow(
@@ -19,6 +20,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IRepositoryBase<InvoiceArReceipt> receiptRepository,
         IRepositoryBase<OldMetalTransaction> oldMetalRepository,
         IRepositoryBase<VoucherType> voucherTypeRepository,
+        IRepositoryBase<Voucher> voucherRepository,
         IUnitOfWork unitOfWork)
     {
         _invoiceRepository = invoiceRepository;
@@ -26,6 +28,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         _receiptRepository = receiptRepository;
         _oldMetalRepository = oldMetalRepository;
         _voucherTypeRepository = voucherTypeRepository;
+        _voucherRepository = voucherRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -89,10 +92,10 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 request.OldMetalTransactions ??
                     new List<InvoiceOldMetalSaveModel>());
 
-            SyncReceipts(
+/*            SyncReceipts(
                 invoice,
                 request.Receipts ??
-                    new List<InvoiceReceiptSaveModel>());
+                    new List<InvoiceReceiptSaveModel>());*/
 
             await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
@@ -122,6 +125,551 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
+    }
+
+    private void CreateSettlementRecords(
+        InvoiceHeader invoice,
+        FinaliseInvoiceRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(invoice.InvNbr))
+        {
+            throw new InvalidOperationException(
+                "Official invoice number must be generated before settlement records are created.");
+        }
+
+        var sequenceNumber = 1;
+
+        var invoiceReceivableAmount =
+            invoice.AmountPayable.GetValueOrDefault();
+
+        var runningBalance =
+            invoiceReceivableAmount;
+
+
+        // =========================================================
+        // RECEIPTS / ADJUSTMENTS
+        // Customer -> Shop
+        // =========================================================
+
+        foreach (var settlement in
+                 request.Receipts ??
+                 new List<InvoiceSettlementSaveModel>())
+        {
+            var balanceBefore =
+                runningBalance;
+
+            runningBalance -=
+                settlement.Amount;
+
+            // Avoid tiny decimal/rounding residue.
+            if (Math.Abs(runningBalance) <= 0.01M)
+            {
+                runningBalance = 0M;
+            }
+
+            var voucher =
+                CreateSettlementVoucher(
+                    invoice,
+                    settlement,
+                    sequenceNumber,
+                    isRefund: false);
+
+            _voucherRepository.Add(voucher);
+
+            var receipt =
+                CreateInvoiceArReceipt(
+                    invoice,
+                    settlement,
+                    sequenceNumber,
+                    balanceBefore,
+                    runningBalance);
+
+            _receiptRepository.Add(receipt);
+
+            sequenceNumber++;
+        }
+
+
+        // =========================================================
+        // CREDIT
+        //
+        // Credit is NOT an adjustment/receipt.
+        // It represents the amount still outstanding.
+        //
+        // Therefore DO NOT subtract CreditAmount from runningBalance.
+        // =========================================================
+
+        if (request.CreditAmount > 0M)
+        {
+            var creditSettlement =
+                new InvoiceSettlementSaveModel
+                {
+                    SettlementType =
+                        InvoiceSettlementType.Receipt,
+
+                    PaymentMode =
+                        "Credit",
+
+                    Amount =
+                        request.CreditAmount,
+
+                    TransactionDate =
+                        DateTime.Now
+                };
+
+            var voucher =
+                CreateCreditVoucher(
+                    invoice,
+                    creditSettlement,
+                    sequenceNumber);
+
+            _voucherRepository.Add(voucher);
+
+            var creditReceipt =
+                CreateCreditArReceipt(
+                    invoice,
+                    creditSettlement,
+                    sequenceNumber,
+                    runningBalance);
+
+            _receiptRepository.Add(creditReceipt);
+
+            sequenceNumber++;
+        }
+
+
+        // =========================================================
+        // REFUNDS
+        // Shop -> Customer
+        // =========================================================
+
+        foreach (var settlement in
+                 request.Refunds ??
+                 new List<InvoiceSettlementSaveModel>())
+        {
+            var voucher =
+                CreateSettlementVoucher(
+                    invoice,
+                    settlement,
+                    sequenceNumber,
+                    isRefund: true);
+
+            _voucherRepository.Add(voucher);
+
+            var refundReceipt =
+                CreateRefundArReceipt(
+                    invoice,
+                    settlement,
+                    sequenceNumber);
+
+            _receiptRepository.Add(refundReceipt);
+
+            sequenceNumber++;
+        }
+
+
+        // =========================================================
+        // FINAL HEADER RECEIPT / BALANCE
+        // =========================================================
+
+        var totalCashReceived =
+            request.Receipts?
+                .Where(x =>
+                    !IsAdjustmentMode(x.PaymentMode))
+                .Sum(x => x.Amount)
+            ?? 0M;
+
+        invoice.RecdAmount =
+            totalCashReceived;
+
+        invoice.InvBalance =
+            runningBalance;
+    }
+
+
+    private static Voucher CreateSettlementVoucher(
+    InvoiceHeader invoice,
+    InvoiceSettlementSaveModel settlement,
+    int sequenceNumber,
+    bool isRefund)
+    {
+        var transactionDate =
+            settlement.TransactionDate ??
+            DateTime.Now;
+
+        var isAdjustment =
+            IsAdjustmentMode(
+                settlement.PaymentMode);
+
+        return new Voucher
+        {
+            SeqNbr =
+                sequenceNumber,
+
+            CustomerGkey =
+                invoice.CustGkey,
+
+            TransType =
+                isRefund
+                    ? "Payment"
+                    : isAdjustment
+                        ? "Journal"
+                        : "Receipt",
+
+            VoucherType =
+                isRefund
+                    ? "Refund"
+                    : settlement.PaymentMode,
+
+            Mode =
+                settlement.PaymentMode,
+
+            TransAmount =
+                settlement.Amount,
+
+            VoucherNbr =
+                invoice.InvNbr,
+
+            VoucherDate =
+                invoice.InvDate,
+
+            RefDocGkey =
+                invoice.Gkey,
+
+            RefDocNbr =
+                invoice.InvNbr,
+
+            RefDocDate =
+                invoice.InvDate,
+
+            TransDesc =
+                BuildSettlementDescription(
+                    settlement,
+                    isRefund),
+
+            TransDate =
+                transactionDate
+        };
+    }
+
+
+    private static string BuildSettlementDescription(
+    InvoiceSettlementSaveModel settlement,
+    bool isRefund)
+    {
+        var parts = new List<string>
+    {
+        isRefund
+            ? "Invoice Refund"
+            : "Invoice Receipt",
+
+        settlement.PaymentMode
+    };
+
+        if (!string.IsNullOrWhiteSpace(
+                settlement.TransactionId))
+        {
+            parts.Add(
+                settlement.TransactionId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                settlement.InstrumentNumber))
+        {
+            parts.Add(
+                settlement.InstrumentNumber);
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                settlement.BankName))
+        {
+            parts.Add(
+                settlement.BankName);
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                settlement.OtherReference))
+        {
+            parts.Add(
+                settlement.OtherReference);
+        }
+
+        return string.Join(
+            " / ",
+            parts.Where(
+                x => !string.IsNullOrWhiteSpace(x)));
+    }
+
+    private static InvoiceArReceipt CreateInvoiceArReceipt(
+        InvoiceHeader invoice,
+        InvoiceSettlementSaveModel settlement,
+        int sequenceNumber,
+        decimal balanceBefore,
+        decimal balanceAfter)
+    {
+        return new InvoiceArReceipt
+        {
+            SeqNbr =
+                sequenceNumber,
+
+            CustGkey =
+                invoice.CustGkey,
+
+            InvoiceGkey =
+                invoice.Gkey,
+
+            InvoiceNbr =
+                invoice.InvNbr,
+
+            InvoiceReceivableAmount =
+                invoice.AmountPayable,
+
+            BalBeforeAdj =
+                balanceBefore,
+
+            AdjustedAmount =
+                settlement.Amount,
+
+            BalanceAfterAdj =
+                balanceAfter,
+
+            TransactionType =
+                settlement.PaymentMode,
+
+            ModeOfReceipt =
+                settlement.PaymentMode,
+
+            InternalVoucherNbr =
+                invoice.InvNbr,
+
+            InternalVoucherDate =
+                invoice.InvDate,
+
+            InvoiceReceiptNbr =
+                GenerateReceiptReference(
+                    invoice.InvNbr),
+
+            Status =
+                balanceAfter <= 0.01M
+                    ? "Adj"
+                    : "Partial",
+
+            BankName =
+                settlement.BankName,
+
+            ExternalTransactionId =
+                settlement.TransactionId,
+
+            ExternalTransactionDate =
+                settlement.TransactionDate ??
+                DateTime.Now,
+
+            OtherReference =
+                GetSettlementReference(
+                    settlement),
+
+            CompanyBankAccountNbr =
+                settlement.CompanyBankAccountNbr
+        };
+    }
+
+    private static string GenerateReceiptReference(
+    string? invoiceNumber)
+    {
+        if (string.IsNullOrWhiteSpace(invoiceNumber))
+            return string.Empty;
+
+        if (invoiceNumber.StartsWith(
+                "B",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "R" +
+                   invoiceNumber.Substring(1);
+        }
+
+        return $"R-{invoiceNumber}";
+    }
+
+    private static Voucher CreateCreditVoucher(
+    InvoiceHeader invoice,
+    InvoiceSettlementSaveModel settlement,
+    int sequenceNumber)
+    {
+        return new Voucher
+        {
+            SeqNbr =
+                sequenceNumber,
+
+            CustomerGkey =
+                invoice.CustGkey,
+
+            TransType =
+                "Journal",
+
+            VoucherType =
+                "Credit",
+
+            Mode =
+                "Credit",
+
+            TransAmount =
+                settlement.Amount,
+
+            VoucherNbr =
+                invoice.InvNbr,
+
+            VoucherDate =
+                invoice.InvDate,
+
+            RefDocGkey =
+                invoice.Gkey,
+
+            RefDocNbr =
+                invoice.InvNbr,
+
+            RefDocDate =
+                invoice.InvDate,
+
+            TransDesc =
+                "Invoice Credit / Customer Receivable",
+
+            TransDate =
+                settlement.TransactionDate ??
+                DateTime.Now
+        };
+    }
+
+    private static InvoiceArReceipt CreateCreditArReceipt(
+        InvoiceHeader invoice,
+        InvoiceSettlementSaveModel settlement,
+        int sequenceNumber,
+        decimal outstandingBalance)
+    {
+        return new InvoiceArReceipt
+        {
+            SeqNbr =
+                sequenceNumber,
+
+            CustGkey =
+                invoice.CustGkey,
+
+            InvoiceGkey =
+                invoice.Gkey,
+
+            InvoiceNbr =
+                invoice.InvNbr,
+
+            InvoiceReceivableAmount =
+                invoice.AmountPayable,
+
+            TransactionType =
+                "Credit",
+
+            ModeOfReceipt =
+                "Credit",
+
+            // Credit is the outstanding balance,
+            // NOT money received.
+            BalBeforeAdj =
+                outstandingBalance,
+
+            AdjustedAmount =
+                0M,
+
+            BalanceAfterAdj =
+                outstandingBalance,
+
+            InternalVoucherNbr =
+                invoice.InvNbr,
+
+            InternalVoucherDate =
+                invoice.InvDate,
+
+            InvoiceReceiptNbr =
+                GenerateReceiptReference(
+                    invoice.InvNbr),
+
+            Status =
+                "Outstanding",
+
+            ExternalTransactionDate =
+                settlement.TransactionDate ??
+                DateTime.Now
+        };
+    }
+
+    private static InvoiceArReceipt CreateRefundArReceipt(
+    InvoiceHeader invoice,
+    InvoiceSettlementSaveModel settlement,
+    int sequenceNumber)
+    {
+        return new InvoiceArReceipt
+        {
+            SeqNbr =
+                sequenceNumber,
+
+            CustGkey =
+                invoice.CustGkey,
+
+            InvoiceGkey =
+                invoice.Gkey,
+
+            InvoiceNbr =
+                invoice.InvNbr,
+
+            InvoiceReceivableAmount =
+                invoice.AmountPayable,
+
+            TransactionType =
+                "Refund",
+
+            ModeOfReceipt =
+                settlement.PaymentMode,
+
+            AdjustedAmount =
+                settlement.Amount,
+
+            InternalVoucherNbr =
+                invoice.InvNbr,
+
+            InternalVoucherDate =
+                invoice.InvDate,
+
+            InvoiceReceiptNbr =
+                GenerateReceiptReference(
+                    invoice.InvNbr),
+
+            Status =
+                "Refund",
+
+            BankName =
+                settlement.BankName,
+
+            ExternalTransactionId =
+                settlement.TransactionId,
+
+            ExternalTransactionDate =
+                settlement.TransactionDate ??
+                DateTime.Now,
+
+            OtherReference =
+                GetSettlementReference(
+                    settlement),
+
+            CompanyBankAccountNbr =
+                settlement.CompanyBankAccountNbr
+        };
+    }
+
+    private static string? GetSettlementReference(
+        InvoiceSettlementSaveModel settlement)
+    {
+        if (!string.IsNullOrWhiteSpace(settlement.InstrumentNumber))
+            return settlement.InstrumentNumber;
+
+        return string.IsNullOrWhiteSpace(settlement.OtherReference)
+            ? null
+            : settlement.OtherReference;
     }
 
     public Task<InvoiceEditResponse> GetForEditAsync(
@@ -170,12 +718,12 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 .OrderBy(x => x.Gkey)
                 .ToList();
 
-        var receipts =
+/*        var receipts =
             _receiptRepository
                 .GetList(
                     x => x.InvoiceGkey == invoiceGkey)
                 .OrderBy(x => x.SeqNbr)
-                .ToList();
+                .ToList();*/
 
         var response = new InvoiceEditResponse
         {
@@ -189,9 +737,9 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 .Select(MapOldMetalToContract)  
                 .ToList(),
 
-            Receipts = receipts
-                .Select(MapReceiptToContract)
-                .ToList()
+            Receipts =
+                new List<InvoiceReceiptSaveModel>()
+
         };
 
         return Task.FromResult(response);
@@ -952,13 +1500,13 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     // =========================================================
 
     public async Task<FinaliseInvoiceResponse> FinaliseAsync(
-        int invoiceGkey,
+        FinaliseInvoiceRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (invoiceGkey <= 0)
-            throw new ArgumentException(
-                "A valid invoice GKey is required.",
-                nameof(invoiceGkey));
+
+        ArgumentNullException.ThrowIfNull(request);
+
+        var invoiceGkey = request.InvoiceGkey;
 
         await using var transaction =
             await _unitOfWork.BeginTransactionAsync(
@@ -1011,11 +1559,275 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             // For now do not allow an invalid negative payable/balance.
             // ---------------------------------------------------------
 
-            if (invoice.AmountPayable < 0)
+            // ---------------------------------------------------------
+            // SETTLEMENT VALIDATION
+            // ---------------------------------------------------------
+
+            // ---------------------------------------------------------
+            // SETTLEMENT VALIDATION
+            // ---------------------------------------------------------
+
+            const decimal settlementTolerance = 0.01M;
+
+            // =========================================================
+            // DISCOUNT
+            // =========================================================
+            //
+            // AmountPayable stored on the Draft already includes the
+            // Draft's existing DiscountAmount.
+            //
+            // Recover the pre-discount settlement amount first, then
+            // apply the discount submitted during Finalisation.
+            //
+            // Example:
+            //
+            // Draft:
+            //     AmountPayable   = 9,500
+            //     DiscountAmount  =   500
+            //
+            // Pre-discount amount = 10,000
+            //
+            // Settlement changes discount to 750:
+            //
+            //     Final payable   = 10,000 - 750
+            //                     =  9,250
+            //
+            // The backend remains authoritative. We do NOT accept a
+            // payable/net amount calculated by WPF.
+            //
+
+            var existingDiscount =
+                invoice.DiscountAmount.GetValueOrDefault();
+
+            var requestedDiscount =
+                request.DiscountAmount;
+
+
+            // ---------------------------------------------------------
+            // Validate discount
+            // ---------------------------------------------------------
+
+            if (requestedDiscount < 0M)
             {
                 throw new InvalidOperationException(
-                    "Invoice amount payable cannot be negative.");
+                    "Discount amount cannot be negative.");
             }
+
+
+            // Recover the amount before the Draft discount was applied.
+            var preDiscountSettlementAmount =
+                invoice.AmountPayable.GetValueOrDefault()
+                + existingDiscount;
+
+
+            // A discount is meaningful only against a positive
+            // receivable. Do not allow it to manufacture/increase
+            // a refund to the customer.
+            if (requestedDiscount > 0M &&
+                preDiscountSettlementAmount <= settlementTolerance)
+            {
+                throw new InvalidOperationException(
+                    "Discount cannot be applied because there is no " +
+                    "positive invoice amount available for discount.");
+            }
+
+
+            // Discount cannot exceed the amount that the customer
+            // would otherwise owe.
+            if (requestedDiscount >
+                preDiscountSettlementAmount + settlementTolerance)
+            {
+                throw new InvalidOperationException(
+                    $"Discount amount ₹{requestedDiscount:N2} exceeds " +
+                    $"the amount available for discount " +
+                    $"₹{preDiscountSettlementAmount:N2}.");
+            }
+
+
+            // ---------------------------------------------------------
+            // AUTHORITATIVE FINAL AMOUNT
+            // ---------------------------------------------------------
+
+            var netSettlementAmount =
+                preDiscountSettlementAmount
+                - requestedDiscount;
+
+
+            // Normalise tiny rounding differences.
+            if (Math.Abs(netSettlementAmount) <= settlementTolerance)
+            {
+                netSettlementAmount = 0M;
+            }
+
+
+            // Persist the final commercial values on the Invoice.
+            invoice.DiscountAmount =
+                requestedDiscount;
+
+            invoice.AmountPayable =
+                netSettlementAmount;
+
+
+            // Draft has no received amount. The actual settlement
+            // records below represent the final receipts/refunds.
+            invoice.RecdAmount = 0M;
+
+
+            var receiptAmount =
+                request.Receipts?
+                    .Where(x => x.Amount > 0M)
+                    .Sum(x => x.Amount)
+                ?? 0M;
+
+            var refundAmount =
+                request.Refunds?
+                    .Where(x => x.Amount > 0M)
+                    .Sum(x => x.Amount)
+                ?? 0M;
+
+            var creditAmount =
+                request.CreditAmount;
+
+
+            // ---------------------------------------------------------
+            // BASIC AMOUNT VALIDATION
+            // ---------------------------------------------------------
+
+            if (request.Receipts?.Any(x => x.Amount <= 0M) == true)
+            {
+                throw new InvalidOperationException(
+                    "Receipt amount must be greater than zero.");
+            }
+
+            if (request.Refunds?.Any(x => x.Amount <= 0M) == true)
+            {
+                throw new InvalidOperationException(
+                    "Refund amount must be greater than zero.");
+            }
+
+            if (creditAmount < 0M)
+            {
+                throw new InvalidOperationException(
+                    "Credit amount cannot be negative.");
+            }
+
+
+            // ---------------------------------------------------------
+            // SETTLEMENT TYPE VALIDATION
+            // ---------------------------------------------------------
+
+            if (request.Receipts?.Any(
+                    x => !string.Equals(
+                        x.SettlementType,
+                        InvoiceSettlementType.Receipt,
+                        StringComparison.OrdinalIgnoreCase)) == true)
+            {
+                throw new InvalidOperationException(
+                    "Invalid settlement type found in receipt entries.");
+            }
+
+            if (request.Refunds?.Any(
+                    x => !string.Equals(
+                        x.SettlementType,
+                        InvoiceSettlementType.Refund,
+                        StringComparison.OrdinalIgnoreCase)) == true)
+            {
+                throw new InvalidOperationException(
+                    "Invalid settlement type found in refund entries.");
+            }
+
+
+            // ---------------------------------------------------------
+            // RECEIVABLE
+            // Customer owes shop
+            // ---------------------------------------------------------
+
+            if (netSettlementAmount > settlementTolerance)
+            {
+                if (refundAmount > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        "Refunds are not allowed when the customer owes the shop.");
+                }
+
+                var settledAmount =
+                    receiptAmount + creditAmount;
+
+                var difference =
+                    netSettlementAmount - settledAmount;
+
+                if (Math.Abs(difference) > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        $"Settlement does not match the invoice amount. " +
+                        $"Amount payable: {netSettlementAmount:N2}, " +
+                        $"Receipts: {receiptAmount:N2}, " +
+                        $"Credit: {creditAmount:N2}, " +
+                        $"Difference: {difference:N2}.");
+                }
+            }
+
+
+            // ---------------------------------------------------------
+            // REFUND
+            // Shop owes customer
+            // ---------------------------------------------------------
+
+            else if (netSettlementAmount < -settlementTolerance)
+            {
+                var refundPayable =
+                    Math.Abs(netSettlementAmount);
+
+                // Explicit user action is mandatory.
+                if (refundAmount <= settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        $"A refund of ₹{refundPayable:N2} is due to the customer. " +
+                        "Enter the refund details before finalising the invoice.");
+                }
+
+                if (receiptAmount > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        "Receipts are not allowed when a refund is due to the customer.");
+                }
+
+                if (creditAmount > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        "Credit is not allowed when a refund is due to the customer.");
+                }
+
+                var difference =
+                    refundPayable - refundAmount;
+
+                if (Math.Abs(difference) > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        $"Refund is incomplete. " +
+                        $"Refund required: ₹{refundPayable:N2}, " +
+                        $"Refund entered: ₹{refundAmount:N2}, " +
+                        $"Balance: ₹{difference:N2}.");
+                }
+            }
+
+
+            // ---------------------------------------------------------
+            // FULLY ADJUSTED
+            // ---------------------------------------------------------
+
+            else
+            {
+                if (receiptAmount > settlementTolerance ||
+                    refundAmount > settlementTolerance ||
+                    creditAmount > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        "No receipt, refund or credit is allowed because " +
+                        "the invoice is fully adjusted.");
+                }
+            }
+
 
             // ---------------------------------------------------------
             // GENERATE OFFICIAL INVOICE NUMBER
@@ -1027,6 +1839,38 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     await GenerateInvoiceNumberAsync(
                         cancellationToken);
             }
+
+            // ---------------------------------------------------------
+            // SAFETY - DO NOT CREATE SETTLEMENT TWICE
+            // ---------------------------------------------------------
+
+            var existingSettlementRecords =
+                _receiptRepository
+                    .GetList(
+                        x => x.InvoiceGkey == invoice.Gkey)
+                    .ToList();
+
+            if (existingSettlementRecords.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    $"Invoice {invoice.Gkey} already contains settlement records " +
+                    "and cannot be finalised again.");
+            }
+
+            // ---------------------------------------------------------
+            // CREATE SETTLEMENT RECORDS
+            //
+            // Creates:
+            //   Receipt -> Voucher + InvoiceArReceipt
+            //   Credit  -> Voucher + InvoiceArReceipt
+            //   Refund  -> Voucher + InvoiceArReceipt
+            //
+            // Everything is still inside the current DB transaction.
+            // ---------------------------------------------------------
+
+            CreateSettlementRecords(
+                invoice,
+                request);
 
             // ---------------------------------------------------------
             // FINAL STATUS
@@ -1045,18 +1889,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             foreach (var line in lines)
             {
                 line.InvoiceId =
-                    invoice.InvNbr;
-            }
-
-            var receipts =
-                _receiptRepository
-                    .GetList(
-                        x => x.InvoiceGkey == invoiceGkey)
-                    .ToList();
-
-            foreach (var receipt in receipts)
-            {
-                receipt.InvoiceNbr =
                     invoice.InvNbr;
             }
 
@@ -1093,6 +1925,41 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
+    }
+
+    private static bool IsCashReceiptMode(
+    string? mode)
+    {
+        if (string.IsNullOrWhiteSpace(mode))
+            return false;
+
+        return !IsAdjustmentMode(mode) &&
+               !IsCreditMode(mode);
+    }
+
+    private static bool IsAdjustmentMode(
+        string? mode)
+    {
+        return
+            string.Equals(
+                mode,
+                "Advance Adj",
+                StringComparison.OrdinalIgnoreCase) ||
+
+            string.Equals(
+                mode,
+                "RD Adj",
+                StringComparison.OrdinalIgnoreCase); 
+
+    }
+
+    private static bool IsCreditMode(
+        string? mode)
+    {
+        return string.Equals(
+            mode,
+            "Credit",
+            StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<string> GenerateInvoiceNumberAsync(

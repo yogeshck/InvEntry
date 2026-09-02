@@ -29,9 +29,9 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [ObservableProperty]
     private string? customerMobile;
 
+
     // =========================================================
     // INVOICE / ADJUSTMENT SUMMARY
-    // These are display values for the Settlement popup.
     // =========================================================
 
     /// <summary>
@@ -52,12 +52,28 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [ObservableProperty]
     private decimal rdAdjustment;
 
+
+    // =========================================================
+    // DISCOUNT
+    // =========================================================
+
+    /// <summary>
+    /// Discount entered during final settlement.
+    ///
+    /// Discount is NOT a payment mode.
+    /// It reduces the amount that has to be settled.
+    /// </summary>
+    [ObservableProperty]
+    private decimal discountAmount;
+
+
     // =========================================================
     // NET SETTLEMENT POSITION
     // =========================================================
 
     /// <summary>
-    /// Signed settlement amount calculated by InvoiceViewModel.
+    /// Signed settlement amount calculated by InvoiceViewModel
+    /// before the settlement-stage discount.
     ///
     /// > 0 : Customer owes shop.
     /// = 0 : Fully adjusted.
@@ -66,17 +82,51 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [ObservableProperty]
     private decimal netSettlementAmount;
 
+
+    /// <summary>
+    /// Final settlement position after applying discount.
+    ///
+    /// For a positive receivable, Discount reduces the amount
+    /// payable by the customer.
+    ///
+    /// We deliberately do not use Discount to increase an
+    /// already-negative refund position.
+    /// </summary>
+    public decimal AmountAfterDiscount =>
+        NetSettlementAmount > 0M
+            ? Math.Max(
+                0M,
+                NetSettlementAmount - DiscountAmount)
+            : NetSettlementAmount;
+
+
+    /// <summary>
+    /// Discount cannot be negative and cannot exceed a
+    /// positive settlement amount.
+    /// </summary>
+    public bool IsDiscountValid =>
+        DiscountAmount >= 0M &&
+        (
+            NetSettlementAmount <= 0M ||
+            DiscountAmount <= NetSettlementAmount
+        );
+
+
     // =========================================================
     // CREDIT
-    // Credit is NOT a receipt.
-    // It represents customer receivable.
     // =========================================================
 
+    /// <summary>
+    /// Credit is NOT a receipt.
+    /// It represents the amount left outstanding against
+    /// the customer.
+    /// </summary>
     [ObservableProperty]
     private bool useCredit;
 
     [ObservableProperty]
     private decimal creditAmount;
+
 
     // =========================================================
     // VALIDATION
@@ -85,36 +135,67 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [ObservableProperty]
     private string? validationMessage;
 
+
+    // =========================================================
+    // PAYMENT MODES
+    // =========================================================
+
+    /// <summary>
+    /// Reference-table driven list of payment modes.
+    ///
+    /// Examples:
+    /// Cash
+    /// Bank
+    /// Credit Card
+    /// GPAY
+    /// Advance Adj
+    /// RD Adj
+    /// etc.
+    /// </summary>
+    public ObservableCollection<string> PaymentModes { get; }
+        = new();
+
+
     // =========================================================
     // COLLECTIONS
     // =========================================================
 
     /// <summary>
-    /// Money received FROM customer.
-    /// CASH / UPI / CARD / NEFT / CHEQUE / DD etc.
+    /// Settlement received FROM customer.
+    ///
+    /// Normal payment modes represent money received.
+    /// Advance Adj / RD Adj are adjustments and will be
+    /// interpreted appropriately by the backend.
     /// </summary>
     public ObservableCollection<InvoiceSettlementLine> Receipts { get; }
         = new();
 
+
     /// <summary>
     /// Money paid TO customer.
-    /// Used when the net settlement position is negative.
+    ///
+    /// Used when the final settlement position is negative.
     /// </summary>
     public ObservableCollection<InvoiceSettlementLine> Refunds { get; }
         = new();
 
+
     // =========================================================
-    // SETTLEMENT MODE
+    // SETTLEMENT DIRECTION
     // =========================================================
 
     public bool IsReceivable =>
-        NetSettlementAmount > BalanceTolerance;
+        AmountAfterDiscount > BalanceTolerance;
+
 
     public bool IsRefund =>
-        NetSettlementAmount < -BalanceTolerance;
+        AmountAfterDiscount < -BalanceTolerance;
+
 
     public bool IsFullyAdjusted =>
-        Math.Abs(NetSettlementAmount) <= BalanceTolerance;
+        Math.Abs(AmountAfterDiscount)
+        <= BalanceTolerance;
+
 
     // =========================================================
     // RECEIVABLE
@@ -122,16 +203,19 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
     public decimal ReceivableAmount =>
         IsReceivable
-            ? NetSettlementAmount
+            ? AmountAfterDiscount
             : 0M;
+
 
     public decimal TotalReceived =>
         Receipts.Sum(x => x.Amount);
+
 
     public decimal EffectiveCreditAmount =>
         IsReceivable && UseCredit
             ? CreditAmount
             : 0M;
+
 
     /// <summary>
     /// Amount still to be settled by the customer.
@@ -145,25 +229,33 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         - TotalReceived
         - EffectiveCreditAmount;
 
+
     public bool HasReceivableShortfall =>
         IsReceivable &&
         ReceivableBalance > BalanceTolerance;
+
 
     public bool HasReceiptExcess =>
         IsReceivable &&
         ReceivableBalance < -BalanceTolerance;
 
+
     // =========================================================
     // REFUND
     // =========================================================
 
+    /// <summary>
+    /// Amount that must be explicitly refunded to customer.
+    /// </summary>
     public decimal RefundPayable =>
         IsRefund
-            ? Math.Abs(NetSettlementAmount)
+            ? Math.Abs(AmountAfterDiscount)
             : 0M;
+
 
     public decimal TotalRefunded =>
         Refunds.Sum(x => x.Amount);
+
 
     /// <summary>
     /// Amount still payable by shop to customer.
@@ -175,16 +267,19 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     public decimal RefundBalance =>
         RefundPayable - TotalRefunded;
 
+
     public bool HasRefundShortfall =>
         IsRefund &&
         RefundBalance > BalanceTolerance;
+
 
     public bool HasRefundExcess =>
         IsRefund &&
         RefundBalance < -BalanceTolerance;
 
+
     // =========================================================
-    // OVERALL STATUS
+    // OVERALL SETTLEMENT STATUS
     // =========================================================
 
     public bool IsSettlementComplete
@@ -196,13 +291,15 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
             if (IsReceivable)
             {
-                return Math.Abs(ReceivableBalance)
+                return Math.Abs(
+                           ReceivableBalance)
                        <= BalanceTolerance;
             }
 
             if (IsRefund)
             {
-                return Math.Abs(RefundBalance)
+                return Math.Abs(
+                           RefundBalance)
                        <= BalanceTolerance;
             }
 
@@ -210,9 +307,12 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         }
     }
 
+
     public bool CanFinalise =>
+        IsDiscountValid &&
         AreSettlementLinesValid() &&
         IsSettlementComplete;
+
 
     // =========================================================
     // CONSTRUCTOR
@@ -227,6 +327,28 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             Refunds_CollectionChanged;
     }
 
+
+    // =========================================================
+    // DISCOUNT CHANGED
+    // =========================================================
+
+    partial void OnDiscountAmountChanged(
+        decimal value)
+    {
+        /*
+         * Discount can change the settlement direction/balance.
+         *
+         * Example:
+         *
+         * Amount payable : 10,000
+         * Discount       :    500
+         * Receivable     :  9,500
+         */
+
+        Recalculate();
+    }
+
+
     // =========================================================
     // RECEIPT COMMANDS
     // =========================================================
@@ -234,27 +356,27 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [RelayCommand]
     private void AddReceipt()
     {
-        if (!IsReceivable)
-            return;
+        var line =
+            new InvoiceSettlementLine();
 
-        var receipt = new InvoiceSettlementLine
-        {
-            PaymentMode = "CASH",
-            TransactionDate = DateTime.Today
-        };
+        Receipts.Add(line);
 
-        Receipts.Add(receipt);
+        Recalculate();
     }
+
 
     [RelayCommand]
     private void RemoveReceipt(
-        InvoiceSettlementLine? receipt)
+        InvoiceSettlementLine? line)
     {
-        if (receipt is null)
+        if (line is null)
             return;
 
-        Receipts.Remove(receipt);
+        Receipts.Remove(line);
+
+        Recalculate();
     }
+
 
     // =========================================================
     // REFUND COMMANDS
@@ -263,17 +385,14 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [RelayCommand]
     private void AddRefund()
     {
-        if (!IsRefund)
-            return;
+        var line =
+            new InvoiceSettlementLine();
 
-        var refund = new InvoiceSettlementLine
-        {
-            PaymentMode = "CASH",
-            TransactionDate = DateTime.Today
-        };
+        Refunds.Add(line);
 
-        Refunds.Add(refund);
+        Recalculate();
     }
+
 
     [RelayCommand]
     private void RemoveRefund(
@@ -283,13 +402,17 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             return;
 
         Refunds.Remove(refund);
+
+        Recalculate();
     }
+
 
     // =========================================================
     // CREDIT
     // =========================================================
 
-    partial void OnUseCreditChanged(bool value)
+    partial void OnUseCreditChanged(
+        bool value)
     {
         if (!value)
         {
@@ -298,7 +421,8 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         else if (IsReceivable)
         {
             var remaining =
-                ReceivableAmount - TotalReceived;
+                ReceivableAmount
+                - TotalReceived;
 
             CreditAmount =
                 remaining > 0M
@@ -309,10 +433,13 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         Recalculate();
     }
 
-    partial void OnCreditAmountChanged(decimal value)
+
+    partial void OnCreditAmountChanged(
+        decimal value)
     {
         Recalculate();
     }
+
 
     // =========================================================
     // NET SETTLEMENT CHANGED
@@ -322,15 +449,13 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         decimal value)
     {
         /*
-         * Net settlement direction has changed.
-         *
-         * We deliberately clear incompatible settlement data.
+         * Settlement direction has changed.
          *
          * Receivable:
-         *      customer -> shop
+         *      Customer -> Shop
          *
          * Refund:
-         *      shop -> customer
+         *      Shop -> Customer
          */
 
         if (IsReceivable)
@@ -356,6 +481,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         Recalculate();
     }
 
+
     // =========================================================
     // COLLECTION EVENTS
     // =========================================================
@@ -370,6 +496,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         Recalculate();
     }
 
+
     private void Refunds_CollectionChanged(
         object? sender,
         NotifyCollectionChangedEventArgs e)
@@ -379,6 +506,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
         Recalculate();
     }
+
 
     private void SubscribeNewItems(
         NotifyCollectionChangedEventArgs e)
@@ -394,6 +522,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         }
     }
 
+
     private void UnsubscribeOldItems(
         NotifyCollectionChangedEventArgs e)
     {
@@ -408,6 +537,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         }
     }
 
+
     private void SettlementLine_PropertyChanged(
         object? sender,
         PropertyChangedEventArgs e)
@@ -415,12 +545,25 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         Recalculate();
     }
 
+
     // =========================================================
     // VALIDATION
     // =========================================================
 
     private bool AreSettlementLinesValid()
     {
+        // -----------------------------------------------------
+        // Discount
+        // -----------------------------------------------------
+
+        if (!IsDiscountValid)
+            return false;
+
+
+        // -----------------------------------------------------
+        // Receipts
+        // -----------------------------------------------------
+
         if (Receipts.Any(x =>
                 x.Amount <= 0M ||
                 string.IsNullOrWhiteSpace(
@@ -428,6 +571,11 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         {
             return false;
         }
+
+
+        // -----------------------------------------------------
+        // Refunds
+        // -----------------------------------------------------
 
         if (Refunds.Any(x =>
                 x.Amount <= 0M ||
@@ -437,39 +585,104 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             return false;
         }
 
+
+        // -----------------------------------------------------
+        // Credit
+        // -----------------------------------------------------
+
         if (CreditAmount < 0M)
             return false;
 
         return true;
     }
 
+
     private void ValidateSettlement()
     {
         ValidationMessage = null;
 
-        // -----------------------------------------------------
-        // Fully adjusted
-        // -----------------------------------------------------
+
+        // =====================================================
+        // DISCOUNT VALIDATION
+        // =====================================================
+
+        if (DiscountAmount < 0M)
+        {
+            ValidationMessage =
+                "Discount cannot be negative.";
+
+            return;
+        }
+
+
+        if (NetSettlementAmount > 0M &&
+            DiscountAmount >
+            NetSettlementAmount)
+        {
+            ValidationMessage =
+                "Discount cannot exceed the amount payable.";
+
+            return;
+        }
+
+
+        // =====================================================
+        // FULLY ADJUSTED
+        // =====================================================
 
         if (IsFullyAdjusted)
         {
+            /*
+             * If Discount itself has reduced the balance to zero,
+             * there must not be any additional receipt/credit/refund.
+             */
+
+            if (TotalReceived > BalanceTolerance)
+            {
+                ValidationMessage =
+                    "Receipt is not required because the invoice is fully adjusted.";
+
+                return;
+            }
+
+            if (EffectiveCreditAmount >
+                BalanceTolerance)
+            {
+                ValidationMessage =
+                    "Credit is not required because the invoice is fully adjusted.";
+
+                return;
+            }
+
+            if (TotalRefunded >
+                BalanceTolerance)
+            {
+                ValidationMessage =
+                    "Refund is not required because the invoice is fully adjusted.";
+
+                return;
+            }
+
             ValidationMessage = null;
             return;
         }
 
-        // -----------------------------------------------------
-        // Customer owes shop
-        // -----------------------------------------------------
+
+        // =====================================================
+        // CUSTOMER OWES SHOP
+        // =====================================================
 
         if (IsReceivable)
         {
-            if (Receipts.Any(x => x.Amount <= 0M))
+            if (Receipts.Any(
+                    x => x.Amount <= 0M))
             {
                 ValidationMessage =
                     "Receipt amount must be greater than zero.";
 
                 return;
             }
+
 
             if (Receipts.Any(x =>
                     string.IsNullOrWhiteSpace(
@@ -481,6 +694,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
                 return;
             }
 
+
             if (CreditAmount < 0M)
             {
                 ValidationMessage =
@@ -488,6 +702,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
                 return;
             }
+
 
             if (HasReceiptExcess)
             {
@@ -498,6 +713,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
                 return;
             }
 
+
             if (HasReceivableShortfall)
             {
                 ValidationMessage =
@@ -506,22 +722,27 @@ public partial class InvoiceSettlementViewModel : ObservableObject
                 return;
             }
 
+
+            ValidationMessage = null;
             return;
         }
 
-        // -----------------------------------------------------
-        // Shop owes customer
-        // -----------------------------------------------------
+
+        // =====================================================
+        // SHOP OWES CUSTOMER
+        // =====================================================
 
         if (IsRefund)
         {
-            if (Refunds.Any(x => x.Amount <= 0M))
+            if (Refunds.Any(
+                    x => x.Amount <= 0M))
             {
                 ValidationMessage =
                     "Refund amount must be greater than zero.";
 
                 return;
             }
+
 
             if (Refunds.Any(x =>
                     string.IsNullOrWhiteSpace(
@@ -533,6 +754,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
                 return;
             }
 
+
             if (HasRefundExcess)
             {
                 ValidationMessage =
@@ -542,6 +764,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
                 return;
             }
 
+
             if (HasRefundShortfall)
             {
                 ValidationMessage =
@@ -549,8 +772,12 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
                 return;
             }
+
+
+            ValidationMessage = null;
         }
     }
+
 
     // =========================================================
     // RECALCULATION
@@ -558,29 +785,84 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
     private void Recalculate()
     {
-        OnPropertyChanged(nameof(IsReceivable));
-        OnPropertyChanged(nameof(IsRefund));
-        OnPropertyChanged(nameof(IsFullyAdjusted));
+        // -----------------------------------------------------
+        // Discount
+        // -----------------------------------------------------
 
-        OnPropertyChanged(nameof(ReceivableAmount));
-        OnPropertyChanged(nameof(TotalReceived));
-        OnPropertyChanged(nameof(EffectiveCreditAmount));
-        OnPropertyChanged(nameof(ReceivableBalance));
+        OnPropertyChanged(
+            nameof(AmountAfterDiscount));
 
-        OnPropertyChanged(nameof(HasReceivableShortfall));
-        OnPropertyChanged(nameof(HasReceiptExcess));
+        OnPropertyChanged(
+            nameof(IsDiscountValid));
 
-        OnPropertyChanged(nameof(RefundPayable));
-        OnPropertyChanged(nameof(TotalRefunded));
-        OnPropertyChanged(nameof(RefundBalance));
 
-        OnPropertyChanged(nameof(HasRefundShortfall));
-        OnPropertyChanged(nameof(HasRefundExcess));
+        // -----------------------------------------------------
+        // Settlement direction
+        // -----------------------------------------------------
 
-        OnPropertyChanged(nameof(IsSettlementComplete));
+        OnPropertyChanged(
+            nameof(IsReceivable));
+
+        OnPropertyChanged(
+            nameof(IsRefund));
+
+        OnPropertyChanged(
+            nameof(IsFullyAdjusted));
+
+
+        // -----------------------------------------------------
+        // Receivable
+        // -----------------------------------------------------
+
+        OnPropertyChanged(
+            nameof(ReceivableAmount));
+
+        OnPropertyChanged(
+            nameof(TotalReceived));
+
+        OnPropertyChanged(
+            nameof(EffectiveCreditAmount));
+
+        OnPropertyChanged(
+            nameof(ReceivableBalance));
+
+        OnPropertyChanged(
+            nameof(HasReceivableShortfall));
+
+        OnPropertyChanged(
+            nameof(HasReceiptExcess));
+
+
+        // -----------------------------------------------------
+        // Refund
+        // -----------------------------------------------------
+
+        OnPropertyChanged(
+            nameof(RefundPayable));
+
+        OnPropertyChanged(
+            nameof(TotalRefunded));
+
+        OnPropertyChanged(
+            nameof(RefundBalance));
+
+        OnPropertyChanged(
+            nameof(HasRefundShortfall));
+
+        OnPropertyChanged(
+            nameof(HasRefundExcess));
+
+
+        // -----------------------------------------------------
+        // Overall settlement
+        // -----------------------------------------------------
+
+        OnPropertyChanged(
+            nameof(IsSettlementComplete));
 
         ValidateSettlement();
 
-        OnPropertyChanged(nameof(CanFinalise));
+        OnPropertyChanged(
+            nameof(CanFinalise));
     }
 }

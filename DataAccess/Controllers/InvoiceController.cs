@@ -583,32 +583,31 @@ public class InvoiceController : ControllerBase
         return prefix + numericPart;
     }
 
-    [HttpPost("{gkey:int}/finalise")]
+    [HttpPost("{invoiceGkey:int}/finalise")]
     public async Task<ActionResult<FinaliseInvoiceResponse>> Finalise(
-        int gkey,
+        int invoiceGkey,
+        [FromBody] FinaliseInvoiceRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var result =
-                await _invoiceWorkflow.FinaliseAsync(
-                    gkey,
-                    cancellationToken);
+        if (invoiceGkey <= 0)
+            return BadRequest("A valid invoice GKey is required.");
 
-            return Ok(result);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        if (request is null)
+            return BadRequest("Finalisation request is required.");
+
+        if (request.InvoiceGkey <= 0)
+            return BadRequest("Invoice GKey is required.");
+
+        if (invoiceGkey != request.InvoiceGkey)
+            return BadRequest(
+                "Invoice GKey in the URL does not match the request.");
+
+        var result =
+            await _invoiceWorkflow.FinaliseAsync(
+                request,
+                cancellationToken);
+
+        return Ok(result);
     }
 
     // =========================================================
