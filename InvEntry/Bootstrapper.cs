@@ -1,5 +1,4 @@
-﻿using DevExpress.CodeParser;
-using DevExpress.Mvvm;
+﻿using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
@@ -19,17 +18,15 @@ using InvEntry.Tally;
 using InvEntry.ViewModels;
 using InvEntry.ViewModels.Common;
 using InvEntry.ViewModels.CustomerOrders;
-using InvEntry.Views;
+using InvEntry.ViewModels.Invoices;
+using InvEntry.Views.Invoices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using System;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows;
-using System.Windows.Markup;
 using System.Windows.Threading;
 
 namespace InvEntry;
@@ -122,6 +119,8 @@ public sealed class Bootstrapper
                  .AddTransient<IDailyRateDefinitionService, DailyRateDefinitionService>()
                  .AddTransient<CustomerEditViewModel>()
                  .AddTransient<CustomerOrderSummaryViewModel>()
+                 .AddTransient<DraftInvoicePickerViewModel>()
+                 .AddTransient<DraftInvoicePickerView>()
                  .AddTransient<DraftInvoiceListViewModel>()
                  .AddKeyedSingleton<IDialogService, DialogService>("ReportDialogService", (key, sp) =>
                  {

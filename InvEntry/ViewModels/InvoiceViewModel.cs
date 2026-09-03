@@ -20,6 +20,7 @@ using InvEntry.Utils;
 using InvEntry.Utils.Options;
 using InvEntry.ViewModels.Invoices;
 using InvEntry.Views.Invoice;
+using InvEntry.Views.Invoices;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -149,6 +150,8 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IReportFactoryService _reportFactoryService;
     private readonly InvoiceEditSession _invoiceEditSession;
+    private readonly IServiceProvider _serviceProvider;
+
     private bool _isLoadingDraft;
 
     private SettingsPageViewModel _settingsPageViewModel;
@@ -188,6 +191,7 @@ public partial class InvoiceViewModel : ObservableObject
         IReportFactoryService reportFactoryService,
         InvoiceEditSession invoiceEditSession,
         ReferenceLoader referenceLoader,
+        IServiceProvider serviceProvider,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
 
@@ -212,6 +216,7 @@ public partial class InvoiceViewModel : ObservableObject
         _mtblReferencesService = mtblReferencesService;
         _invoiceEditSession = invoiceEditSession;
         _referenceLoader = referenceLoader;
+        _serviceProvider = serviceProvider;
 
         //_productTransactionSummaryService = productTransactionSummaryService;
 
@@ -368,6 +373,99 @@ public partial class InvoiceViewModel : ObservableObject
                 MessageType.WaitIndicator,
                 WaitIndicatorVM.HideIndicator());
 
+        }
+    }
+
+    [RelayCommand]
+    private async Task OpenDraftInvoice()
+    {
+        try
+        {
+            // ---------------------------------------------------------
+            // Protect current unsaved work
+            // ---------------------------------------------------------
+
+            if (HasUnsavedChanges)
+            {
+                var discardResult =
+                    DXMessageBox.Show(
+                        "The current invoice contains unsaved changes.\n\n" +
+                        "Opening another Draft will discard those changes.\n\n" +
+                        "Do you want to continue?",
+                        "Unsaved Changes",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                if (discardResult != MessageBoxResult.Yes)
+                    return;
+            }
+
+            // ---------------------------------------------------------
+            // CREATE PICKER
+            // ---------------------------------------------------------
+
+            var picker =
+                _serviceProvider
+                    .GetRequiredService<DraftInvoicePickerView>();
+
+            if (Application.Current?.MainWindow != picker)
+            {
+                picker.Owner =
+                    Application.Current?.MainWindow;
+            }
+
+            // ---------------------------------------------------------
+            // SHOW MODAL
+            // ---------------------------------------------------------
+
+            var dialogResult =
+                picker.ShowDialog();
+
+            if (dialogResult != true)
+                return;
+
+            // ---------------------------------------------------------
+            // GET SELECTED AGGREGATE
+            // ---------------------------------------------------------
+
+            if (picker.DataContext is not
+                DraftInvoicePickerViewModel vm)
+            {
+                return;
+            }
+
+            if (vm.SelectedInvoice is null)
+                return;
+
+            // ---------------------------------------------------------
+            // LOAD INTO EXISTING INVOICE SCREEN
+            // ---------------------------------------------------------
+
+            await LoadDraftAsync(
+                vm.SelectedInvoice);
+
+            // ---------------------------------------------------------
+            // CLEAN STATE AFTER LOADING
+            // ---------------------------------------------------------
+
+            HasUnsavedChanges = false;
+
+            SaveDraftInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+            FinaliseInvoiceCommand
+                .NotifyCanExecuteChanged();
+
+            CancelInvoiceCommand
+                .NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                $"Unable to open draft invoice.\n\n{ex.Message}",
+                "Draft Invoice",
+                MessageButton.OK,
+                MessageIcon.Error);
         }
     }
 

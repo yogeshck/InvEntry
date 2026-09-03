@@ -47,6 +47,13 @@
                     Command="{Binding ResetInvoiceCommand}"/>
                 <dxb:BarItemSeparator/>
 
+                <dxb:BarButtonItem x:Name="OpenDraft"
+                                    Content="Open Draft"
+                                    Command="{Binding OpenDraftInvoiceCommand}"
+                                    Margin="4,0"
+                                    Padding="12,6"
+                                     ToolTip="Open a saved draft invoice"/>
+                <dxb:BarItemSeparator/>
                 <dxb:BarButtonItem x:Name="btnPrint" 
                                    Content="Print" Glyph="{dx:DXImage 'Images/Print/PrintViaPDF_32x32.png'}" 
                                    GlyphSize="Large"
