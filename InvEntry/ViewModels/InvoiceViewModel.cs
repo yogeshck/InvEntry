@@ -112,6 +112,9 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private DateSearchOption _searchOption;
 
+    [ObservableProperty]
+    private bool _hasUnsavedChanges;
+
     private List<MtblReference> _gstTaxRefList;
 
     private bool createCustomer = false;
@@ -300,11 +303,11 @@ public partial class InvoiceViewModel : ObservableObject
                     MapDraftOldMetal(source));
             }
 
-/*            foreach (var source in draft.Receipts)
-            {
-                Header.ReceiptLines.Add(
-                    MapDraftReceipt(source));
-            }*/
+            /*            foreach (var source in draft.Receipts)
+                        {
+                            Header.ReceiptLines.Add(
+                                MapDraftReceipt(source));
+                        }*/
 
             CustomerPhoneNumber =
                 Header.CustMobile;
@@ -338,26 +341,33 @@ public partial class InvoiceViewModel : ObservableObject
                 Header.Lines.Count > 0;
 
             PayRctChk = false;
-             //   Header.ReceiptLines.Count > 0;
+            //   Header.ReceiptLines.Count > 0;
 
             invBalanceChk = false;
         }
         finally
         {
+
             _isLoadingDraft = false;
 
-            CreateInvoiceCommand
-                .NotifyCanExecuteChanged();
+            // The invoice has just been loaded from the database.
+            // Therefore the UI exactly represents the persisted Draft.
+            HasUnsavedChanges = false;
 
-            PrintInvoiceCommand
-                .NotifyCanExecuteChanged();
+            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+            CancelInvoiceCommand.NotifyCanExecuteChanged();
 
-            PrintPreviewInvoiceCommand
-                .NotifyCanExecuteChanged();
+            CreateInvoiceCommand.NotifyCanExecuteChanged();
+
+            PrintInvoiceCommand.NotifyCanExecuteChanged();
+            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+            ExportToPdfCommand.NotifyCanExecuteChanged();
 
             Messenger.Default.Send(
                 MessageType.WaitIndicator,
                 WaitIndicatorVM.HideIndicator());
+
         }
     }
 
@@ -474,6 +484,9 @@ public partial class InvoiceViewModel : ObservableObject
 
         EvaluateForAllLines();
         EvaluateHeader();
+
+        MarkDraftAsModified();
+
     }
 
     partial void OnSalesPersonChanged(MtblReference value)
@@ -483,6 +496,9 @@ public partial class InvoiceViewModel : ObservableObject
         if (value.RefValue is not null)
         {
             Header.SalesPerson = value.RefValue;
+
+            MarkDraftAsModified();
+
         }
     }
 
@@ -568,6 +584,9 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
         Header.CustMobile = phoneNumber;
+
+        MarkDraftAsModified();
+
     }
 
     private bool customerCreditCheck(Customer buyer)
@@ -690,14 +709,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         EvaluateHeader();
 
-        /*        if (invoiceLine.ProdGrossWeight > 0)
-                {
-                } else
-                {
-                    _messageBoxService.ShowMessage("Gross Weight cannot be zero ....",
-                        "Gross Weight", MessageButton.OK, MessageIcon.Error);
-                    return;
-                }*/
+        MarkDraftAsModified();
+
     }
 
     private decimal getBilledPrice(string metal)
@@ -890,6 +903,9 @@ public partial class InvoiceViewModel : ObservableObject
         };
 
         Header.OldMetalTransactions.Add(oldMetalTransactionLine);
+
+        MarkDraftAsModified();
+
         return Task.CompletedTask;
     }
 
@@ -946,7 +962,8 @@ public partial class InvoiceViewModel : ObservableObject
             return false;
 
         return Header.GKey > 0 &&
-               InvoiceStatus.IsDraft(Header.Status);
+               InvoiceStatus.IsDraft(Header.Status) &&
+               !HasUnsavedChanges;
     }
 
     [RelayCommand(CanExecute = nameof(CanFinaliseInvoice))]
@@ -1024,6 +1041,36 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
+    private void MarkDraftAsModified()
+    {
+        if (_isLoadingDraft)
+            return;
+
+        if (Header is null ||
+            Header.GKey <= 0 ||
+            !InvoiceStatus.IsDraft(Header.Status))
+        {
+            return;
+        }
+
+        if (HasUnsavedChanges)
+            return;
+
+        HasUnsavedChanges = true;
+
+        FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+        CancelInvoiceCommand.NotifyCanExecuteChanged();
+    }
+
+
+    private void MarkDraftAsSaved()
+    {
+        HasUnsavedChanges = false;
+
+        SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+        FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+        CancelInvoiceCommand.NotifyCanExecuteChanged();
+    }
 
     private bool CanSaveDraftInvoice()
     {
@@ -1208,14 +1255,7 @@ public partial class InvoiceViewModel : ObservableObject
             // REFRESH COMMAND STATE
             // =========================================================
 
-            SaveDraftInvoiceCommand
-                .NotifyCanExecuteChanged();
-
-            FinaliseInvoiceCommand
-                .NotifyCanExecuteChanged();
-
-            CancelInvoiceCommand
-                .NotifyCanExecuteChanged();
+            MarkDraftAsSaved();
 
             // =========================================================
             // SUCCESS
@@ -1677,6 +1717,8 @@ public partial class InvoiceViewModel : ObservableObject
 
         EvaluateHeader();
 
+        MarkDraftAsModified();
+
     }
 
 
@@ -2019,6 +2061,17 @@ public partial class InvoiceViewModel : ObservableObject
         return true;
     }
 
+    private void RefreshInvoiceCommands()
+    {
+        SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+        FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+        CancelInvoiceCommand.NotifyCanExecuteChanged();
+
+        PrintInvoiceCommand.NotifyCanExecuteChanged();
+        PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+        ExportToPdfCommand.NotifyCanExecuteChanged();
+    }
+
     private void ProcessSettlements()
     {
         if (Header.DiscountAmount > 0)
@@ -2307,6 +2360,9 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private void ResetInvoice()
     {
+
+        HasUnsavedChanges = false; 
+        
         SetHeader();
 
         Buyer = null;
@@ -2379,6 +2435,9 @@ public partial class InvoiceViewModel : ObservableObject
 
         EvaluateForAllLines();
         EvaluateHeader();
+
+        MarkDraftAsModified();
+
     }
 
     private bool CanDeleteRows()

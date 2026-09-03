@@ -207,8 +207,60 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             : 0M;
 
 
+    private static bool IsAdvanceAdjustmentMode(string? mode)
+    {
+        return string.Equals(
+            mode?.Trim(),
+            "Advance Adj",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsRdAdjustmentMode(string? mode)
+    {
+        return string.Equals(
+            mode?.Trim(),
+            "RD Adj",
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsAdjustmentMode(string? mode)
+    {
+        return IsAdvanceAdjustmentMode(mode) ||
+               IsRdAdjustmentMode(mode);
+    }
+
+
+    // =========================================================
+    // SETTLEMENT ADJUSTMENTS ENTERED THROUGH PAYMENT GRID
+    // =========================================================
+
+    public decimal SettlementAdvanceAdjustment =>
+        Receipts
+            .Where(x => IsAdvanceAdjustmentMode(x.PaymentMode))
+            .Sum(x => x.Amount);
+
+
+    public decimal SettlementRdAdjustment =>
+        Receipts
+            .Where(x => IsRdAdjustmentMode(x.PaymentMode))
+            .Sum(x => x.Amount);
+
+
+    // Actual money received only.
+    // Advance/RD are NOT new cash receipts.
     public decimal TotalReceived =>
-        Receipts.Sum(x => x.Amount);
+        Receipts
+            .Where(x => !IsAdjustmentMode(x.PaymentMode))
+            .Sum(x => x.Amount);
+
+    public decimal TotalAdjustments =>
+    SettlementAdvanceAdjustment +
+    SettlementRdAdjustment;
+
+
+    public decimal TotalSettlementApplied =>
+        TotalReceived +
+        TotalAdjustments;
 
 
     public decimal EffectiveCreditAmount =>
@@ -226,7 +278,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     /// </summary>
     public decimal ReceivableBalance =>
         ReceivableAmount
-        - TotalReceived
+        - TotalSettlementApplied
         - EffectiveCreditAmount;
 
 
@@ -422,7 +474,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         {
             var remaining =
                 ReceivableAmount
-                - TotalReceived;
+                - TotalSettlementApplied;
 
             CreditAmount =
                 remaining > 0M
@@ -816,6 +868,18 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
         OnPropertyChanged(
             nameof(ReceivableAmount));
+
+        OnPropertyChanged(
+            nameof(SettlementAdvanceAdjustment));
+
+        OnPropertyChanged(
+            nameof(SettlementRdAdjustment));
+
+        OnPropertyChanged(
+            nameof(TotalAdjustments));
+
+        OnPropertyChanged(
+            nameof(TotalSettlementApplied));
 
         OnPropertyChanged(
             nameof(TotalReceived));

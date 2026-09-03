@@ -1,4 +1,4 @@
-﻿ <dx:ThemedWindow
+﻿<dx:ThemedWindow
     x:Class="InvEntry.Views.Invoice.InvoiceSettlementView"
      xmlns:local="clr-namespace:InvEntry.Views.Invoice"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -17,7 +17,7 @@
         <BooleanToVisibilityConverter
         x:Key="BooleanToVisibilityConverter"/>
     </dx:ThemedWindow.Resources>
-     
+
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -92,7 +92,7 @@
                FontWeight="Bold"/>
 
                 </StackPanel>
-                
+
             </Grid>
         </Border>
 
@@ -160,8 +160,10 @@
 
                 <TextBlock Grid.Row="2"
                    Grid.Column="1"
-                   Text="{Binding AdvanceAdjustment,
+                   Text="{Binding SettlementAdvanceAdjustment,
                                   StringFormat='₹ {0:N2}'}"
+                           Foreground="#1565C0"
+                        FontWeight="Bold"
                    HorizontalAlignment="Right"/>
 
 
@@ -174,8 +176,10 @@
 
                 <TextBlock Grid.Row="2"
                    Grid.Column="3"
-                   Text="{Binding RdAdjustment,
+                   Text="{Binding SettlementRdAdjustment,
                                   StringFormat='₹ {0:N2}'}"
+                           Foreground="#1565C0"
+                            FontWeight="Bold"
                    HorizontalAlignment="Right"/>
 
 
@@ -350,44 +354,103 @@
 
                     <!-- RECEIPT TOTALS -->
 
-                    <Grid Grid.Column="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="120"/>
-                        </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="2"
+      Width="300">
 
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Text="Received"/>
-                        <TextBlock Grid.Column="1"
-                               Text="{Binding TotalReceived,
-                                              StringFormat='₹ {0:N2}'}"
-                               HorizontalAlignment="Right"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="140"/>
+                        </Grid.ColumnDefinitions>
+
+
+                        <!-- ACTUAL MONEY RECEIVED -->
+
+                        <TextBlock Grid.Row="0"
+               Text="Received"
+               VerticalAlignment="Center"/>
+
+                        <TextBlock Grid.Row="0"
+               Grid.Column="1"
+               Text="{Binding TotalReceived,
+                              StringFormat='₹ {0:N2}'}"
+               HorizontalAlignment="Right"
+               FontWeight="SemiBold"/>
+
+
+                        <!-- ADJUSTMENTS -->
 
                         <TextBlock Grid.Row="1"
-                               Text="Credit"/>
+               Text="Advance / RD Adj"
+               VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Row="1"
-                               Grid.Column="1"
-                               Text="{Binding EffectiveCreditAmount,
-                                              StringFormat='₹ {0:N2}'}"
-                               HorizontalAlignment="Right"/>
+               Grid.Column="1"
+               Text="{Binding TotalAdjustments,
+                              StringFormat='₹ {0:N2}'}"
+               HorizontalAlignment="Right"
+               FontWeight="SemiBold"/>
+
+
+                        <!-- CREDIT -->
 
                         <TextBlock Grid.Row="2"
-                               Text="Balance"
-                               FontWeight="Bold"/>
+               Text="Credit"
+               VerticalAlignment="Center"/>
 
                         <TextBlock Grid.Row="2"
-                               Grid.Column="1"
-                               Text="{Binding ReceivableBalance,
-                                              StringFormat='₹ {0:N2}'}"
-                               HorizontalAlignment="Right"
-                               FontWeight="Bold"/>
+               Grid.Column="1"
+               Text="{Binding EffectiveCreditAmount,
+                              StringFormat='₹ {0:N2}'}"
+               HorizontalAlignment="Right"
+               FontWeight="SemiBold"/>
+
+
+                        <!-- LARGE BALANCE -->
+
+                        <Border Grid.Row="4"
+            Grid.ColumnSpan="2"
+            Padding="12,8"
+            CornerRadius="6"
+            Background="#FFF1F1"
+            BorderBrush="#F3C1C1"
+            BorderThickness="1">
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="BALANCE"
+                       VerticalAlignment="Center"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       Foreground="#B71C1C"/>
+
+                                <TextBlock Grid.Column="1"
+                       Text="{Binding ReceivableBalance,
+                                      StringFormat='₹ {0:N2}'}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       FontSize="26"
+                       FontWeight="Bold"
+                       Foreground="#D32F2F"/>
+
+                            </Grid>
+
+                        </Border>
+
                     </Grid>
+
                 </Grid>
 
             </Grid>

@@ -1634,7 +1634,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         FinaliseInvoiceRequest request,
         CancellationToken cancellationToken = default)
     {
-
         ArgumentNullException.ThrowIfNull(request);
 
         var invoiceGkey = request.InvoiceGkey;
@@ -1645,13 +1644,24 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         try
         {
+            // =========================================================
+            // LOAD INVOICE
+            // =========================================================
+
             var invoice =
                 _invoiceRepository.Get(
                     x => x.Gkey == invoiceGkey);
 
             if (invoice == null)
+            {
                 throw new KeyNotFoundException(
                     $"Invoice GKey {invoiceGkey} was not found.");
+            }
+
+
+            // =========================================================
+            // IDEMPOTENCY
+            // =========================================================
 
             if (InvoiceStatus.IsFinal(invoice.Status))
             {
@@ -1664,11 +1674,22 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 };
             }
 
+
+            // =========================================================
+            // STATUS VALIDATION
+            // =========================================================
+
             if (!InvoiceStatus.IsDraft(invoice.Status))
             {
                 throw new InvalidOperationException(
-                    $"Invoice cannot be finalised because its status is '{invoice.Status}'.");
+                    $"Invoice cannot be finalised because its status is " +
+                    $"'{invoice.Status}'.");
             }
+
+
+            // =========================================================
+            // LOAD INVOICE LINES
+            // =========================================================
 
             var lines =
                 _lineRepository
@@ -1683,11 +1704,12 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // SETTLEMENT VALIDATION
-            // ---------------------------------------------------------
+            // =========================================================
 
             const decimal settlementTolerance = 0.01M;
+
 
             // =========================================================
             // DISCOUNT
@@ -1699,22 +1721,13 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             // Recover the pre-discount settlement amount first, then
             // apply the discount submitted during Finalisation.
             //
-            // Example:
+            // IMPORTANT:
+            // Discount applies only against a POSITIVE amount owed
+            // by the customer.
             //
-            // Draft:
-            //     AmountPayable   = 9,500
-            //     DiscountAmount  =   500
-            //
-            // Pre-discount amount = 10,000
-            //
-            // Settlement changes discount to 750:
-            //
-            //     Final payable   = 10,000 - 750
-            //                     =  9,250
-            //
-            // The backend remains authoritative. We do NOT accept a
-            // payable/net amount calculated by WPF.
-            //
+            // A negative settlement amount means the shop owes the
+            // customer and must NOT be used as "available discount".
+            // =========================================================
 
             var existingDiscount =
                 invoice.DiscountAmount.GetValueOrDefault();
@@ -1724,7 +1737,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
 
             // ---------------------------------------------------------
-            // Validate discount
+            // Validate discount - basic
             // ---------------------------------------------------------
 
             if (requestedDiscount < 0M)
@@ -1734,39 +1747,53 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
 
-            // Recover the amount before the Draft discount was applied.
+            // ---------------------------------------------------------
+            // Recover amount before Draft discount
+            // ---------------------------------------------------------
+
             var preDiscountSettlementAmount =
                 invoice.AmountPayable.GetValueOrDefault()
                 + existingDiscount;
 
 
-            // A discount is meaningful only against a positive
-            // receivable. Do not allow it to manufacture/increase
-            // a refund to the customer.
-            if (requestedDiscount > 0M &&
-                preDiscountSettlementAmount <= settlementTolerance)
-            {
-                throw new InvalidOperationException(
-                    "Discount cannot be applied because there is no " +
-                    "positive invoice amount available for discount.");
-            }
-
-
-            // Discount cannot exceed the amount that the customer
-            // would otherwise owe.
-            if (requestedDiscount >
-                preDiscountSettlementAmount + settlementTolerance)
-            {
-                throw new InvalidOperationException(
-                    $"Discount amount ₹{requestedDiscount:N2} exceeds " +
-                    $"the amount available for discount " +
-                    $"₹{preDiscountSettlementAmount:N2}.");
-            }
-
-
             // ---------------------------------------------------------
+            // Validate requested discount
+            // ---------------------------------------------------------
+            //
+            // Do NOT compare zero discount against a negative
+            // settlement amount.
+            //
+            // Example:
+            //
+            // Pre-discount settlement = -59,288
+            // Requested discount     =       0
+            //
+            // This is perfectly valid. It is a refund situation.
+            // ---------------------------------------------------------
+
+            if (requestedDiscount > settlementTolerance)
+            {
+                if (preDiscountSettlementAmount <= settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        "Discount cannot be applied because there is no " +
+                        "positive invoice amount available for discount.");
+                }
+
+                if (requestedDiscount >
+                    preDiscountSettlementAmount + settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        $"Discount amount ₹{requestedDiscount:N2} exceeds " +
+                        $"the amount available for discount " +
+                        $"₹{preDiscountSettlementAmount:N2}.");
+                }
+            }
+
+
+            // =========================================================
             // AUTHORITATIVE FINAL AMOUNT
-            // ---------------------------------------------------------
+            // =========================================================
 
             var netSettlementAmount =
                 preDiscountSettlementAmount
@@ -1780,7 +1807,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
 
-            // Persist the final commercial values on the Invoice.
+            // Persist final commercial values.
             invoice.DiscountAmount =
                 requestedDiscount;
 
@@ -1788,16 +1815,82 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 netSettlementAmount;
 
 
-            // Draft has no received amount. The actual settlement
-            // records below represent the final receipts/refunds.
+            // Draft contains no final receipt amount.
             invoice.RecdAmount = 0M;
 
 
-            var receiptAmount =
+            // =========================================================
+            // SETTLEMENT LINES
+            // =========================================================
+
+            var receiptLines =
                 request.Receipts?
                     .Where(x => x.Amount > 0M)
-                    .Sum(x => x.Amount)
-                ?? 0M;
+                    .ToList()
+                ?? new List<InvoiceSettlementSaveModel>();
+
+
+            // =========================================================
+            // ADVANCE ADJUSTMENT
+            // =========================================================
+
+            var advanceAdjustmentAmount =
+                receiptLines
+                    .Where(x =>
+                        string.Equals(
+                            x.PaymentMode?.Trim(),
+                            "Advance Adj",
+                            StringComparison.OrdinalIgnoreCase))
+                    .Sum(x => x.Amount);
+
+
+            // =========================================================
+            // RD ADJUSTMENT
+            // =========================================================
+
+            var rdAdjustmentAmount =
+                receiptLines
+                    .Where(x =>
+                        string.Equals(
+                            x.PaymentMode?.Trim(),
+                            "RD Adj",
+                            StringComparison.OrdinalIgnoreCase))
+                    .Sum(x => x.Amount);
+
+
+            var adjustmentAmount =
+                advanceAdjustmentAmount
+                + rdAdjustmentAmount;
+
+
+            // =========================================================
+            // REAL MONEY RECEIVED
+            // =========================================================
+            //
+            // Advance Adj / RD Adj are NOT new money received.
+            //
+            // They participate in settlement but must not be treated
+            // as normal cash/bank/card receipts.
+            // =========================================================
+
+            var receiptAmount =
+                receiptLines
+                    .Where(x =>
+                        !string.Equals(
+                            x.PaymentMode?.Trim(),
+                            "Advance Adj",
+                            StringComparison.OrdinalIgnoreCase)
+                        &&
+                        !string.Equals(
+                            x.PaymentMode?.Trim(),
+                            "RD Adj",
+                            StringComparison.OrdinalIgnoreCase))
+                    .Sum(x => x.Amount);
+
+
+            // =========================================================
+            // REFUNDS
+            // =========================================================
 
             var refundAmount =
                 request.Refunds?
@@ -1805,25 +1898,34 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     .Sum(x => x.Amount)
                 ?? 0M;
 
+
+            // =========================================================
+            // CREDIT
+            // =========================================================
+
             var creditAmount =
                 request.CreditAmount;
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // BASIC AMOUNT VALIDATION
-            // ---------------------------------------------------------
+            // =========================================================
 
-            if (request.Receipts?.Any(x => x.Amount <= 0M) == true)
+            if (request.Receipts?.Any(
+                    x => x.Amount <= 0M) == true)
             {
                 throw new InvalidOperationException(
                     "Receipt amount must be greater than zero.");
             }
 
-            if (request.Refunds?.Any(x => x.Amount <= 0M) == true)
+
+            if (request.Refunds?.Any(
+                    x => x.Amount <= 0M) == true)
             {
                 throw new InvalidOperationException(
                     "Refund amount must be greater than zero.");
             }
+
 
             if (creditAmount < 0M)
             {
@@ -1832,9 +1934,9 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // SETTLEMENT TYPE VALIDATION
-            // ---------------------------------------------------------
+            // =========================================================
 
             if (request.Receipts?.Any(
                     x => !string.Equals(
@@ -1845,6 +1947,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 throw new InvalidOperationException(
                     "Invalid settlement type found in receipt entries.");
             }
+
 
             if (request.Refunds?.Any(
                     x => !string.Equals(
@@ -1857,10 +1960,20 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // RECEIVABLE
-            // Customer owes shop
-            // ---------------------------------------------------------
+            // =========================================================
+            //
+            // Customer owes shop.
+            //
+            // Settlement can consist of:
+            //
+            //      Real Receipt
+            //    + Advance Adjustment
+            //    + RD Adjustment
+            //    + Credit
+            //
+            // =========================================================
 
             if (netSettlementAmount > settlementTolerance)
             {
@@ -1870,35 +1983,54 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                         "Refunds are not allowed when the customer owes the shop.");
                 }
 
+
                 var settledAmount =
-                    receiptAmount + creditAmount;
+                    receiptAmount
+                    + adjustmentAmount
+                    + creditAmount;
+
 
                 var difference =
-                    netSettlementAmount - settledAmount;
+                    netSettlementAmount
+                    - settledAmount;
+
 
                 if (Math.Abs(difference) > settlementTolerance)
                 {
                     throw new InvalidOperationException(
                         $"Settlement does not match the invoice amount. " +
-                        $"Amount payable: {netSettlementAmount:N2}, " +
-                        $"Receipts: {receiptAmount:N2}, " +
-                        $"Credit: {creditAmount:N2}, " +
-                        $"Difference: {difference:N2}.");
+                        $"Amount payable: ₹{netSettlementAmount:N2}, " +
+                        $"Receipts: ₹{receiptAmount:N2}, " +
+                        $"Advance Adj: ₹{advanceAdjustmentAmount:N2}, " +
+                        $"RD Adj: ₹{rdAdjustmentAmount:N2}, " +
+                        $"Credit: ₹{creditAmount:N2}, " +
+                        $"Difference: ₹{difference:N2}.");
                 }
             }
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // REFUND
-            // Shop owes customer
-            // ---------------------------------------------------------
+            // =========================================================
+            //
+            // Shop owes customer.
+            //
+            // Explicit refund is mandatory.
+            //
+            // Receipts, Advance/RD adjustments and Credit are not
+            // allowed in this settlement direction.
+            // =========================================================
 
             else if (netSettlementAmount < -settlementTolerance)
             {
                 var refundPayable =
                     Math.Abs(netSettlementAmount);
 
-                // Explicit user action is mandatory.
+
+                // -----------------------------------------------------
+                // Explicit refund required
+                // -----------------------------------------------------
+
                 if (refundAmount <= settlementTolerance)
                 {
                     throw new InvalidOperationException(
@@ -1906,11 +2038,33 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                         "Enter the refund details before finalising the invoice.");
                 }
 
+
+                // -----------------------------------------------------
+                // No customer receipts
+                // -----------------------------------------------------
+
                 if (receiptAmount > settlementTolerance)
                 {
                     throw new InvalidOperationException(
                         "Receipts are not allowed when a refund is due to the customer.");
                 }
+
+
+                // -----------------------------------------------------
+                // No Advance / RD adjustment
+                // -----------------------------------------------------
+
+                if (adjustmentAmount > settlementTolerance)
+                {
+                    throw new InvalidOperationException(
+                        "Advance or RD adjustment is not allowed when " +
+                        "a refund is due to the customer.");
+                }
+
+
+                // -----------------------------------------------------
+                // No credit
+                // -----------------------------------------------------
 
                 if (creditAmount > settlementTolerance)
                 {
@@ -1918,8 +2072,15 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                         "Credit is not allowed when a refund is due to the customer.");
                 }
 
+
+                // -----------------------------------------------------
+                // Refund must exactly settle amount
+                // -----------------------------------------------------
+
                 var difference =
-                    refundPayable - refundAmount;
+                    refundPayable
+                    - refundAmount;
+
 
                 if (Math.Abs(difference) > settlementTolerance)
                 {
@@ -1932,26 +2093,27 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // FULLY ADJUSTED
-            // ---------------------------------------------------------
+            // =========================================================
 
             else
             {
                 if (receiptAmount > settlementTolerance ||
+                    adjustmentAmount > settlementTolerance ||
                     refundAmount > settlementTolerance ||
                     creditAmount > settlementTolerance)
                 {
                     throw new InvalidOperationException(
-                        "No receipt, refund or credit is allowed because " +
-                        "the invoice is fully adjusted.");
+                        "No receipt, adjustment, refund or credit is allowed " +
+                        "because the invoice is fully adjusted.");
                 }
             }
 
 
-            // ---------------------------------------------------------
+            // =========================================================
             // GENERATE OFFICIAL INVOICE NUMBER
-            // ---------------------------------------------------------
+            // =========================================================
 
             if (string.IsNullOrWhiteSpace(invoice.InvNbr))
             {
@@ -1960,9 +2122,10 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                         cancellationToken);
             }
 
-            // ---------------------------------------------------------
+
+            // =========================================================
             // SAFETY - DO NOT CREATE SETTLEMENT TWICE
-            // ---------------------------------------------------------
+            // =========================================================
 
             var existingSettlementRecords =
                 _receiptRepository
@@ -1977,31 +2140,41 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     "and cannot be finalised again.");
             }
 
-            // -----------
-            // STOCK UPDATE
-            // -----------
-            PostInvoiceStock(
-                        invoice,
-                        lines);
 
-            // ---------------------------------------------------------
+            // =========================================================
+            // STOCK UPDATE
+            // =========================================================
+
+            PostInvoiceStock(
+                invoice,
+                lines);
+
+
+            // =========================================================
             // CREATE SETTLEMENT RECORDS
+            // =========================================================
             //
-            // Creates:
-            //   Receipt -> Voucher + InvoiceArReceipt
-            //   Credit  -> Voucher + InvoiceArReceipt
-            //   Refund  -> Voucher + InvoiceArReceipt
+            // IMPORTANT:
             //
-            // Everything is still inside the current DB transaction.
-            // ---------------------------------------------------------
+            // CreateSettlementRecords must interpret:
+            //
+            // Cash/Bank/Card/GPAY -> Receipt
+            // Advance Adj         -> Adjustment / Journal
+            // RD Adj              -> Adjustment / Journal
+            // Credit              -> Receivable
+            // Refund              -> Outward payment
+            //
+            // Everything remains inside the same DB transaction.
+            // =========================================================
 
             CreateSettlementRecords(
                 invoice,
                 request);
 
-            // ---------------------------------------------------------
+
+            // =========================================================
             // FINAL STATUS
-            // ---------------------------------------------------------
+            // =========================================================
 
             invoice.Status =
                 InvoiceStatus.Final;
@@ -2009,9 +2182,10 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             invoice.FinalisedOn =
                 DateTime.Now;
 
-            // ---------------------------------------------------------
+
+            // =========================================================
             // CHILD DOCUMENT REFERENCES
-            // ---------------------------------------------------------
+            // =========================================================
 
             foreach (var line in lines)
             {
@@ -2019,11 +2193,13 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     invoice.InvNbr;
             }
 
+
             var oldMetalTransactions =
                 _oldMetalRepository
                     .GetList(
                         x => x.DocRefGkey == invoiceGkey)
                     .ToList();
+
 
             foreach (var oldMetal in oldMetalTransactions)
             {
@@ -2031,11 +2207,22 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     invoice.InvNbr;
             }
 
+
+            // =========================================================
+            // SAVE EVERYTHING
+            // =========================================================
+
             await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
 
+
             await transaction.CommitAsync(
                 cancellationToken);
+
+
+            // =========================================================
+            // RESPONSE
+            // =========================================================
 
             return new FinaliseInvoiceResponse
             {
