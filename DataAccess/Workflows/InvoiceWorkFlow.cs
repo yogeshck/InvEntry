@@ -2389,5 +2389,80 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         };
     }
 
+    public async Task<CancelInvoiceResponse> CancelAsync(
+    int invoiceGkey,
+    CancellationToken cancellationToken = default)
+    {
+        if (invoiceGkey <= 0)
+        {
+            throw new ArgumentException(
+                "A valid invoice GKey is required.",
+                nameof(invoiceGkey));
+        }
+
+        var invoice =
+            _invoiceRepository
+                .GetList(x => x.Gkey == invoiceGkey)
+                .FirstOrDefault();
+
+        if (invoice is null)
+        {
+            throw new InvalidOperationException(
+                $"Invoice {invoiceGkey} was not found.");
+        }
+
+        // ---------------------------------------------------------
+        // IDEMPOTENT
+        // ---------------------------------------------------------
+
+        if (InvoiceStatus.IsCancelled(invoice.Status))
+        {
+            return new CancelInvoiceResponse
+            {
+                InvoiceGkey = invoice.Gkey,
+                Status = invoice.Status!,
+                ModifiedOn = invoice.ModifiedOn
+            };
+        }
+
+
+        // ---------------------------------------------------------
+        // ONLY DRAFT CAN BE CANCELLED
+        // ---------------------------------------------------------
+
+        if (!InvoiceStatus.IsDraft(invoice.Status))
+        {
+            throw new InvalidOperationException(
+                $"Invoice cannot be cancelled because its current " +
+                $"status is '{invoice.Status}'.");
+        }
+
+
+        // ---------------------------------------------------------
+        // CANCEL DRAFT
+        //
+        // IMPORTANT:
+        // Do NOT delete invoice lines / old metal.
+        // Do NOT post stock.
+        // Do NOT create settlement / voucher / AR / ledger.
+        // ---------------------------------------------------------
+
+        invoice.Status = InvoiceStatus.Cancelled;
+        invoice.ModifiedOn = DateTime.Now;
+
+        _invoiceRepository.Update(invoice);
+
+        await _unitOfWork.SaveChangesAsync(
+            cancellationToken);
+
+
+        return new CancelInvoiceResponse
+        {
+            InvoiceGkey = invoice.Gkey,
+            Status = invoice.Status,
+            ModifiedOn = invoice.ModifiedOn
+        };
+    }
+
 
 }

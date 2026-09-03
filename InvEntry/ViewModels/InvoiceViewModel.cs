@@ -995,17 +995,24 @@ public partial class InvoiceViewModel : ObservableObject
             Header.InvNbr = result.InvNbr;
             Header.Status = result.Status;
 
+            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+            CancelInvoiceCommand.NotifyCanExecuteChanged();
+            CreateInvoiceCommand.NotifyCanExecuteChanged();
+            PrintInvoiceCommand.NotifyCanExecuteChanged();
+            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+
             _messageBoxService.ShowMessage(
                 $"Invoice {result.InvNbr} has been finalised successfully.",
                 "Invoice Finalised",
                 MessageButton.OK,
                 MessageIcon.Information);
 
-            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
-            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
-            CreateInvoiceCommand.NotifyCanExecuteChanged();
-            PrintInvoiceCommand.NotifyCanExecuteChanged();
-            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+            _reportDialogService.PrintPreview(result.InvNbr);
+
+            // Start next invoice after preview is closed.
+            ResetInvoice();
+
         }
         catch (Exception ex)
         {
@@ -1207,17 +1214,19 @@ public partial class InvoiceViewModel : ObservableObject
             FinaliseInvoiceCommand
                 .NotifyCanExecuteChanged();
 
+            CancelInvoiceCommand
+                .NotifyCanExecuteChanged();
 
             // =========================================================
             // SUCCESS
             // =========================================================
 
-/*            DXMessageBox.Show(
-                $"Draft invoice saved successfully.\n\n" +
-                $"Draft Number: DRAFT-{result.Gkey}",
-                "Draft Saved",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);*/
+            /*            DXMessageBox.Show(
+                            $"Draft invoice saved successfully.\n\n" +
+                            $"Draft Number: DRAFT-{result.Gkey}",
+                            "Draft Saved",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);*/
 
             // Start a clean invoice only after the Draft
             // has been successfully persisted.
@@ -1615,8 +1624,12 @@ public partial class InvoiceViewModel : ObservableObject
     }
 
     private bool CanPrintInvoice()
-    { 
-        return !CanCreateInvoice();
+    {
+        if (Header is null)
+            return false;
+
+        return InvoiceStatus.IsFinal(Header.Status) &&
+               !string.IsNullOrWhiteSpace(Header.InvNbr);
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
@@ -2336,6 +2349,10 @@ public partial class InvoiceViewModel : ObservableObject
 
         PrintPreviewInvoiceCommand
             .NotifyCanExecuteChanged();
+
+        CancelInvoiceCommand
+            .NotifyCanExecuteChanged();
+
     }
 
     [RelayCommand(CanExecute = nameof(CanDeleteRows))]
@@ -2557,6 +2574,74 @@ public partial class InvoiceViewModel : ObservableObject
 
             Status = source.Status
         };
+    }
+
+    private bool CanCancelInvoice()
+    {
+        if (Header is null)
+            return false;
+
+        return Header.GKey > 0 &&
+               InvoiceStatus.IsDraft(Header.Status);
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanCancelInvoice))]
+    private async Task CancelInvoice()
+    {
+        if (Header is null ||
+            Header.GKey <= 0 ||
+            !InvoiceStatus.IsDraft(Header.Status))
+        {
+            return;
+        }
+
+        var draftNumber =
+            $"DRAFT-{Header.GKey}";
+
+        var confirmation =
+            _messageBoxService.ShowMessage(
+                $"Do you want to cancel {draftNumber}?\n\n" +
+                "The cancelled invoice cannot be edited or finalised.",
+                "Cancel Draft Invoice",
+                MessageButton.YesNo,
+                MessageIcon.Warning,
+                MessageResult.No);
+
+        if (confirmation != MessageResult.Yes)
+            return;
+
+        try
+        {
+            await ShowProcessingAsync(
+                "Cancelling draft invoice. Please wait...");
+
+            var result =
+                await _invoiceService.CancelAsync(
+                    Header.GKey);
+
+            Header.Status = result.Status;
+
+            _messageBoxService.ShowMessage(
+                $"{draftNumber} has been cancelled successfully.",
+                "Invoice Cancelled",
+                MessageButton.OK,
+                MessageIcon.Information);
+
+            ResetInvoice();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                $"Invoice could not be cancelled.\n\n{ex.Message}",
+                "Cancellation Failed",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            HideProcessing();
+        }
     }
 
     private InvoiceLine MapDraftLine(

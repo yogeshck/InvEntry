@@ -19,4 +19,9 @@ public interface IInvoiceWorkflow
     Task CancelDraftAsync(
         int invoiceGkey,
         CancellationToken cancellationToken = default);
+
+    Task<CancelInvoiceResponse> CancelAsync(
+    int invoiceGkey,
+    CancellationToken cancellationToken = default);
+
 }

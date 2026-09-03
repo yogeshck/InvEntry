@@ -637,4 +637,60 @@ public class InvoiceController : ControllerBase
         _invoiceHeaderRepository.Remove(
             invoice);
     }
+
+    // =========================================================
+    // POST: api/invoice/{invoiceGkey}/cancel
+    //
+    // Cancels a persisted DRAFT invoice.
+    //
+    // IMPORTANT:
+    //      DRAFT      -> CANCELLED
+    //      FINAL      -> rejected by workflow
+    //      CANCELLED  -> handled idempotently by workflow
+    //
+    // This does NOT:
+    //      Delete the invoice
+    //      Delete invoice lines
+    //      Delete old-metal rows
+    //      Update stock
+    //      Create stock movements
+    //      Create settlement / AR / voucher / ledger entries
+    //
+    // Cancellation is a business-state transition only.
+    // =========================================================
+
+    [HttpPost("{invoiceGkey:int}/cancel")]
+    public async Task<ActionResult<CancelInvoiceResponse>> Cancel(
+        int invoiceGkey,
+        CancellationToken cancellationToken)
+    {
+        if (invoiceGkey <= 0)
+        {
+            return BadRequest(
+                "A valid invoice GKey is required.");
+        }
+
+        try
+        {
+            var result =
+                await _invoiceWorkflow.CancelAsync(
+                    invoiceGkey,
+                    cancellationToken);
+
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
 }

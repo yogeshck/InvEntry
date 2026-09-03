@@ -62,6 +62,15 @@
                                     Glyph="{dx:DXImage 'Images/Save/Save_32x32.png'}"
                                     GlyphSize="Large" Command="{Binding SaveDraftInvoiceCommand}"/>
                 <dxb:BarItemSeparator/>
+                <dxb:BarButtonItem
+                    x:Name="CancelInvoice"
+                    Content="Cancel Draft"
+                    BarItemDisplayMode="ContentAndGlyph"
+                    GlyphAlignment="Top"
+                    Glyph="{dx:DXImage 'Images/Actions/Cancel_32x32.png'}"
+                    GlyphSize="Large"
+                    Command="{Binding CancelInvoiceCommand}"/>
+                <dxb:BarItemSeparator/>
                 <dxb:BarButtonItem x:Name="Finalise"
                    Content="Finalise Invoice"
                    BarItemDisplayMode="ContentAndGlyph"
