@@ -509,6 +509,7 @@
                                     </dxg:GridControl.Resources>
                                     <dxg:GridControl.Columns>
                                         <dxg:GridColumn FieldName="ProductId" Header="Product Id" Width="150" ReadOnly="True"/>
+                                        <dxg:GridColumn FieldName="ProductSku" Header="Tag / SKU" Width="120" ReadOnly="True"/>
                                         <dxg:GridColumn FieldName="ProductName" ReadOnly="True" Width="250"/>
                                         <dxg:GridColumn FieldName="ProductPurity" Header="Purity" ReadOnly="True" Width="50"/>
                                         <dxg:GridColumn FieldName="InvlBilledPrice" Header="Rate" Width="80"/>

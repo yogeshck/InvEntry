@@ -44,4 +44,18 @@ public partial class ProductTransactionSummary
     public decimal? ClosingStoneWeight { get; set; }
 
     public decimal? ClosingNetWeight { get; set; }
+
+    public int? ProductGkey { get; set; }
+
+    public int? RefGkey { get; set; }
+
+    public int? RefLineGkey { get; set; }
+
+    public string? DocumentNbr { get; set; }
+
+    public string? DocumentType { get; set; }
+
+    public string? TransactionType { get; set; }
+
+    public string? Notes { get; set; }
 }

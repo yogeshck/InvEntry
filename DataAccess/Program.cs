@@ -1,10 +1,11 @@
+using DataAccess.Inventory;
+using DataAccess.Inventory.ProductStock;
 using DataAccess.Models;
 using DataAccess.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using DataAccess.Workflows;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -87,6 +88,10 @@ builder.Services.AddScoped(
 builder.Services.AddScoped<
     IUnitOfWork,
     UnitOfWork>();
+
+builder.Services.AddScoped<
+    IStockMovementService,
+    StockMovementService>();
 
 builder.Services.AddScoped<
                         ICustomerOrderWorkflow,

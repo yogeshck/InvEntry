@@ -2787,6 +2787,10 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("PRODUCT_TRANSACTION_SUMMARY");
 
+            entity.HasIndex(e => new { e.DocumentType, e.RefLineGkey }, "IX_PRODUCT_TRANSACTION_SUMMARY_DOCUMENT");
+
+            entity.HasIndex(e => new { e.ProductGkey, e.TransactionDate }, "IX_PRODUCT_TRANSACTION_SUMMARY_PRODUCT_DATE");
+
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.ClosingGrossWeight)
                 .HasColumnType("decimal(10, 3)")
@@ -2798,6 +2802,18 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ClosingStoneWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("CLOSING_STONE_WEIGHT");
+            entity.Property(e => e.DocumentNbr)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_NBR");
+            entity.Property(e => e.DocumentType)
+                .HasMaxLength(30)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_TYPE");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(250)
+                .IsUnicode(false)
+                .HasColumnName("NOTES");
             entity.Property(e => e.OpeningGrossWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("OPENING_GROSS_WEIGHT");
@@ -2812,10 +2828,13 @@ public partial class MijmsContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_CATEGORY");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
             entity.Property(e => e.ProductSku)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_SKU");
+            entity.Property(e => e.RefGkey).HasColumnName("REF_GKEY");
+            entity.Property(e => e.RefLineGkey).HasColumnName("REF_LINE_GKEY");
             entity.Property(e => e.StockInGrossWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("STOCK_IN_GROSS_WEIGHT");
@@ -2837,6 +2856,10 @@ public partial class MijmsContext : DbContext
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("STOCK_OUT_STONE_WEIGHT");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
+            entity.Property(e => e.TransactionType)
+                .HasMaxLength(30)
+                .IsUnicode(false)
+                .HasColumnName("TRANSACTION_TYPE");
         });
 
         modelBuilder.Entity<ProductView>(entity =>

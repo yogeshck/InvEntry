@@ -1,6 +1,8 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using DataAccess.Inventory;
 using InvEntry.Contracts.Invoices;
+using DataAccess.Inventory.ProductStock;
 
 namespace DataAccess.Workflows;
 
@@ -12,7 +14,15 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IRepositoryBase<OldMetalTransaction> _oldMetalRepository;
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
     private readonly IRepositoryBase<Voucher> _voucherRepository;
+    //private readonly IRepositoryBase<ProductStock> _productStockRepository;
+    //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
+    //private readonly IRepositoryBase<ProductTransaction> _productTransactionRepository;
+    private readonly IStockMovementService _stockMovementService;
     private readonly IUnitOfWork _unitOfWork;
+
+    //IRepositoryBase<ProductStock> productStockRepository,
+    //IRepositoryBase<ProductStockSummary> productStockSummaryRepository,
+    //IRepositoryBase<ProductTransaction> productTransactionRepository,
 
     public InvoiceWorkflow(
         IRepositoryBase<InvoiceHeader> invoiceRepository,
@@ -21,6 +31,8 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IRepositoryBase<OldMetalTransaction> oldMetalRepository,
         IRepositoryBase<VoucherType> voucherTypeRepository,
         IRepositoryBase<Voucher> voucherRepository,
+
+        IStockMovementService stockMovementService,
         IUnitOfWork unitOfWork)
     {
         _invoiceRepository = invoiceRepository;
@@ -29,6 +41,13 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         _oldMetalRepository = oldMetalRepository;
         _voucherTypeRepository = voucherTypeRepository;
         _voucherRepository = voucherRepository;
+
+      //  _productStockRepository = productStockRepository;
+      //  _productStockSummaryRepository = productStockSummaryRepository;
+      //  _productTransactionRepository = productTransactionRepository;
+
+        _stockMovementService =  stockMovementService;
+
         _unitOfWork = unitOfWork;
     }
 
@@ -125,6 +144,118 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
+    }
+
+    private void PostInvoiceStock(
+        InvoiceHeader invoice,
+        IReadOnlyCollection<InvoiceLine> lines)
+    {
+        if (string.IsNullOrWhiteSpace(invoice.InvNbr))
+        {
+            throw new InvalidOperationException(
+                "Official invoice number must be generated before stock is posted.");
+        }
+
+        if (lines.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Invoice contains no lines to post to stock.");
+        }
+
+        var requests = lines
+            .Select(line =>
+                new StockMovementRequest
+                {
+                    // ---------------------------------------------
+                    // Source document
+                    // ---------------------------------------------
+
+                    DocumentGkey =
+                        invoice.Gkey,
+
+                    DocumentLineGkey =
+                        line.Gkey,
+
+                    DocumentNumber =
+                        invoice.InvNbr,
+
+                    DocumentDate =
+                        invoice.InvDate ?? DateTime.Now,
+
+                    DocumentType =
+                        "SALE_INVOICE",
+
+
+                    // ---------------------------------------------
+                    // Product
+                    // ---------------------------------------------
+
+                    ProductGkey =
+                        line.ProductGkey.GetValueOrDefault(),
+
+                    ProductSku =
+                        string.IsNullOrWhiteSpace(line.ProductSku)
+                            ? null
+                            : line.ProductSku,
+
+                    ProductCategory =
+                        line.ProdCategory,
+
+
+                    // ---------------------------------------------
+                    // Movement
+                    // ---------------------------------------------
+
+                    Direction =
+                        StockMovementDirection.Out,
+
+                    Purpose =
+                        StockMovementPurpose.Sale,
+
+
+                    // ---------------------------------------------
+                    // Quantity / Weight
+                    // ---------------------------------------------
+
+                    Quantity =
+                        line.ProdQty,
+
+                    GrossWeight =
+                        line.ProdGrossWeight.GetValueOrDefault(),
+
+                    StoneWeight =
+                        line.ProdStoneWeight.GetValueOrDefault(),
+
+                    NetWeight =
+                        line.ProdNetWeight.GetValueOrDefault(),
+
+
+                    // ---------------------------------------------
+                    // Commercial
+                    // ---------------------------------------------
+
+                    UnitPrice =
+                        line.InvlBilledPrice,
+
+                    TransactionValue =
+                        line.InvlPayableAmt,
+
+
+                    // ---------------------------------------------
+                    // Reference
+                    // ---------------------------------------------
+
+                    Reason =
+                        "Invoice Sale",
+
+                    Notes =
+                        $"Invoice {invoice.InvNbr}"
+                })
+            .ToList();
+
+
+        _stockMovementService.PostMovements(
+            requests);
     }
 
     private void CreateSettlementRecords(
@@ -1551,17 +1682,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     "Invoice must contain at least one line before finalisation.");
             }
 
-            // ---------------------------------------------------------
-            // PAYMENT / CREDIT VALIDATION
-            // ---------------------------------------------------------
-            // We will strengthen this next.
-            //
-            // For now do not allow an invalid negative payable/balance.
-            // ---------------------------------------------------------
-
-            // ---------------------------------------------------------
-            // SETTLEMENT VALIDATION
-            // ---------------------------------------------------------
 
             // ---------------------------------------------------------
             // SETTLEMENT VALIDATION
@@ -1856,6 +1976,13 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     $"Invoice {invoice.Gkey} already contains settlement records " +
                     "and cannot be finalised again.");
             }
+
+            // -----------
+            // STOCK UPDATE
+            // -----------
+            PostInvoiceStock(
+                        invoice,
+                        lines);
 
             // ---------------------------------------------------------
             // CREATE SETTLEMENT RECORDS
