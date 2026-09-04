@@ -98,6 +98,7 @@ builder.Services.AddScoped<
                         CustomerOrderWorkflow>();
 
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
+builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 
 var app = builder.Build();
 

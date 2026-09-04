@@ -107,6 +107,10 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<StockVerifyScan> StockVerifyScans { get; set; }
 
+    public virtual DbSet<StockTransferHeader> StockTransferHeaders { get; set; }
+
+    public virtual DbSet<StockTransferLine> StockTransferLines { get; set; }
+
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
     public virtual DbSet<VoucherDbView> VoucherDbViews { get; set; }
@@ -3023,6 +3027,64 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<StockTransferHeader>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+            entity.ToTable("STOCK_TRANSFER_HEADER");
+            entity.HasIndex(e => e.TransferNbr).IsUnique();
+            entity.HasIndex(e => e.TransferDate);
+            entity.HasIndex(e => new { e.Status, e.TransferType, e.ToReferenceGkey });
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.TransferNbr).HasMaxLength(50).IsUnicode(false).HasColumnName("TRANSFER_NBR");
+            entity.Property(e => e.TransferDate).HasPrecision(6).HasColumnName("TRANSFER_DATE");
+            entity.Property(e => e.TransferType).HasMaxLength(20).IsUnicode(false).HasColumnName("TRANSFER_TYPE");
+            entity.Property(e => e.FromBranch).HasMaxLength(255).IsUnicode(false).HasColumnName("FROM_BRANCH");
+            entity.Property(e => e.FromTenantGkey).HasColumnName("FROM_TENANT_GKEY");
+            entity.Property(e => e.ToReferenceGkey).HasColumnName("TO_REFERENCE_GKEY");
+            entity.Property(e => e.ToReferenceCode).HasMaxLength(50).IsUnicode(false).HasColumnName("TO_REFERENCE_CODE");
+            entity.Property(e => e.ToReferenceValue).HasMaxLength(50).IsUnicode(false).HasColumnName("TO_REFERENCE_VALUE");
+            entity.Property(e => e.Status).HasMaxLength(20).IsUnicode(false).HasColumnName("STATUS");
+            entity.Property(e => e.Remarks).HasMaxLength(255).IsUnicode(false).HasColumnName("REMARKS");
+            entity.Property(e => e.TotalQty).HasColumnName("TOTAL_QTY");
+            entity.Property(e => e.TotalGrossWeight).HasColumnType("decimal(18, 3)").HasColumnName("TOTAL_GROSS_WEIGHT");
+            entity.Property(e => e.TotalStoneWeight).HasColumnType("decimal(18, 3)").HasColumnName("TOTAL_STONE_WEIGHT");
+            entity.Property(e => e.TotalNetWeight).HasColumnType("decimal(18, 3)").HasColumnName("TOTAL_NET_WEIGHT");
+            entity.Property(e => e.CreatedBy).HasMaxLength(50).IsUnicode(false).HasColumnName("CREATED_BY");
+            entity.Property(e => e.CreatedOn).HasPrecision(6).HasColumnName("CREATED_ON");
+            entity.Property(e => e.ModifiedBy).HasMaxLength(50).IsUnicode(false).HasColumnName("MODIFIED_BY");
+            entity.Property(e => e.ModifiedOn).HasPrecision(6).HasColumnName("MODIFIED_ON");
+            entity.HasOne<MtblReference>().WithMany().HasForeignKey(e => e.ToReferenceGkey).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StockTransferLine>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+            entity.ToTable("STOCK_TRANSFER_LINE");
+            entity.HasIndex(e => new { e.TransferHdrGkey, e.LineNbr }).IsUnique();
+            entity.HasIndex(e => e.ProductStockGkey);
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.TransferHdrGkey).HasColumnName("TRANSFER_HDR_GKEY");
+            entity.Property(e => e.LineNbr).HasColumnName("LINE_NBR");
+            entity.Property(e => e.ProductStockGkey).HasColumnName("PRODUCT_STOCK_GKEY");
+            entity.Property(e => e.ProductGkey).HasColumnName("PRODUCT_GKEY");
+            entity.Property(e => e.ProductId).HasMaxLength(50).IsUnicode(false).HasColumnName("PRODUCT_ID");
+            entity.Property(e => e.ProductSku).HasMaxLength(50).IsUnicode(false).HasColumnName("PRODUCT_SKU");
+            entity.Property(e => e.ProductName).HasMaxLength(255).IsUnicode(false).HasColumnName("PRODUCT_NAME");
+            entity.Property(e => e.ProductCategory).HasMaxLength(255).IsUnicode(false).HasColumnName("PRODUCT_CATEGORY");
+            entity.Property(e => e.Metal).HasMaxLength(50).IsUnicode(false).HasColumnName("METAL");
+            entity.Property(e => e.Purity).HasMaxLength(255).IsUnicode(false).HasColumnName("PURITY");
+            entity.Property(e => e.Uom).HasMaxLength(50).IsUnicode(false).HasColumnName("UOM");
+            entity.Property(e => e.Qty).HasColumnName("QTY");
+            entity.Property(e => e.GrossWeight).HasColumnType("decimal(18, 3)").HasColumnName("GROSS_WEIGHT");
+            entity.Property(e => e.StoneWeight).HasColumnType("decimal(18, 3)").HasColumnName("STONE_WEIGHT");
+            entity.Property(e => e.NetWeight).HasColumnType("decimal(18, 3)").HasColumnName("NET_WEIGHT");
+            entity.Property(e => e.TransactedRate).HasColumnType("decimal(18, 2)").HasColumnName("TRANSACTED_RATE");
+            entity.Property(e => e.TransferValue).HasColumnType("decimal(18, 2)").HasColumnName("TRANSFER_VALUE");
+            entity.Property(e => e.Notes).HasMaxLength(255).IsUnicode(false).HasColumnName("NOTES");
+            entity.HasOne(e => e.Header).WithMany(e => e.Lines).HasForeignKey(e => e.TransferHdrGkey).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.ProductStock).WithMany().HasForeignKey(e => e.ProductStockGkey).OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Voucher>(entity =>

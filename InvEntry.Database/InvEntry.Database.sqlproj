@@ -90,6 +90,8 @@
     <Build Include="dbo\Tables\PRODUCT.sql" />
     <Build Include="dbo\Tables\ORG_PLACES.sql" />
     <Build Include="dbo\Tables\OLD_METAL_TRANSACTION.sql" />
+    <Build Include="dbo\Tables\STOCK_TRANSFER_HEADER.sql" />
+    <Build Include="dbo\Tables\STOCK_TRANSFER_LINE.sql" />
     <Build Include="dbo\Tables\MTBL_VOUCHER_TYPES.sql" />
     <Build Include="dbo\Tables\MTBL_LEDGERS.sql" />
     <Build Include="dbo\Tables\LEDGERS_TRANSACTIONS.sql" />
