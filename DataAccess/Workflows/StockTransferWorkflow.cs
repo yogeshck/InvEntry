@@ -25,15 +25,18 @@ public sealed class StockTransferWorkflow : IStockTransferWorkflow
     private readonly MijmsContext _context;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStockMovementService _stockMovementService;
+    private readonly IOldMetalTransferPostingService _oldMetalTransferPostingService;
 
     public StockTransferWorkflow(
         MijmsContext context,
         IUnitOfWork unitOfWork,
-        IStockMovementService stockMovementService)
+        IStockMovementService stockMovementService,
+        IOldMetalTransferPostingService oldMetalTransferPostingService)
     {
         _context = context;
         _unitOfWork = unitOfWork;
         _stockMovementService = stockMovementService;
+        _oldMetalTransferPostingService = oldMetalTransferPostingService;
     }
 
     public async Task<StockTransferDetailResponse> CreateAsync(CreateStockTransferRequest request, CancellationToken cancellationToken = default)
@@ -90,6 +93,11 @@ public sealed class StockTransferWorkflow : IStockTransferWorkflow
             if (request.TransferType == OrnamentTransferType)
             {
                 PostOrnamentStock(header);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+            else if (request.TransferType == OldMetalTransferType)
+            {
+                _oldMetalTransferPostingService.Post(header);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 

@@ -99,6 +99,7 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
+builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 
 var app = builder.Build();
 
