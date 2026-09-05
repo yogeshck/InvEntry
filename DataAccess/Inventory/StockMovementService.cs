@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Inventory.ProductStock;
 
@@ -20,12 +21,15 @@ public sealed class StockMovementService
     private readonly IRepositoryBase<ProductTransactionSummary>
         _productTransactionSummaryRepository;
 
+    private readonly MijmsContext _context;
+
 
     public StockMovementService(
         IRepositoryBase<Models.ProductStock> productStockRepository,
         IRepositoryBase<ProductStockSummary> productStockSummaryRepository,
         IRepositoryBase<ProductTransaction> productTransactionRepository,
-        IRepositoryBase<ProductTransactionSummary> productTransactionSummaryRepository)
+        IRepositoryBase<ProductTransactionSummary> productTransactionSummaryRepository,
+        MijmsContext context)
     {
         _productStockRepository =
             productStockRepository;
@@ -38,6 +42,8 @@ public sealed class StockMovementService
 
         _productTransactionSummaryRepository =
             productTransactionSummaryRepository;
+
+        _context = context;
     }
 
 
@@ -135,14 +141,18 @@ public sealed class StockMovementService
         //    ALWAYS INSERT
         // =====================================================
 
-        var transactionSummary =
-            CreateProductTransactionSummary(
-                request,
-                summaryOpening,
-                stockSummary);
+        if (request.Purpose !=
+            StockMovementPurpose.BranchTransferOut)
+        {
+            var transactionSummary =
+                CreateProductTransactionSummary(
+                    request,
+                    summaryOpening,
+                    stockSummary);
 
-        _productTransactionSummaryRepository.Add(
-            transactionSummary);
+            _productTransactionSummaryRepository.Add(
+                transactionSummary);
+        }
 
 
         // =====================================================
@@ -290,6 +300,24 @@ public sealed class StockMovementService
     private ProductStockSummary GetProductStockSummary(
         StockMovementRequest request)
     {
+        if (request.Purpose ==
+            StockMovementPurpose.BranchTransferOut)
+        {
+            var lockedSummary = _context.ProductStockSummaries
+                .FromSqlInterpolated($"SELECT * FROM PRODUCT_STOCK_SUMMARY WITH (UPDLOCK, HOLDLOCK) WHERE PRODUCT_GKEY = {request.ProductGkey}")
+                .SingleOrDefault();
+
+            if (lockedSummary == null)
+            {
+                throw new InvalidOperationException(
+                    $"Stock summary was not found for " +
+                    $"ProductGkey {request.ProductGkey}, " +
+                    $"Product {GetProductReference(request)}.");
+            }
+
+            return lockedSummary;
+        }
+
         var summary =
             _productStockSummaryRepository.Get(
                 x =>
@@ -315,6 +343,24 @@ public sealed class StockMovementService
     private Models.ProductStock? GetTaggedProductStock(
         StockMovementRequest request)
     {
+        if (request.ProductStockGkey.HasValue)
+        {
+            var lockedStock = _context.ProductStocks
+                .FromSqlInterpolated($"SELECT * FROM PRODUCT_STOCK WITH (UPDLOCK, HOLDLOCK) WHERE GKEY = {request.ProductStockGkey.Value}")
+                .SingleOrDefault();
+
+            if (lockedStock == null ||
+                lockedStock.ProductGkey != request.ProductGkey)
+            {
+                throw new InvalidOperationException(
+                    $"Tagged stock Gkey '{request.ProductStockGkey}' " +
+                    $"was not found for ProductGkey " +
+                    $"{request.ProductGkey}.");
+            }
+
+            return lockedStock;
+        }
+
         if (string.IsNullOrWhiteSpace(
                 request.ProductSku))
         {
@@ -369,6 +415,14 @@ public sealed class StockMovementService
         {
             ValidateTaggedStockOut(
                 taggedStock,
+                request);
+        }
+
+        if (request.Purpose ==
+            StockMovementPurpose.BranchTransferOut)
+        {
+            ValidateBranchTransferSummaryStockOut(
+                summary,
                 request);
         }
 
@@ -467,6 +521,22 @@ public sealed class StockMovementService
         }
     }
 
+    private static void ValidateBranchTransferSummaryStockOut(
+        ProductStockSummary summary,
+        StockMovementRequest request)
+    {
+        if (request.Quantity > summary.StockQty.GetValueOrDefault() ||
+            request.GrossWeight > summary.GrossWeight.GetValueOrDefault() + WeightTolerance ||
+            request.StoneWeight > summary.StoneWeight.GetValueOrDefault() + WeightTolerance ||
+            request.NetWeight > summary.NetWeight.GetValueOrDefault() + WeightTolerance ||
+            request.NetWeight > summary.BalanceWeight.GetValueOrDefault() + WeightTolerance)
+        {
+            throw new InvalidOperationException(
+                $"Insufficient product summary stock for branch transfer " +
+                $"of {GetProductReference(request)}.");
+        }
+    }
+
 
     // =========================================================
     // APPLY PRODUCT SUMMARY STOCK OUT
@@ -476,6 +546,31 @@ public sealed class StockMovementService
         ProductStockSummary summary,
         StockMovementRequest request)
     {
+        if (request.Purpose ==
+            StockMovementPurpose.BranchTransferOut)
+        {
+            summary.GrossWeight = NormaliseWeight(
+                summary.GrossWeight.GetValueOrDefault() -
+                request.GrossWeight);
+            summary.StoneWeight = NormaliseWeight(
+                summary.StoneWeight.GetValueOrDefault() -
+                request.StoneWeight);
+            summary.NetWeight = NormaliseWeight(
+                summary.NetWeight.GetValueOrDefault() -
+                request.NetWeight);
+            summary.SoldWeight = NormaliseWeight(
+                summary.SoldWeight.GetValueOrDefault() +
+                request.NetWeight);
+            summary.BalanceWeight = NormaliseWeight(
+                summary.BalanceWeight.GetValueOrDefault() -
+                request.NetWeight);
+            summary.SoldQty = summary.SoldQty.GetValueOrDefault() + request.Quantity;
+            summary.StockQty = summary.StockQty.GetValueOrDefault() - request.Quantity;
+            summary.ModifiedOn = DateTime.Now;
+            _productStockSummaryRepository.Update(summary);
+            return;
+        }
+
         summary.StockQty =
             summary.StockQty.GetValueOrDefault()
             - request.Quantity;
@@ -556,6 +651,20 @@ public sealed class StockMovementService
         Models.ProductStock stock,
         StockMovementRequest request)
     {
+        if (request.Purpose ==
+            StockMovementPurpose.BranchTransferOut)
+        {
+            stock.SoldWeight = request.GrossWeight;
+            stock.BalanceWeight = 0M;
+            stock.SoldQty = request.Quantity;
+            stock.StockQty = 0;
+            stock.Status = "Sold";
+            stock.IsProductSold = true;
+            stock.ModifiedOn = DateTime.Now;
+            _productStockRepository.Update(stock);
+            return;
+        }
+
         stock.StockQty =
             stock.StockQty.GetValueOrDefault()
             - request.Quantity;
@@ -993,7 +1102,7 @@ public sealed class StockMovementService
                 "MATERIAL_RECEIPT",
 
             StockMovementPurpose.BranchTransferOut =>
-                "TRANSFER_OUT",
+                "Issue",
 
             StockMovementPurpose.BranchTransferIn =>
                 "TRANSFER_IN",

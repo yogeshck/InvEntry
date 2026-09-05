@@ -32,6 +32,8 @@ public sealed class StockMovementRequest
 
     public int ProductGkey { get; init; }
 
+    public int? ProductStockGkey { get; init; }
+
     public string ProductSku { get; init; }
         = string.Empty;
 

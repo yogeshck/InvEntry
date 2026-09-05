@@ -1,5 +1,6 @@
 using DataAccess.Models;
 using DataAccess.Repository;
+using DataAccess.Inventory.ProductStock;
 using InvEntry.Contracts.StockTransfers;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -23,11 +24,16 @@ public sealed class StockTransferWorkflow : IStockTransferWorkflow
 
     private readonly MijmsContext _context;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStockMovementService _stockMovementService;
 
-    public StockTransferWorkflow(MijmsContext context, IUnitOfWork unitOfWork)
+    public StockTransferWorkflow(
+        MijmsContext context,
+        IUnitOfWork unitOfWork,
+        IStockMovementService stockMovementService)
     {
         _context = context;
         _unitOfWork = unitOfWork;
+        _stockMovementService = stockMovementService;
     }
 
     public async Task<StockTransferDetailResponse> CreateAsync(CreateStockTransferRequest request, CancellationToken cancellationToken = default)
@@ -80,6 +86,13 @@ public sealed class StockTransferWorkflow : IStockTransferWorkflow
 
             _context.StockTransferHeaders.Add(header);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (request.TransferType == OrnamentTransferType)
+            {
+                PostOrnamentStock(header);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+
             await transaction.CommitAsync(cancellationToken);
             return MapDetail(header);
         }
@@ -134,12 +147,12 @@ public sealed class StockTransferWorkflow : IStockTransferWorkflow
 
             if (request.TransferType == OrnamentTransferType)
             {
-                var stock = await _context.ProductStocks.SingleOrDefaultAsync(item => item.Gkey == requestLine.ProductStockGkey!.Value, cancellationToken);
+                var stock = await _context.ProductStocks.AsNoTracking().SingleOrDefaultAsync(item => item.Gkey == requestLine.ProductStockGkey!.Value, cancellationToken);
                 if (stock is null || stock.IsProductSold == true)
                     throw new KeyNotFoundException($"Line {index + 1}: ProductStockGkey is invalid or unavailable.");
                 if (!stock.ProductGkey.HasValue)
                     throw new InvalidOperationException($"Line {index + 1}: source stock has no ProductGkey.");
-                var product = await _context.Products.SingleOrDefaultAsync(item => item.Gkey == stock.ProductGkey.Value, cancellationToken)
+                var product = await _context.Products.AsNoTracking().SingleOrDefaultAsync(item => item.Gkey == stock.ProductGkey.Value, cancellationToken)
                     ?? throw new KeyNotFoundException($"Line {index + 1}: product for source stock was not found.");
                 result.Add(new StockTransferLine
                 {
@@ -189,6 +202,33 @@ public sealed class StockTransferWorkflow : IStockTransferWorkflow
             throw new InvalidOperationException($"Line {lineNumber}: quantity or gross weight is required.");
         if (requireNetFormula && Math.Abs(line.NetWeight - (line.GrossWeight - line.StoneWeight)) > WeightTolerance)
             throw new InvalidOperationException($"Line {lineNumber}: net weight must equal gross weight minus stone weight.");
+    }
+
+    private void PostOrnamentStock(StockTransferHeader header)
+    {
+        var requests = header.Lines
+            .OrderBy(line => line.ProductStockGkey)
+            .Select(line => new StockMovementRequest
+        {
+            DocumentGkey = header.Gkey,
+            DocumentLineGkey = line.Gkey,
+            DocumentNumber = header.TransferNbr,
+            DocumentDate = header.TransferDate,
+            DocumentType = DocumentType,
+            ProductGkey = line.ProductGkey.GetValueOrDefault(),
+            ProductStockGkey = line.ProductStockGkey,
+            ProductSku = line.ProductSku ?? string.Empty,
+            ProductCategory = line.ProductCategory,
+            Direction = StockMovementDirection.Out,
+            Purpose = StockMovementPurpose.BranchTransferOut,
+            Quantity = line.Qty,
+            GrossWeight = line.GrossWeight,
+            StoneWeight = line.StoneWeight,
+            NetWeight = line.NetWeight,
+            Notes = line.Notes
+        });
+
+        _stockMovementService.PostMovements(requests);
     }
 
     private static StockTransferDetailResponse MapDetail(StockTransferHeader header) => new()
