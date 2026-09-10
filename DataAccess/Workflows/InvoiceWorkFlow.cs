@@ -2200,13 +2200,86 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                         x => x.DocRefGkey == invoiceGkey)
                     .ToList();
 
-
-            foreach (var oldMetal in oldMetalTransactions)
+            if (oldMetalTransactions.Count > 0)
             {
-                oldMetal.DocRefNbr =
-                    invoice.InvNbr;
-            }
+                const string oldMetalTransactionType =
+                    "OM Purchase";
 
+                // ---------------------------------------------------------
+                // OLD METAL PURCHASE DOCUMENT
+                //
+                // One Invoice can contain multiple old-metal lines:
+                //
+                //      Gold 916
+                //      Gold 750
+                //      Silver 925
+                //      etc.
+                //
+                // They all belong to ONE Old Metal Purchase document.
+                //
+                // Example:
+                //
+                //      TransNbr  = OM000123
+                //      TransType = OM Purchase
+                //      DocRefNbr = INV005876
+                //
+                // ---------------------------------------------------------
+
+                var existingTransactionNumbers =
+                    oldMetalTransactions
+                        .Where(
+                            x => !string.IsNullOrWhiteSpace(
+                                x.TransNbr))
+                        .Select(
+                            x => x.TransNbr!.Trim())
+                        .Distinct(
+                            StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                if (existingTransactionNumbers.Count > 1)
+                {
+                    throw new InvalidOperationException(
+                        "Old metal lines belonging to this invoice " +
+                        "contain different transaction numbers.");
+                }
+
+                string oldMetalTransactionNumber;
+
+                if (existingTransactionNumbers.Count == 1)
+                {
+                    oldMetalTransactionNumber =
+                        existingTransactionNumbers[0];
+                }
+                else
+                {
+                    oldMetalTransactionNumber =
+                        GenerateOldMetalTransactionNumber(
+                            oldMetalTransactionType);
+                }
+
+                foreach (var oldMetal in oldMetalTransactions)
+                {
+                    // Same Old Metal document number for ALL metals/lines.
+                    oldMetal.TransNbr =
+                        oldMetalTransactionNumber;
+
+                    oldMetal.TransType =
+                        oldMetalTransactionType;
+
+                    // Link Old Metal Purchase back to Sale Invoice.
+                    oldMetal.DocRefGkey =
+                        invoice.Gkey;
+
+                    oldMetal.DocRefNbr =
+                        invoice.InvNbr;
+
+                    oldMetal.DocRefDate =
+                        invoice.InvDate;
+
+                    oldMetal.DocRefType =
+                        "Sale Invoice";
+                }
+            }
 
             // =========================================================
             // SAVE EVERYTHING
@@ -2239,6 +2312,59 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
+    }
+
+    private string GenerateOldMetalTransactionNumber(
+    string transactionType)
+    {
+        if (string.IsNullOrWhiteSpace(
+                transactionType))
+        {
+            throw new InvalidOperationException(
+                "Old metal transaction type is required.");
+        }
+
+        var voucherType =
+            _voucherTypeRepository.Get(
+                x =>
+                    x.DocumentType ==
+                    transactionType);
+
+        if (voucherType is null)
+        {
+            throw new InvalidOperationException(
+                $"Voucher type '{transactionType}' " +
+                $"was not found for Old Metal.");
+        }
+
+        var nextNumber =
+            voucherType.LastUsedNumber
+                .GetValueOrDefault()
+            + 1;
+
+        voucherType.LastUsedNumber =
+            nextNumber;
+
+        var prefix =
+            voucherType.DocNbrPrefix
+            ?? string.Empty;
+
+        var length =
+            voucherType.DocNbrLength
+                .GetValueOrDefault();
+
+        if (length <= 0)
+        {
+            length = 4;
+        }
+
+        var numericPart =
+            nextNumber.ToString(
+                $"D{length}");
+
+        return
+            prefix +
+            numericPart;
     }
 
     private static bool IsCashReceiptMode(

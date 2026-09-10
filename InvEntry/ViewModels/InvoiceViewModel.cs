@@ -995,7 +995,7 @@ public partial class InvoiceViewModel : ObservableObject
         {
             CustGkey = Header.CustGkey,
             CustMobile = Header.CustMobile,
-            //  TransType = "OG Purchase",
+            TransType = "OM Purchase",
             TransDate = DateTime.Now,
             //   Uom = "Grams"
         };
