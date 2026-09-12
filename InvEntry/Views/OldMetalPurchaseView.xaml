@@ -383,10 +383,10 @@
                         Command="{Binding ResetCommand}"/>
 
                     <dx:SimpleButton
-    Content="Remove"
-    Style="{StaticResource ToolbarButtonStyle}"
-    Glyph="{dx:DXImage 'Images/Actions/Delete_32x32.png'}"
-    Command="{Binding DeleteSelectedRowsCommand}"/>
+                        Content="Remove"
+                        Style="{StaticResource ToolbarButtonStyle}"
+                        Glyph="{dx:DXImage 'Images/Actions/Delete_32x32.png'}"
+                        Command="{Binding DeleteSelectedRowsCommand}"/>
                         
                     <dx:SimpleButton
                         Content="Preview"
@@ -742,24 +742,20 @@
              ITEM CARD
              ======================================================== -->
 
-        <!-- ========================================================
-     ITEM CARD
-     ======================================================== -->
+            <Border Grid.Row="3"
+            Margin="16,0,16,16"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="0">
 
-        <Border Grid.Row="3"
-        Margin="16,0,16,16"
-        BorderThickness="1"
-        CornerRadius="8"
-        Padding="0">
+                <Grid>
 
-            <Grid>
+                    <Grid.RowDefinitions>
 
-                <Grid.RowDefinitions>
+                        <!-- Entry -->
+                        <RowDefinition Height="Auto"/>
 
-                    <!-- Entry -->
-                    <RowDefinition Height="Auto"/>
-
-                    <!-- Grid -->
+                        <!-- Grid -->
                     <RowDefinition Height="*"/>
 
                     <!-- Summary -->
@@ -797,7 +793,7 @@
                         </Grid.ColumnDefinitions>
 
 
-                        <!-- =========================================
+                    <!-- =========================================
                      SECTION TITLE
                      ========================================= -->
 
@@ -811,94 +807,93 @@
 
 
                         <!-- =========================================
-                     PRODUCT
-                     ========================================= -->
+                         PRODUCT
+                         ========================================= -->
 
                         <dxe:ComboBoxEdit
-                    Grid.Column="1"
-                    x:Name="ProductIdUIName"
-                    ItemsSource="{Binding MetalList}"
-                    EditValue="{Binding ProductIdUI,
-                                        UpdateSourceTrigger=PropertyChanged}"
-                    IsTextEditable="True"
-                    IsEnabled="{Binding CanEditPurchase}"
-                    NullText="Select / enter old metal product">
-
+                            Grid.Column="1"
+                            x:Name="ProductIdUIName"
+                            ItemsSource="{Binding MetalList}"
+                            EditValue="{Binding ProductIdUI,
+                                                UpdateSourceTrigger=PropertyChanged}"
+                            IsTextEditable="True"
+                            IsEnabled="{Binding CanEditPurchase}"
+                            NullText="Select / enter old metal product">
 
                             <!--
-                        ENTER on product selector
-                        executes Add Item
-                    -->
+                                ENTER on product selector
+                                executes Add Item
+                            -->
 
                             <dxmvvm:Interaction.Behaviors>
 
                                 <dxmvvm:KeyToCommand
-                            KeyGesture="Enter"
-                            Command="{Binding FetchProductCommand}"/>
+                                    KeyGesture="Enter"
+                                    Command="{Binding FetchProductCommand}"/>
 
                             </dxmvvm:Interaction.Behaviors>
 
                         </dxe:ComboBoxEdit>
 
 
-                        <!-- =========================================
+                     <!-- =========================================
                      ADD ITEM
                      ========================================= -->
 
                         <dx:SimpleButton
-                    Grid.Column="3"
-                    Content="Add Item"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
-                    Command="{Binding FetchProductCommand}"/>
+                            Grid.Column="3"
+                            Content="Add Item"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"
+                            Command="{Binding FetchProductCommand}"/>
 
 
-                        <!-- =========================================
+                    <!-- =========================================
                      REMOVE SELECTED ROW(S)
                      ========================================= -->
 
                         <dx:SimpleButton
-                    Grid.Column="5"
-                    Content="Remove"
-                    Style="{StaticResource ToolbarButtonStyle}"
-                    Glyph="{dx:DXImage 'Images/Actions/Delete_32x32.png'}"
-                    Command="{Binding DeleteSelectedRowsCommand}"/>
+                            Grid.Column="5"
+                            Content="Remove"
+                            Style="{StaticResource ToolbarButtonStyle}"
+                            Glyph="{dx:DXImage 'Images/Actions/Delete_32x32.png'}"
+                            Command="{Binding DeleteSelectedRowsCommand}"/>
 
 
-                        <!-- =========================================
+                    <!-- =========================================
                      SHORTCUT HINT
                      ========================================= -->
 
                         <TextBlock
-                    Grid.Column="6"
-                    Text="Select row and press Delete to remove"
-                    FontSize="11"
-                    Opacity="0.55"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Right"
-                    Margin="15,0,5,0"/>
+                            Grid.Column="6"
+                            Text="Select row and press Delete to remove"
+                            FontSize="11"
+                            Opacity="0.55"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Margin="15,0,5,0"/>
 
                     </Grid>
 
                 </Border>
 
 
-                <!-- =================================================
-             OLD METAL GRID
-             ================================================= -->
+                 <!-- =================================================
+                 OLD METAL GRID
+                 ================================================= -->
 
                 <dxg:GridControl
-            x:Name="OldMetalGrid"
-            Grid.Row="1"
-            ItemsSource="{Binding OmTransUIList}"
-            SelectedItems="{Binding SelectedRows}"
-            BorderThickness="0"
-            FontSize="13"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch">
+                    x:Name="OldMetalGrid"
+                    Grid.Row="1"
+                    ItemsSource="{Binding OmTransUIList}"
+                    SelectedItems="{Binding SelectedRows}"
+                    BorderThickness="0"
+                    FontSize="13"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
 
 
-                    <!-- =============================================
+                <!-- =============================================
                  GRID EDITORS
                  ============================================= -->
 
@@ -918,8 +913,8 @@
 
 
                     <!-- =============================================
-                 COLUMNS
-                 ============================================= -->
+                     COLUMNS
+                     ============================================= -->
 
                     <dxg:GridControl.Columns>
 
@@ -927,59 +922,59 @@
                         <!-- PRODUCT -->
 
                         <dxg:GridColumn
-                    FieldName="ProductId"
-                    Header="Product"
-                    Width="140"
-                    ReadOnly="True"/>
+                            FieldName="ProductId"
+                            Header="Product"
+                            Width="140"
+                            ReadOnly="True"/>
 
 
                         <!-- METAL -->
 
                         <dxg:GridColumn
-                    FieldName="Metal"
-                    Header="Metal"
-                    Width="75"
-                    ReadOnly="True"/>
+                            FieldName="Metal"
+                            Header="Metal"
+                            Width="75"
+                            ReadOnly="True"/>
 
 
                         <!-- PURITY -->
 
                         <dxg:GridColumn
-                    FieldName="Purity"
-                    Header="Purity"
-                    Width="75"
-                    ReadOnly="True"/>
+                            FieldName="Purity"
+                            Header="Purity"
+                            Width="75"
+                            ReadOnly="True"/>
 
 
                         <!-- RATE -->
 
                         <dxg:GridColumn
-                    FieldName="TransactedRate"
-                    Header="Rate"
-                    Width="100"
-                    ReadOnly="True">
+                            FieldName="TransactedRate"
+                            Header="Rate"
+                            Width="100"
+                            ReadOnly="True">
 
-                            <dxg:GridColumn.EditSettings>
+                                    <dxg:GridColumn.EditSettings>
 
-                                <dxe:TextEditSettings
-                            Style="{StaticResource AmountEditSettingsStyle}"/>
+                                        <dxe:TextEditSettings
+                                    Style="{StaticResource AmountEditSettingsStyle}"/>
 
-                            </dxg:GridColumn.EditSettings>
+                                    </dxg:GridColumn.EditSettings>
 
-                        </dxg:GridColumn>
+                         </dxg:GridColumn>
 
 
                         <!-- GROSS WEIGHT -->
 
                         <dxg:GridColumn
-                    FieldName="GrossWeight"
-                    Header="Gross Wt."
-                    Width="95">
+                            FieldName="GrossWeight"
+                            Header="Gross Wt."
+                            Width="95">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource WeightEditSettingsStyle}"/>
+                                        Style="{StaticResource WeightEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -989,14 +984,14 @@
                         <!-- STONE WEIGHT -->
 
                         <dxg:GridColumn
-                    FieldName="StoneWeight"
-                    Header="Stone Wt."
-                    Width="95">
+                                FieldName="StoneWeight"
+                                Header="Stone Wt."
+                                Width="95">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource WeightEditSettingsStyle}"/>
+                                    Style="{StaticResource WeightEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -1006,14 +1001,14 @@
                         <!-- WASTAGE % -->
 
                         <dxg:GridColumn
-                    FieldName="WastagePercent"
-                    Header="Wastage %"
-                    Width="90">
+                                FieldName="WastagePercent"
+                                Header="Wastage %"
+                                Width="90">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource AmountEditSettingsStyle}"/>
+                                        Style="{StaticResource AmountEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -1023,15 +1018,15 @@
                         <!-- WASTAGE WEIGHT -->
 
                         <dxg:GridColumn
-                    FieldName="WastageWeight"
-                    Header="Wastage Wt."
-                    Width="100"
-                    ReadOnly="True">
+                                FieldName="WastageWeight"
+                                Header="Wastage Wt."
+                                Width="100"
+                                ReadOnly="True">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource WeightEditSettingsStyle}"/>
+                                    Style="{StaticResource WeightEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -1041,15 +1036,15 @@
                         <!-- NET WEIGHT -->
 
                         <dxg:GridColumn
-                    FieldName="NetWeight"
-                    Header="Net Wt."
-                    Width="95"
-                    ReadOnly="True">
+                            FieldName="NetWeight"
+                            Header="Net Wt."
+                            Width="95"
+                            ReadOnly="True">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource WeightEditSettingsStyle}"/>
+                                    Style="{StaticResource WeightEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -1059,15 +1054,15 @@
                         <!-- PROPOSED AMOUNT -->
 
                         <dxg:GridColumn
-                    FieldName="TotalProposedPrice"
-                    Header="Proposed"
-                    Width="115"
-                    ReadOnly="True">
+                            FieldName="TotalProposedPrice"
+                            Header="Proposed"
+                            Width="115"
+                            ReadOnly="True">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource AmountEditSettingsStyle}"/>
+                                    Style="{StaticResource AmountEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -1077,14 +1072,14 @@
                         <!-- FINAL PURCHASE AMOUNT -->
 
                         <dxg:GridColumn
-                    FieldName="FinalPurchasePrice"
-                    Header="Final Amount"
-                    Width="120">
+                            FieldName="FinalPurchasePrice"
+                            Header="Final Amount"
+                            Width="120">
 
                             <dxg:GridColumn.EditSettings>
 
                                 <dxe:TextEditSettings
-                            Style="{StaticResource AmountEditSettingsStyle}"/>
+                                    Style="{StaticResource AmountEditSettingsStyle}"/>
 
                             </dxg:GridColumn.EditSettings>
 
@@ -1094,9 +1089,9 @@
                         <!-- REMARKS -->
 
                         <dxg:GridColumn
-                    FieldName="Remarks"
-                    Header="Remarks"
-                    Width="150"/>
+                            FieldName="Remarks"
+                            Header="Remarks"
+                            Width="150"/>
 
                     </dxg:GridControl.Columns>
 
@@ -1108,16 +1103,16 @@
                     <dxg:GridControl.View>
 
                         <dxg:TableView
-                    x:Name="OldMetalTableView"
-                    AllowGrouping="False"
-                    ShowGroupPanel="False"
-                    AllowBestFit="True"
-                    AutoWidth="True"
-                    ShowIndicator="False"
-                    NavigationStyle="Cell"
-                    NewItemRowPosition="None"
-                    MultiSelectMode="Row"
-                    AllowEditing="{Binding CanEditPurchase}">
+                                x:Name="OldMetalTableView"
+                                AllowGrouping="False"
+                                ShowGroupPanel="False"
+                                AllowBestFit="True"
+                                AutoWidth="True"
+                                ShowIndicator="False"
+                                NavigationStyle="Cell"
+                                NewItemRowPosition="None"
+                                MultiSelectMode="Row"
+                                AllowEditing="{Binding CanEditPurchase}">
 
 
                             <dxmvvm:Interaction.Behaviors>
@@ -1129,9 +1124,9 @@
                         -->
 
                                 <dxmvvm:EventToCommand
-                            EventName="CellValueChanged"
-                            Command="{Binding CellUpdateCommand}"
-                            PassEventArgsToCommand="True"/>
+                                    EventName="CellValueChanged"
+                                    Command="{Binding CellUpdateCommand}"
+                                    PassEventArgsToCommand="True"/>
 
 
                                 <!--
@@ -1142,8 +1137,8 @@
                         -->
 
                                 <dxmvvm:KeyToCommand
-                            KeyGesture="Delete"
-                            Command="{Binding DeleteSelectedRowsCommand}"/>
+                                    KeyGesture="Delete"
+                                    Command="{Binding DeleteSelectedRowsCommand}"/>
 
 
                             </dxmvvm:Interaction.Behaviors>

@@ -2,6 +2,7 @@ using DataAccess.Inventory;
 using DataAccess.Inventory.ProductStock;
 using DataAccess.Models;
 using DataAccess.Repository;
+using DataAccess.Services;
 using DataAccess.Workflows;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -85,18 +86,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(
         typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 
-builder.Services.AddScoped<
-    IUnitOfWork,
-    UnitOfWork>();
-
-builder.Services.AddScoped<
-    IStockMovementService,
-    StockMovementService>();
-
-builder.Services.AddScoped<
-                        ICustomerOrderWorkflow,
-                        CustomerOrderWorkflow>();
-
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IStockMovementService, StockMovementService>();
+builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
+builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
+builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();

@@ -1,651 +1,1310 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DevExpress.DataAccess.Native.Json;
 using DevExpress.Mvvm;
-using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Core;
-using DevExpress.Xpf.Core.ConditionalFormatting.Native;
-using DevExpress.Xpf.Editors;
-using DevExpress.Xpf.Grid;
-using DevExpress.Xpf.Layout.Core;
-using DevExpress.Xpf.Printing;
+using InvEntry.Contracts.StockTransfers;
 using InvEntry.Extension;
-using InvEntry.Helper;
 using InvEntry.Models;
-using InvEntry.Models.Extensions;
-using InvEntry.Reports;
 using InvEntry.Services;
-using InvEntry.Store;
-using InvEntry.Utils;
-using InvEntry.Utils.Options;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Input;
-using IDialogService = DevExpress.Mvvm.IDialogService;
 
 namespace InvEntry.ViewModels;
 
-public partial class OldMetalTransferEntryViewModel: ObservableObject
+public partial class OldMetalTransferEntryViewModel : ObservableObject
 {
+    private const string TransferTypeOldMetal = "OLD_METAL";
+
+
+    // =========================================================
+    // HEADER / UI
+    // =========================================================
 
     [ObservableProperty]
-    private Customer _buyer;
+    private OrgThisCompanyView? _company;
 
     [ObservableProperty]
-    private OrgThisCompanyView _company;
+    private string? _fromBranch;
 
     [ObservableProperty]
-    private EstimateHeader _header;
+    private string? _sentTo;
 
     [ObservableProperty]
-    private MtblReference _customerState;
+    private DateTime _transferDate = DateTime.Now;
 
     [ObservableProperty]
-    private ObservableCollection<string> _oldMetalList;
+    private string? _transferNbr;
 
     [ObservableProperty]
-    private ObservableCollection<string> _receipientStrList;
+    private int _transferGkey;
 
     [ObservableProperty]
-    private string _fromBranch;
+    private string? _transferRemarks;
+
+
+    // =========================================================
+    // LINE ENTRY
+    //
+    // Old Metal Transfer is a NET-WEIGHT movement.
+    //
+    // We do not ask the operator for:
+    //      Gross Weight
+    //      Stone Weight
+    //      Rate
+    //      Value
+    //
+    // TransferNetWeight is the actual old-metal weight
+    // being moved out for melting.
+    // =========================================================
 
     [ObservableProperty]
-    private string _oldMetalIdUI;
+    private string? _oldMetalIdUI;
 
     [ObservableProperty]
-    private string _sentTo;
+    private decimal _transferNetWeight;
 
     [ObservableProperty]
-    private decimal _productGrossWeight;
+    private string? _oMTransDesc;
+
+
+    // =========================================================
+    // SELECTED PRODUCT STOCK
+    //
+    // SelectedCurrentStock:
+    //      PRODUCT_STOCK_SUMMARY.BALANCE_WEIGHT
+    //
+    // SelectedAvailableStock:
+    //      Current Stock less any weight already staged
+    //      in this unsaved transfer.
+    // =========================================================
 
     [ObservableProperty]
-    private string _oMTransDesc;
+    private decimal _selectedCurrentStock;
 
     [ObservableProperty]
-    private ObservableCollection<MtblReference> _receipientsList;
+    private decimal _selectedAvailableStock;
 
-    private readonly IEstimateService _estimateService;
-    private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
-    private readonly IMtblReferencesService _mtblReferencesService;
-    private readonly ICustomerService _customerService;
-    private readonly IProductViewService _productViewService;
-    private readonly IOldMetalTransactionService _oldMetalTransactionService;
 
-    private SettingsPageViewModel _settingsPageViewModel;
-    private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
-    private Dictionary<string, Action<EstimateHeader, decimal?>> copyHeaderExpression;
+    // =========================================================
+    // LOOKUPS
+    // =========================================================
 
-    private readonly IDialogService _dialogService;
-    private readonly IDialogService _reportDialogService;
-    private readonly IMessageBoxService _messageBoxService;
-    private readonly IReportFactoryService _reportFactoryService;
+    [ObservableProperty]
+    private ObservableCollection<string> _oldMetalList = new();
 
-    private decimal todaysRate;
-    private ProductView OldMetalProduct;
+    [ObservableProperty]
+    private ObservableCollection<string> _receipientStrList = new();
+
+    [ObservableProperty]
+    private ObservableCollection<MtblReference> _receipientsList = new();
+
+
+    // =========================================================
+    // MULTI-LINE GRID
+    //
+    // Do not bind CreateStockTransferLineRequest directly
+    // to the UI anymore.
+    //
+    // CurrentStock and BalanceAfterTransfer are UI values
+    // and should not become part of the API contract.
+    // =========================================================
+
+    [ObservableProperty]
+    private ObservableCollection<OldMetalTransferLineItem>
+        _omTransUIList = new();
+
+    [ObservableProperty]
+    private ObservableCollection<OldMetalTransferLineItem>
+        _selectedRows = new();
+
+
+    // =========================================================
+    // STATE
+    // =========================================================
+
+    [ObservableProperty]
+    private bool _canEditPurchase = true;
+
+    [ObservableProperty]
+    private bool _isBusy;
+
+    [ObservableProperty]
+    private string? _statusMessage;
+
+
+    // =========================================================
+    // SERVICES
+    // =========================================================
+
+    private readonly IStockTransferService _stockTransferService;
+
+    private readonly IOrgThisCompanyViewService
+        _orgThisCompanyViewService;
+
+    private readonly IMtblReferencesService
+        _mtblReferencesService;
+
+    private readonly IProductViewService
+        _productViewService;
+
+    private readonly IProductStockSummaryService
+        _productStockSummaryService;
+
+    private readonly IMessageBoxService
+        _messageBoxService;
+
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
 
     public OldMetalTransferEntryViewModel(
-                    IDialogService dialogService,
-                    IMessageBoxService messageBoxService,
-                    IEstimateService estimateService,
-                    IOrgThisCompanyViewService orgThisCompanyViewService,
-                    IMtblReferencesService mtblReferencesService,
-                    ICustomerService customerService,
-                    IOldMetalTransactionService oldMetalTransactionService,
-                    SettingsPageViewModel settingsPageViewModel,
-                    IProductViewService productViewService,
-                    IReportFactoryService reportFactoryService,
-                    [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService
-    ) 
+        IStockTransferService stockTransferService,
+        IOrgThisCompanyViewService orgThisCompanyViewService,
+        IMtblReferencesService mtblReferencesService,
+        IProductViewService productViewService,
+        IProductStockSummaryService productStockSummaryService,
+        IMessageBoxService messageBoxService)
     {
-        _estimateService = estimateService;
-        _orgThisCompanyViewService = orgThisCompanyViewService;
-        _mtblReferencesService = mtblReferencesService;
-        _customerService = customerService;
-        _productViewService = productViewService;
-        _settingsPageViewModel = settingsPageViewModel;
-        _oldMetalTransactionService = oldMetalTransactionService;
+        _stockTransferService =
+            stockTransferService;
 
-        _messageBoxService = messageBoxService;
-        _reportDialogService = reportDialogService;
-        _reportFactoryService = reportFactoryService;
+        _orgThisCompanyViewService =
+            orgThisCompanyViewService;
+
+        _mtblReferencesService =
+            mtblReferencesService;
+
+        _productViewService =
+            productViewService;
+
+        _productStockSummaryService =
+            productStockSummaryService;
+
+        _messageBoxService =
+            messageBoxService;
 
 
-        SetThisCompany();
-        SetHeader();
+        OmTransUIList.CollectionChanged +=
+            OmTransUIList_CollectionChanged;
 
-        PopulateReceipientList();
-        PopulateOldMetalList();
 
+        Initialize();
     }
 
-    private void SetHeader()
+
+    // =========================================================
+    // INITIALIZE
+    // =========================================================
+
+    private async void Initialize()
     {
-        Header = new()
+        try
         {
-            EstDate = DateTime.Now,
-            IsTaxApplicable = false,
+            IsBusy = true;
+
+
+            await SetThisCompanyAsync();
+
+            await PopulateReceipientListAsync();
+
+            await PopulateOldMetalListAsync();
+
+
+            ResetTransfer();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                ex.Message,
+                "Old Metal Transfer",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    // =========================================================
+    // COMPANY
+    // =========================================================
+
+    private async Task SetThisCompanyAsync()
+    {
+        Company =
+            await _orgThisCompanyViewService
+                .GetOrgThisCompany();
+
+
+        FromBranch =
+            Company?.CompanyName;
+    }
+
+
+    // =========================================================
+    // DESTINATION LOOKUP
+    // =========================================================
+
+    private async Task PopulateReceipientListAsync()
+    {
+        var references =
+            await _mtblReferencesService
+                .GetReferenceList(
+                    "STOCK_TRANSFER");
+
+
+        var activeList =
+            references?
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.SortSeq)
+                .ToList()
+            ?? new List<MtblReference>();
+
+
+        ReceipientsList =
+            new ObservableCollection<MtblReference>(
+                activeList);
+
+
+        ReceipientStrList =
+            new ObservableCollection<string>(
+                activeList.Select(
+                    x => x.RefCode));
+    }
+
+
+    // =========================================================
+    // OLD METAL LOOKUP
+    // =========================================================
+
+    private async Task PopulateOldMetalListAsync()
+    {
+        var metalRefList =
+            await _mtblReferencesService
+                .GetReferenceList(
+                    "OLD_METALS");
+
+
+        OldMetalList =
+            new ObservableCollection<string>(
+                metalRefList
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.SortSeq)
+                    .Select(x => x.RefValue));
+    }
+
+
+    // =========================================================
+    // DESTINATION CHANGED
+    // =========================================================
+
+    partial void OnSentToChanged(
+        string? value)
+    {
+        CreateStockTransferCommand
+            .NotifyCanExecuteChanged();
+    }
+
+
+    // =========================================================
+    // OLD METAL PRODUCT CHANGED
+    //
+    // As soon as the operator selects an old-metal product,
+    // obtain its current stock from PRODUCT_STOCK_SUMMARY.
+    //
+    // IMPORTANT:
+    //
+    // PRODUCT_STOCK_SUMMARY.PRODUCT_GKEY must be populated.
+    // CATEGORY is not used as the stock relationship.
+    // =========================================================
+
+    partial void OnOldMetalIdUIChanged(
+        string? value)
+    {
+        SelectedCurrentStock = 0M;
+
+        SelectedAvailableStock = 0M;
+
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+
+        _ = LoadSelectedProductStockAsync(
+            value);
+    }
+
+
+    // =========================================================
+    // LOAD SELECTED PRODUCT STOCK
+    // =========================================================
+
+    private async Task LoadSelectedProductStockAsync(
+        string productId)
+    {
+        try
+        {
+            // -----------------------------------------------------
+            // Resolve product master first.
+            // -----------------------------------------------------
+
+            var product =
+                await _productViewService
+                    .GetProduct(
+                        productId);
+
+
+            if (product is null)
+            {
+                SelectedCurrentStock = 0M;
+                SelectedAvailableStock = 0M;
+
+                return;
+            }
+
+
+            // -----------------------------------------------------
+            // Read authoritative stock summary.
+            //
+            // Existing API:
+            //
+            // GET
+            // api/ProductStockSummary/productGkey/{productGkey}
+            // -----------------------------------------------------
+
+            var stock =
+                await _productStockSummaryService
+                    .GetByProductGkey(
+                        product.GKey);
+
+
+            var currentStock =
+                stock?.BalanceWeight ?? 0M;
+
+
+            // -----------------------------------------------------
+            // Deduct any same product already staged in the
+            // current unsaved transfer.
+            // -----------------------------------------------------
+
+            var alreadyStaged =
+                OmTransUIList
+                    .Where(
+                        x =>
+                            x.ProductGkey ==
+                            product.GKey)
+                    .Sum(
+                        x =>
+                            x.TransferWeight);
+
+
+            SelectedCurrentStock =
+                currentStock;
+
+
+            SelectedAvailableStock =
+                Math.Max(
+                    0M,
+                    currentStock -
+                    alreadyStaged);
+        }
+        catch
+        {
+            /*
+             * This method runs automatically while product
+             * selection changes.
+             *
+             * Do not interrupt the operator with a popup while
+             * ComboBox text is still changing.
+             *
+             * FetchProduct() performs the authoritative check
+             * again when Add Item is pressed.
+             */
+
+            SelectedCurrentStock = 0M;
+
+            SelectedAvailableStock = 0M;
+        }
+    }
+
+
+    // =========================================================
+    // ADD ITEM
+    //
+    // One Add Item = one old-metal product line.
+    //
+    // The entered weight is NET old-metal weight.
+    // =========================================================
+
+    [RelayCommand]
+    private async Task FetchProduct()
+    {
+        if (!CanEditPurchase ||
+            IsBusy)
+        {
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // PRODUCT
+        // ---------------------------------------------------------
+
+        if (string.IsNullOrWhiteSpace(
+                OldMetalIdUI))
+        {
+            _messageBoxService.ShowMessage(
+                "Please select the old metal product.",
+                "Old Metal Transfer",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // TRANSFER NET WEIGHT
+        // ---------------------------------------------------------
+
+        if (TransferNetWeight <= 0M)
+        {
+            _messageBoxService.ShowMessage(
+                "Transfer weight must be greater than zero.",
+                "Invalid Weight",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return;
+        }
+
+
+        try
+        {
+            IsBusy = true;
+
+
+            StatusMessage =
+                "Checking old metal stock...";
+
+
+            // =====================================================
+            // 1. PRODUCT MASTER
+            // =====================================================
+
+            var product =
+                await _productViewService
+                    .GetProduct(
+                        OldMetalIdUI);
+
+
+            if (product is null)
+            {
+                _messageBoxService.ShowMessage(
+                    $"Old metal product '{OldMetalIdUI}' " +
+                    $"was not found.",
+                    "Product Not Found",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                return;
+            }
+
+
+            // =====================================================
+            // 2. PREVENT DUPLICATE PRODUCT
+            //
+            // For the first release, keep one row per ProductGkey.
+            //
+            // If operator wants to change weight, remove the
+            // existing row and add it again.
+            // =====================================================
+
+            var existingLine =
+                OmTransUIList
+                    .FirstOrDefault(
+                        x =>
+                            x.ProductGkey ==
+                            product.GKey);
+
+
+            if (existingLine is not null)
+            {
+                _messageBoxService.ShowMessage(
+                    $"{product.Id} is already included " +
+                    $"in this transfer.\n\n" +
+                    $"Remove the existing line and add it again " +
+                    $"if the transfer weight needs to be changed.",
+                    "Product Already Added",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                return;
+            }
+
+
+            // =====================================================
+            // 3. GET CURRENT STOCK
+            //
+            // PRODUCT_STOCK_SUMMARY.BALANCE_WEIGHT
+            // =====================================================
+
+            var stock =
+                await _productStockSummaryService
+                    .GetByProductGkey(
+                        product.GKey);
+
+
+            if (stock is null)
+            {
+                _messageBoxService.ShowMessage(
+                    $"Stock summary was not found for " +
+                    $"{product.Id}.\n\n" +
+                    $"Please verify PRODUCT_STOCK_SUMMARY.",
+                    "Stock Not Found",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                return;
+            }
+
+
+            var currentStock =
+                 stock.BalanceWeight ?? 0M;
+
+
+            SelectedCurrentStock =
+                currentStock;
+
+
+            // =====================================================
+            // 4. CALCULATE ALREADY STAGED WEIGHT
+            //
+            // With duplicate prevention this should normally be
+            // zero, but keeping this calculation makes the logic
+            // safe if duplicate rows are allowed later.
+            // =====================================================
+
+            var alreadyStaged =
+                OmTransUIList
+                    .Where(
+                        x =>
+                            x.ProductGkey ==
+                            product.GKey)
+                    .Sum(
+                        x =>
+                            x.TransferWeight);
+
+
+            var availableStock =
+                currentStock -
+                alreadyStaged;
+
+
+            SelectedAvailableStock =
+                Math.Max(
+                    0M,
+                    availableStock);
+
+
+            // =====================================================
+            // 5. NO STOCK
+            // =====================================================
+
+            if (availableStock <= 0M)
+            {
+                _messageBoxService.ShowMessage(
+                    $"No old metal stock is available for " +
+                    $"{product.Id}.\n\n" +
+                    $"Current stock: {currentStock:N3} g",
+                    "Insufficient Stock",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                //return;
+            }
+
+
+            // =====================================================
+            // 6. TRANSFER CANNOT EXCEED STOCK
+            // =====================================================
+
+/*            if (TransferNetWeight >
+                availableStock)
+            {
+                _messageBoxService.ShowMessage(
+                    $"Available stock : {availableStock:N3} g\n" +
+                    $"Transfer weight : {TransferNetWeight:N3} g\n\n" +
+                    $"Transfer weight cannot exceed " +
+                    $"available stock.",
+                    "Insufficient Stock",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+
+                //return;
+            }*/
+
+
+            // =====================================================
+            // 7. CREATE UI GRID LINE
+            // =====================================================
+
+            var line =
+                new OldMetalTransferLineItem
+                {
+                    ProductGkey =
+                        product.GKey,
+
+                    ProductId =
+                        product.Id,
+
+                    ProductCategory =
+                        product.Category,
+
+                    Metal =
+                        product.Metal,
+
+                    Purity =
+                        product.Purity,
+
+                    Uom =
+                        stock.Uom ?? "Grams",
+
+                    CurrentStock =
+                        currentStock,
+
+                    TransferWeight =
+                        TransferNetWeight,
+
+                    BalanceAfterTransfer =
+                        currentStock -
+                        TransferNetWeight,
+
+                    Notes =
+                        string.IsNullOrWhiteSpace(
+                            OMTransDesc)
+                            ? null
+                            : OMTransDesc.Trim()
+                };
+
+
+            // =====================================================
+            // 8. ADD TO TEMPORARY DOCUMENT
+            // =====================================================
+
+            OmTransUIList.Add(
+                line);
+
+
+            StatusMessage =
+                $"{product.Id}: " +
+                $"{TransferNetWeight:N3} g added. " +
+                $"Balance {line.BalanceAfterTransfer:N3} g.";
+
+
+            // =====================================================
+            // 9. CLEAR CURRENT ENTRY
+            // =====================================================
+
+            ClearLineEntry();
+
+
+            //CreateStockTransferCommand
+            //    .NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                ex.Message,
+                "Add Old Metal Item",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    // =========================================================
+    // CLEAR CURRENT ENTRY
+    // =========================================================
+
+    private void ClearLineEntry()
+    {
+        OldMetalIdUI = null;
+
+        TransferNetWeight = 0M;
+
+        OMTransDesc = null;
+
+        SelectedCurrentStock = 0M;
+
+        SelectedAvailableStock = 0M;
+
+
+        Messenger.Default.Send(
+            "ProductIdUIName",
+            MessageType.FocusTextEdit);
+    }
+
+
+    // =========================================================
+    // DELETE SELECTED ROWS
+    // =========================================================
+
+    [RelayCommand]
+    private void DeleteSelectedRows()
+    {
+        if (!CanEditPurchase)
+        {
+            return;
+        }
+
+
+        if (SelectedRows is null ||
+            SelectedRows.Count == 0)
+        {
+            return;
+        }
+
+
+        var rows =
+            SelectedRows.ToList();
+
+
+        foreach (var row in rows)
+        {
+            OmTransUIList.Remove(
+                row);
+        }
+
+
+        SelectedRows.Clear();
+
+
+        StatusMessage =
+            $"{OmTransUIList.Count} item(s) remaining.";
+
+
+        CreateStockTransferCommand
+            .NotifyCanExecuteChanged();
+    }
+
+
+    // =========================================================
+    // SAVE
+    // =========================================================
+
+    [RelayCommand(
+        CanExecute = nameof(
+            CanCreateStockTransfer))]
+    private async Task CreateStockTransfer()
+    {
+        if (!CanCreateStockTransfer())
+        {
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // DESTINATION
+        // ---------------------------------------------------------
+
+        var destination =
+            ReceipientsList
+                .FirstOrDefault(
+                    x =>
+                        string.Equals(
+                            x.RefCode,
+                            SentTo,
+                            StringComparison.OrdinalIgnoreCase));
+
+
+        if (destination is null)
+        {
+            _messageBoxService.ShowMessage(
+                "Please select a valid destination branch.",
+                "Destination Required",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // SOURCE COMPANY
+        // ---------------------------------------------------------
+
+        if (Company is null)
+        {
+            _messageBoxService.ShowMessage(
+                "Source company details are unavailable.",
+                "Company Details",
+                MessageButton.OK,
+                MessageIcon.Error);
+
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // ITEMS
+        // ---------------------------------------------------------
+
+        if (OmTransUIList.Count == 0)
+        {
+            _messageBoxService.ShowMessage(
+                "Please add at least one old metal item.",
+                "No Items",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return;
+        }
+
+
+        try
+        {
+            IsBusy = true;
+
+
+            StatusMessage =
+                "Saving old metal transfer...";
+
+
+            // =====================================================
+            // IMPORTANT
+            //
+            // Re-check stock immediately before POST.
+            //
+            // This improves the WPF user experience.
+            //
+            // The API must STILL perform its own authoritative
+            // stock validation inside its transaction.
+            // =====================================================
+
+            foreach (var line in OmTransUIList)
+            {
+                var stock =
+                    await _productStockSummaryService
+                        .GetByProductGkey(
+                            line.ProductGkey);
+
+
+                if (stock is null)
+                {
+                    _messageBoxService.ShowMessage(
+                        $"Stock summary was not found for " +
+                        $"{line.ProductId}.",
+                        "Stock Not Found",
+                        MessageButton.OK,
+                        MessageIcon.Warning);
+
+                    return;
+                }
+
+
+                var latestStock =
+                    stock.BalanceWeight;
+
+
+                if (line.TransferWeight >
+                    latestStock)
+                {
+                    _messageBoxService.ShowMessage(
+                        $"Stock has changed for {line.ProductId}.\n\n" +
+                        $"Available stock : {latestStock:N3} g\n" +
+                        $"Transfer weight : {line.TransferWeight:N3} g\n\n" +
+                        $"Please remove the line and add it again.",
+                        "Stock Changed",
+                        MessageButton.OK,
+                        MessageIcon.Warning);
+
+                    return;
+                }
+            }
+
+
+            // =====================================================
+            // CREATE REQUEST
+            // =====================================================
+
+            var request =
+                new CreateStockTransferRequest
+                {
+                    TransferDate =
+                        TransferDate,
+
+                    TransferType =
+                        TransferTypeOldMetal,
+
+                    FromBranch =
+                        Company.CompanyName,
+
+                    FromTenantGkey =
+                        Company.TenantGkey,
+
+                    /*
+                     * Existing MtblReference FK.
+                     */
+                    ToReferenceGkey =
+                        destination.GKey,
+
+                    Remarks =
+                        string.IsNullOrWhiteSpace(
+                            TransferRemarks)
+                            ? null
+                            : TransferRemarks.Trim(),
+
+                    Lines =
+                        OmTransUIList
+                            .Select(
+                                MapToRequestLine)
+                            .ToList()
+                };
+
+
+            // =====================================================
+            // POST ONE MULTI-LINE TRANSFER
+            // =====================================================
+
+            var saved =
+                await _stockTransferService
+                    .CreateAsync(
+                        request);
+
+
+            if (saved is null)
+            {
+                _messageBoxService.ShowMessage(
+                    "The transfer could not be created.",
+                    "Old Metal Transfer",
+                    MessageButton.OK,
+                    MessageIcon.Error);
+
+                return;
+            }
+
+
+            TransferGkey =
+                saved.Gkey;
+
+
+            TransferNbr =
+                saved.TransferNbr;
+
+
+            CanEditPurchase =
+                false;
+
+
+            StatusMessage =
+                $"Transfer {TransferNbr} created successfully.";
+
+
+            CreateStockTransferCommand
+                .NotifyCanExecuteChanged();
+
+            PrintPreviewStockTransferCommand
+                .NotifyCanExecuteChanged();
+
+            PrintStockTransferCommand
+                .NotifyCanExecuteChanged();
+
+
+            _messageBoxService.ShowMessage(
+                $"Old Metal Transfer {TransferNbr} " +
+                $"created successfully.",
+                "Transfer Created",
+                MessageButton.OK,
+                MessageIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                ex.Message,
+                "Old Metal Transfer",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
+    // =========================================================
+    // MAP UI LINE TO EXISTING STOCK TRANSFER CONTRACT
+    //
+    // Business rule:
+    //
+    // Old Metal Transfer is NET-WEIGHT movement.
+    //
+    // Existing API still contains:
+    //
+    //      GrossWeight
+    //      StoneWeight
+    //      NetWeight
+    //
+    // Therefore:
+    //
+    //      Gross = Transfer Weight
+    //      Stone = 0
+    //      Net   = Transfer Weight
+    //
+    // Rate/value are not required for melting issue.
+    // =========================================================
+
+    private static CreateStockTransferLineRequest
+        MapToRequestLine(
+            OldMetalTransferLineItem source)
+    {
+        return new CreateStockTransferLineRequest
+        {
+            ProductStockGkey =
+                null,
+
+            ProductGkey =
+                source.ProductGkey,
+
+            ProductId =
+                source.ProductId,
+
+            Metal =
+                source.Metal,
+
+            Purity =
+                source.Purity,
+
+            Uom =
+                source.Uom,
+
+            Qty =
+                1,
+
+            GrossWeight =
+                source.TransferWeight,
+
+            StoneWeight =
+                0M,
+
+            NetWeight =
+                source.TransferWeight,
+
+            TransactedRate =
+                null,
+
+            TransferValue =
+                null,
+
+            Notes =
+                source.Notes
         };
     }
 
-    private decimal getBilledPrice(string metal)
+
+    // =========================================================
+    // CAN SAVE
+    // =========================================================
+
+    private bool CanCreateStockTransfer()
     {
-        var metalPrice = _settingsPageViewModel.GetPrice(metal);
-
-        if (metalPrice is null || metalPrice < 1)
-        {
-            //displayRateErrorMsg();
-            return 0;
-        }
-
-        todaysRate = (decimal)metalPrice;
-
-        return (decimal)metalPrice;
+        return
+            CanEditPurchase &&
+            !IsBusy &&
+            string.IsNullOrWhiteSpace(
+                TransferNbr) &&
+            !string.IsNullOrWhiteSpace(
+                SentTo) &&
+            OmTransUIList.Count > 0;
     }
 
-    private async void SetThisCompany()
-    {
 
-        Company = new();
-        Company = await _orgThisCompanyViewService.GetOrgThisCompany();
-
-        Header.TenantGkey = Company.TenantGkey;
-        Header.GstLocSeller = Company.GstCode;
-
-        FromBranch = Company.CompanyName;
-
-    }
-
-    public static ValidationResult ValidateQty(decimal value, ValidationContext context)
-    {
-        return value <= 0
-            ? new ValidationResult("Qty must be greater than 0.")
-            : ValidationResult.Success;
-    }
-
-    private async void PopulateReceipientList()
-    {
-        var branchToRefList = await _mtblReferencesService.GetReferenceList("STOCK_TRANSFER");
-
-        ReceipientStrList = new(branchToRefList.Select(x => x.RefCode));  
-
-        ReceipientsList = new(branchToRefList);
-
-    }
-
-    private async void PopulateOldMetalList()
-    {
-        var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
-        OldMetalList = new(metalRefList.Select(x => x.RefValue));
-    }
-
-    private void displayRateErrorMsg()
-    {
-        _messageBoxService.ShowMessage($"Todays Rate not updated in system, set the rate and start transfer....",
-                                        "Todays Rate not found", MessageButton.OK, MessageIcon.Error);
-    }
+    // =========================================================
+    // RESET
+    // =========================================================
 
     [RelayCommand]
     private void ResetOldMetalTrans()
     {
-        // var result = _messageBoxService.ShowMessage("Reset all values", "Reset Invoice", MessageButton.YesNo, MessageIcon.Question, MessageResult.No);
+        TransferNbr = null;
 
-        // if (result == MessageResult.No)
-        //     return;
+        TransferGkey = 0;
 
-        SetHeader();
-        SetThisCompany();
+        TransferDate = DateTime.Now;
 
-        Buyer = null;
-        CustomerState = null;
+        TransferRemarks = null;
+
         SentTo = null;
-        OldMetalIdUI = string.Empty;
-        ProductGrossWeight = 0;
-        OMTransDesc = string.Empty;
 
-        CreateStockTransferCommand.NotifyCanExecuteChanged();
+        CanEditPurchase = true;
 
+        StatusMessage = null;
+
+
+        OmTransUIList.Clear();
+
+        SelectedRows.Clear();
+
+        ClearLineEntry();
+
+
+        CreateStockTransferCommand
+            .NotifyCanExecuteChanged();
+
+        PrintPreviewStockTransferCommand
+            .NotifyCanExecuteChanged();
+
+        PrintStockTransferCommand
+            .NotifyCanExecuteChanged();
     }
 
-    partial void OnSentToChanged(string value)
+
+    private void ResetTransfer()
     {
-       
-        var receipient = string.Empty;
+        TransferNbr = null;
 
-        if (value is not null)
-        {
-            receipient = ReceipientsList.Where(x => x.RefCode == value).Select(x => x.RefValue).FirstOrDefault();
+        TransferGkey = 0;
 
-        } else 
-        { 
-            return; 
-        }
+        TransferDate = DateTime.Now;
 
-        Header.CustMobile = receipient;
+        TransferRemarks = null;
 
-        _ = SetBuyer();
+        SentTo = null;
+
+        CanEditPurchase = true;
+
+        StatusMessage = null;
+
+
+        OmTransUIList.Clear();
+
+        SelectedRows.Clear();
+
+        ClearLineEntry();
     }
 
-    public async Task SetBuyer() 
-    {
 
-        //var branchTo = await _mtblReferencesService.GetReference("STOCK_TRANSFER", Header.CustMobile);
-        var contactNbr = Header.CustMobile;
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
-
-        Buyer = await _customerService.GetCustomer(contactNbr);
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-
-        if (Buyer is null)
-        {
-            _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
-
-            Buyer = new();
-            Buyer.MobileNbr = contactNbr.Trim();
-            Buyer.Address.GstStateCode = Company.GstCode;
-            Buyer.Address.State = Company.State;
-            Buyer.Address.District = Company.District;
-
-        //    createCustomer = true;
-        //Error    CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
-            
-            Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
-        }
-        else
-        {
-            var gstCode = Buyer.Address is null ? Company.GstCode : Buyer.Address.GstStateCode;
-
-            if (Buyer.Address is null)
-            {
-                Buyer.Address = new();
-                Buyer.Address.GstStateCode = Company.GstCode;
-            }
-
-            //Error >>>>>CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
-
-            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
-        }
-
-        Header.CustMobile = contactNbr;
-
-        //to effect stock update though it is just estimate - being used for stock transfer to other branches
-        //  foreach (var item in StkTrfrList)
-        //  {
-        //      if (item is not null && item == phoneNumber)
-        //          IsStockTransfer = true;
-        //  }
-
-    }
-
-    private async Task FetchProduct()
-    {
-
-        var canCreate = true;
-
-        if (string.IsNullOrEmpty(OldMetalIdUI)) return;
-
-        var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
-
-        SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-        OldMetalProduct = await _productViewService.GetProduct(OldMetalIdUI);
-
-        // await Task.Delay(30000);
-
-        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-        if (OldMetalProduct is null)
-        {
-            _messageBoxService.ShowMessage($"No Product found for {OldMetalIdUI}, Please make sure it exists",
-                "Product not found", MessageButton.OK, MessageIcon.Error);
-            canCreate = false;
-            return;
-        }
-
-        var metalPrice = getBilledPrice(OldMetalProduct.Metal);    // _settingsPageViewModel.GetPrice(product.Metal);
-
-        if (metalPrice < 1)
-        {
-            displayRateErrorMsg();
-            canCreate = false;
-            return;
-        }
-
-        if (ProductGrossWeight <= 0)
-        {
-            _messageBoxService.ShowMessage($"Weight should be more than zero....",
-                                "Weight zero", MessageButton.OK, MessageIcon.Error);
-            canCreate = false; 
-            return;
-        }
-
-        if (canCreate)
-        {
-            EstimateLine estimateLine = new EstimateLine()
-            {
-                ProdQty = 1,
-                EstlBilledPrice = metalPrice,
-                EstlCgstPercent = Header.CgstPercent,
-                EstlSgstPercent = Header.SgstPercent,
-                EstlIgstPercent = Header.IgstPercent,
-                EstlStoneAmount = 0M,
-                TaxType = "GST"
-
-            };
-
-            estimateLine.SetProductDetails(OldMetalProduct);
-
-            //EvaluateFormula(estimateLine, isInit: true);
-
-            SetLineDetails(estimateLine);
-
-            Header.Lines.Add(estimateLine);
-
-            //OldMetalIdUI = string.Empty;
-
-            EvaluateHeader();
-        }
-    }
-
-/*    private bool CustomerCheck()
-    {
-        if (Buyer is null)
-        {
-            _messageBoxService.ShowMessage("Please enter customer details to proceed", "Missing Customer", MessageButton.OK, MessageIcon.Error);
-            return false;
-        }
-
-        return true;
-    }*/
-
-    private void SetLineDetails(EstimateLine estLine)
-    {
-
-        estLine.EstLineNbr = 1;
-        estLine.ProdGrossWeight = ProductGrossWeight;
-        estLine.ProdStoneWeight = 0;
-        estLine.ProdNetWeight = ProductGrossWeight;
-
-    }
-
-    private void SetOldMetalTransaction()
-    {
-
-        OldMetalTransaction oldMetalTransaction = new()
-        {
-            TransDate = DateTime.Now
-        };
-
-        oldMetalTransaction.EnrichEstHeaderOMTransDetails(Header);
-        oldMetalTransaction.EnrichOldMetalProductDetails(OldMetalProduct);
-
-        if (oldMetalTransaction.TransactedRate.GetValueOrDefault() < 1)
-            oldMetalTransaction.TransactedRate = todaysRate;
-
-        oldMetalTransaction.Uom = "Grams";
-        oldMetalTransaction.GrossWeight = ProductGrossWeight;
-        oldMetalTransaction.StoneWeight = 0;
-
-        oldMetalTransaction.NetWeight = (
-                                           oldMetalTransaction.GrossWeight.GetValueOrDefault() -
-                                           oldMetalTransaction.StoneWeight.GetValueOrDefault() -
-                                           oldMetalTransaction.WastageWeight.GetValueOrDefault()
-                                        );
-
-        oldMetalTransaction.TotalProposedPrice = oldMetalTransaction.NetWeight.GetValueOrDefault() *
-                                                    oldMetalTransaction.TransactedRate.GetValueOrDefault();
-        oldMetalTransaction.FinalPurchasePrice = oldMetalTransaction.TotalProposedPrice;
-
-        oldMetalTransaction.Remarks = Header.EstNotes;
-
-        Header.OldMetalTransactions.Add(oldMetalTransaction);
-
-    }
-
-    private void EvaluateHeader()
-    {
-
-        // Header.AdvanceAdj = FilterReceiptTransactions("Advance");
-        // Header.RdAmountAdj = FilterReceiptTransactions("RD");
-
-        Header.RecdAmount = Header.ReceiptLines.Select(x => x.AdjustedAmount).Sum();
-
-        Header.OldGoldAmount = 0;
-        /*FilterMetalTransactions("OLD GOLD 18KT") 
-                                + FilterMetalTransactions("OLD GOLD 22KT") 
-                                + FilterMetalTransactions("OLD GOLD 916-22KT"); */
-
-        Header.OldSilverAmount = 0; // FilterMetalTransactions("OLD SILVER");
-
-        // TaxableTotal from line without tax value
-        Header.EstlTaxTotal = Header.Lines.Select(x => x.EstlTotal).Sum();
-
-        // Line Taxable Total minus Old Gold & Silver Amount
-        decimal BeforeTax = 0;
-        BeforeTax = Header.EstlTaxTotal.GetValueOrDefault() -
-                    Header.OldGoldAmount.GetValueOrDefault() -
-                    Header.OldSilverAmount.GetValueOrDefault();
-
-
-        if (BeforeTax >= 0) // && EstimateWithTax)
-        {
-            Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
-            Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
-            Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
-        }
-        else
-        {
-            Header.CgstAmount = 0;
-            Header.SgstAmount = 0;
-            Header.IgstAmount = 0;
-        }
-
-        Header.EstlTaxableAmount = BeforeTax;
-
-        // After Tax Gross Value
-        Header.GrossRcbAmount = 0;
-        Header.GrossRcbAmount = BeforeTax +
-                                Header.CgstAmount.GetValueOrDefault() +
-                                Header.SgstAmount.GetValueOrDefault() +
-                                Header.IgstAmount.GetValueOrDefault();
-
-        decimal roundOff = 0;
-        roundOff = Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
-                        Header.GrossRcbAmount.GetValueOrDefault();
-
-        Header.RoundOff = roundOff; // Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0);
-
-        Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
-
-        decimal payableValue = 0;
-        payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
-                        Header.DiscountAmount.GetValueOrDefault();
-
-        Header.AmountPayable = 0;
-        Header.AmountPayable = MathUtils.Normalize(payableValue);
-
-        Header.EstBalance = MathUtils.Normalize(Header.AmountPayable.GetValueOrDefault()) -
-            (
-                Header.RecdAmount.GetValueOrDefault() +
-                Header.AdvanceAdj.GetValueOrDefault() +
-                Header.RdAmountAdj.GetValueOrDefault()
-             );
-
-/*        if (estBalanceChk)
-        {
-            ProcessEstBalance();
-        }*/
-    }
-
-    private void EvaluateForAllLines()
-    {
-        foreach (var line in Header.Lines)
-        {
-            EvaluateFormula(line);
-        }
-    }
-
-    private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
-    {
-        var formulas = FormulaStore.Instance.GetFormulas<T>();
-
-        foreach (var formula in formulas)
-        {
-            //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
-
-            var val = formula.Evaluate<T, decimal>(item, 0M);
-
-            if (item is EstimateLine invLine)
-                copyEstimateExpression[formula.FieldName].Invoke(invLine, val);
-        }
-    }
-
-    private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class
-    {
-        //if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
-
-        var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
-
-        var val = formula.Evaluate<T, decimal>(item, 0M);
-
-        if (item is EstimateLine invLine)
-            copyEstimateExpression[fieldName].Invoke(invLine, val);
-        else if (item is EstimateHeader head)
-            copyHeaderExpression[fieldName].Invoke(head, val);
-    }
-
-    [RelayCommand(CanExecute = nameof(CanCreateStockTransfer))]
-    private async Task CreateStockTransfer()
-    {
-
-        await FetchProduct();
-
-        if (!string.IsNullOrEmpty(Header.EstNbr))
-        {
-            var result = _messageBoxService.ShowMessage(
-                "Transfer already created, Do you want to print preview the Transfer ?", "Estoice", 
-                                        MessageButton.OKCancel, MessageIcon.Question, MessageResult.Cancel);
-
-            if (result == MessageResult.OK)
-            {
-                PrintPreviewStockTransfer();
-            }
-            return;
-        }
-
-        if (Buyer is null || string.IsNullOrEmpty(Buyer.CustomerName))
-        {
-            _messageBoxService.ShowMessage("Customer information is not provided", "Customer info", 
-                                                MessageButton.OK, MessageIcon.Hand);
-            return;
-        }
-
-        if ( todaysRate < 1 )
-        {
-            displayRateErrorMsg();
-            return;
-        }
-
-        if (ProductGrossWeight <= 0)
-        {
-            return;
-        }
-
-        Header.CustGkey = (int?)Buyer.GKey;
-        Header.EstNotes = OMTransDesc;
-        Header.PaymentMode = "OM_TRANSFER";   //Old Metal Transfer
-
-        Header.Lines.ForEach(x =>
-        {
-            x.EstLineNbr = Header.Lines.IndexOf(x) + 1;
-            x.EstimateId = Header.EstNbr;
-            x.EstimateHdrGkey = Header.GKey;
-        });
-
-        var header = await _estimateService.CreateHeader(Header);
-
-        if (header is not null)
-        {
-            Header.GKey = header.GKey;
-            Header.EstNbr = header.EstNbr;
-            Header.Lines.ForEach(x =>
-            {
-                x.EstimateHdrGkey = header.GKey;
-                x.EstimateId = header.EstNbr;
-                x.EstimateHdrGkey = Header.GKey;
-                x.TenantGkey = header.TenantGkey;
-            });
-
-            // loop for validation check for customer
-            await _estimateService.CreateEstimateLine(Header.Lines);
-
-            SetOldMetalTransaction();
-            await _oldMetalTransactionService.CreateOldMetalTransaction(Header.OldMetalTransactions);
-
-            _messageBoxService.ShowMessage("Transfer Created Successfully", "Transfer Created", MessageButton.OK, 
-                                                MessageIcon.Exclamation);
-
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Transfer..."));
-
-            var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
-            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-            PrintPreviewStockTransfer();
-
-            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-            PrintPreviewStockTransferCommand.NotifyCanExecuteChanged();
-            PrintStockTransferCommand.NotifyCanExecuteChanged();
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-
-        }
-    }
-
-    private bool CanCreateStockTransfer()
-    {
-        return string.IsNullOrEmpty(Header?.EstNbr);
-    }
-
-    [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
+    // =========================================================
+    // PRINT / PREVIEW
+    //
+    // Existing Delivery Note report is Estimate-backed.
+    //
+    // This screen now saves STOCK_TRANSFER_HEADER /
+    // STOCK_TRANSFER_LINE directly.
+    //
+    // Keep printing disabled functionally until the dedicated
+    // Stock Transfer report is wired.
+    // =========================================================
+
+    [RelayCommand(
+        CanExecute = nameof(
+            CanPrintStockTransfer))]
     private void PrintPreviewStockTransfer()
     {
-        _reportDialogService.PrintPreviewDeliveryNote(Header.EstNbr, Header.GKey, Company);
-        ResetOldMetalTrans();
+        _messageBoxService.ShowMessage(
+            "The transfer was saved successfully.\n\n" +
+            "The existing Delivery Note report is still linked " +
+            "to the legacy Estimate document. A dedicated Stock " +
+            "Transfer report must be connected before Preview " +
+            "is enabled.",
+            "Print Preview",
+            MessageButton.OK,
+            MessageIcon.Information);
     }
 
-    [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
-    private void ExportToPdf()
-    {
-        _reportFactoryService.CreateDeliveryNoteReportPdf(
-                                        Header.EstNbr, Header.GKey, Company, "D:\\Madrone\\Invoice\\");
-    }
 
-    [RelayCommand(CanExecute = nameof(CanPrintStockTransfer))]
+    [RelayCommand(
+        CanExecute = nameof(
+            CanPrintStockTransfer))]
     private void PrintStockTransfer()
     {
-        //after report uncomment this
-        var printed = PrintHelper.Print(
-                    _reportFactoryService.CreateDeliveryNoteReport(Header.EstNbr, Header.GKey, Company));
-
-        if (printed.HasValue && printed.Value)
-            _messageBoxService.ShowMessage("Delivery Note printed Successfully", "Delivery Note print", 
-                MessageButton.OK, MessageIcon.None);
-
-        ResetOldMetalTrans();
+        _messageBoxService.ShowMessage(
+            "The transfer was saved successfully.\n\n" +
+            "Printing will be enabled after the report is changed " +
+            "to read STOCK_TRANSFER_HEADER / STOCK_TRANSFER_LINE.",
+            "Print",
+            MessageButton.OK,
+            MessageIcon.Information);
     }
+
 
     private bool CanPrintStockTransfer()
     {
-        return !CanCreateStockTransfer();
+        return
+            TransferGkey > 0 &&
+            !string.IsNullOrWhiteSpace(
+                TransferNbr);
     }
 
+
+    // =========================================================
+    // TOTALS
+    // =========================================================
+
+    public int TotalItems =>
+        OmTransUIList.Count;
+
+
+    public decimal TotalTransferWeight =>
+        OmTransUIList.Sum(
+            x => x.TransferWeight);
+
+
+    private void OmTransUIList_CollectionChanged(
+        object? sender,
+        NotifyCollectionChangedEventArgs e)
+    {
+        NotifyTotals();
+
+
+        CreateStockTransferCommand
+            .NotifyCanExecuteChanged();
+    }
+
+    partial void OnCanEditPurchaseChanged(bool value)
+    {
+        CreateStockTransferCommand
+            .NotifyCanExecuteChanged();
+
+        PrintPreviewStockTransferCommand
+            .NotifyCanExecuteChanged();
+
+        PrintStockTransferCommand
+            .NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsBusyChanged(bool value)
+    {
+        CreateStockTransferCommand
+            .NotifyCanExecuteChanged();
+
+        PrintPreviewStockTransferCommand
+            .NotifyCanExecuteChanged();
+
+        PrintStockTransferCommand
+            .NotifyCanExecuteChanged();
+    }
+
+    private void NotifyTotals()
+    {
+        OnPropertyChanged(
+            nameof(TotalItems));
+
+        OnPropertyChanged(
+            nameof(TotalTransferWeight));
+    }
 }
-
-
