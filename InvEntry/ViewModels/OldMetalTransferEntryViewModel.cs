@@ -157,6 +157,8 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
     private readonly IMessageBoxService
         _messageBoxService;
 
+    private readonly IDialogService 
+        _reportDialogService;
 
     // =========================================================
     // CONSTRUCTOR
@@ -168,7 +170,8 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
         IMtblReferencesService mtblReferencesService,
         IProductViewService productViewService,
         IProductStockSummaryService productStockSummaryService,
-        IMessageBoxService messageBoxService)
+        IMessageBoxService messageBoxService,
+        IDialogService reportDialogService )
     {
         _stockTransferService =
             stockTransferService;
@@ -187,6 +190,9 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
 
         _messageBoxService =
             messageBoxService;
+
+        _reportDialogService = 
+            reportDialogService;
 
 
         OmTransUIList.CollectionChanged +=
@@ -919,8 +925,8 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
                 var latestStock =
                     stock.BalanceWeight;
 
-
-                if (line.TransferWeight >
+                // blocking this code currently - no strict stock maintenance
+/*                if (line.TransferWeight >
                     latestStock)
                 {
                     _messageBoxService.ShowMessage(
@@ -933,7 +939,8 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
                         MessageIcon.Warning);
 
                     return;
-                }
+                }*/
+
             }
 
 
@@ -1215,17 +1222,12 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
             CanPrintStockTransfer))]
     private void PrintPreviewStockTransfer()
     {
-        _messageBoxService.ShowMessage(
-            "The transfer was saved successfully.\n\n" +
-            "The existing Delivery Note report is still linked " +
-            "to the legacy Estimate document. A dedicated Stock " +
-            "Transfer report must be connected before Preview " +
-            "is enabled.",
-            "Print Preview",
-            MessageButton.OK,
-            MessageIcon.Information);
-    }
 
+        _reportDialogService.PrintPreviewDeliveryNote(TransferNbr,0);
+
+        ResetTransfer();
+
+    }
 
     [RelayCommand(
         CanExecute = nameof(

@@ -329,11 +329,11 @@
             // 
             // invoiceNumberTable
             // 
-            this.invoiceNumberTable.LocationFloat = new DevExpress.Utils.PointFloat(401.0833F, 0F);
+            this.invoiceNumberTable.LocationFloat = new DevExpress.Utils.PointFloat(390.4166F, 0F);
             this.invoiceNumberTable.Name = "invoiceNumberTable";
             this.invoiceNumberTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.invoiceNumberRow});
-            this.invoiceNumberTable.SizeF = new System.Drawing.SizeF(257.9167F, 25F);
+            this.invoiceNumberTable.SizeF = new System.Drawing.SizeF(268.5834F, 25F);
             // 
             // invoiceNumberRow
             // 
@@ -351,7 +351,7 @@
             this.invoiceLabel.StylePriority.UseTextAlignment = false;
             this.invoiceLabel.Text = "Stock Transfer # :  ";
             this.invoiceLabel.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
-            this.invoiceLabel.Weight = 1.0328993322578208D;
+            this.invoiceLabel.Weight = 0.84123630939548566D;
             // 
             // invoiceNumber
             // 
@@ -366,7 +366,7 @@
             this.invoiceNumber.Text = "#000001";
             this.invoiceNumber.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
             this.invoiceNumber.TextFormatString = "{0}";
-            this.invoiceNumber.Weight = 0.61230048609307886D;
+            this.invoiceNumber.Weight = 0.803963508955414D;
             // 
             // Detail
             // 
@@ -425,7 +425,7 @@
             // productName
             // 
             this.productName.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[PRODUCT_NAME]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[PROD_CATEGORY]")});
             this.productName.Font = new DevExpress.Drawing.DXFont("Arial", 10F, DevExpress.Drawing.DXFontStyle.Bold);
             this.productName.Name = "productName";
             this.productName.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
@@ -518,7 +518,7 @@
             this.sqlDataSource1.Name = "sqlDataSource1";
             customSqlQuery1.MetaSerializable = "<Meta X=\"375\" Y=\"20\" Width=\"172\" Height=\"1604\" />";
             customSqlQuery1.Name = "ESTIMATE";
-            queryParameter1.Name = "paramEstNbr1";
+            queryParameter1.Name = "paramTransNbr";
             queryParameter1.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter1.Value = new DevExpress.DataAccess.Expression("?pEstNbr", typeof(string));
             queryParameter2.Name = "paramEstGkey1";
@@ -538,7 +538,7 @@
             customSqlQuery2.Sql = resources.GetString("customSqlQuery2.Sql");
             customSqlQuery3.MetaSerializable = "<Meta X=\"567\" Y=\"20\" Width=\"133\" Height=\"484\" />";
             customSqlQuery3.Name = "CustomerDetails";
-            queryParameter4.Name = "paramEstNbr3";
+            queryParameter4.Name = "paramDocRefNbr3";
             queryParameter4.Type = typeof(global::DevExpress.DataAccess.Expression);
             queryParameter4.Value = new DevExpress.DataAccess.Expression("?pEstNbr", typeof(string));
             customSqlQuery3.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
@@ -620,7 +620,7 @@
             // 
             this.pEstNbr.Description = "Estimate Nbr";
             this.pEstNbr.Name = "pEstNbr";
-            this.pEstNbr.ValueInfo = "E-00068";
+            this.pEstNbr.ValueInfo = "ST-00006";
             // 
             // GroupHeader2
             // 
@@ -829,7 +829,7 @@
             // 
             // xrLabel5
             // 
-            this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(300.3738F, 94.18893F);
+            this.xrLabel5.LocationFloat = new DevExpress.Utils.PointFloat(506.5934F, 94.18894F);
             this.xrLabel5.Multiline = true;
             this.xrLabel5.Name = "xrLabel5";
             this.xrLabel5.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -838,7 +838,7 @@
             // 
             // xrLabel4
             // 
-            this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(516.5934F, 94.18893F);
+            this.xrLabel4.LocationFloat = new DevExpress.Utils.PointFloat(300.3737F, 94.1889F);
             this.xrLabel4.Multiline = true;
             this.xrLabel4.Name = "xrLabel4";
             this.xrLabel4.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -880,6 +880,9 @@
             this.PageHeight = 1169;
             this.PageWidth = 827;
             this.PaperKind = DevExpress.Drawing.Printing.DXPaperKind.A4;
+            this.ParameterPanelLayoutItems.AddRange(new DevExpress.XtraReports.Parameters.ParameterPanelLayoutItem[] {
+            new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pEstNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal),
+            new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pEstHdrGkey, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
             this.pEstNbr,
             this.pEstHdrGkey});
