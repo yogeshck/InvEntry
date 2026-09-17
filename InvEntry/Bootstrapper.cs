@@ -3,6 +3,8 @@ using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
 using InvEntry.Extension;
+using InvEntry.GST.Classification;
+using InvEntry.GST.Rules;
 using InvEntry.Helpers;
 using InvEntry.HostedServices;
 using InvEntry.IoC;
@@ -166,8 +168,10 @@ public sealed class Bootstrapper
                  .AddSingleton<IVoucherDbViewService, VoucherDbViewService>()
                  .AddSingleton<IVoucherService, VoucherService>()
                  .AddSingleton<IVoucherTypeService, VoucherTypeService>()
+                 .AddSingleton<IGstRuleProvider, GstRuleProvider>()
                  .AddTransient<INavigationService, FrameNavigationService>()
                  .AddTransient<ReferenceLoader, ReferenceLoader>()
+                 .AddTransient<IGstClassificationService,GstClassificationService>()
                  //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
 
                  .AddSingleton<ILabelPrinter>(serviceProvider =>

@@ -100,4 +100,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GST\Export\" />
+    <Folder Include="GST\Reporting\" />
+    <Folder Include="GST\Validation\" />
+  </ItemGroup>
+
 </Project>

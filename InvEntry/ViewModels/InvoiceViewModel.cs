@@ -30,6 +30,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using InvEntry.GST.Classification;
+using InvEntry.GST.Models;
+
 using IDialogService = DevExpress.Mvvm.IDialogService;
 
 namespace InvEntry.ViewModels;
@@ -116,6 +119,11 @@ public partial class InvoiceViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasUnsavedChanges;
 
+    private readonly IGstClassificationService _gstClassificationService;
+
+    [ObservableProperty]
+    private GstClassificationResult? gstClassification;
+
     private List<MtblReference> _gstTaxRefList;
 
     private bool createCustomer = false;
@@ -191,6 +199,7 @@ public partial class InvoiceViewModel : ObservableObject
         IReportFactoryService reportFactoryService,
         InvoiceEditSession invoiceEditSession,
         ReferenceLoader referenceLoader,
+        IGstClassificationService gstClassificationService,
         IServiceProvider serviceProvider,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
@@ -217,6 +226,7 @@ public partial class InvoiceViewModel : ObservableObject
         _invoiceEditSession = invoiceEditSession;
         _referenceLoader = referenceLoader;
         _serviceProvider = serviceProvider;
+        _gstClassificationService = gstClassificationService;
 
         //_productTransactionSummaryService = productTransactionSummaryService;
 
@@ -376,6 +386,32 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
+    private GstClassificationResult?
+        EvaluateGstClassification()
+    {
+        if (Header is null ||
+            Buyer is null ||
+            Company is null)
+        {
+            GstClassification = null;
+            return null;
+        }
+
+        EnsurePlaceOfSupply();
+
+        var request =
+            InvoiceGstMapper.Create(
+                Header,
+                Buyer,
+                Company);
+
+        GstClassification =
+            _gstClassificationService
+                .Classify(request);
+
+        return GstClassification;
+    }
+
     [RelayCommand]
     private async Task OpenDraftInvoice()
     {
@@ -469,6 +505,29 @@ public partial class InvoiceViewModel : ObservableObject
         }
     }
 
+    private void EnsurePlaceOfSupply()
+    {
+        if (Header is null)
+            return;
+
+        // Preserve an explicitly selected POS.
+        if (!string.IsNullOrWhiteSpace(Header.PlaceOfSupply))
+            return;
+
+        // Normally default from customer's GST state.
+        if (!string.IsNullOrWhiteSpace(Buyer?.GstStateCode))
+        {
+            Header.PlaceOfSupply = Buyer.GstStateCode;
+            return;
+        }
+
+        // Walk-in / unregistered customer:
+        // default to branch GST state.
+        if (!string.IsNullOrWhiteSpace(Company?.GstCode))
+        {
+            Header.PlaceOfSupply = Company.GstCode;
+        }
+    }
 
     private void SetMetalPrice()
     {
@@ -1091,6 +1150,48 @@ public partial class InvoiceViewModel : ObservableObject
 
         // Recalculate before opening settlement.
         EvaluateHeader();
+
+        // =========================================================
+        // GST CLASSIFICATION
+        //
+        // Stage 1:
+        // Evaluate and display the GST result.
+        // Do NOT block finalisation yet.
+        // =========================================================
+
+        var gstResult =
+            EvaluateGstClassification();
+
+        if (gstResult is null)
+        {
+            DXMessageBox.Show(
+                "GST classification could not be performed.",
+                "GST Validation",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
+
+        if (!gstResult.IsValid)
+        {
+            var errors = gstResult.Errors.Count > 0
+                ? string.Join(
+                    Environment.NewLine,
+                    gstResult.Errors.Select(x => "• " + x))
+                : "GST classification failed.";
+
+            DXMessageBox.Show(
+                "The invoice cannot be finalised because of GST validation errors."
+                + Environment.NewLine
+                + Environment.NewLine
+                + errors,
+                "GST Validation",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+
+            return;
+        }
 
         var settlement = ShowSettlementDialog();
 

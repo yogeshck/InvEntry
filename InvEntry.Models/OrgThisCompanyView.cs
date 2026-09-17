@@ -47,7 +47,7 @@ namespace InvEntry.Models
         private string? _panNbr;
 
         [ObservableProperty]
-        private string? _gtNbr;
+        private string? _gstNbr;
 
         [ObservableProperty]
         private bool _thisCompany;
