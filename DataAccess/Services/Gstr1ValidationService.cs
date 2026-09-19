@@ -12,15 +12,18 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
     private readonly MijmsContext _context;
     private readonly IGstr1HsnSummaryService _hsnSummaryService;
     private readonly Gstr1Table12Policy _table12Policy;
+    private readonly IGstr1DocumentsIssuedService _documentsIssuedService;
 
     public Gstr1ValidationService(
         MijmsContext context,
         IGstr1HsnSummaryService hsnSummaryService,
-        Gstr1Table12Policy table12Policy)
+        Gstr1Table12Policy table12Policy,
+        IGstr1DocumentsIssuedService documentsIssuedService)
     {
         _context = context;
         _hsnSummaryService = hsnSummaryService;
         _table12Policy = table12Policy;
+        _documentsIssuedService = documentsIssuedService;
     }
 
     public async Task<Gstr1ValidationResponse> ValidateAsync(
@@ -71,10 +74,81 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
         }
 
         await ValidateTable12Async(documents, scope.SupplierGstin, scope.ReturnPeriod, response, cancellationToken);
+        await ValidateTable13Async(documents, scope.SupplierGstin, scope.ReturnPeriod, response, cancellationToken);
 
         return response;
     }
 
+    private async Task ValidateTable13Async(
+        IReadOnlyList<GstGstr1Document> documents,
+        string supplierGstin,
+        string returnPeriod,
+        Gstr1ValidationResponse response,
+        CancellationToken cancellationToken)
+    {
+        var issued = await _documentsIssuedService.GetAsync(
+            supplierGstin,
+            returnPeriod,
+            cancellationToken);
+
+        var issueDocument = documents.FirstOrDefault(x => x.IsReportable)
+            ?? documents.FirstOrDefault();
+
+        var seriesKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var series in issued.Series)
+        {
+            if (string.IsNullOrWhiteSpace(series.Series) ||
+                string.IsNullOrWhiteSpace(series.FromNumber) ||
+                string.IsNullOrWhiteSpace(series.ToNumber))
+            {
+                AddIssue(response, issueDocument, "Error", "GST-DOCISS-001",
+                    "Table 13 series identity and number range are required.");
+            }
+
+            if (series.TotalIssued < 0)
+            {
+                AddIssue(response, issueDocument, "Error", "GST-DOCISS-002",
+                    $"Table 13 series '{series.Series}' has a negative TotalIssued count.",
+                    fieldName: nameof(series.TotalIssued));
+            }
+
+            if (series.Cancelled < 0 || series.Cancelled > series.TotalIssued)
+            {
+                AddIssue(response, issueDocument, "Error", "GST-DOCISS-003",
+                    $"Table 13 series '{series.Series}' has an invalid Cancelled count.",
+                    fieldName: nameof(series.Cancelled));
+            }
+
+            if (series.NetIssued != series.TotalIssued - series.Cancelled)
+            {
+                AddIssue(response, issueDocument, "Error", "GST-DOCISS-004",
+                    $"Table 13 series '{series.Series}' has an inconsistent NetIssued count.",
+                    fieldName: nameof(series.NetIssued));
+            }
+
+            var seriesKey = $"{series.DocumentType.Trim()}\u001f{series.Series.Trim()}";
+            if (!seriesKeys.Add(seriesKey))
+            {
+                AddIssue(response, issueDocument, "Error", "GST-DOCISS-005",
+                    $"Table 13 contains duplicate rows for document type '{series.DocumentType}' and series '{series.Series}'.");
+            }
+        }
+
+        if (issued.TotalIssued != issued.Series.Sum(x => x.TotalIssued) ||
+            issued.TotalCancelled != issued.Series.Sum(x => x.Cancelled) ||
+            issued.TotalNetIssued != issued.Series.Sum(x => x.NetIssued))
+        {
+            AddIssue(response, issueDocument, "Error", "GST-DOCISS-006",
+                "Table 13 response totals do not match the returned series totals.");
+        }
+
+        if (response.ReportableDocumentCount > 0 && issued.TotalIssued == 0)
+        {
+            AddIssue(response, issueDocument, "Error", "GST-DOCISS-007",
+                "Reportable GSTR-1 sales documents exist, but Table 13 contains no issued Sales Invoices.");
+        }
+    }
     private async Task ValidateTable12Async(
         IReadOnlyList<GstGstr1Document> documents,
         string supplierGstin,
@@ -709,7 +783,7 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
 
     private static void AddIssue(
         Gstr1ValidationResponse response,
-        GstGstr1Document document,
+        GstGstr1Document? document,
         string severity,
         string code,
         string message,
@@ -724,11 +798,11 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 Code = code,
                 Message = message,
                 DocumentGkey =
-                    document.Gkey,
+                    document?.Gkey,
                 SourceGkey =
-                    document.SourceGkey,
+                    document?.SourceGkey,
                 DocumentNbr =
-                    document.DocumentNbr,
+                    document?.DocumentNbr,
                 LineNbr =
                     lineNbr,
                 HsnCode =
