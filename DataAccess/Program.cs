@@ -96,6 +96,7 @@ builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
 builder.Services.AddScoped<IGstRuleProvider, GstRuleProvider>();
 builder.Services.AddScoped<IGstClassificationService, GstClassificationService>();
+builder.Services.AddScoped<IGstr1ReportQueryService, Gstr1ReportQueryService>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 
