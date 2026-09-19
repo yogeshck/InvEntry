@@ -12,17 +12,20 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1ValidationService _validationService;
     private readonly IGstr1BackfillService _backfillService;
     private readonly IGstr1StagingEnrichmentService _enrichmentService;
+    private readonly IGstr1HsnSummaryService _hsnSummaryService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
         IGstr1ValidationService validationService,
         IGstr1StagingEnrichmentService enrichmentService,
+        IGstr1HsnSummaryService hsnSummaryService,
         IGstr1BackfillService backfillService )
     {
         _service = service;
         _validationService = validationService;
         _backfillService = backfillService;
         _enrichmentService = enrichmentService;
+        _hsnSummaryService = hsnSummaryService;
 
     }
 
@@ -112,6 +115,30 @@ public sealed class Gstr1Controller : ControllerBase
             {
                 error = ex.Message
             });
+        }
+    }
+
+    [HttpGet("hsn-summary")]
+    public async Task<ActionResult<Gstr1HsnSummaryResponse>> GetHsnSummary(
+    [FromQuery] string supplierGstin,
+    [FromQuery] string returnPeriod,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await _hsnSummaryService.GetSummaryAsync(
+                new Gstr1HsnSummaryQuery
+                {
+                    SupplierGstin = supplierGstin,
+                    ReturnPeriod = returnPeriod
+                },
+                cancellationToken);
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 

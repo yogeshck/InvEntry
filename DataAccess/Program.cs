@@ -98,8 +98,9 @@ builder.Services.AddScoped<IGstr1StagingEnrichmentService, Gstr1StagingEnrichmen
 builder.Services.AddScoped<IGstr1ReportQueryService, Gstr1ReportQueryService>();
 builder.Services.AddScoped<IGstr1ValidationService, Gstr1ValidationService>();
 builder.Services.AddScoped<IGstr1StagingService, Gstr1StagingService>();
+builder.Services.AddSingleton<Gstr1Table12Policy>();
+builder.Services.AddScoped<IGstr1HsnSummaryService, Gstr1HsnSummaryService>(); 
 builder.Services.AddScoped<IGstr1BackfillService, Gstr1BackfillService>(); 
-builder.Services.AddScoped<IGstr1ReportQueryService, Gstr1ReportQueryService>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 
