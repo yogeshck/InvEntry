@@ -85,7 +85,6 @@ public sealed class Gstr1HsnSummaryService : IGstr1HsnSummaryService
             {
                 x.SupplyClass,
                 x.HsnCode,
-                x.Description,
                 x.Uqc,
                 x.GstRate
             })
@@ -93,7 +92,11 @@ public sealed class Gstr1HsnSummaryService : IGstr1HsnSummaryService
             {
                 SupplyClass = g.Key.SupplyClass,
                 HsnCode = g.Key.HsnCode,
-                Description = g.Key.Description,
+
+                // Description is descriptive metadata, not part of
+                // the GST Portal Table-12 uniqueness key.
+                Description = ResolveDescription(g),
+
                 Uqc = g.Key.Uqc,
                 GstRate = g.Key.GstRate,
 
@@ -108,7 +111,6 @@ public sealed class Gstr1HsnSummaryService : IGstr1HsnSummaryService
             .ThenBy(x => x.HsnCode)
             .ThenBy(x => x.Uqc)
             .ThenBy(x => x.GstRate)
-            .ThenBy(x => x.Description)
             .ToList();
 
         return new Gstr1HsnSummaryResponse
@@ -124,6 +126,17 @@ public sealed class Gstr1HsnSummaryService : IGstr1HsnSummaryService
                 .Where(x => x.SupplyClass == "B2C")
                 .ToList()
         };
+    }
+
+    private static string? ResolveDescription(
+    IEnumerable<HsnSourceRow> rows)
+    {
+        return rows
+            .Select(x => x.Description)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x)
+            .FirstOrDefault();
     }
 
     private static void ValidateQuery(Gstr1HsnSummaryQuery query)
