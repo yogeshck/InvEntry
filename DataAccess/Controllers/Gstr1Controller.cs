@@ -11,15 +11,18 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1ReportQueryService _service;
     private readonly IGstr1ValidationService _validationService;
     private readonly IGstr1BackfillService _backfillService;
+    private readonly IGstr1StagingEnrichmentService _enrichmentService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
         IGstr1ValidationService validationService,
+        IGstr1StagingEnrichmentService enrichmentService,
         IGstr1BackfillService backfillService )
     {
         _service = service;
         _validationService = validationService;
         _backfillService = backfillService;
+        _enrichmentService = enrichmentService;
 
     }
 
@@ -86,6 +89,29 @@ public sealed class Gstr1Controller : ControllerBase
         catch (ArgumentException exception)
         {
             return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpPost("enrich")]
+    public async Task<ActionResult<Gstr1EnrichmentResponse>> Enrich(
+    [FromBody] Gstr1EnrichmentRequest request,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result =
+                await _enrichmentService.EnrichAsync(
+                    request,
+                    cancellationToken);
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message
+            });
         }
     }
 
