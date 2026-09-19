@@ -770,6 +770,10 @@
 
                         HideMenuWhenSelected="True"/>
 
+                    <dxwui:HamburgerSubMenuNavigationButton
+    NavigationTargetType="{x:Type views:Gstr1ReturnView}"
+    Content="GSTR-1 Return"
+    HideMenuWhenSelected="True" />
 
                 </dxwui:HamburgerSubMenu.Items>
 
