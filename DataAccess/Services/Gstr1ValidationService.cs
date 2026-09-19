@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using DataAccess.Models;
 using InvEntry.Contracts.Gst;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +10,17 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
     private const decimal ReconciliationTolerance = 0.01M;
 
     private readonly MijmsContext _context;
+    private readonly IGstr1HsnSummaryService _hsnSummaryService;
+    private readonly Gstr1Table12Policy _table12Policy;
 
-    public Gstr1ValidationService(MijmsContext context)
+    public Gstr1ValidationService(
+        MijmsContext context,
+        IGstr1HsnSummaryService hsnSummaryService,
+        Gstr1Table12Policy table12Policy)
     {
         _context = context;
+        _hsnSummaryService = hsnSummaryService;
+        _table12Policy = table12Policy;
     }
 
     public async Task<Gstr1ValidationResponse> ValidateAsync(
@@ -63,9 +70,50 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
             }
         }
 
+        await ValidateTable12Async(documents, scope.SupplierGstin, scope.ReturnPeriod, response, cancellationToken);
+
         return response;
     }
 
+    private async Task ValidateTable12Async(
+        IReadOnlyList<GstGstr1Document> documents,
+        string supplierGstin,
+        string returnPeriod,
+        Gstr1ValidationResponse response,
+        CancellationToken cancellationToken)
+    {
+        var summary = await _hsnSummaryService.GetSummaryAsync(
+            new Gstr1HsnSummaryQuery { SupplierGstin = supplierGstin, ReturnPeriod = returnPeriod }, cancellationToken);
+        var summaryRows = summary.B2B.Concat(summary.B2C).ToList();
+        var issueDocument = documents.FirstOrDefault(x => x.IsReportable);
+        if (issueDocument is not null)
+        {
+            foreach (var duplicate in summaryRows.GroupBy(x => new { x.SupplyClass, HsnCode = x.HsnCode.Trim(), Uqc = x.Uqc.Trim().ToUpperInvariant(), x.GstRate }).Where(x => x.Count() > 1))
+                AddIssue(response, issueDocument, "Error", "GST-HSN-002", $"Duplicate Table 12 aggregation key '{duplicate.Key.SupplyClass}/{duplicate.Key.HsnCode}/{duplicate.Key.Uqc}/{duplicate.Key.GstRate}'.");
+        }
+        var expectedRows = documents.Where(x => x.IsReportable).SelectMany(document => document.GstGstr1DocumentLines.Select(line => new { Document = document, Line = line, SupplyClass = _table12Policy.Resolve(document.ReturnCategory, document.IsRecipientRegistered) })).Where(x => x.SupplyClass != Gstr1Table12SupplyClass.Excluded && !string.IsNullOrWhiteSpace(x.Line.HsnCode) && !string.IsNullOrWhiteSpace(x.Line.Uqc) && x.Line.GstQuantity.HasValue && x.Line.GstQuantity.Value > 0M && x.Line.TaxableValue >= 0M && x.Line.CgstAmount >= 0M && x.Line.SgstAmount >= 0M && x.Line.IgstAmount >= 0M && x.Line.CessAmount >= 0M).GroupBy(x => new { SupplyClass = x.SupplyClass == Gstr1Table12SupplyClass.B2B ? "B2B" : "B2C", HsnCode = x.Line.HsnCode!.Trim(), Uqc = x.Line.Uqc!.Trim().ToUpperInvariant(), x.Line.GstRate }).Select(g => new { g.Key, Quantity = g.Sum(x => x.Line.GstQuantity!.Value), TaxableValue = g.Sum(x => x.Line.TaxableValue), CgstAmount = g.Sum(x => x.Line.CgstAmount), SgstAmount = g.Sum(x => x.Line.SgstAmount), IgstAmount = g.Sum(x => x.Line.IgstAmount), CessAmount = g.Sum(x => x.Line.CessAmount), Document = g.Select(x => x.Document).First() }).ToList();
+        foreach (var expected in expectedRows)
+        {
+            var actual = summaryRows.FirstOrDefault(x => string.Equals(x.SupplyClass, expected.Key.SupplyClass, StringComparison.OrdinalIgnoreCase) && string.Equals(x.HsnCode.Trim(), expected.Key.HsnCode, StringComparison.OrdinalIgnoreCase) && string.Equals(x.Uqc.Trim(), expected.Key.Uqc, StringComparison.OrdinalIgnoreCase) && x.GstRate == expected.Key.GstRate);
+            if (actual is null)
+            {
+                AddIssue(response, expected.Document, "Error", "GST-HSN-001", $"Table 12 aggregation row is missing for key '{expected.Key.SupplyClass}/{expected.Key.HsnCode}/{expected.Key.Uqc}/{expected.Key.GstRate}'.");
+                continue;
+            }
+            AddTable12Mismatch(response, expected.Document, expected.Key.ToString()!, "GST-HSN-003", "quantity", expected.Quantity, actual.TotalQuantity);
+            AddTable12Mismatch(response, expected.Document, expected.Key.ToString()!, "GST-HSN-004", "taxable value", expected.TaxableValue, actual.TaxableValue);
+            AddTable12Mismatch(response, expected.Document, expected.Key.ToString()!, "GST-HSN-005", "CGST", expected.CgstAmount, actual.CgstAmount);
+            AddTable12Mismatch(response, expected.Document, expected.Key.ToString()!, "GST-HSN-006", "SGST", expected.SgstAmount, actual.SgstAmount);
+            AddTable12Mismatch(response, expected.Document, expected.Key.ToString()!, "GST-HSN-007", "IGST", expected.IgstAmount, actual.IgstAmount);
+            AddTable12Mismatch(response, expected.Document, expected.Key.ToString()!, "GST-HSN-008", "cess", expected.CessAmount, actual.CessAmount);
+        }
+    }
+
+    private static void AddTable12Mismatch(Gstr1ValidationResponse response, GstGstr1Document document, string key, string code, string fieldName, decimal expected, decimal actual)
+    {
+        if (Math.Abs(expected - actual) <= ReconciliationTolerance) return;
+        AddIssue(response, document, "Error", code, $"Table 12 {fieldName} for aggregation key '{key}' expected {expected:N2} but was {actual:N2}.", fieldName: fieldName);
+    }
     // =========================================================
     // DOCUMENT VALIDATION
     // =========================================================
