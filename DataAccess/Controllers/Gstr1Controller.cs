@@ -13,19 +13,22 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1BackfillService _backfillService;
     private readonly IGstr1StagingEnrichmentService _enrichmentService;
     private readonly IGstr1HsnSummaryService _hsnSummaryService;
+    private readonly IGstr1DocumentsIssuedService _documentsIssuedService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
         IGstr1ValidationService validationService,
         IGstr1StagingEnrichmentService enrichmentService,
         IGstr1HsnSummaryService hsnSummaryService,
-        IGstr1BackfillService backfillService )
+        IGstr1BackfillService backfillService,
+        IGstr1DocumentsIssuedService documentsIssuedService )
     {
         _service = service;
         _validationService = validationService;
         _backfillService = backfillService;
         _enrichmentService = enrichmentService;
         _hsnSummaryService = hsnSummaryService;
+        _documentsIssuedService = documentsIssuedService;
 
     }
 
@@ -135,6 +138,24 @@ public sealed class Gstr1Controller : ControllerBase
                 cancellationToken);
 
             return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("documents-issued")]
+    public async Task<ActionResult<Gstr1DocumentsIssuedResponse>> GetDocumentsIssued(
+        [FromQuery] Gstr1DocumentsIssuedQuery query,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _documentsIssuedService.GetAsync(
+                query.SupplierGstin,
+                query.ReturnPeriod,
+                cancellationToken));
         }
         catch (ArgumentException ex)
         {
