@@ -1,9 +1,9 @@
-﻿using InvEntry.GST.Helpers;
-using InvEntry.GST.Models;
-using InvEntry.GST.Rules;
+﻿using InvEntry.Gst.Core.Helpers;
+using InvEntry.Gst.Core.Models;
+using InvEntry.Gst.Core.Rules;
 using System;
 
-namespace InvEntry.GST.Classification
+namespace InvEntry.Gst.Core.Classification
 {
     public class GstClassificationService
         : IGstClassificationService
@@ -42,14 +42,6 @@ namespace InvEntry.GST.Classification
 
             result.IsRecipientRegistered =
                 !string.IsNullOrWhiteSpace(request.RecipientGstin);
-
-            // A GSTIN was supplied, therefore it must be valid.
-/*            if (result.IsRecipientRegistered &&
-                !GstinHelper.IsValid(request.RecipientGstin))
-            {
-                result.Errors.Add(
-                    $"Recipient GSTIN '{request.RecipientGstin}' is invalid.");
-            }*/
 
             // -----------------------------------------------------
             // 3. SPECIAL DOCUMENT TYPES
@@ -136,6 +128,13 @@ namespace InvEntry.GST.Classification
             {
                 result.Errors.Add(
                     $"Supplier GSTIN '{request.SupplierGstin}' is invalid.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.RecipientGstin) &&
+                !GstinHelper.IsValid(request.RecipientGstin))
+            {
+                result.Errors.Add(
+                    $"Recipient GSTIN '{request.RecipientGstin}' is invalid.");
             }
 
             var gstinStateCode =

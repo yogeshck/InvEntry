@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InvEntry.GST.Rules
+namespace InvEntry.Gst.Core.Rules
 {
     public class GstRuleProvider : IGstRuleProvider
     {

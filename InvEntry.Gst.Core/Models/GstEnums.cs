@@ -1,4 +1,4 @@
-﻿namespace InvEntry.GST.Models
+﻿namespace InvEntry.Gst.Core.Models
 {
     public enum GstSupplyType
     {

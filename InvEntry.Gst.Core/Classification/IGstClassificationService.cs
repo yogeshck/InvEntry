@@ -1,6 +1,6 @@
-﻿using InvEntry.GST.Models;
+﻿using InvEntry.Gst.Core.Models;
 
-namespace InvEntry.GST.Classification
+namespace InvEntry.Gst.Core.Classification
 {
     public interface IGstClassificationService
     {

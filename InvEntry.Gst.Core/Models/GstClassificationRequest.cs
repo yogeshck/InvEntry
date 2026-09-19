@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace InvEntry.GST.Models
+namespace InvEntry.Gst.Core.Models
 {
     public class GstClassificationRequest
     {

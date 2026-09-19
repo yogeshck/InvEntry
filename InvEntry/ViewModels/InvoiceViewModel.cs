@@ -31,7 +31,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using InvEntry.GST.Classification;
-using InvEntry.GST.Models;
+using InvEntry.Gst.Core.Classification;
+using InvEntry.Gst.Core.Models;
 
 using IDialogService = DevExpress.Mvvm.IDialogService;
 

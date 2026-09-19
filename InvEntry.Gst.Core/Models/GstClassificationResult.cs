@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace InvEntry.GST.Models
+namespace InvEntry.Gst.Core.Models
 {
     public class GstClassificationResult
     {

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace InvEntry.GST.Helpers
+namespace InvEntry.Gst.Core.Helpers
 {
     public static class GstinHelper
     {

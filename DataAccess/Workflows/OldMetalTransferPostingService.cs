@@ -53,8 +53,8 @@ public sealed class OldMetalTransferPostingService
         // BASIC VALIDATION
         // ============================================================
 
-        if (header.Lines is null ||
-            header.Lines.Count == 0)
+        if (header.StockTransferLines is null ||
+            header.StockTransferLines.Count == 0)
         {
             throw new InvalidOperationException(
                 "Old Metal Transfer must contain at least one line.");
@@ -93,7 +93,7 @@ public sealed class OldMetalTransferPostingService
         // ============================================================
 
         ValidateLines(
-            header.Lines);
+            header.StockTransferLines);
 
 
         // ============================================================
@@ -141,7 +141,7 @@ public sealed class OldMetalTransferPostingService
         // CREATE OLD METAL COMPATIBILITY TRANSACTIONS
         // ============================================================
 
-        foreach (var line in header.Lines)
+        foreach (var line in header.StockTransferLines)
         {
             cancellationToken
                 .ThrowIfCancellationRequested();

@@ -1,4 +1,4 @@
-﻿using InvEntry.GST.Models;
+﻿using InvEntry.Gst.Core.Models;
 using InvEntry.Models;
 using System;
 

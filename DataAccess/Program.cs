@@ -4,6 +4,8 @@ using DataAccess.Models;
 using DataAccess.Repository;
 using DataAccess.Services;
 using DataAccess.Workflows;
+using InvEntry.Gst.Core.Classification;
+using InvEntry.Gst.Core.Rules;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -92,6 +94,8 @@ builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
 builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
 builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
+builder.Services.AddScoped<IGstRuleProvider, GstRuleProvider>();
+builder.Services.AddScoped<IGstClassificationService, GstClassificationService>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 

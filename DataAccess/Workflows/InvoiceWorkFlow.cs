@@ -3,7 +3,7 @@ using DataAccess.Models;
 using DataAccess.Repository;
 using InvEntry.Contracts.Invoices;
 
-using InvEntry.Gst.Core;
+using InvEntry.Gst.Core.Classification;
 using InvEntry.Gst.Core.Models;
 
 namespace DataAccess.Workflows;
@@ -18,7 +18,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
     private readonly IRepositoryBase<Voucher> _voucherRepository;
     private readonly IRepositoryBase<GstGstr1Document> _gstGstr1DocumentRepository;
-    private readonly IRepositoryBase<GstGstr1DocumentLine> _gstGstr1DocumentLineRepository;
     //private readonly IRepositoryBase<ProductStock> _productStockRepository;
     //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
     //private readonly IRepositoryBase<ProductTransaction> _productTransactionRepository;
@@ -42,7 +41,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IRepositoryBase<VoucherType> voucherTypeRepository,
         IRepositoryBase<Voucher> voucherRepository,
         IRepositoryBase<GstGstr1Document> gstGstr1DocumentRepository,
-        IRepositoryBase<GstGstr1DocumentLine> gstGstr1DocumentLineRepository,
         IStockMovementService stockMovementService,
         IRepositoryBase<OrgThisCompanyView> companyRepository,
         IRepositoryBase<OrgCustomer> customerRepository,
@@ -69,9 +67,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         _gstGstr1DocumentRepository =
             gstGstr1DocumentRepository;
-
-        _gstGstr1DocumentLineRepository =
-            gstGstr1DocumentLineRepository;
 
         _companyRepository =
             companyRepository;
@@ -407,7 +402,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     invoice.InvNbr,
 
                 DocumentDate =
-                    invoice.InvDate.Value,
+                    DateOnly.FromDateTime(invoice.InvDate.Value),
 
                 SupplierGstin =
                     supplierGstin,
@@ -499,11 +494,72 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                     DateTime.Now
             };
 
+        if (lines.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Final invoice {invoice.InvNbr} cannot be staged for GSTR-1 " +
+                "without invoice lines.");
+        }
+
+        var usedLineNumbers = new HashSet<int>();
+        var nextLineNumber = 1;
+
+        foreach (var line in lines)
+        {
+            var lineNumber = line.InvLineNbr.GetValueOrDefault();
+
+            if (lineNumber <= 0 || !usedLineNumbers.Add(lineNumber))
+            {
+                while (usedLineNumbers.Contains(nextLineNumber))
+                    nextLineNumber++;
+
+                lineNumber = nextLineNumber;
+                usedLineNumbers.Add(lineNumber);
+            }
+
+            var cgstRate = line.InvlCgstPercent.GetValueOrDefault();
+            var sgstRate = line.InvlSgstPercent.GetValueOrDefault();
+            var igstRate = line.InvlIgstPercent.GetValueOrDefault();
+
+            var gstRate =
+                igstRate > 0M
+                    ? igstRate
+                    : cgstRate + sgstRate;
+
+            var description =
+                !string.IsNullOrWhiteSpace(line.ProductDesc)
+                    ? line.ProductDesc.Trim()
+                    : !string.IsNullOrWhiteSpace(line.ProductName)
+                        ? line.ProductName.Trim()
+                        : !string.IsNullOrWhiteSpace(line.ItemNotes)
+                            ? line.ItemNotes.Trim()
+                            : null;
+
+            var gstLine = new GstGstr1DocumentLine
+            {
+                SourceLineGkey = line.Gkey > 0 ? line.Gkey : null,
+                LineNbr = lineNumber,
+                HsnCode = string.IsNullOrWhiteSpace(line.HsnCode)
+                    ? null
+                    : line.HsnCode.Trim(),
+                Description = description,
+                Quantity = Convert.ToDecimal(line.ProdQty),
+                TaxableValue = line.InvlTaxableAmount.GetValueOrDefault(),
+                GstRate = gstRate,
+                CgstRate = cgstRate,
+                SgstRate = sgstRate,
+                IgstRate = igstRate,
+                CgstAmount = line.InvlCgstAmount.GetValueOrDefault(),
+                SgstAmount = line.InvlSgstAmount.GetValueOrDefault(),
+                IgstAmount = line.InvlIgstAmount.GetValueOrDefault(),
+                CessAmount = 0M
+            };
+
+            document.GstGstr1DocumentLines.Add(gstLine);
+        }
+
         _gstGstr1DocumentRepository.Add(
             document);
-
-        // Lines will be added immediately after the
-        // document GKey is available.
     }
 
 
@@ -1178,7 +1234,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         var invoice =
             _invoiceRepository.Get(
-                x => x.GKey == invoiceGkey);
+                x => x.Gkey == invoiceGkey);
 
         if (invoice == null)
         {
@@ -1286,7 +1342,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     {
         var invoice =
             _invoiceRepository.Get(
-                x => x.GKey == source.Gkey);
+                x => x.Gkey == source.Gkey);
 
         if (invoice == null)
         {
@@ -2012,7 +2068,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             var invoice =
                 _invoiceRepository.Get(
-                    x => x.GKey == invoiceGkey);
+                    x => x.Gkey == invoiceGkey);
 
             if (invoice == null)
             {
@@ -2492,7 +2548,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             var existingSettlementRecords =
                 _receiptRepository
                     .GetList(
-                        x => x.InvoiceGkey == invoice.GKey)
+                        x => x.InvoiceGkey == invoice.Gkey)
                     .ToList();
 
             if (existingSettlementRecords.Count > 0)
@@ -2670,7 +2726,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             return new FinaliseInvoiceResponse
             {
-                Gkey = invoice.GKey,
+                Gkey = invoice.Gkey,
                 InvNbr = invoice.InvNbr ?? string.Empty,
                 Status = invoice.Status,
                 FinalisedOn = invoice.FinalisedOn
@@ -3086,7 +3142,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         var invoice =
             _invoiceRepository
-                .GetList(x => x.GKey == invoiceGkey)
+                .GetList(x => x.Gkey == invoiceGkey)
                 .FirstOrDefault();
 
         if (invoice is null)
@@ -3103,7 +3159,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         {
             return new CancelInvoiceResponse
             {
-                InvoiceGkey = invoice.GKey,
+                InvoiceGkey = invoice.Gkey,
                 Status = invoice.Status!,
                 ModifiedOn = invoice.ModifiedOn
             };
@@ -3142,7 +3198,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         return new CancelInvoiceResponse
         {
-            InvoiceGkey = invoice.GKey,
+            InvoiceGkey = invoice.Gkey,
             Status = invoice.Status,
             ModifiedOn = invoice.ModifiedOn
         };

@@ -1,6 +1,6 @@
-﻿using InvEntry.GST.Classification;
-using InvEntry.GST.Models;
-using InvEntry.GST.Rules;
+﻿using InvEntry.Gst.Core.Classification;
+using InvEntry.Gst.Core.Models;
+using InvEntry.Gst.Core.Rules;
 
 namespace InvEntry.Tests.GST
 {
