@@ -20,10 +20,14 @@ public sealed class Gstr1StagingService
     private readonly IGstClassificationService
         _gstClassificationService;
 
+    private readonly IRepositoryBase<Product>
+        _productRepository;
+
     public Gstr1StagingService(
         IRepositoryBase<GstGstr1Document> gstGstr1DocumentRepository,
         IRepositoryBase<OrgThisCompanyView> companyRepository,
         IRepositoryBase<OrgCustomer> customerRepository,
+        IRepositoryBase<Product> productRepository,
         IGstClassificationService gstClassificationService)
     {
         _gstGstr1DocumentRepository =
@@ -34,6 +38,9 @@ public sealed class Gstr1StagingService
 
         _customerRepository =
             customerRepository;
+        
+        _productRepository =
+            productRepository;
 
         _gstClassificationService =
             gstClassificationService;
@@ -483,6 +490,41 @@ public sealed class Gstr1StagingService
                             ? line.ItemNotes.Trim()
                             : null;
 
+            Product? product = null;
+
+            if (line.ProductGkey.HasValue &&
+                line.ProductGkey.Value > 0)
+            {
+                product = _productRepository.Get(
+                    x => x.Gkey == line.ProductGkey.Value);
+            }
+
+            string? uom = null;
+            string? uqc = null;
+            decimal? gstQuantity = null;
+
+            if (product != null)
+            {
+                uom = string.IsNullOrWhiteSpace(product.Uom)
+                    ? null
+                    : product.Uom.Trim();
+
+                if (string.Equals(
+                        uom,
+                        "Grams",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    uqc = "GMS";
+
+                    if (line.ProdNetWeight.HasValue &&
+                        line.ProdNetWeight.Value > 0M)
+                    {
+                        gstQuantity =
+                            line.ProdNetWeight.Value;
+                    }
+                }
+            }
+
             document.GstGstr1DocumentLines.Add(
                 new GstGstr1DocumentLine
                 {
@@ -505,6 +547,12 @@ public sealed class Gstr1StagingService
                     Quantity =
                         Convert.ToDecimal(
                             line.ProdQty),
+
+                    Uom = uom,
+
+                    Uqc = uqc,
+
+                    GstQuantity = gstQuantity,
 
                     TaxableValue =
                         line.InvlTaxableAmount

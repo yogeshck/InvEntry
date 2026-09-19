@@ -1307,6 +1307,9 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("DESCRIPTION");
             entity.Property(e => e.GstDocumentGkey).HasColumnName("GST_DOCUMENT_GKEY");
+            entity.Property(e => e.GstQuantity)
+                .HasColumnType("decimal(18, 3)")
+                .HasColumnName("GST_QUANTITY");
             entity.Property(e => e.GstRate)
                 .HasColumnType("decimal(9, 3)")
                 .HasColumnName("GST_RATE");
@@ -1334,6 +1337,14 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.TaxableValue)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("TAXABLE_VALUE");
+            entity.Property(e => e.Uom)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("UOM");
+            entity.Property(e => e.Uqc)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("UQC");
 
             entity.HasOne(d => d.GstDocumentGkeyNavigation).WithMany(p => p.GstGstr1DocumentLines)
                 .HasForeignKey(d => d.GstDocumentGkey)

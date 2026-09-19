@@ -37,5 +37,11 @@ public partial class GstGstr1DocumentLine
 
     public decimal CessAmount { get; set; }
 
+    public string? Uqc { get; set; }
+
+    public string? Uom { get; set; }
+
+    public decimal? GstQuantity { get; set; }
+
     public virtual GstGstr1Document GstDocumentGkeyNavigation { get; set; } = null!;
 }

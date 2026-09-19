@@ -94,6 +94,7 @@ builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
 builder.Services.AddScoped<IGstRuleProvider, GstRuleProvider>();
 builder.Services.AddScoped<IGstClassificationService, GstClassificationService>();
+builder.Services.AddScoped<IGstr1StagingEnrichmentService, Gstr1StagingEnrichmentService>();
 builder.Services.AddScoped<IGstr1ReportQueryService, Gstr1ReportQueryService>();
 builder.Services.AddScoped<IGstr1ValidationService, Gstr1ValidationService>();
 builder.Services.AddScoped<IGstr1StagingService, Gstr1StagingService>();

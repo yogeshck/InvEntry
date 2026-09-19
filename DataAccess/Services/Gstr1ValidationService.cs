@@ -21,7 +21,9 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
         string returnPeriod,
         CancellationToken cancellationToken = default)
     {
-        var scope = ValidateScope(supplierGstin, returnPeriod);
+        var scope = ValidateScope(
+            supplierGstin,
+            returnPeriod);
 
         var documents = await _context.GstGstr1Documents
             .AsNoTracking()
@@ -39,21 +41,27 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
             SupplierGstin = scope.SupplierGstin,
             ReturnPeriod = scope.ReturnPeriod,
             DocumentCount = documents.Count,
-            ReportableDocumentCount = documents.Count(x => x.IsReportable)
+            ReportableDocumentCount =
+                documents.Count(x => x.IsReportable)
         };
 
         foreach (var document in documents)
         {
-            ValidateDocument(document, response);
+            ValidateDocument(
+                document,
+                response);
 
             if (document.IsReportable)
             {
-                ValidateLines(document, response);
-                ValidateReconciliation(document, response);
+                ValidateLines(
+                    document,
+                    response);
+
+                ValidateReconciliation(
+                    document,
+                    response);
             }
         }
-
-        AddExportPreparationIssues(documents, response);
 
         return response;
     }
@@ -66,15 +74,18 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
         GstGstr1Document document,
         Gstr1ValidationResponse response)
     {
-        if (string.IsNullOrWhiteSpace(document.DocumentNbr))
+        if (string.IsNullOrWhiteSpace(
+                document.DocumentNbr))
         {
             AddIssue(
                 response,
                 document,
                 severity: "Error",
                 code: "GST-DOC-001",
-                message: "Document number is required.",
-                fieldName: nameof(document.DocumentNbr));
+                message:
+                    "Document number is required.",
+                fieldName:
+                    nameof(document.DocumentNbr));
         }
 
         if (document.DocumentDate == default)
@@ -84,11 +95,14 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 document,
                 severity: "Error",
                 code: "GST-DOC-002",
-                message: "Document date is required.",
-                fieldName: nameof(document.DocumentDate));
+                message:
+                    "Document date is required.",
+                fieldName:
+                    nameof(document.DocumentDate));
         }
 
-        if (!IsValidStateCode(document.PlaceOfSupplyCode))
+        if (!IsValidStateCode(
+                document.PlaceOfSupplyCode))
         {
             AddIssue(
                 response,
@@ -96,8 +110,10 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-DOC-003",
                 message:
-                    $"Place of supply code '{document.PlaceOfSupplyCode}' is invalid.",
-                fieldName: nameof(document.PlaceOfSupplyCode));
+                    $"Place of supply code " +
+                    $"'{document.PlaceOfSupplyCode}' is invalid.",
+                fieldName:
+                    nameof(document.PlaceOfSupplyCode));
         }
 
         if (document.IsRecipientRegistered &&
@@ -110,11 +126,17 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 code: "GST-DOC-004",
                 message:
                     "A registered recipient must have a valid GSTIN.",
-                fieldName: nameof(document.RecipientGstin));
+                fieldName:
+                    nameof(document.RecipientGstin));
         }
 
-        ValidateCategory(document, response);
-        ValidateTaxType(document, response);
+        ValidateCategory(
+            document,
+            response);
+
+        ValidateTaxType(
+            document,
+            response);
     }
 
     // =========================================================
@@ -125,7 +147,8 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
         GstGstr1Document document,
         Gstr1ValidationResponse response)
     {
-        var category = document.ReturnCategory?.Trim();
+        var category =
+            document.ReturnCategory?.Trim();
 
         if (string.Equals(
                 category,
@@ -141,8 +164,10 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-DOC-005",
                     message:
-                        "B2B supply requires a registered recipient with a valid GSTIN.",
-                    fieldName: nameof(document.ReturnCategory));
+                        "B2B supply requires a registered " +
+                        "recipient with a valid GSTIN.",
+                    fieldName:
+                        nameof(document.ReturnCategory));
             }
 
             return;
@@ -165,8 +190,10 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-DOC-005",
                     message:
-                        "B2CL supply must be an inter-state supply to an unregistered recipient.",
-                    fieldName: nameof(document.ReturnCategory));
+                        "B2CL supply must be an inter-state " +
+                        "supply to an unregistered recipient.",
+                    fieldName:
+                        nameof(document.ReturnCategory));
             }
 
             return;
@@ -185,8 +212,10 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-DOC-005",
                     message:
-                        "B2CS supply cannot have a registered recipient.",
-                    fieldName: nameof(document.ReturnCategory));
+                        "B2CS supply cannot have a " +
+                        "registered recipient.",
+                    fieldName:
+                        nameof(document.ReturnCategory));
             }
         }
     }
@@ -218,8 +247,10 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-DOC-006",
                     message:
-                        "Intra-state taxable supply must use CGST/SGST tax type.",
-                    fieldName: nameof(document.TaxType));
+                        "Intra-state taxable supply must " +
+                        "use CGST/SGST tax type.",
+                    fieldName:
+                        nameof(document.TaxType));
             }
 
             return;
@@ -245,8 +276,10 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-DOC-006",
                     message:
-                        "Inter-state/export taxable supply must use IGST tax type.",
-                    fieldName: nameof(document.TaxType));
+                        "Inter-state/export taxable supply " +
+                        "must use IGST tax type.",
+                    fieldName:
+                        nameof(document.TaxType));
             }
         }
     }
@@ -259,7 +292,8 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
         GstGstr1Document document,
         Gstr1ValidationResponse response)
     {
-        var lines = document.GstGstr1DocumentLines;
+        var lines =
+            document.GstGstr1DocumentLines;
 
         if (lines.Count == 0)
         {
@@ -269,14 +303,21 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-LINE-001",
                 message:
-                    "Reportable document does not contain any GST staging lines.");
+                    "Reportable document does not contain " +
+                    "any GST staging lines.");
 
             return;
         }
 
-        foreach (var line in lines.OrderBy(x => x.LineNbr))
+        foreach (var line in
+                 lines.OrderBy(x => x.LineNbr))
         {
-            if (string.IsNullOrWhiteSpace(line.HsnCode))
+            // -------------------------------------------------
+            // HSN
+            // -------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                    line.HsnCode))
             {
                 AddIssue(
                     response,
@@ -284,11 +325,19 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-LINE-002",
                     message:
-                        $"HSN code is missing for line {line.LineNbr}.",
-                    lineNbr: line.LineNbr,
-                    hsnCode: line.HsnCode,
-                    fieldName: nameof(line.HsnCode));
+                        $"HSN code is missing for " +
+                        $"line {line.LineNbr}.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        nameof(line.HsnCode));
             }
+
+            // -------------------------------------------------
+            // TAXABLE VALUE
+            // -------------------------------------------------
 
             if (line.TaxableValue < 0M)
             {
@@ -298,11 +347,19 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-LINE-003",
                     message:
-                        $"Taxable value cannot be negative for line {line.LineNbr}.",
-                    lineNbr: line.LineNbr,
-                    hsnCode: line.HsnCode,
-                    fieldName: nameof(line.TaxableValue));
+                        $"Taxable value cannot be negative " +
+                        $"for line {line.LineNbr}.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        nameof(line.TaxableValue));
             }
+
+            // -------------------------------------------------
+            // TAX AMOUNTS
+            // -------------------------------------------------
 
             if (line.CgstAmount < 0M ||
                 line.SgstAmount < 0M ||
@@ -315,10 +372,104 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     severity: "Error",
                     code: "GST-LINE-004",
                     message:
-                        $"GST tax amounts cannot be negative for line {line.LineNbr}.",
-                    lineNbr: line.LineNbr,
-                    hsnCode: line.HsnCode,
-                    fieldName: "TaxAmount");
+                        $"GST tax amounts cannot be negative " +
+                        $"for line {line.LineNbr}.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        "TaxAmount");
+            }
+
+            // -------------------------------------------------
+            // GST UQC
+            //
+            // UQC is required for GST HSN reporting.
+            // Do not silently substitute NOS or another UQC.
+            // The staging process must derive the correct UQC
+            // from the application's product/UOM information.
+            // -------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                    line.Uqc))
+            {
+                AddIssue(
+                    response,
+                    document,
+                    severity: "Error",
+                    code: "GST-LINE-005",
+                    message:
+                        $"GST UQC is required for reportable " +
+                        $"line {line.LineNbr}.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        nameof(line.Uqc));
+            }
+
+            // -------------------------------------------------
+            // GST QUANTITY
+            //
+            // This is intentionally separate from Quantity.
+            //
+            // Quantity represents the application's business
+            // quantity (for example one ornament).
+            //
+            // GstQuantity represents the quantity corresponding
+            // to the GST UQC (for example net grams).
+            // -------------------------------------------------
+
+            if (!line.GstQuantity.HasValue ||
+                line.GstQuantity.Value <= 0M)
+            {
+                AddIssue(
+                    response,
+                    document,
+                    severity: "Error",
+                    code: "GST-LINE-006",
+                    message:
+                        $"GST quantity must be greater than " +
+                        $"zero for reportable line " +
+                        $"{line.LineNbr}.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        nameof(line.GstQuantity));
+            }
+
+            // -------------------------------------------------
+            // SOURCE UOM
+            //
+            // UOM is retained for traceability back to the
+            // application/product master.
+            //
+            // Missing source UOM does not by itself make the
+            // GST return invalid if valid UQC/GST quantity are
+            // available, therefore this remains a warning.
+            // -------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                    line.Uom))
+            {
+                AddIssue(
+                    response,
+                    document,
+                    severity: "Warning",
+                    code: "GST-LINE-007",
+                    message:
+                        $"Source UOM is not available for " +
+                        $"line {line.LineNbr}.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        nameof(line.Uom));
             }
         }
     }
@@ -335,22 +486,28 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
             return;
 
         var lineTaxable =
-            document.GstGstr1DocumentLines.Sum(x => x.TaxableValue);
+            document.GstGstr1DocumentLines
+                .Sum(x => x.TaxableValue);
 
         var lineCgst =
-            document.GstGstr1DocumentLines.Sum(x => x.CgstAmount);
+            document.GstGstr1DocumentLines
+                .Sum(x => x.CgstAmount);
 
         var lineSgst =
-            document.GstGstr1DocumentLines.Sum(x => x.SgstAmount);
+            document.GstGstr1DocumentLines
+                .Sum(x => x.SgstAmount);
 
         var lineIgst =
-            document.GstGstr1DocumentLines.Sum(x => x.IgstAmount);
+            document.GstGstr1DocumentLines
+                .Sum(x => x.IgstAmount);
 
         var lineCess =
-            document.GstGstr1DocumentLines.Sum(x => x.CessAmount);
+            document.GstGstr1DocumentLines
+                .Sum(x => x.CessAmount);
 
-
-        if (!Matches(document.TaxableValue, lineTaxable))
+        if (!Matches(
+                document.TaxableValue,
+                lineTaxable))
         {
             AddIssue(
                 response,
@@ -358,13 +515,17 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-REC-001",
                 message:
-                    $"Header taxable value {document.TaxableValue:N2} " +
-                    $"does not match line total {lineTaxable:N2}.",
-                fieldName: nameof(document.TaxableValue));
+                    $"Header taxable value " +
+                    $"{document.TaxableValue:N2} " +
+                    $"does not match line total " +
+                    $"{lineTaxable:N2}.",
+                fieldName:
+                    nameof(document.TaxableValue));
         }
 
-
-        if (!Matches(document.CgstAmount, lineCgst))
+        if (!Matches(
+                document.CgstAmount,
+                lineCgst))
         {
             AddIssue(
                 response,
@@ -372,13 +533,17 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-REC-002",
                 message:
-                    $"Header CGST {document.CgstAmount:N2} " +
-                    $"does not match line total {lineCgst:N2}.",
-                fieldName: nameof(document.CgstAmount));
+                    $"Header CGST " +
+                    $"{document.CgstAmount:N2} " +
+                    $"does not match line total " +
+                    $"{lineCgst:N2}.",
+                fieldName:
+                    nameof(document.CgstAmount));
         }
 
-
-        if (!Matches(document.SgstAmount, lineSgst))
+        if (!Matches(
+                document.SgstAmount,
+                lineSgst))
         {
             AddIssue(
                 response,
@@ -386,13 +551,17 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-REC-003",
                 message:
-                    $"Header SGST {document.SgstAmount:N2} " +
-                    $"does not match line total {lineSgst:N2}.",
-                fieldName: nameof(document.SgstAmount));
+                    $"Header SGST " +
+                    $"{document.SgstAmount:N2} " +
+                    $"does not match line total " +
+                    $"{lineSgst:N2}.",
+                fieldName:
+                    nameof(document.SgstAmount));
         }
 
-
-        if (!Matches(document.IgstAmount, lineIgst))
+        if (!Matches(
+                document.IgstAmount,
+                lineIgst))
         {
             AddIssue(
                 response,
@@ -400,13 +569,17 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-REC-004",
                 message:
-                    $"Header IGST {document.IgstAmount:N2} " +
-                    $"does not match line total {lineIgst:N2}.",
-                fieldName: nameof(document.IgstAmount));
+                    $"Header IGST " +
+                    $"{document.IgstAmount:N2} " +
+                    $"does not match line total " +
+                    $"{lineIgst:N2}.",
+                fieldName:
+                    nameof(document.IgstAmount));
         }
 
-
-        if (!Matches(document.CessAmount, lineCess))
+        if (!Matches(
+                document.CessAmount,
+                lineCess))
         {
             AddIssue(
                 response,
@@ -414,85 +587,64 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 severity: "Error",
                 code: "GST-REC-005",
                 message:
-                    $"Header cess {document.CessAmount:N2} " +
-                    $"does not match line total {lineCess:N2}.",
-                fieldName: nameof(document.CessAmount));
+                    $"Header cess " +
+                    $"{document.CessAmount:N2} " +
+                    $"does not match line total " +
+                    $"{lineCess:N2}.",
+                fieldName:
+                    nameof(document.CessAmount));
         }
-    }
-
-    // =========================================================
-    // EXPORT PREPARATION
-    // =========================================================
-
-    private static void AddExportPreparationIssues(
-        IReadOnlyCollection<GstGstr1Document> documents,
-        Gstr1ValidationResponse response)
-    {
-        var hasReportableLines = documents
-            .Where(x => x.IsReportable)
-            .SelectMany(x => x.GstGstr1DocumentLines)
-            .Any();
-
-        if (!hasReportableLines)
-            return;
-
-        /*
-         * Current staging schema does not yet contain UQC.
-         *
-         * Do not create one warning for every line. That would make
-         * a monthly return unnecessarily noisy. This return-level
-         * warning records the known export-readiness gap once.
-         *
-         * When UQC is added to staging this rule should become a
-         * line-level validation rule.
-         */
-        response.Issues.Add(
-            new Gstr1ValidationIssueResponse
-            {
-                Severity = "Warning",
-                Code = "GST-EXP-001",
-                Message =
-                    "UQC information is not currently stored in GST staging. " +
-                    "UQC must be addressed before HSN/GSTR-1 JSON export.",
-                FieldName = "Uqc"
-            });
     }
 
     // =========================================================
     // HELPERS
     // =========================================================
 
-    private static bool Matches(decimal headerValue, decimal lineValue)
+    private static bool Matches(
+        decimal headerValue,
+        decimal lineValue)
     {
-        return Math.Abs(headerValue - lineValue)
+        return Math.Abs(
+                   headerValue - lineValue)
                <= ReconciliationTolerance;
     }
 
-    private static bool IsValidStateCode(string? stateCode)
+    private static bool IsValidStateCode(
+        string? stateCode)
     {
-        if (string.IsNullOrWhiteSpace(stateCode))
+        if (string.IsNullOrWhiteSpace(
+                stateCode))
+        {
             return false;
+        }
 
-        var value = stateCode.Trim();
+        var value =
+            stateCode.Trim();
 
         if (value.Length != 2)
             return false;
 
         return int.TryParse(
-            value,
-            NumberStyles.None,
-            CultureInfo.InvariantCulture,
-            out var numericCode)
-            && numericCode > 0
-            && numericCode <= 38;
+                   value,
+                   NumberStyles.None,
+                   CultureInfo.InvariantCulture,
+                   out var numericCode)
+               && numericCode > 0
+               && numericCode <= 38;
     }
 
-    private static bool IsValidGstin(string? gstin)
+    private static bool IsValidGstin(
+        string? gstin)
     {
-        if (string.IsNullOrWhiteSpace(gstin))
+        if (string.IsNullOrWhiteSpace(
+                gstin))
+        {
             return false;
+        }
 
-        var value = gstin.Trim().ToUpperInvariant();
+        var value =
+            gstin.Trim()
+                .ToUpperInvariant();
 
         if (value.Length != 15)
             return false;
@@ -503,7 +655,8 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
          * Detailed checksum validation belongs in the reusable
          * GST domain/core layer rather than DataAccess.
          */
-        return value.All(char.IsLetterOrDigit);
+        return value.All(
+            char.IsLetterOrDigit);
     }
 
     private static void AddIssue(
@@ -522,27 +675,38 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                 Severity = severity,
                 Code = code,
                 Message = message,
-                DocumentGkey = document.Gkey,
-                SourceGkey = document.SourceGkey,
-                DocumentNbr = document.DocumentNbr,
-                LineNbr = lineNbr,
-                HsnCode = hsnCode,
-                FieldName = fieldName
+                DocumentGkey =
+                    document.Gkey,
+                SourceGkey =
+                    document.SourceGkey,
+                DocumentNbr =
+                    document.DocumentNbr,
+                LineNbr =
+                    lineNbr,
+                HsnCode =
+                    hsnCode,
+                FieldName =
+                    fieldName
             });
     }
 
-    private static (string SupplierGstin, string ReturnPeriod) ValidateScope(
-        string supplierGstin,
-        string returnPeriod)
+    private static (
+        string SupplierGstin,
+        string ReturnPeriod)
+        ValidateScope(
+            string supplierGstin,
+            string returnPeriod)
     {
-        if (string.IsNullOrWhiteSpace(supplierGstin))
+        if (string.IsNullOrWhiteSpace(
+                supplierGstin))
         {
             throw new ArgumentException(
                 "Supplier GSTIN is required.",
                 nameof(supplierGstin));
         }
 
-        if (string.IsNullOrWhiteSpace(returnPeriod) ||
+        if (string.IsNullOrWhiteSpace(
+                returnPeriod) ||
             returnPeriod.Length != 6 ||
             !DateTime.TryParseExact(
                 returnPeriod,
@@ -557,7 +721,9 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
         }
 
         return (
-            supplierGstin.Trim().ToUpperInvariant(),
+            supplierGstin
+                .Trim()
+                .ToUpperInvariant(),
             returnPeriod.Trim());
     }
 }
