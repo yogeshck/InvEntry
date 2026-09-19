@@ -20,4 +20,6 @@ public partial class MtblReference
     public string? Module { get; set; }
 
     public bool IsActive { get; set; }
+
+    public virtual ICollection<StockTransferHeader> StockTransferHeaders { get; set; } = new List<StockTransferHeader>();
 }

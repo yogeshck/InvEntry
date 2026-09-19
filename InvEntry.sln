@@ -35,6 +35,8 @@ Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "InvEntry.DB", "InvEntry.DB\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.Contracts", "InvEntry.Contracts\InvEntry.Contracts.csproj", "{E8140F38-7D9E-4308-A425-D58DDA04256C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvEntry.Gst.Core", "InvEntry.Gst.Core\InvEntry.Gst.Core.csproj", "{8BB62D79-87A8-4536-A2C1-045C481A9F82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -301,6 +303,26 @@ Global
 		{E8140F38-7D9E-4308-A425-D58DDA04256C}.Release|x64.Build.0 = Release|Any CPU
 		{E8140F38-7D9E-4308-A425-D58DDA04256C}.Release|x86.ActiveCfg = Release|Any CPU
 		{E8140F38-7D9E-4308-A425-D58DDA04256C}.Release|x86.Build.0 = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|ARM.Build.0 = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|x64.Build.0 = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Debug|x86.Build.0 = Debug|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|ARM.ActiveCfg = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|ARM.Build.0 = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|ARM64.Build.0 = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|x64.ActiveCfg = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|x64.Build.0 = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|x86.ActiveCfg = Release|Any CPU
+		{8BB62D79-87A8-4536-A2C1-045C481A9F82}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

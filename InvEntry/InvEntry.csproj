@@ -52,6 +52,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />
+    <ProjectReference Include="..\InvEntry.Gst.Core\InvEntry.Gst.Core.csproj" />
     <ProjectReference Include="..\InvEntry.Tally\InvEntry.Tally.csproj" />
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
     <ProjectReference Include="..\InvEntry.LabelGenerator\InvEntry.LabelGenerator.csproj" />
@@ -102,7 +103,10 @@
 
   <ItemGroup>
     <Folder Include="GST\Export\" />
+    <Folder Include="GST\Helper\" />
+    <Folder Include="GST\Models\" />
     <Folder Include="GST\Reporting\" />
+    <Folder Include="GST\Rules\" />
     <Folder Include="GST\Validation\" />
   </ItemGroup>
 

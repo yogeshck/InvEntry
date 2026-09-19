@@ -1,24 +1,34 @@
-﻿using DataAccess.Models;
+﻿using DataAccess.Inventory.ProductStock;
+using DataAccess.Models;
 using DataAccess.Repository;
-using DataAccess.Inventory;
 using InvEntry.Contracts.Invoices;
-using DataAccess.Inventory.ProductStock;
+
+using InvEntry.Gst.Core;
+using InvEntry.Gst.Core.Models;
 
 namespace DataAccess.Workflows;
 
 public sealed class InvoiceWorkflow : IInvoiceWorkflow
 {
+
     private readonly IRepositoryBase<InvoiceHeader> _invoiceRepository;
     private readonly IRepositoryBase<InvoiceLine> _lineRepository;
     private readonly IRepositoryBase<InvoiceArReceipt> _receiptRepository;
     private readonly IRepositoryBase<OldMetalTransaction> _oldMetalRepository;
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
     private readonly IRepositoryBase<Voucher> _voucherRepository;
+    private readonly IRepositoryBase<GstGstr1Document> _gstGstr1DocumentRepository;
+    private readonly IRepositoryBase<GstGstr1DocumentLine> _gstGstr1DocumentLineRepository;
     //private readonly IRepositoryBase<ProductStock> _productStockRepository;
     //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
     //private readonly IRepositoryBase<ProductTransaction> _productTransactionRepository;
     private readonly IStockMovementService _stockMovementService;
     private readonly IUnitOfWork _unitOfWork;
+
+    private readonly IRepositoryBase<OrgThisCompanyView> _companyRepository;
+    private readonly IRepositoryBase<OrgCustomer> _customerRepository;
+
+    private readonly IGstClassificationService _gstClassificationService;
 
     //IRepositoryBase<ProductStock> productStockRepository,
     //IRepositoryBase<ProductStockSummary> productStockSummaryRepository,
@@ -31,25 +41,54 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IRepositoryBase<OldMetalTransaction> oldMetalRepository,
         IRepositoryBase<VoucherType> voucherTypeRepository,
         IRepositoryBase<Voucher> voucherRepository,
-
+        IRepositoryBase<GstGstr1Document> gstGstr1DocumentRepository,
+        IRepositoryBase<GstGstr1DocumentLine> gstGstr1DocumentLineRepository,
         IStockMovementService stockMovementService,
+        IRepositoryBase<OrgThisCompanyView> companyRepository,
+        IRepositoryBase<OrgCustomer> customerRepository,
+        IGstClassificationService gstClassificationService,
         IUnitOfWork unitOfWork)
     {
-        _invoiceRepository = invoiceRepository;
-        _lineRepository = lineRepository;
-        _receiptRepository = receiptRepository;
-        _oldMetalRepository = oldMetalRepository;
-        _voucherTypeRepository = voucherTypeRepository;
-        _voucherRepository = voucherRepository;
+        _invoiceRepository =
+            invoiceRepository;
 
-      //  _productStockRepository = productStockRepository;
-      //  _productStockSummaryRepository = productStockSummaryRepository;
-      //  _productTransactionRepository = productTransactionRepository;
+        _lineRepository =
+            lineRepository;
 
-        _stockMovementService =  stockMovementService;
+        _receiptRepository =
+            receiptRepository;
 
-        _unitOfWork = unitOfWork;
+        _oldMetalRepository =
+            oldMetalRepository;
+
+        _voucherTypeRepository =
+            voucherTypeRepository;
+
+        _voucherRepository =
+            voucherRepository;
+
+        _gstGstr1DocumentRepository =
+            gstGstr1DocumentRepository;
+
+        _gstGstr1DocumentLineRepository =
+            gstGstr1DocumentLineRepository;
+
+        _companyRepository =
+            companyRepository;
+
+        _customerRepository =
+            customerRepository;
+
+        _gstClassificationService =
+            gstClassificationService;
+
+        _stockMovementService =
+            stockMovementService;
+
+        _unitOfWork =
+            unitOfWork;
     }
+
 
     // =========================================================
     // SAVE DRAFT
@@ -145,6 +184,329 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             throw;
         }
     }
+
+    private OrgCustomer GetInvoiceCustomer(
+    InvoiceHeader invoice)
+    {
+        if (!invoice.CustGkey.HasValue ||
+            invoice.CustGkey.Value <= 0)
+        {
+            throw new InvalidOperationException(
+                "Invoice customer is required for GSTR-1 staging.");
+        }
+
+        var customer =
+            _customerRepository.Get(
+                x => x.Gkey == invoice.CustGkey.Value);
+
+        if (customer is null)
+        {
+            throw new InvalidOperationException(
+                $"Customer GKey {invoice.CustGkey.Value} was not found.");
+        }
+
+        return customer;
+    }
+
+    private OrgThisCompanyView GetCurrentCompany()
+    {
+        var company =
+            _companyRepository.Get(
+                x => x.ThisCompany == true);
+
+        if (company is null)
+        {
+            throw new InvalidOperationException(
+                "Current company configuration was not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(company.GstNbr))
+        {
+            throw new InvalidOperationException(
+                "GSTIN is not configured for the current company.");
+        }
+
+        if (string.IsNullOrWhiteSpace(company.GstCode))
+        {
+            throw new InvalidOperationException(
+                "GST state code is not configured for the current company.");
+        }
+
+        return company;
+    }
+
+    private void StageGstr1Invoice(
+        InvoiceHeader invoice,
+        IReadOnlyCollection<InvoiceLine> lines)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        ArgumentNullException.ThrowIfNull(lines);
+
+        if (invoice.Gkey <= 0)
+        {
+            throw new InvalidOperationException(
+                "A valid invoice GKey is required for GSTR-1 staging.");
+        }
+
+        if (string.IsNullOrWhiteSpace(invoice.InvNbr))
+        {
+            throw new InvalidOperationException(
+                "Invoice number is required for GSTR-1 staging.");
+        }
+
+        if (!invoice.InvDate.HasValue)
+        {
+            throw new InvalidOperationException(
+                "Invoice date is required for GSTR-1 staging.");
+        }
+
+        if (string.IsNullOrWhiteSpace(invoice.GstLocBuyer))
+        {
+            throw new InvalidOperationException(
+                "Place of Supply is required for GSTR-1 staging.");
+        }
+
+        var company =
+            GetCurrentCompany();
+
+        var customer =
+            GetInvoiceCustomer(invoice);
+
+        var supplierGstin =
+            company.GstNbr!
+                .Trim()
+                .ToUpperInvariant();
+
+        var supplierStateCode =
+            company.GstCode!
+                .Trim();
+
+        var recipientGstin =
+            string.IsNullOrWhiteSpace(customer.GstinNbr)
+                ? null
+                : customer.GstinNbr
+                    .Trim()
+                    .ToUpperInvariant();
+
+        var recipientStateCode =
+            string.IsNullOrWhiteSpace(customer.GstStateCode)
+                ? null
+                : customer.GstStateCode.Trim();
+
+        var placeOfSupply =
+            invoice.GstLocBuyer.Trim();
+
+        // =========================================================
+        // CLASSIFICATION
+        // =========================================================
+
+        var classificationRequest =
+            new GstClassificationRequest
+            {
+                DocumentType =
+                    GstDocumentType.SalesInvoice,
+
+                DocumentNumber =
+                    invoice.InvNbr,
+
+                DocumentDate =
+                    invoice.InvDate.Value,
+
+                SupplierGstin =
+                    supplierGstin,
+
+                SupplierStateCode =
+                    supplierStateCode,
+
+                RecipientGstin =
+                    recipientGstin,
+
+                RecipientStateCode =
+                    recipientStateCode,
+
+                PlaceOfSupplyCode =
+                    placeOfSupply,
+
+                TaxableValue =
+                    invoice.InvTaxableAmount
+                        .GetValueOrDefault(),
+
+                InvoiceValue =
+                    invoice.GrossRcbAmount
+                        .GetValueOrDefault(),
+
+                CgstAmount =
+                    invoice.CgstAmount
+                        .GetValueOrDefault(),
+
+                SgstAmount =
+                    invoice.SgstAmount
+                        .GetValueOrDefault(),
+
+                IgstAmount =
+                    invoice.IgstAmount
+                        .GetValueOrDefault(),
+
+                CessAmount = 0M,
+
+                TaxTreatment =
+                    invoice.IsTaxApplicable
+                        ? GstTaxTreatment.Taxable
+                        : GstTaxTreatment.NonGst,
+
+                IsExport = false,
+                IsSez = false,
+                IsReverseCharge = false,
+                IsDeemedExport = false,
+                IsEcommerceSupply = false,
+                IsAmendment = false
+            };
+
+        var classification =
+            _gstClassificationService.Classify(
+                classificationRequest);
+
+        if (!classification.IsValid)
+        {
+            throw new InvalidOperationException(
+                $"GSTR-1 classification failed for invoice " +
+                $"{invoice.InvNbr}: " +
+                string.Join(
+                    "; ",
+                    classification.Errors));
+        }
+
+        // =========================================================
+        // IDEMPOTENCY
+        // =========================================================
+
+        var existing =
+            _gstGstr1DocumentRepository.Get(
+                x =>
+                    x.SourceGkey == invoice.Gkey &&
+                    x.DocumentType == "SalesInvoice" &&
+                    x.SupplierGstin == supplierGstin);
+
+        if (existing != null)
+            return;
+
+        // =========================================================
+        // DOCUMENT HEADER
+        // =========================================================
+
+        var document =
+            new GstGstr1Document
+            {
+                SourceGkey =
+                    invoice.Gkey,
+
+                DocumentType =
+                    GstDocumentType.SalesInvoice.ToString(),
+
+                DocumentNbr =
+                    invoice.InvNbr,
+
+                DocumentDate =
+                    invoice.InvDate.Value,
+
+                SupplierGstin =
+                    supplierGstin,
+
+                ReturnPeriod =
+                    invoice.InvDate.Value
+                        .ToString(
+                            "yyyyMM",
+                            System.Globalization.CultureInfo.InvariantCulture),
+
+                RecipientGstin =
+                    recipientGstin,
+
+                RecipientStateCode =
+                    recipientStateCode,
+
+                IsRecipientRegistered =
+                    classification.IsRecipientRegistered,
+
+                PlaceOfSupplyCode =
+                    placeOfSupply,
+
+                SupplyType =
+                    classification.SupplyType.ToString(),
+
+                TaxType =
+                    classification.TaxType.ToString(),
+
+                ReturnCategory =
+                    classification.ReturnCategory.ToString(),
+
+                Gstr1Table =
+                    classification.Gstr1Table,
+
+                IsReportable =
+                    classification.IsReportable,
+
+                InvoiceValue =
+                    invoice.GrossRcbAmount
+                        .GetValueOrDefault(),
+
+                TaxableValue =
+                    invoice.InvTaxableAmount
+                        .GetValueOrDefault(),
+
+                CgstAmount =
+                    invoice.CgstAmount
+                        .GetValueOrDefault(),
+
+                SgstAmount =
+                    invoice.SgstAmount
+                        .GetValueOrDefault(),
+
+                IgstAmount =
+                    invoice.IgstAmount
+                        .GetValueOrDefault(),
+
+                CessAmount =
+                    0M,
+
+                IsReverseCharge =
+                    false,
+
+                IsSez =
+                    false,
+
+                IsDeemedExport =
+                    false,
+
+                IsEcommerceSupply =
+                    false,
+
+                EcommerceOperatorGstin =
+                    null,
+
+                IsAmendment =
+                    false,
+
+                OriginalDocumentNbr =
+                    null,
+
+                OriginalDocumentDate =
+                    null,
+
+                Status =
+                    "PENDING",
+
+                CreatedOn =
+                    DateTime.Now
+            };
+
+        _gstGstr1DocumentRepository.Add(
+            document);
+
+        // Lines will be added immediately after the
+        // document GKey is available.
+    }
+
+
 
     private void PostInvoiceStock(
         InvoiceHeader invoice,
@@ -816,7 +1178,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         var invoice =
             _invoiceRepository.Get(
-                x => x.Gkey == invoiceGkey);
+                x => x.GKey == invoiceGkey);
 
         if (invoice == null)
         {
@@ -924,7 +1286,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     {
         var invoice =
             _invoiceRepository.Get(
-                x => x.Gkey == source.Gkey);
+                x => x.GKey == source.Gkey);
 
         if (invoice == null)
         {
@@ -1650,7 +2012,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             var invoice =
                 _invoiceRepository.Get(
-                    x => x.Gkey == invoiceGkey);
+                    x => x.GKey == invoiceGkey);
 
             if (invoice == null)
             {
@@ -2130,7 +2492,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             var existingSettlementRecords =
                 _receiptRepository
                     .GetList(
-                        x => x.InvoiceGkey == invoice.Gkey)
+                        x => x.InvoiceGkey == invoice.GKey)
                     .ToList();
 
             if (existingSettlementRecords.Count > 0)
@@ -2282,6 +2644,15 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
             // =========================================================
+            // GSTR-1 STAGING
+            // =========================================================
+
+            StageGstr1Invoice(
+                invoice,
+                lines);
+
+
+            // =========================================================
             // SAVE EVERYTHING
             // =========================================================
 
@@ -2299,7 +2670,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             return new FinaliseInvoiceResponse
             {
-                Gkey = invoice.Gkey,
+                Gkey = invoice.GKey,
                 InvNbr = invoice.InvNbr ?? string.Empty,
                 Status = invoice.Status,
                 FinalisedOn = invoice.FinalisedOn
@@ -2715,7 +3086,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         var invoice =
             _invoiceRepository
-                .GetList(x => x.Gkey == invoiceGkey)
+                .GetList(x => x.GKey == invoiceGkey)
                 .FirstOrDefault();
 
         if (invoice is null)
@@ -2732,7 +3103,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         {
             return new CancelInvoiceResponse
             {
-                InvoiceGkey = invoice.Gkey,
+                InvoiceGkey = invoice.GKey,
                 Status = invoice.Status!,
                 ModifiedOn = invoice.ModifiedOn
             };
@@ -2771,7 +3142,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         return new CancelInvoiceResponse
         {
-            InvoiceGkey = invoice.Gkey,
+            InvoiceGkey = invoice.GKey,
             Status = invoice.Status,
             ModifiedOn = invoice.ModifiedOn
         };

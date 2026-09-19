@@ -33,6 +33,7 @@
 	<ProjectReference Include="..\InvEntry.Models\InvEntry.Models.csproj" />	  
     <ProjectReference Include="..\InvEntry.Utils\InvEntry.Utils.csproj" />
 	<ProjectReference Include="..\InvEntry.Contracts\InvEntry.Contracts.csproj" />
+	<ProjectReference Include="..\InvEntry.Gst.Core\InvEntry.Gst.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

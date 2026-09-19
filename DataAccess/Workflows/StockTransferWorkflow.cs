@@ -267,7 +267,7 @@ public sealed class StockTransferWorkflow
                     CreatedOn =
                         DateTime.Now,
 
-                    Lines =
+                    StockTransferLines =
                         lines
                 };
 
@@ -542,7 +542,7 @@ public sealed class StockTransferWorkflow
                 .AsNoTracking()
                 .Include(
                     item =>
-                        item.Lines)
+                        item.StockTransferLines)
                 .SingleOrDefaultAsync(
                     item =>
                         item.Gkey == gkey,
@@ -1151,8 +1151,8 @@ public sealed class StockTransferWorkflow
     private void PostOrnamentStock(
         StockTransferHeader header)
     {
-        if (header.Lines is null ||
-            header.Lines.Count == 0)
+        if (header.StockTransferLines is null ||
+            header.StockTransferLines.Count == 0)
         {
             throw new InvalidOperationException(
                 "Stock Transfer contains no lines to post.");
@@ -1160,7 +1160,7 @@ public sealed class StockTransferWorkflow
 
 
         var requests =
-            header.Lines
+            header.StockTransferLines
                 .OrderBy(
                     line =>
                         line.LineNbr)
@@ -1353,7 +1353,7 @@ public sealed class StockTransferWorkflow
                 header.CreatedOn,
 
             Lines =
-                header.Lines
+                header.StockTransferLines
                     .OrderBy(
                         line =>
                             line.LineNbr)
