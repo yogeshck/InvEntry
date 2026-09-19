@@ -141,6 +141,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IEstimateService, EstimateService>()
                  .AddSingleton<IGrnDbViewService, GrnDbViewService>()
                  .AddSingleton<IGrnService, GrnService>()
+                 .AddSingleton<IGstr1ReportService, Gstr1ReportService>()
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IStockTransferService, StockTransferService>()
