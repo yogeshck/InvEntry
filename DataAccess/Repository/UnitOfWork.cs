@@ -31,4 +31,10 @@ public sealed class UnitOfWork : IUnitOfWork
         return _context.Database
             .BeginTransactionAsync(cancellationToken);
     }
+
+    public void ClearChanges()
+    {
+        _context.ChangeTracker.Clear();
+    }
+
 }

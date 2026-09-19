@@ -10,13 +10,17 @@ public sealed class Gstr1Controller : ControllerBase
 {
     private readonly IGstr1ReportQueryService _service;
     private readonly IGstr1ValidationService _validationService;
+    private readonly IGstr1BackfillService _backfillService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
-        IGstr1ValidationService validationService)
+        IGstr1ValidationService validationService,
+        IGstr1BackfillService backfillService )
     {
         _service = service;
         _validationService = validationService;
+        _backfillService = backfillService;
+
     }
 
     [HttpGet("summary")]
@@ -82,6 +86,38 @@ public sealed class Gstr1Controller : ControllerBase
         catch (ArgumentException exception)
         {
             return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpPost("backfill")]
+    public async Task<ActionResult<Gstr1BackfillResponse>> Backfill(
+    [FromBody] Gstr1BackfillRequest request,
+    CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result =
+                await _backfillService.BackfillAsync(
+                    request,
+                    cancellationToken);
+
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(
+                new
+                {
+                    message = ex.Message
+                });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(
+                new
+                {
+                    message = ex.Message
+                });
         }
     }
 

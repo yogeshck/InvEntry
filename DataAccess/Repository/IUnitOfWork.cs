@@ -11,4 +11,7 @@ public interface IUnitOfWork
 
     Task<IDbContextTransaction> BeginTransactionAsync(
         CancellationToken cancellationToken = default);
+
+    void ClearChanges();
+
 }
