@@ -175,7 +175,7 @@ public sealed class Gstr1JsonExportTests
                 new InvalidOperationException("Export blocked: validation returned 1 error(s)."))
         };
         var controller = new Gstr1Controller(null!, null!, null!, null!, null!, null!, null!, null!,
-            new Gstr1JsonExportService(stub));
+            null!, new Gstr1JsonExportService(stub));
         var result = await controller.GetExportJson("32AGGPR0021E1Z4", "202609", default);
         Assert.That(result.Result, Is.TypeOf<BadRequestObjectResult>());
         var body = JsonSerializer.Serialize(((BadRequestObjectResult)result.Result!).Value);

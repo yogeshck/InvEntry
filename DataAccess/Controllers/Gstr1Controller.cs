@@ -16,6 +16,7 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1HsnSummaryService _hsnSummaryService;
     private readonly IGstr1DocumentsIssuedService _documentsIssuedService;
     private readonly IGstr1B2csSummaryService _b2csSummaryService;
+    private readonly IGstr1B2bSummaryService _b2bSummaryService;
     private readonly IGstr1ExportPreparationService _exportPreparationService;
     private readonly IGstr1JsonExportService _jsonExportService;
 
@@ -27,6 +28,7 @@ public sealed class Gstr1Controller : ControllerBase
         IGstr1BackfillService backfillService,
         IGstr1DocumentsIssuedService documentsIssuedService,
         IGstr1B2csSummaryService b2csSummaryService,
+        IGstr1B2bSummaryService b2bSummaryService,
         IGstr1ExportPreparationService exportPreparationService,
         IGstr1JsonExportService jsonExportService)
     {
@@ -37,6 +39,7 @@ public sealed class Gstr1Controller : ControllerBase
         _hsnSummaryService = hsnSummaryService;
         _documentsIssuedService = documentsIssuedService;
         _b2csSummaryService = b2csSummaryService;
+        _b2bSummaryService = b2bSummaryService;
         _exportPreparationService = exportPreparationService;
         _jsonExportService = jsonExportService;
 
@@ -185,6 +188,25 @@ public sealed class Gstr1Controller : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("b2b-summary")]
+    public async Task<ActionResult<Gstr1B2bSummaryResponse>> GetB2bSummary(
+        [FromQuery] Gstr1B2bSummaryQuery query,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _b2bSummaryService.GetSummaryAsync(query, cancellationToken));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new { error = ex.Message });
         }
     }
 
