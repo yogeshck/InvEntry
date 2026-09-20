@@ -650,22 +650,19 @@ public partial class EstimateViewModel: ObservableObject
             x.EstimateHdrGkey = Header.GKey;
         });
 
-        var header = await _estimateService.CreateHeader(Header);
+        var header = await _estimateService.SaveAsync(Header, Header.Lines);
 
         if (header is not null)
         {
-            Header.GKey = header.GKey;
+            Header.GKey = header.Gkey;
             Header.EstNbr = header.EstNbr;
             Header.Lines.ForEach(x =>
             {
-                x.EstimateHdrGkey = header.GKey;
+                x.EstimateHdrGkey = header.Gkey;
                 x.EstimateId = header.EstNbr;
                 x.EstimateHdrGkey = Header.GKey;
                 x.TenantGkey = header.TenantGkey;
             });
-            // loop for validation check for customer
-            await _estimateService.CreateEstimateLine(Header.Lines);
-
             if (IsStockTransfer)
                 await ProcessProductTransaction(Header.Lines);
 

@@ -92,6 +92,7 @@ builder.Services.AddScoped<IStockMovementService, StockMovementService>();
 builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
 builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
+builder.Services.AddScoped<IEstimateWorkflow, EstimateWorkflow>();
 builder.Services.AddScoped<IGstRuleProvider, GstRuleProvider>();
 builder.Services.AddScoped<IGstClassificationService, GstClassificationService>();
 builder.Services.AddScoped<IGstr1StagingEnrichmentService, Gstr1StagingEnrichmentService>();

@@ -2,6 +2,8 @@
 using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
 using DataAccess.Models;
+using DataAccess.Workflows;
+using InvEntry.Contracts.Estimates;
 
 
 namespace DataAccess.Controllers
@@ -15,13 +17,16 @@ namespace DataAccess.Controllers
         private IRepositoryBase<EstimateHeader> _estimateHeaderRepository;
         //private IRepositoryBase<OrgCompany> _orgCompanyRepository;
         private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
+        private readonly IEstimateWorkflow _estimateWorkflow;
 
         public EstimateController(IRepositoryBase<EstimateHeader> estimateHeaderRepository,
-                                                IRepositoryBase<VoucherType> voucherTypeRepo)
+                                                IRepositoryBase<VoucherType> voucherTypeRepo,
+                                                IEstimateWorkflow estimateWorkflow)
                                  // IRepositoryBase<OrgCompany> orgCompanyRepository)
         {
             _estimateHeaderRepository = estimateHeaderRepository;
             _voucherTypeRepo = voucherTypeRepo;
+            _estimateWorkflow = estimateWorkflow;
            // _orgCompanyRepository = orgCompanyRepository;
         }
 
@@ -47,6 +52,14 @@ namespace DataAccess.Controllers
         public EstimateHeader? Get(string estNbr)
         {
             return _estimateHeaderRepository.Get(x => x.EstNbr == estNbr);
+        }
+
+        [HttpPost("save")]
+        public async Task<ActionResult<SaveEstimateResponse>> Save(
+            [FromBody] SaveEstimateRequest request,
+            CancellationToken cancellationToken)
+        {
+            return Ok(await _estimateWorkflow.SaveAsync(request, cancellationToken));
         }
 
         // POST api/<InvoiceController>
