@@ -1,5 +1,6 @@
 using DataAccess.Services;
 using InvEntry.Contracts.Gst;
+using InvEntry.Contracts.Gst.Export;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DataAccess.Controllers;
@@ -14,6 +15,8 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1StagingEnrichmentService _enrichmentService;
     private readonly IGstr1HsnSummaryService _hsnSummaryService;
     private readonly IGstr1DocumentsIssuedService _documentsIssuedService;
+    private readonly IGstr1B2csSummaryService _b2csSummaryService;
+    private readonly IGstr1ExportPreparationService _exportPreparationService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
@@ -21,7 +24,9 @@ public sealed class Gstr1Controller : ControllerBase
         IGstr1StagingEnrichmentService enrichmentService,
         IGstr1HsnSummaryService hsnSummaryService,
         IGstr1BackfillService backfillService,
-        IGstr1DocumentsIssuedService documentsIssuedService )
+        IGstr1DocumentsIssuedService documentsIssuedService,
+        IGstr1B2csSummaryService b2csSummaryService,
+        IGstr1ExportPreparationService exportPreparationService )
     {
         _service = service;
         _validationService = validationService;
@@ -29,6 +34,8 @@ public sealed class Gstr1Controller : ControllerBase
         _enrichmentService = enrichmentService;
         _hsnSummaryService = hsnSummaryService;
         _documentsIssuedService = documentsIssuedService;
+        _b2csSummaryService = b2csSummaryService;
+        _exportPreparationService = exportPreparationService;
 
     }
 
@@ -160,6 +167,42 @@ public sealed class Gstr1Controller : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("b2cs-summary")]
+    public async Task<ActionResult<Gstr1B2csSummaryResponse>> GetB2csSummary(
+        [FromQuery] Gstr1B2csSummaryQuery query,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _b2csSummaryService.GetSummaryAsync(query, cancellationToken));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("export-preparation")]
+    public async Task<ActionResult<Gstr1ExportPreparationResponse>> GetExportPreparation(
+        [FromQuery] string supplierGstin,
+        [FromQuery] string returnPeriod,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _exportPreparationService.PrepareAsync(
+                supplierGstin, returnPeriod, cancellationToken));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return UnprocessableEntity(new { error = ex.Message });
         }
     }
 
