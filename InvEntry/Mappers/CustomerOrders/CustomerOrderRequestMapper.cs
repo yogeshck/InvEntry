@@ -236,7 +236,7 @@ public static class CustomerOrderRequestMapper
     {
         return new CustomerOrderReceiptSaveModel
         {
-            Gkey = 0,
+            Gkey = source.GKey,
 
             TransType = "Receipt",
 

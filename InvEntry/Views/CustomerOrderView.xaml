@@ -1491,7 +1491,6 @@
 
                                 <dxg:GridControl
                                     ItemsSource="{Binding Header.AdvanceReceiptLines}"
-                                    DeleteKeyBehavior="DeleteFocusedRow"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
                                     FontSize="14">
@@ -1600,7 +1599,7 @@
                                                 <dxb:BarButtonItem
                                                     Content="Delete Row"
                                                     CommandParameter="{Binding Row.Row}"
-                                                    Command="{Binding DataContext.DeleteSingleRowCommand,
+                                                    Command="{Binding DataContext.DeleteReceiptCommand,
                                                                       RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
                                                     Glyph="{dx:DXImage 'Images/Edit/Delete_32x32.png'}"/>
 

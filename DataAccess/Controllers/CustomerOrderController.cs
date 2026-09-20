@@ -117,4 +117,40 @@ public class CustomerOrderController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpPut("{orderNbr}")]
+    public async Task<ActionResult<SaveCustomerOrderResponse>> Update(
+        string orderNbr,
+        [FromBody] SaveCustomerOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request.Header == null)
+            return BadRequest("Customer order header is required.");
+
+        if (request.Header.Gkey <= 0)
+            return BadRequest("A persisted customer order GKey is required.");
+
+        if (!string.Equals(
+                orderNbr,
+                request.Header.OrderNbr,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(
+                "Route order number does not match the request order number.");
+        }
+
+        if (request.Lines == null || request.Lines.Count == 0)
+            return BadRequest("At least one customer order line is required.");
+
+        try
+        {
+            return Ok(await _customerOrderWorkflow.SaveAsync(
+                request,
+                cancellationToken));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

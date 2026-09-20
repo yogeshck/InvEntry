@@ -446,6 +446,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             }
 
             Header = header;
+            IsExistingOrder = Header.GKey > 0;
             CustomerPhoneNumber = Header.CustMobileNbr;
 
             await PopulateOrderLines();
@@ -491,6 +492,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     [RelayCommand]
     private void ResetCustomerOrder()
     {
+        IsExistingOrder = false;
+        IsEditMode = false;
         SetHeader();
         _ = SetThisCompany();
         //SetMasterLedger();
@@ -1306,11 +1309,18 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private async Task UpdateOrderAsync()
     {
-       
         Header.OrderStatusFlag = await _referenceLoader.GetCodeAsIntAsync("CUST_ORD_STATUS", OrderStatusUI);
-     
-        await _customerOrderService.UpdateHeader(Header);
 
+        var request =
+            CustomerOrderRequestMapper.ToSaveRequest(Header);
+
+        var result =
+            await _customerOrderService.UpdateAsync(
+                Header.OrderNbr,
+                request);
+
+        Header.GKey = result.Gkey;
+        Header.OrderNbr = result.OrderNbr;
     }
 
     private bool PrepareAndValidateOrder()
@@ -1519,6 +1529,26 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     }
 
+    [RelayCommand]
+    private void DeleteReceipt(LedgersTransactions receipt)
+    {
+        if (receipt is null)
+            return;
+
+        if (receipt.GKey > 0)
+        {
+            _messageBoxService.ShowMessage(
+                "A persisted receipt cannot be removed from the order. Financial reversal is required.",
+                "Receipt",
+                MessageButton.OK,
+                MessageIcon.Information);
+            return;
+        }
+
+        Header.AdvanceReceiptLines?.Remove(receipt);
+        RecalculateHeaderTotals();
+    }
+
     private async Task SaveLedgerTransactions()
     {
 
@@ -1646,6 +1676,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             (vouchers ?? Enumerable.Empty<Voucher>())
             .Select(v => new LedgersTransactions
             {
+                GKey = v.GKey,
                 TransactionDate = v.TransDate,
                 DocumentNbr = v.RefDocNbr,
                 DocumentDate = v.RefDocDate,

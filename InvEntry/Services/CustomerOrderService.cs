@@ -1,4 +1,4 @@
-﻿using InvEntry.Contracts.CustomerOrders;
+using InvEntry.Contracts.CustomerOrders;
 using InvEntry.Models;
 using InvEntry.Utils.Options;
 using System.Collections.Generic;
@@ -19,7 +19,9 @@ public interface ICustomerOrderService
     Task<SaveCustomerOrderResponse> SaveAsync(
         SaveCustomerOrderRequest request);
 
-    Task UpdateHeader(CustomerOrder customerOrder);
+    Task<SaveCustomerOrderResponse> UpdateAsync(
+        string orderNbr,
+        SaveCustomerOrderRequest request);
 }
 
 public class CustomerOrderService : ICustomerOrderService
@@ -65,11 +67,13 @@ public class CustomerOrderService : ICustomerOrderService
                 request);
     }
 
-    public async Task UpdateHeader(
-        CustomerOrder customerOrder)
+    public async Task<SaveCustomerOrderResponse> UpdateAsync(
+        string orderNbr,
+        SaveCustomerOrderRequest request)
     {
-        await _mijmsApiService.Put(
-            $"api/customerOrder/{customerOrder.OrderNbr}",
-            customerOrder);
+        return await _mijmsApiService
+            .Put<SaveCustomerOrderRequest, SaveCustomerOrderResponse>(
+                $"api/customerOrder/{orderNbr}",
+                request);
     }
 }

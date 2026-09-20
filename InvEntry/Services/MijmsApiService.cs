@@ -29,6 +29,10 @@ public interface IMijmsApiService
         string url,
         TRequest data);
 
+    Task<TResponse> Put<TRequest, TResponse>(
+        string url,
+        TRequest data);
+
     Task<IEnumerable<T>> PostList<T>(
         string url,
         IEnumerable<T> data)
@@ -495,6 +499,35 @@ public class MijmsApiService : IMijmsApiService
     // ============================================================
     // PUT SINGLE
     // ============================================================
+
+    public async Task<TResponse> Put<TRequest, TResponse>(
+        string url,
+        TRequest data)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+
+        var httpClient =
+            _httpClientFactory.CreateClient("mijms");
+
+        var response =
+            await httpClient.PutAsJsonAsync(
+                $"{httpClient.BaseAddress}{url}",
+                data);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error =
+                await response.Content.ReadAsStringAsync();
+
+            throw new HttpRequestException(
+                $"PUT '{url}' failed: " +
+                $"{response.StatusCode} - {error}");
+        }
+
+        return await response.Content.ReadFromJsonAsync<TResponse>()
+            ?? throw new InvalidOperationException(
+                $"PUT '{url}' returned an empty response.");
+    }
 
     public async Task Put<T>(
         string url,
