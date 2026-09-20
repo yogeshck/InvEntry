@@ -27,4 +27,7 @@
 		<ProjectReference Include="..\InvEntry\InvEntry.csproj" />
 	</ItemGroup>
 	
+  <ItemGroup>
+    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+  </ItemGroup>
 </Project>

@@ -17,6 +17,7 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1DocumentsIssuedService _documentsIssuedService;
     private readonly IGstr1B2csSummaryService _b2csSummaryService;
     private readonly IGstr1ExportPreparationService _exportPreparationService;
+    private readonly IGstr1JsonExportService _jsonExportService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
@@ -26,7 +27,8 @@ public sealed class Gstr1Controller : ControllerBase
         IGstr1BackfillService backfillService,
         IGstr1DocumentsIssuedService documentsIssuedService,
         IGstr1B2csSummaryService b2csSummaryService,
-        IGstr1ExportPreparationService exportPreparationService )
+        IGstr1ExportPreparationService exportPreparationService,
+        IGstr1JsonExportService jsonExportService)
     {
         _service = service;
         _validationService = validationService;
@@ -36,6 +38,7 @@ public sealed class Gstr1Controller : ControllerBase
         _documentsIssuedService = documentsIssuedService;
         _b2csSummaryService = b2csSummaryService;
         _exportPreparationService = exportPreparationService;
+        _jsonExportService = jsonExportService;
 
     }
 
@@ -203,6 +206,34 @@ public sealed class Gstr1Controller : ControllerBase
         catch (InvalidOperationException ex)
         {
             return UnprocessableEntity(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("export-json")]
+    [Produces("application/json")]
+    public async Task<ActionResult<Gstr1GstnExportResponse>> GetExportJson(
+        [FromQuery] string supplierGstin,
+        [FromQuery] string returnPeriod,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _jsonExportService.ExportAsync(
+                supplierGstin, returnPeriod, cancellationToken));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message,
+                supplierGstin,
+                returnPeriod,
+                validationEndpoint = "/api/gstr1/validation"
+            });
         }
     }
 
