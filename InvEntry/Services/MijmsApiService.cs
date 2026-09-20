@@ -21,6 +21,8 @@ public interface IMijmsApiService
 
     Task<TResponse> GetResponse<TResponse>(string url);
 
+    Task<byte[]> GetBytesAsync(string url);
+
     Task<TResponse> PostResponse<TResponse>(string url);
 
     Task<TResponse> Post<TRequest, TResponse>(
@@ -707,6 +709,21 @@ public class MijmsApiService : IMijmsApiService
     //      InvoiceEditResponse
     //      FinaliseInvoiceResponse
     // ============================================================
+
+    public async Task<byte[]> GetBytesAsync(string url)
+    {
+        using var client = _httpClientFactory.CreateClient("mijms");
+        using var response = await client.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException(
+                $"GET '{url}' failed: {response.StatusCode} - {error}");
+        }
+
+        return await response.Content.ReadAsByteArrayAsync();
+    }
+
 
     public async Task<TResponse> GetResponse<TResponse>(
         string url)

@@ -7,6 +7,10 @@ namespace InvEntry.Services;
 
 public interface IGstr1ReportService
 {
+    Task<Gstr1ValidationResponse> GetValidationAsync(string supplierGstin, string returnPeriod);
+
+    Task<byte[]> GetExportJsonAsync(string supplierGstin, string returnPeriod);
+
     Task<Gstr1ReturnSummaryResponse> GetSummaryAsync(
         string supplierGstin,
         string returnPeriod);
@@ -79,6 +83,24 @@ public sealed class Gstr1ReportService : IGstr1ReportService
 
         return result;
     }
+
+    public Task<Gstr1ValidationResponse> GetValidationAsync(string supplierGstin, string returnPeriod)
+    {
+        Validate(supplierGstin, returnPeriod);
+        return _mijmsApiService.GetResponse<Gstr1ValidationResponse>(
+            $"api/gstr1/validation?supplierGstin={Uri.EscapeDataString(supplierGstin)}" +
+            $"&returnPeriod={Uri.EscapeDataString(returnPeriod)}");
+    }
+
+    public Task<byte[]> GetExportJsonAsync(string supplierGstin, string returnPeriod)
+    {
+        Validate(supplierGstin, returnPeriod);
+        // Preserve the backend UTF-8 payload exactly; no JSON conversion in the client.
+        return _mijmsApiService.GetBytesAsync(
+            $"api/gstr1/export-json?supplierGstin={Uri.EscapeDataString(supplierGstin)}" +
+            $"&returnPeriod={Uri.EscapeDataString(returnPeriod)}");
+    }
+
 
     private static void Validate(
         string supplierGstin,

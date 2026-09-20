@@ -4,6 +4,7 @@ using DevExpress.Mvvm;
 using DevExpress.XtraEditors.TextEditController.InputHandler;
 using InvEntry.Contracts.Gst;
 using InvEntry.Services;
+using InvEntry.Extension;
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -81,6 +82,9 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     // =========================================================
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ExportJsonCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LoadReturnCommand))]
+    [NotifyPropertyChangedFor(nameof(CanChangeScope))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -88,8 +92,119 @@ public partial class Gstr1ReturnViewModel : ObservableObject
 
 
     // =========================================================
-    // CONSTRUCTOR
+    // EXPORT STATE AND COMMAND
     // =========================================================
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ExportJsonCommand))]
+    [NotifyPropertyChangedFor(nameof(ValidationStatus))]
+    private Gstr1ValidationResponse? _validation;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ExportJsonCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LoadReturnCommand))]
+    [NotifyPropertyChangedFor(nameof(CanChangeScope))]
+    private bool _isExporting;
+
+    [ObservableProperty]
+    private string? _exportStatusMessage;
+
+    private bool _isLoadingReturn;
+
+    public bool CanChangeScope => !IsBusy && !IsExporting;
+
+    public string ValidationStatus => Validation is null
+        ? "Validation unavailable — load the return."
+        : $"{(Validation.IsExportReady ? "Export Ready" : "Export blocked")} — " +
+          $"Errors: {Validation.ErrorCount}, Warnings: {Validation.WarningCount}, Information: {Validation.InformationCount}";
+
+    private bool CanExportJson() => CanChangeScope &&
+        !string.IsNullOrWhiteSpace(SupplierGstin) &&
+        Validation?.IsExportReady == true &&
+        Validation.SupplierGstin == SupplierGstin &&
+        Validation.ReturnPeriod == ReturnPeriod;
+
+    partial void OnSupplierGstinChanged(string value) => InvalidateValidation();
+
+    private void InvalidateValidation()
+    {
+        Validation = null;
+        ExportStatusMessage = null;
+        ExportJsonCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool ScopeMatches(string supplierGstin, string returnPeriod) =>
+        SupplierGstin == supplierGstin && ReturnPeriod == returnPeriod;
+
+    [RelayCommand(CanExecute = nameof(CanExportJson))]
+    private async Task ExportJson()
+    {
+        if (!CanExportJson())
+            return;
+
+        var supplierGstin = SupplierGstin;
+        var returnPeriod = ReturnPeriod;
+        var filingPeriod = ReturnMonth.ToString("MMyyyy", CultureInfo.InvariantCulture);
+        try
+        {
+            IsExporting = true;
+            IsBusy = true;
+            ExportStatusMessage = "Checking validation and generating GSTN JSON...";
+            Messenger.Default.Send(MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(ExportStatusMessage));
+
+            // Refresh the backend status immediately before export; the export endpoint
+            // also validates again. Never reproduce its validation rules here.
+            Validation = null;
+            var validation = await _gstr1ReportService.GetValidationAsync(supplierGstin, returnPeriod);
+            if (!ScopeMatches(supplierGstin, returnPeriod))
+                return;
+            Validation = validation;
+            if (!validation.IsExportReady)
+            {
+                ExportStatusMessage = "Export blocked. Review the validation issues.";
+                return;
+            }
+
+            var json = await _gstr1ReportService.GetExportJsonAsync(supplierGstin, returnPeriod);
+            if (!ScopeMatches(supplierGstin, returnPeriod))
+                return;
+
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Save GSTN JSON",
+                FileName = $"GSTR1_{supplierGstin}_{filingPeriod}.json",
+                Filter = "JSON files (*.json)|*.json",
+                DefaultExt = ".json",
+                AddExtension = true,
+                OverwritePrompt = true
+            };
+            if (dialog.ShowDialog() != true)
+            {
+                ExportStatusMessage = "Export cancelled. No file was saved.";
+                return;
+            }
+
+            // Backend JSON is UTF-8. Preserve bytes, whitespace, numeric formatting,
+            // and property order without adding a BOM.
+            await System.IO.File.WriteAllBytesAsync(dialog.FileName, json);
+            ExportStatusMessage = $"GSTN JSON exported successfully. {dialog.FileName}";
+        }
+        catch (Exception ex)
+        {
+            ExportStatusMessage = $"GSTN JSON export failed: {ex.Message}";
+            _messageBoxService.ShowMessage(ex.Message, "GSTR-1 JSON Export",
+                MessageButton.OK, MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+            IsBusy = false;
+            IsExporting = false;
+        }
+    }
+
 
     public Gstr1ReturnViewModel(
         IGstr1ReportService gstr1ReportService,
@@ -198,6 +313,8 @@ public partial class Gstr1ReturnViewModel : ObservableObject
             return;
         }
 
+        InvalidateValidation();
+
         OnPropertyChanged(
             nameof(ReturnPeriod));
 
@@ -210,7 +327,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     // LOAD RETURN
     // =========================================================
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanChangeScope))]
     private async Task LoadReturn()
     {
         await LoadReturnAsync();
@@ -219,8 +336,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
 
     private async Task LoadReturnAsync()
     {
-        if (IsBusy &&
-            Summary is not null)
+        if (_isLoadingReturn || IsExporting)
         {
             return;
         }
@@ -237,9 +353,13 @@ public partial class Gstr1ReturnViewModel : ObservableObject
             return;
         }
 
+        var supplierGstin = SupplierGstin;
+        var returnPeriod = ReturnPeriod;
         try
         {
+            _isLoadingReturn = true;
             IsBusy = true;
+            InvalidateValidation();
 
             StatusMessage =
                 $"Loading GSTR-1 for {ReturnPeriodDisplay}...";
@@ -255,18 +375,23 @@ public partial class Gstr1ReturnViewModel : ObservableObject
             var summaryTask =
                 _gstr1ReportService
                     .GetSummaryAsync(
-                        SupplierGstin,
-                        ReturnPeriod);
+                        supplierGstin,
+                        returnPeriod);
 
             var documentsTask =
                 _gstr1ReportService
                     .GetDocumentsAsync(
-                        SupplierGstin,
-                        ReturnPeriod);
+                        supplierGstin,
+                        returnPeriod);
 
             await Task.WhenAll(
                 summaryTask,
                 documentsTask);
+
+            var validation = await _gstr1ReportService.GetValidationAsync(supplierGstin, returnPeriod);
+            if (!ScopeMatches(supplierGstin, returnPeriod))
+                return;
+            Validation = validation;
 
             Summary =
                 await summaryTask;
@@ -303,6 +428,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            Validation = null;
             Summary = null;
             Categories.Clear();
             Documents.Clear();
@@ -320,6 +446,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
         }
         finally
         {
+            _isLoadingReturn = false;
             IsBusy = false;
         }
     }
