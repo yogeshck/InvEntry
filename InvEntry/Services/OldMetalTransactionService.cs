@@ -83,11 +83,11 @@ namespace InvEntry.Services
             var transactionLines =
                 lines.ToList();
 
-            if (transactionLines.Count == 0)
-            {
-                throw new InvalidOperationException(
-                    "No old metal transaction lines were supplied.");
-            }
+          //  if (transactionLines.Count == 0)
+          //  {
+          //      throw new InvalidOperationException(
+          //          "No old metal transaction lines were supplied.");
+          //  }
 
             /*
              * IMPORTANT:

@@ -1151,6 +1151,9 @@ public partial class EstimateViewModel: ObservableObject
 
     private async Task ProcessOldMetalTransaction()
     {
+        if (Header.OldMetalTransactions is null || Header.OldMetalTransactions.Count == 0)
+            return;
+
 
         foreach (var omTrans in Header.OldMetalTransactions)
         {

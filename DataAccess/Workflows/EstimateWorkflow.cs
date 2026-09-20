@@ -52,7 +52,7 @@ public sealed class EstimateWorkflow : IEstimateWorkflow
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var lines = request.Lines.Select((source, index) =>
-                MapLine(source, header.Gkey, estimateNumber, index + 1)).ToList();
+                MapLine(source, header.Gkey, estimateNumber, header.TenantGkey, index + 1)).ToList();
             _lines.AddRange(lines);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
@@ -87,7 +87,12 @@ public sealed class EstimateWorkflow : IEstimateWorkflow
         CreatedOn=x.CreatedOn, ModifiedBy=x.ModifiedBy, ModifiedOn=x.ModifiedOn, TenantGkey=x.TenantGkey
     };
 
-    private static EstimateLine MapLine(EstimateLineSaveModel x, int headerGkey, string estimateNumber, int number) => new()
+    private static EstimateLine MapLine(
+        EstimateLineSaveModel x,
+        int headerGkey,
+        string estimateNumber,
+        int? tenantGkey,
+        int number) => new()
     {
         HsnCode=x.HsnCode, EstLineNbr=number, EstlBilledPrice=x.EstlBilledPrice,
         EstlGrossAmt=x.EstlGrossAmt, EstlMakingCharges=x.EstlMakingCharges,
@@ -105,6 +110,6 @@ public sealed class EstimateWorkflow : IEstimateWorkflow
         TaxType=x.TaxType, VaAmount=x.VaAmount, VaPercent=x.VaPercent, EstNote=x.EstNote,
         EstimateHdrGkey=headerGkey, EstimateId=estimateNumber, CreatedBy=x.CreatedBy,
         CreatedOn=x.CreatedOn, ModifiedBy=x.ModifiedBy, ModifiedOn=x.ModifiedOn,
-        TenantGkey=x.TenantGkey, ProductSku=x.ProductSku
+        TenantGkey=tenantGkey, ProductSku=x.ProductSku
     };
 }

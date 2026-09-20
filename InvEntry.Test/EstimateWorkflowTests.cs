@@ -33,7 +33,7 @@ public sealed class EstimateWorkflowTests
             Header = new EstimateHeaderSaveModel { TenantGkey = 9, EstTaxableAmount = 125m },
             Lines =
             [
-                new EstimateLineSaveModel { ProductId = "P2", EstlTaxableAmount = 75m },
+                new EstimateLineSaveModel { ProductId = "P2", EstlTaxableAmount = 75m, TenantGkey = 88 },
                 new EstimateLineSaveModel { ProductId = "P1", EstlTaxableAmount = 50m }
             ]
         });
@@ -46,6 +46,7 @@ public sealed class EstimateWorkflowTests
             Assert.That(lines.Items, Has.Count.EqualTo(2));
             Assert.That(lines.Items.Select(x => x.EstimateHdrGkey), Is.All.EqualTo(7001));
             Assert.That(lines.Items.Select(x => x.EstimateId), Is.All.EqualTo("EST00042"));
+            Assert.That(lines.Items.Select(x => x.TenantGkey), Is.All.EqualTo(9));
             Assert.That(lines.Items.Select(x => x.EstLineNbr), Is.EqualTo(new int?[] { 1, 2 }));
             Assert.That(lines.Items.Select(x => x.ProductId), Is.EqualTo(new[] { "P2", "P1" }));
             Assert.That(voucher.LastUsedNumber, Is.EqualTo(42));
