@@ -33,6 +33,7 @@ public static class Gstr1GstnExportMapper
         {
             Gstin = prepared.SupplierGstin,
             FilingPeriod = ToFilingPeriod(prepared.ReturnPeriod),
+            B2b = MapB2b(prepared.B2b),
             B2cs = prepared.B2cs.Rows.Select(MapB2cs).ToList(),
             Hsn = new Gstr1GstnHsnSection
             {
@@ -59,6 +60,57 @@ public static class Gstr1GstnExportMapper
         };
     }
 
+    private static List<Gstr1GstnB2bRecipient> MapB2b(Gstr1B2bSummaryResponse source)
+    {
+        return source.Invoices
+            .GroupBy(x => x.RecipientGstin, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(group => new Gstr1GstnB2bRecipient
+            {
+                RecipientGstin = group.Key,
+                Invoices = group
+                    .OrderBy(x => x.DocumentDate)
+                    .ThenBy(x => x.DocumentNumber, StringComparer.Ordinal)
+                    .ThenBy(x => x.DocumentGkey)
+                    .Select(MapB2bInvoice)
+                    .ToList()
+            })
+            .ToList();
+    }
+
+    private static Gstr1GstnB2bInvoice MapB2bInvoice(Gstr1B2bInvoiceResponse invoice)
+    {
+        if (invoice.IsSez || invoice.IsDeemedExport)
+            throw new InvalidOperationException(
+                $"GSTN export blocked: invoice {invoice.DocumentNumber} is an unsupported special B2B transaction (SEZ or deemed export).");
+
+        return new Gstr1GstnB2bInvoice
+        {
+            InvoiceNumber = invoice.DocumentNumber,
+            InvoiceDate = invoice.DocumentDate.ToString("dd-MM-yyyy", CultureInfo.InvariantCulture),
+            InvoiceValue = invoice.InvoiceValue,
+            PlaceOfSupplyCode = invoice.PlaceOfSupplyCode,
+            ReverseCharge = invoice.ReverseCharge ? "Y" : "N",
+
+            // Batch 8B supports ordinary domestic registered-recipient sales only.
+            InvoiceType = "R",
+            Items = invoice.Lines
+                .OrderBy(line => line.LineNumber)
+                .Select((line, index) => new Gstr1GstnB2bItem
+                {
+                Number = index + 1,
+                ItemDetail = new Gstr1GstnB2bItemDetail
+                {
+                    GstRate = line.GstRate,
+                    TaxableValue = line.TaxableValue,
+                    IgstAmount = line.IgstAmount,
+                    CgstAmount = line.CgstAmount,
+                    SgstAmount = line.SgstAmount,
+                    CessAmount = line.CessAmount
+                }
+            }).ToList()
+        };
+    }
     private static Gstr1GstnB2csRow MapB2cs(Gstr1B2csSummaryRowResponse row)
     {
         // Prepared rows do not carry staged SupplyType/TaxType. Use only their

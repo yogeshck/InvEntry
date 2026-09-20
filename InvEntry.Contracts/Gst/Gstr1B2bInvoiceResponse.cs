@@ -12,5 +12,7 @@ public sealed class Gstr1B2bInvoiceResponse
     public string SupplyType { get; set; } = string.Empty;
     public string TaxType { get; set; } = string.Empty;
     public bool ReverseCharge { get; set; }
+    public bool IsSez { get; set; }
+    public bool IsDeemedExport { get; set; }
     public List<Gstr1B2bLineResponse> Lines { get; set; } = new();
 }

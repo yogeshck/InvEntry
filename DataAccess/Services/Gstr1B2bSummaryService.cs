@@ -45,6 +45,8 @@ public sealed class Gstr1B2bSummaryService : IGstr1B2bSummaryService
                 SupplyType = x.SupplyType,
                 TaxType = x.TaxType,
                 ReverseCharge = x.IsReverseCharge,
+                IsSez = x.IsSez,
+                IsDeemedExport = x.IsDeemedExport,
                 TaxableValue = x.TaxableValue,
                 IgstAmount = x.IgstAmount,
                 CgstAmount = x.CgstAmount,
@@ -96,6 +98,8 @@ public sealed class Gstr1B2bSummaryService : IGstr1B2bSummaryService
                     SupplyType = x.SupplyType,
                     TaxType = x.TaxType,
                     ReverseCharge = x.ReverseCharge,
+                    IsSez = x.IsSez,
+                    IsDeemedExport = x.IsDeemedExport,
                     Lines = x.Lines
                         .OrderBy(line => line.LineNumber)
                         .ThenBy(line => line.LineGkey)
@@ -161,6 +165,8 @@ public sealed class Gstr1B2bSummaryService : IGstr1B2bSummaryService
         public string SupplyType { get; init; } = string.Empty;
         public string TaxType { get; init; } = string.Empty;
         public bool ReverseCharge { get; init; }
+        public bool IsSez { get; init; }
+        public bool IsDeemedExport { get; init; }
         public decimal TaxableValue { get; init; }
         public decimal IgstAmount { get; init; }
         public decimal CgstAmount { get; init; }

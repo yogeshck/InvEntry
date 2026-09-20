@@ -10,6 +10,9 @@ public sealed class Gstr1GstnExportResponse
     [JsonPropertyName("fp")]
     public string FilingPeriod { get; init; } = string.Empty;
 
+    [JsonPropertyName("b2b")]
+    public List<Gstr1GstnB2bRecipient> B2b { get; init; } = [];
+
     [JsonPropertyName("b2cs")]
     public List<Gstr1GstnB2csRow> B2cs { get; init; } = [];
 

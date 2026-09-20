@@ -89,7 +89,7 @@ public sealed class Gstr1JsonExportTests
         using var json = JsonDocument.Parse(JsonSerializer.Serialize(
             Gstr1GstnExportMapper.Map(Prepared()), new JsonSerializerOptions(JsonSerializerDefaults.Web)));
         var root = json.RootElement;
-        AssertNames(root, "gstin", "fp", "b2cs", "hsn", "doc_issue");
+        AssertNames(root, "gstin", "fp", "b2b", "b2cs", "hsn", "doc_issue");
         Assert.That(root.GetProperty("gstin").GetString(), Is.EqualTo("32AGGPR0021E1Z4"));
         var b2cs = root.GetProperty("b2cs")[0];
         AssertNames(b2cs, "pos", "sply_ty", "rt", "txval", "iamt", "camt", "samt", "csamt", "typ");

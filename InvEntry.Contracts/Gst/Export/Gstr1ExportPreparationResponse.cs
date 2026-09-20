@@ -12,6 +12,8 @@ public sealed class Gstr1ExportPreparationResponse
 
     public Gstr1B2csSummaryResponse B2cs { get; set; } = new();
 
+    public Gstr1B2bSummaryResponse B2b { get; set; } = new();
+
     public Gstr1HsnSummaryResponse Hsn { get; set; } = new();
 
     public Gstr1DocumentsIssuedResponse DocumentsIssued { get; set; } = new();
