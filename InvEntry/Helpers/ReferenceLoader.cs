@@ -1,5 +1,6 @@
 ﻿using InvEntry.Models;
 using InvEntry.Services;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -51,10 +52,20 @@ public class ReferenceLoader
     // -------------------------
     public async Task<string?> GetValueAsync(string refName, string refCode)
     {
+        if (string.IsNullOrWhiteSpace(refName) ||
+            string.IsNullOrWhiteSpace(refCode))
+        {
+            return null;
+        }
+
         var list = await GetOrLoadList(refName);
+        var refCodeValue = refCode.Trim();
 
         return list
-            .FirstOrDefault(x => x.RefCode == refCode)
+            .FirstOrDefault(x => string.Equals(
+                x.RefCode?.Trim(),
+                refCodeValue,
+                StringComparison.OrdinalIgnoreCase))
             ?.RefValue;
     }
 
@@ -63,20 +74,39 @@ public class ReferenceLoader
     // -------------------------
     public async Task<string?> GetCodeAsync(string refName, string refValue)
     {
+        if (string.IsNullOrWhiteSpace(refName) ||
+            string.IsNullOrWhiteSpace(refValue))
+        {
+            return null;
+        }
+
         var list = await GetOrLoadList(refName);
+        var refValueText = refValue.Trim();
 
         return list
-            .FirstOrDefault(x => x.RefValue == refValue)
+            .FirstOrDefault(x => string.Equals(
+                x.RefValue?.Trim(),
+                refValueText,
+                StringComparison.OrdinalIgnoreCase))
             ?.RefCode;
     }
     public async Task<string?> GetCodeAsNameAsync(string refName, string refCode)
     {
+        if (string.IsNullOrWhiteSpace(refName) ||
+            string.IsNullOrWhiteSpace(refCode))
+        {
+            return null;
+        }
+
         var list = await GetOrLoadList(refName);
 
         var refCodeStr = refCode.Trim();
 
         return list
-            .FirstOrDefault(x => x.RefCode == refCodeStr)
+            .FirstOrDefault(x => string.Equals(
+                x.RefCode?.Trim(),
+                refCodeStr,
+                StringComparison.OrdinalIgnoreCase))
             ?.RefValue;
     }
 

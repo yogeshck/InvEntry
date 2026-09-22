@@ -228,10 +228,10 @@ public partial class CustomerOrderViewModel : ObservableObject
         _isBalance = true;
         _isRefund = false;
 
+        SetHeader();
+
         // Start async init
         _ = InitializeAsync();
-
-        SetHeader();
 
         //PopulateUnboundHeaderDataMap();
     }
@@ -241,24 +241,26 @@ public partial class CustomerOrderViewModel : ObservableObject
         try
         {
             await SetThisCompany();
-            SetHeader();
+
+            Header.TenantGkey = Company.TenantGkey;
 
             SetMetalPrice();
             await SetMasterLedger();
 
-            _ = LoadReferencesAsync();
+            await LoadReferencesAsync();
 
             await PopulateProductCategoryList();
-            //await PopulateStateList();
-            //await PopulateMtblRefNameList();
             await PopulateMetalList();
-            //await PopulateOrderStatusList();
-            //await PopulateSalesPersonList();
+
             PopulateUnboundLineDataMap();
         }
         catch (Exception ex)
         {
-            _messageBoxService.ShowMessage("Initialization failed: " + ex.Message, "Startup Error", MessageButton.OK, MessageIcon.Error);
+            _messageBoxService.ShowMessage(
+                "Initialization failed: " + ex.Message,
+                "Startup Error",
+                MessageButton.OK,
+                MessageIcon.Error);
         }
     }
 
@@ -318,15 +320,13 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     private void SetHeader()
     {
+
         Header = new()
         {
             OrderDate = DateTime.Now,
             OrderType = "New",
-            OrderStatusFlag = 1,    // 1 - Open,  2 - In-Progress,   3 - Completed,   4 - Delivered
-            OrderDueDate = DateTime.Now.AddDays(14),   //hard coded should be from references....
-            //IsTaxApplicable = true,
-            //     GstLocSeller = Company.GstCode,
-            TenantGkey = Company.TenantGkey
+            OrderStatusFlag = 1,
+            OrderDueDate = DateTime.Now.AddDays(14)
         };
 
         // OrderStatus = CustOrdStatusList.FirstOrDefault(x => x..Equals("1")).ToString();
@@ -802,6 +802,13 @@ public partial class CustomerOrderViewModel : ObservableObject
                 await _referenceLoader.GetValueAsync(
                     "CUST_STATE",
                     gstCode);
+
+            if (!string.IsNullOrWhiteSpace(CustomerState))
+            {
+                Buyer.Address.State = CustomerState;
+                Buyer.Address.GstStateCode = gstCode;
+                Buyer.GstStateCode = gstCode;
+            }
         }
 
         //
@@ -928,6 +935,9 @@ public partial class CustomerOrderViewModel : ObservableObject
                 await _referenceLoader.GetCodeAsync(
                     "CUST_STATE",
                     stateName);
+
+            Buyer.Address.State =
+                stateName.Trim();
 
             Buyer.Address.GstStateCode =
                 gstStateCode;
@@ -1346,6 +1356,11 @@ public partial class CustomerOrderViewModel : ObservableObject
             // CALCULATE + VALIDATE FIRST
             // -----------------------------------------------------
 
+            if (!string.IsNullOrWhiteSpace(CustomerState))
+            {
+                await ApplyCustomerStateAsync(CustomerState);
+            }
+
             if (!PrepareAndValidateOrder())
                 return;
 
@@ -1629,10 +1644,15 @@ public partial class CustomerOrderViewModel : ObservableObject
                 await _referenceLoader.GetValueAsync(
                     "CUST_STATE",
                     gstCode);
+
+            if (!string.IsNullOrWhiteSpace(CustomerState))
+            {
+                Buyer.Address.State = CustomerState;
+            }
         }
 
         EvaluateForAllLines();
-        ResolveOrderStatusAsync();
+        await ResolveOrderStatusAsync();
 
         Messenger.Default.Send(
             "ProductIdUIName",

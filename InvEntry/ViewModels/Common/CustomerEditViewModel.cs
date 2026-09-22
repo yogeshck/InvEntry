@@ -264,7 +264,7 @@ public partial class CustomerEditViewModel : ObservableObject
             // Customer.Address is JsonIgnore.
             // Preserve the address currently edited in the modal.
             //
-            savedCustomer.Address ??=
+            savedCustomer.Address =
                 CurrentCustomer.Address;
 
             CurrentCustomer =

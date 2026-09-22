@@ -135,7 +135,7 @@
 
                             <TextBlock Grid.Row="0"
                                        Grid.Column="0"
-                                       Text="Mobile Number"
+                                       Text="Mobile Number *"
                                        Style="{StaticResource CustomerFieldLabel}"/>
 
                             <dxe:TextEdit Grid.Row="0"
@@ -147,7 +147,7 @@
 
                             <TextBlock Grid.Row="0"
                                        Grid.Column="3"
-                                       Text="Customer Name"
+                                       Text="Customer Name *"
                                        Style="{StaticResource CustomerFieldLabel}"/>
 
                             <dxe:TextEdit Grid.Row="0"
@@ -334,7 +334,7 @@
 
                             <TextBlock Grid.Row="3"
                                        Grid.Column="0"
-                                       Text="State"
+                                       Text="State *"
                                        Style="{StaticResource CustomerFieldLabel}"/>
 
                             <dxe:ComboBoxEdit Grid.Row="3"
