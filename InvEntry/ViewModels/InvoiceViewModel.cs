@@ -242,22 +242,36 @@ public partial class InvoiceViewModel : ObservableObject
 
         SetMetalPrice();
         SetHeader();
-        SetThisCompany();
-        SetMasterLedger();
-
-        _ = LoadReferencesAsync();
-
-        PopulateProductCategoryList();
-        //PopulateStateList();
         PopulateUnboundLineDataMap();
-        PopulateMtblRefNameList();
-        PopulateMetalList();
-        PopulateTaxList();
+
+        _ = InitializeAsync();
 
 
         //PopulateSalesPersonList();
 
         //PopulateUnboundHeaderDataMap();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            await SetThisCompany();
+            await SetMasterLedger();
+            await LoadReferencesAsync();
+            await PopulateProductCategoryList();
+            await PopulateMtblRefNameList();
+            await PopulateMetalList();
+            await PopulateTaxList();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Invoice initialization failed: " + ex.Message,
+                "Startup Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
     }
 
     private async Task LoadDraftSafeAsync(
@@ -542,12 +556,12 @@ public partial class InvoiceViewModel : ObservableObject
         todaysRate = (decimal)metalPrice;
     }
 
-    private async void SetMasterLedger()
+    private async Task SetMasterLedger()
     {
         MtblLedger = await _mtblLedgersService.GetLedger(1000);   //pass account code
     }
 
-    private async void PopulateProductCategoryList()
+    private async Task PopulateProductCategoryList()
     {
         var list = await _productCategoryService.GetProductCategoryList();
         ProductCategoryList = new(list
@@ -569,7 +583,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
-    private async void PopulateTaxList()
+    private async Task PopulateTaxList()
     {
 
         var gstTaxRefList = await _mtblReferencesService.GetReferenceList("GST");
@@ -584,13 +598,13 @@ public partial class InvoiceViewModel : ObservableObject
             var taxRate = GstTaxList.FirstOrDefault(x => x.RefCode.Equals("SGST"));
         }*/
 
-    private async void PopulateMetalList()
+    private async Task PopulateMetalList()
     {
         var metalRefList = await _mtblReferencesService.GetReferenceList("OLD_METALS");
         MetalList = new(metalRefList.Select(x => x.RefValue));
     }
 
-    private async void PopulateMtblRefNameList()
+    private async Task PopulateMtblRefNameList()
     {
         var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
         MtblReferencesList = new(mtblRefList);
@@ -630,8 +644,15 @@ public partial class InvoiceViewModel : ObservableObject
     {
         if (Buyer is null) return;
 
-        //need to review
-        Buyer.GstStateCode = GetStateRefCodeAsync(value).GetAwaiter().GetResult();
+        Buyer.Address ??= new OrgAddress();
+        Buyer.Address.State = value;
+
+        Buyer.GstStateCode =
+            GetStateRefCodeAsync(value)
+                .GetAwaiter()
+                .GetResult();
+
+        Header.PlaceOfSupply = Buyer.GstStateCode;
 
         Header.CgstPercent = GetGSTPercent("CGST");
         Header.SgstPercent = GetGSTPercent("SGST");
@@ -702,20 +723,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         if (Buyer is null)
         {
-            _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
-
-            Buyer = new();
-            Buyer.MobileNbr = phoneNumber;
-
-            Buyer.Address.GstStateCode = Company.GstCode;
-            Buyer.Address.State = Company.State;
-            Buyer.Address.District = Company.District;
-
-            createCustomer = true;
-            //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
-            CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", Company.GstCode);
-
-            Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
+            await PrepareNewCustomerAsync(phoneNumber);
         }
         else
         {
@@ -735,6 +743,30 @@ public partial class InvoiceViewModel : ObservableObject
             //CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
             CustomerState = await _referenceLoader.GetValueAsync("CUST_STATE", gstCode);
 
+            if (!string.IsNullOrWhiteSpace(CustomerState) &&
+                !string.IsNullOrWhiteSpace(gstCode))
+            {
+                Buyer.Address.State = CustomerState;
+                Buyer.Address.GstStateCode = gstCode;
+                Buyer.GstStateCode = gstCode;
+            }
+
+            Header.CustGkey = Buyer.GKey;
+
+            if (!string.IsNullOrWhiteSpace(gstCode))
+            {
+                Header.GstLocBuyer = gstCode;
+                Header.PlaceOfSupply = gstCode;
+
+                Header.CgstPercent = GetGSTPercent("CGST");
+                Header.SgstPercent = GetGSTPercent("SGST");
+                Header.IgstPercent = GetGSTPercent("IGST");
+
+                EvaluateForAllLines();
+                EvaluateHeader();
+                EvaluateGstClassification();
+            }
+
             customerCreditCheck(Buyer);
 
             Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
@@ -745,6 +777,112 @@ public partial class InvoiceViewModel : ObservableObject
 
         MarkDraftAsModified();
 
+    }
+
+    private async Task PrepareNewCustomerAsync(
+        string phoneNumber)
+    {
+        Buyer = new Customer
+        {
+            MobileNbr = phoneNumber
+        };
+
+        Buyer.Address ??= new OrgAddress();
+
+        Buyer.Address.GstStateCode = Company.GstCode;
+        Buyer.Address.State = Company.State;
+        Buyer.Address.District = Company.District;
+        Buyer.GstStateCode = Company.GstCode;
+
+        createCustomer = true;
+        updateCustomer = false;
+        CustomerReadOnly = false;
+        Header.CustGkey = null;
+
+        await OpenNewCustomerEditorAsync();
+    }
+
+    private async Task OpenNewCustomerEditorAsync()
+    {
+        if (Buyer is null)
+            return;
+
+        var savedCustomer =
+            await _dialogService.EditCustomerAsync(
+                Buyer,
+                isNewCustomer: true);
+
+        if (savedCustomer is null)
+        {
+            Buyer = null;
+            CustomerState = null;
+            Header.CustGkey = null;
+            Header.GstLocBuyer = null;
+            Header.PlaceOfSupply = Company.GstCode;
+
+            createCustomer = false;
+            updateCustomer = false;
+            CustomerReadOnly = false;
+
+            return;
+        }
+
+        if (savedCustomer.GKey <= 0)
+        {
+            throw new InvalidOperationException(
+                "Customer was saved but no valid GKey was returned.");
+        }
+
+        Buyer = savedCustomer;
+        Buyer.Address ??= new OrgAddress();
+
+        var gstCode =
+            Buyer.Address.GstStateCode
+            ?? Buyer.GstStateCode
+            ?? Company.GstCode;
+
+        var state =
+            !string.IsNullOrWhiteSpace(gstCode)
+                ? await _referenceLoader.GetValueAsync(
+                    "CUST_STATE",
+                    gstCode)
+                : null;
+
+        state ??= Buyer.Address.State;
+
+        if (!string.IsNullOrWhiteSpace(state) &&
+            !string.IsNullOrWhiteSpace(gstCode))
+        {
+            CustomerState = state;
+            Buyer.Address.State = state;
+            Buyer.Address.GstStateCode = gstCode;
+            Buyer.GstStateCode = gstCode;
+
+            Header.GstLocBuyer = gstCode;
+            Header.PlaceOfSupply = gstCode;
+        }
+
+        Header.CustGkey = Buyer.GKey;
+        Header.CustMobile = Buyer.MobileNbr;
+
+        CustName = Buyer.CustomerName;
+        CustCity = Buyer.Address.City;
+
+        createCustomer = false;
+        updateCustomer = true;
+        CustomerReadOnly = true;
+
+        Header.CgstPercent = GetGSTPercent("CGST");
+        Header.SgstPercent = GetGSTPercent("SGST");
+        Header.IgstPercent = GetGSTPercent("IGST");
+
+        EvaluateForAllLines();
+        EvaluateHeader();
+        EvaluateGstClassification();
+
+        Messenger.Default.Send(
+            "ProductIdUIName",
+            MessageType.FocusTextEdit);
     }
 
     private bool customerCreditCheck(Customer buyer)
@@ -2672,10 +2810,13 @@ public partial class InvoiceViewModel : ObservableObject
         };
     }
 
-    private async void SetThisCompany()
+    private async Task SetThisCompany()
     {
-        Company = new();
-        Company = await _orgThisCompanyViewService.GetOrgThisCompany();
+        Company =
+            await _orgThisCompanyViewService.GetOrgThisCompany()
+            ?? throw new InvalidOperationException(
+                "Company information could not be loaded.");
+
         Header.TenantGkey = Company.TenantGkey;
         Header.GstLocSeller = Company.GstCode;
     }
