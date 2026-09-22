@@ -123,7 +123,7 @@
 
 
         <!-- =====================================================
-             SUPPLIER + RECEIPT INFORMATION
+             SUPPLIER + RECEIPT + GRN INFORMATION
              ===================================================== -->
 
         <Grid Grid.Row="1"
@@ -133,13 +133,19 @@
             <Grid.ColumnDefinitions>
 
                 <!-- Supplier -->
+                <ColumnDefinition Width="1.1*"/>
+
+                <!-- Gap -->
+                <ColumnDefinition Width="16"/>
+
+                <!-- Receipt information -->
                 <ColumnDefinition Width="0.9*"/>
 
                 <!-- Gap -->
                 <ColumnDefinition Width="16"/>
 
-                <!-- Receipt -->
-                <ColumnDefinition Width="1.1*"/>
+                <!-- GRN number -->
+                <ColumnDefinition Width="0.7*"/>
 
             </Grid.ColumnDefinitions>
 
@@ -155,18 +161,12 @@
 
                 <StackPanel>
 
-
-                    <!-- Card title -->
-
                     <TextBlock
                         Text="SUPPLIER"
                         Style="{StaticResource AppSectionTitleStyle}"/>
 
 
-                    <!-- Supplier fields -->
-
                     <Grid>
-
 
                         <Grid.ColumnDefinitions>
 
@@ -188,10 +188,6 @@
                         </Grid.RowDefinitions>
 
 
-                        <!-- =========================================
-                             SUPPLIER
-                             ========================================= -->
-
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
@@ -199,13 +195,21 @@
                             Style="{StaticResource AppFieldLabelStyle}"/>
 
 
-                        <dxg:LookUpEdit
+                        <dxe:ComboBoxEdit
                             Grid.Row="0"
                             Grid.Column="1"
 
-                            Style="{StaticResource AppLookupEditStyle}"
+                            Style="{StaticResource AppComboEditStyle}"
 
                             AllowRejectUnknownValues="True"
+
+                            AutoComplete="True"
+
+                            ImmediatePopup="True"
+
+                            IncrementalFiltering="True"
+
+                            IsTextEditable="True"
 
                             ItemsSource="{Binding SupplierReferencesList}"
 
@@ -213,10 +217,6 @@
                                                 Mode=TwoWay,
                                                 UpdateSourceTrigger=PropertyChanged}"/>
 
-
-                        <!-- =========================================
-                             SUPPLIER DOCUMENT NUMBER
-                             ========================================= -->
 
                         <TextBlock
                             Grid.Row="1"
@@ -233,10 +233,6 @@
                                                 Mode=TwoWay,
                                                 UpdateSourceTrigger=PropertyChanged}"/>
 
-
-                        <!-- =========================================
-                             SUPPLIER DOCUMENT DATE
-                             ========================================= -->
 
                         <TextBlock
                             Grid.Row="2"
@@ -282,73 +278,16 @@
 
                 <StackPanel>
 
+                    <TextBlock
+                        Text="RECEIPT INFORMATION"
+                        Style="{StaticResource AppSectionTitleStyle}"/>
 
-                    <!-- =============================================
-                         CARD TITLE + GRN NUMBER
-                         ============================================= -->
-
-                    <Grid Margin="0,0,0,12">
-
-
-                        <Grid.ColumnDefinitions>
-
-                            <ColumnDefinition Width="*"/>
-
-                            <ColumnDefinition Width="Auto"/>
-
-                        </Grid.ColumnDefinitions>
-
-
-                        <TextBlock
-                            Grid.Column="0"
-                            Text="RECEIPT INFORMATION"
-                            Style="{StaticResource AppSectionTitleNoMarginStyle}"/>
-
-
-                        <!-- GRN number display -->
-
-                        <StackPanel Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    VerticalAlignment="Center">
-
-
-                            <TextBlock
-                                Text="GRN # "
-                                FontSize="13"
-                                FontWeight="SemiBold"
-                                Opacity="0.60"
-                                VerticalAlignment="Center"/>
-
-
-                            <TextBlock
-                                Text="{Binding Header.GrnNbr}"
-                                FontSize="15"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center"/>
-
-
-                        </StackPanel>
-
-
-                    </Grid>
-
-
-                    <!-- =============================================
-                         RECEIPT FIELDS
-                         ============================================= -->
 
                     <Grid>
-
 
                         <Grid.ColumnDefinitions>
 
                             <ColumnDefinition Width="115"/>
-
-                            <ColumnDefinition Width="*"/>
-
-                            <ColumnDefinition Width="20"/>
-
-                            <ColumnDefinition Width="110"/>
 
                             <ColumnDefinition Width="*"/>
 
@@ -364,42 +303,18 @@
                         </Grid.RowDefinitions>
 
 
-                        <!-- =========================================
-                             GRN NUMBER
-                             ========================================= -->
-
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
-                            Text="GRN Number"
-                            Style="{StaticResource AppFieldLabelStyle}"/>
-
-
-                        <dxe:TextEdit
-                            Grid.Row="0"
-                            Grid.Column="1"
-
-                            EditValue="{Binding Header.GrnNbr,
-                                                Mode=TwoWay,
-                                                UpdateSourceTrigger=PropertyChanged}"/>
-
-
-                        <!-- =========================================
-                             GRN DATE
-                             ========================================= -->
-
-                        <TextBlock
-                            Grid.Row="0"
-                            Grid.Column="3"
-                            Text="GRN Date"
+                            Text="Received Date"
                             Style="{StaticResource AppFieldLabelStyle}"/>
 
 
                         <dxe:DateEdit
                             Grid.Row="0"
-                            Grid.Column="4"
+                            Grid.Column="1"
 
-                            EditValue="{Binding Header.GrnDate,
+                            EditValue="{Binding Header.ItemReceivedDate,
                                                 Mode=TwoWay,
                                                 UpdateSourceTrigger=PropertyChanged}">
 
@@ -414,14 +329,10 @@
                         </dxe:DateEdit>
 
 
-                        <!-- =========================================
-                             RECEIVED DATE
-                             ========================================= -->
-
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="0"
-                            Text="Received Date"
+                            Text="GRN Date"
                             Style="{StaticResource AppFieldLabelStyle}"/>
 
 
@@ -429,7 +340,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
 
-                            EditValue="{Binding Header.ItemReceivedDate,
+                            EditValue="{Binding Header.GrnDate,
                                                 Mode=TwoWay,
                                                 UpdateSourceTrigger=PropertyChanged}">
 
@@ -451,8 +362,58 @@
             </Border>
 
 
-        </Grid>
+            <!-- =================================================
+                 GRN NUMBER CARD
+                 ================================================= -->
 
+            <Border Grid.Column="4"
+                    Style="{StaticResource AppCardStyle}"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}">
+
+
+                <StackPanel>
+
+                    <TextBlock
+                        Text="GRN NUMBER"
+                        Style="{StaticResource AppSectionTitleStyle}"/>
+
+
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+
+                            <ColumnDefinition Width="95"/>
+
+                            <ColumnDefinition Width="*"/>
+
+                        </Grid.ColumnDefinitions>
+
+
+                        <TextBlock
+                            Grid.Column="0"
+                            Text="GRN Number"
+                            Style="{StaticResource AppFieldLabelStyle}"/>
+
+
+                        <dxe:TextEdit
+                            Grid.Column="1"
+
+                            IsReadOnly="True"
+
+                            NullText="Automatic"
+
+                            EditValue="{Binding Header.GrnNbr,
+                                                Mode=OneWay}"/>
+
+
+                    </Grid>
+
+                </StackPanel>
+
+            </Border>
+
+
+        </Grid>
 
         <!-- =====================================================
              MATERIAL / ITEM WORKSPACE
@@ -627,9 +588,7 @@
 
                         VerticalAlignment="Stretch"
 
-                        FontSize="14"
-
-                        MinHeight="280">
+                        FontSize="14">
 
 
                         <!-- =============================================

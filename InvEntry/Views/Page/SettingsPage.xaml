@@ -53,7 +53,6 @@
 
             <Border
                 Width="250"
-                MinHeight="205"
                 Margin="0,0,14,14"
                 Padding="18"
                 CornerRadius="8"
@@ -324,7 +323,7 @@
             CornerRadius="8"
             BorderThickness="1"
 
-            Margin="0,0,0,18">
+            Margin="0,0,0,8">
 
 
             <StackPanel>
@@ -445,7 +444,7 @@
 
                 <Grid
                     Grid.Row="0"
-                    Margin="0,0,0,14">
+                    Margin="0,0,0,8">
 
 
                     <Grid.ColumnDefinitions>

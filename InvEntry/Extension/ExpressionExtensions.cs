@@ -35,7 +35,7 @@ namespace InvEntry.Extension
         {
             try
             {
-                CriteriaOperator op = CriteriaOperator.Parse(formula.Expression);
+                CriteriaOperator op = CriteriaOperator.Parse(formula.Expression);   
 
                 EvaluatorContextDescriptorDefault? descriptor;
 

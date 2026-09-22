@@ -403,7 +403,7 @@
             // prodPurity
             // 
             this.prodPurity.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "\'\'")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[purity]")});
             this.prodPurity.Font = new DevExpress.Drawing.DXFont("Arial", 10F);
             this.prodPurity.Multiline = true;
             this.prodPurity.Name = "prodPurity";

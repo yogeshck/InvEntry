@@ -472,13 +472,13 @@
             HideMenuWhenSelected="True"/>
 
 
-                    <!-- OLD GOLD PURCHASE -->
+                    <!-- OLD METAL PURCHASE -->
 
                     <dxwui:HamburgerSubMenuNavigationButton
             NavigationTargetType=
                 "{x:Type views:OldMetalPurchaseView}"
 
-            Content="Old Gold Purchase"
+            Content="Old Metal Purchase"
 
             HideMenuWhenSelected="True"/>
 

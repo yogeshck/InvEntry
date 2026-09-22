@@ -1659,6 +1659,10 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
             return;
 
 
+        var savedPurchaseNumber =
+            string.Empty;
+
+
         /*
          * Critical double-save protection.
          */
@@ -1735,6 +1739,10 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
                 transactionNumber;
 
 
+            savedPurchaseNumber =
+                transactionNumber;
+
+
             StatusMessage =
                 $"Old Metal Purchase {PurchaseNumber} saved successfully.";
 
@@ -1770,6 +1778,31 @@ public partial class OldMetalPurchaseViewModel : ObservableObject
 
             RefreshCommandStates();
         }
+
+
+        if (string.IsNullOrWhiteSpace(
+                savedPurchaseNumber))
+        {
+            return;
+        }
+
+
+        try
+        {
+            _reportDialogService
+                .PrintPreviewOMPurchase(
+                    savedPurchaseNumber);
+        }
+        catch (Exception ex)
+        {
+            AddValidationError(
+                $"Old Metal Purchase {savedPurchaseNumber} was saved successfully, " +
+                "but the print preview could not be opened: " +
+                ex.Message);
+        }
+
+        ResetInternalState();
+
     }
 
 

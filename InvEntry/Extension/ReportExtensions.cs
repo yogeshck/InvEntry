@@ -54,7 +54,7 @@ namespace InvEntry.Extension
             var dialogVM = DISource.Resolve<ReportDialogViewModel>();
             dialogVM.OMTransInit(docRefNbr); // estGkey, company);
 
-            reportDialogService.ShowDialog(null, "Delivery Note (DN) Preview", $"{nameof(ReportDialogView)}", dialogVM);
+            reportDialogService.ShowDialog(null, "Old Metal Purchase Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
         
 
