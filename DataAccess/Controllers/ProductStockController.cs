@@ -68,6 +68,80 @@ namespace DataAccess.Controllers
         }
 
 
+        [HttpGet("pending/grn-line-summary/{grnLineSummaryGkey:int}")]
+        public IActionResult GetPendingByGrnLineSummary(int grnLineSummaryGkey)
+        {
+            var records = _productStock.GetList(x =>
+                x.GrnLineSummaryGkey == grnLineSummaryGkey &&
+                x.Status == "Pending Tag" &&
+                x.IsBarcodePrinted == false &&
+                x.IsProductSold == false);
+
+            return Ok(records.OrderBy(x => x.Gkey).ToList());
+        }
+
+        [HttpPost("{gkey:int}/reserve-sku")]
+        public async Task<IActionResult> ReserveSku(int gkey)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.Serializable);
+
+            var stock = await _context.ProductStocks
+                .FirstOrDefaultAsync(x => x.Gkey == gkey);
+
+            if (stock is null)
+                return NotFound($"Product stock {gkey} was not found.");
+
+            if (!string.IsNullOrWhiteSpace(stock.ProductSku) &&
+                !stock.ProductSku.StartsWith("TMP-", StringComparison.OrdinalIgnoreCase))
+            {
+                await transaction.CommitAsync();
+                return Ok(stock);
+            }
+
+            if (!string.Equals(stock.Status, "Pending Tag", StringComparison.OrdinalIgnoreCase) ||
+                stock.IsBarcodePrinted == true || stock.IsProductSold == true)
+            {
+                return BadRequest("Only pending, unprinted stock can reserve a SKU.");
+            }
+
+            if (string.IsNullOrWhiteSpace(stock.Category))
+                return BadRequest("Product category is required to reserve a SKU.");
+
+            var reference = await _context.MtblReferences.FirstOrDefaultAsync(x =>
+                x.RefName == "PRODUCT_CATEGORY" && x.RefCode == stock.Category);
+
+            if (reference is null || string.IsNullOrWhiteSpace(reference.RefDesc))
+                return BadRequest($"SKU sequence is not configured for category '{stock.Category}'.");
+
+            if (!int.TryParse(reference.RefValue, out int sequence))
+                return BadRequest($"SKU sequence for category '{stock.Category}' is invalid.");
+
+            var product = stock.ProductGkey.HasValue
+                ? await _context.Products.FirstOrDefaultAsync(x => x.Gkey == stock.ProductGkey.Value)
+                : null;
+
+            if (product is null)
+                return BadRequest("The product required to reserve a SKU was not found.");
+
+            string tagPurityCode = product.Purity switch
+            {
+                "916" => "2",
+                "750" => "8",
+                _ => string.Empty
+            };
+
+            int reservedSequence = checked(sequence + 1);
+            stock.ProductSku = $"{reference.RefDesc}{tagPurityCode}-{reservedSequence:D4}";
+            stock.ModifiedOn = DateTime.Now;
+            reference.RefValue = reservedSequence.ToString();
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(stock);
+        }
+
         // GET api/<MtblReferenceController>/5
         [HttpGet("category/{category}")]
         public IEnumerable<ProductStock> GetCategory(string category)
@@ -90,10 +164,18 @@ namespace DataAccess.Controllers
         }
 
         // PUT api/<ProductStockController>/5
-        [HttpPut("{productGkey}")]
-        public IActionResult Put(int productGkey, [FromBody] ProductStock value)
+        [HttpPut("{gkey:int}")]
+        public async Task<IActionResult> Put(int gkey, [FromBody] ProductStock value)
         {
+            if (value is null)
+                return BadRequest("ProductStock payload is required.");
+
+            if (gkey != value.Gkey)
+                return BadRequest("ProductStock route key does not match the payload key.");
+
             _productStock.Update(value);
+            await _context.SaveChangesAsync();
+
             return Ok(value);
         }
 

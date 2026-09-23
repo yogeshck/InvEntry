@@ -301,6 +301,12 @@ namespace InvEntry.ViewModels
         {
             foreach (var line in summaries)
             {
+                if (line.GKey <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"GRN line summary was not saved for category {line.ProductCategory}.");
+                }
+
                 if (string.IsNullOrWhiteSpace(line.ProductCategory) ||
                     !summaryKeys.TryGetValue(
                         line.ProductCategory,
@@ -317,6 +323,7 @@ namespace InvEntry.ViewModels
                     var stock = new ProductStock
                     {
                         StockSummaryGkey = stockSummaryGkey,
+                        GrnLineSummaryGkey = line.GKey,
 
                         ProductGkey = line.ProductGkey,
                         Category = line.ProductCategory,

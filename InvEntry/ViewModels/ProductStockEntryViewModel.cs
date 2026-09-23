@@ -50,6 +50,46 @@ namespace InvEntry.ViewModels
         [ObservableProperty]
         private string? _errorPanelMessage;
 
+        [ObservableProperty]
+        private string? _simulationLabelPreview;
+
+        public bool IsLabelPrintSimulation => _labelPrinter is SimulatedLabelPrinter;
+        [ObservableProperty]
+        private System.Windows.Media.Imaging.BitmapSource? _labelPreviewImage;
+
+        [ObservableProperty]
+        private string? _labelPreviewZpl;
+
+        [ObservableProperty]
+        private bool _hasLabelPreview;
+        [ObservableProperty]
+        private int _selectedWorkflowTabIndex;
+
+        [ObservableProperty]
+        private int _totalQuantity;
+
+        [ObservableProperty]
+        private int _completedQuantity;
+
+        [ObservableProperty]
+        private int _pendingQuantity;
+
+        [ObservableProperty]
+        private bool _canContinueToWeighing;
+
+        [ObservableProperty]
+        private bool _isWeighingTabEnabled;
+
+        [ObservableProperty]
+        private bool _isWorkflowComplete;
+
+        [ObservableProperty]
+        private ObservableCollection<GrnLine> _completedItems = new();
+
+        public string ProgressText => TotalQuantity <= 0
+            ? "No item selected"
+            : $"{CompletedQuantity} of {TotalQuantity} completed";
+
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
         private readonly IProductViewService _productViewService;
@@ -97,14 +137,16 @@ namespace InvEntry.ViewModels
         private bool isPrintEnabled = true;
         private decimal _capturedWeight;
         private bool isManualMode;
-        private int productSkuSeq;
 
         private WeighScaleReaderAuto reader;
 
         private Dictionary<int, ObservableCollection<GrnLine>> _lineGrnLookup;
+        private readonly Dictionary<int, ProductStock> _pendingStockByGkey = new();
+        private readonly Dictionary<GrnLine, int> _stockGkeyByLine = new();
         private Dictionary<string, Action<GrnLine, decimal?>> copyGRNLineExpression;
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
         private readonly ILabelPrinter _labelPrinter;
+        private readonly ILabelPreviewRenderer _labelPreviewRenderer;
 
         public ProductStockEntryViewModel(IGrnService grnService,
                                             IProductViewService productViewService,
@@ -115,7 +157,8 @@ namespace InvEntry.ViewModels
                                             IOrgThisCompanyViewService orgThisCompanyViewService,
                                             IMessageBoxService messageBoxService,
                                             IMtblReferencesService mtblReferencesService,
-                                            ILabelPrinter labelPrinter)
+                                            ILabelPrinter labelPrinter,
+                                            ILabelPreviewRenderer labelPreviewRenderer)
         {
             _grnService = grnService;
             _productViewService = productViewService;
@@ -127,6 +170,7 @@ namespace InvEntry.ViewModels
             _mtblReferencesService = mtblReferencesService;
             _orgThisCompanyViewService = orgThisCompanyViewService;
             _labelPrinter = labelPrinter;
+            _labelPreviewRenderer = labelPreviewRenderer;
 
             _lineGrnLookup = new();
 
@@ -189,85 +233,95 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
-        private async void OnEditorActivated(ShowingEditorEventArgs e)
+        private async Task CaptureScaleWeightAsync()
         {
-            //var line = e.Row as GrnLine;
-
-            if (e.Row is not GrnLine line)
+            if (SelectedGrnLine is null || isManualMode)
                 return;
 
-            ClearErrors();
-            // User has started correcting the current line.
-            //ClearPrintStatusFor(line);
+            var waitVM = WaitIndicatorVM.ShowIndicator("Reading weight from scale...");
+            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-            var waitVM = WaitIndicatorVM.ShowIndicator("Press... print button... reading weight.... .");
-
-            if (!isManualMode)
+            try
             {
-                Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Awaiting ...input..."));
+                var scaleReader = new WeighScaleReaderAuto();
+                var weight = await scaleReader.StartManualAsync();
+                scaleReader.Stop();
 
-
-            }
-
-            if (e.Column.FieldName == "GrossWeight")
-            {
-
-                SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-                //var line = e.Row as GrnLine;
-                if (line != null)
+                if (weight < 0)
                 {
-                    if (!isManualMode)   //AUTO Mode
-                    {
-                        var reader = new WeighScaleReaderAuto();
-                        var weight = await reader.StartManualAsync();
-                        //.StartScaleAsync(); // await one stable value
-
-                        if (weight < 0)
-                        {
-                            //display error message
-                            ShowError(
-                                        "Weighing machine error",
-                                        "Unable to read the weight. Please check the weighing-machine connection.");
-                            reader.Stop();
-                            return;
-                        }
-
-                        line.GrossWeight = weight;
-                        line.StoneWeight = 0;
-                        line.NetWeight = line.GrossWeight;
-
-
-                    }
-
-                    /*                    else
-                                        {
-                                            if (isManualMode)
-                                            {
-                                                line.GrossWeight = weight;
-                                            }
-
-                                        }*/
+                    ShowError("Weighing machine error",
+                        "Unable to read the weight. Please check the weighing-machine connection.");
+                    return;
                 }
 
-                SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-                if (!isManualMode)
-                    _ = PrintTagAsync(line);
+                InvalidateLabelPreview();
+                SelectedGrnLine.GrossWeight = weight;
+                SelectedGrnLine.StoneWeight = 0;
+                EvaluateGrnLine(SelectedGrnLine);
             }
-            else
+            finally
             {
-                if (line != null)
-                {
-                    if (line.NetWeight > 0)
-                    {
-                        _ = PrintTagAsync(line);
-                    }
-                }
+                SplashScreenManager.ActiveSplashScreens
+                    .FirstOrDefault(x => x.ViewModel == waitVM)?.Close();
             }
-
         }
 
+        [RelayCommand]
+        private void CalculateCurrentWeights()
+        {
+            InvalidateLabelPreview();
+            if (SelectedGrnLine is not null)
+                EvaluateGrnLine(SelectedGrnLine);
+        }
+
+        [RelayCommand]
+        private async Task PreviewTagAsync()
+        {
+            ClearErrors();
+            var validationErrors = ValidateTagForPrinting(SelectedGrnLine);
+            if (validationErrors.Count > 0)
+            {
+                ShowErrors("Unable to preview label", validationErrors);
+                return;
+            }
+
+            try
+            {
+                var line = SelectedGrnLine!;
+                int stockGkey = line.ProductStockGkey!.Value;
+                var productStock = await ResolvePendingStockAsync(line, stockGkey);
+                line.ProductSku = productStock.ProductSku;
+                if (string.IsNullOrWhiteSpace(line.ProductSku) ||
+                    line.ProductSku.StartsWith("TMP-", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        "The current item does not yet have a reserved permanent SKU. " +
+                        "Return to selection and continue to weighing again.");
+                }
+
+                var request = CreateLabelPrintRequest(line);
+                var preview = _labelPreviewRenderer.Render(request);
+
+                LabelPreviewZpl = preview.Zpl;
+                LabelPreviewImage = preview.Image;
+                HasLabelPreview = true;
+                SimulationLabelPreview = IsLabelPrintSimulation
+                    ? $"Simulation preview for {productStock.ProductSku}; no physical label was printed."
+                    : null;
+            }
+            catch (Exception ex)
+            {
+                InvalidateLabelPreview();
+                ShowError("Unable to preview label", ex.Message);
+            }
+        }
+
+        private void InvalidateLabelPreview()
+        {
+            LabelPreviewImage = null;
+            LabelPreviewZpl = null;
+            HasLabelPreview = false;
+        }
         [RelayCommand]
         private void ClearErrors()
         {
@@ -330,8 +384,11 @@ namespace InvEntry.ViewModels
             if (mtblReference is null)
                 errors.Add("The product SKU sequence reference has not been loaded.");
 
-            if (string.IsNullOrWhiteSpace(grnLine.ProductSku))
-                errors.Add("Product SKU is required.");
+            if (!grnLine.ProductStockGkey.HasValue || grnLine.ProductStockGkey.Value <= 0)
+                errors.Add("The selected row is not associated with pending stock.");
+
+            if (!grnLine.GrossWeight.HasValue || grnLine.GrossWeight.Value <= 0m)
+                errors.Add("Gross weight must be greater than zero.");
 
             if (!grnLine.NetWeight.HasValue || grnLine.NetWeight.Value <= 0m)
                 errors.Add("Net weight must be greater than zero.");
@@ -360,104 +417,129 @@ namespace InvEntry.ViewModels
             ClearErrors();
 
             var validationErrors = ValidateTagForPrinting(grnLine);
-
             if (validationErrors.Count > 0)
             {
-                ShowErrors(
-        "Unable to print label",
-        validationErrors);
-
-                return; // Remain on the current row
+                ShowErrors("Unable to print label", validationErrors);
+                return;
             }
 
             var line = grnLine!;
-
             IsPrintingTag = true;
 
             try
             {
-                /*                var printResult = BarCodePrint.ProcessBarCode(
-                                    line.ProductSku!,
-                                    line.ProductDesc ?? string.Empty,
-                                    line.SuppVaPercent.GetValueOrDefault(),
-                                    line.NetWeight!.Value,
-                                    line.StoneWeight.GetValueOrDefault(),
-                                    line.ProductPurity ?? string.Empty,
-                                    Company!.CompanyName ?? "MATHA");*/
+                int stockGkey = line.ProductStockGkey!.Value;
+                await ResolveAndReserveStockAsync(line);
+                var request = CreateLabelPrintRequest(line);
 
-                var request = new LabelPrintRequest(
-                                                        line.ProductSku!,
-                                                        line.ProductDesc ?? string.Empty,
-                                                        line.SuppVaPercent.GetValueOrDefault(),
-                                                        line.NetWeight!.Value,
-                                                        line.StoneWeight.GetValueOrDefault(),
-                                                        line.ProductPurity ?? string.Empty,
-                                                        Company!.CompanyName ?? "MATHA");
+                if (IsLabelPrintSimulation)
+                {
+                    var preview = _labelPreviewRenderer.Render(request);
+                    LabelPreviewZpl = preview.Zpl;
+                    LabelPreviewImage = preview.Image;
+                    HasLabelPreview = true;
+                    SimulationLabelPreview =
+                        $"Simulation preview for {request.ProductCode}; no physical label was printed.";
+                }
 
                 var printResult = await _labelPrinter.PrintAsync(request);
-
                 if (!printResult.Success)
                 {
                     SelectedGrnLine = line;
-
                     ShowError(
-                            "Label printing failed",
-                            printResult.ErrorMessage ??
-                            "The printer did not accept the label.");
-
-
-                    return; // Critical: do not move to the next row
+                        "Label printing failed",
+                        printResult.ErrorMessage ?? "The printer did not accept the label.");
+                    return;
                 }
 
-                var completedLineNumber = line.LineNbr;
+                var completedLineNumber = line.LineNbr.GetValueOrDefault();
+                var finalizedStock = await ProcessStockLinesAsync(line);
 
-                var existingLine =
-                    await _grnService.GetByProductSku(line.ProductSku!);
-
-                if (existingLine is null)
+                try
                 {
-                    line.GrnHdrGkey = SelectedGrn!.GKey;
-                    line.Status = "Closed";
-
-                    await ProcessStockLinesAsync(line);
-                    await _grnService.CreateGrnLine(line);
-
-                    productSkuSeq++;
-                    mtblReference!.RefValue = productSkuSeq.ToString();
-
-                    await _mtblReferencesService.UpdateReference(
-                        mtblReference);
+                    var existingLine = await _grnService.GetByProductSku(line.ProductSku);
+                    if (existingLine is null)
+                    {
+                        line.GrnHdrGkey = SelectedGrn!.GKey;
+                        line.Status = "Closed";
+                        await _grnService.CreateGrnLine(line);
+                    }
+                }
+                catch
+                {
+                    // The label has printed, but the GRN line did not persist. Keep the
+                    // same reserved SKU pending so a retry/reconciliation cannot create
+                    // another stock row or allocate another SKU.
+                    finalizedStock.Status = "Pending Tag";
+                    finalizedStock.IsBarcodePrinted = false;
+                    finalizedStock.ModifiedOn = DateTime.Now;
+                    await _productStockService.UpdateProductStock(finalizedStock);
+                    _pendingStockByGkey[stockGkey] = finalizedStock;
+                    throw;
                 }
 
-                // PrintStatusMessage =
-                //     $"Label {line.ProductSku} was submitted to the printer.";
+                line.IsPrinted = true;
+                InvalidateLabelPreview();
+                _pendingStockByGkey.Remove(stockGkey);
+                _stockGkeyByLine.Remove(line);
+                GrnLineList.Remove(line);
+                CompletedItems.Add(line);
+                CompletedQuantity = CompletedItems.Count;
+                PendingQuantity = GrnLineList.Count;
+                CanContinueToWeighing = PendingQuantity > 0;
+                IsWorkflowComplete = PendingQuantity == 0;
+                OnPropertyChanged(nameof(ProgressText));
+                SelectNextPrintableLine(completedLineNumber);
 
-                // Execute this only after everything succeeds.
-                SelectNextPrintableLine((int)completedLineNumber);
+                if (IsWorkflowComplete)
+                    SelectedGrnLine = null;
             }
             catch (Exception ex)
             {
                 SelectedGrnLine = line;
-
                 System.Diagnostics.Debug.WriteLine(ex);
-
                 ShowErrors(
                     "Label operation failed",
                     new[]
                     {
-                "The label operation could not be completed.",
-                ex.Message
+                        "The label operation could not be completed.",
+                        ex.Message
                     });
-
-
-                // Do not call SelectNextPrintableLine() here.
             }
             finally
             {
                 IsPrintingTag = false;
             }
         }
+        private async Task<ProductStock> ResolveAndReserveStockAsync(GrnLine line)
+        {
+            int stockGkey = line.ProductStockGkey.GetValueOrDefault();
+            if (stockGkey <= 0)
+                throw new InvalidOperationException("The selected item has no pending ProductStock identity.");
 
+            var productStock = await ResolvePendingStockAsync(line, stockGkey);
+            if (string.IsNullOrWhiteSpace(productStock.ProductSku) ||
+                productStock.ProductSku.StartsWith("TMP-", StringComparison.OrdinalIgnoreCase))
+            {
+                productStock = await _productStockService.ReserveProductSku(stockGkey);
+                _pendingStockByGkey[stockGkey] = productStock;
+            }
+
+            line.ProductSku = productStock.ProductSku;
+            if (string.IsNullOrWhiteSpace(line.ProductSku))
+                throw new InvalidOperationException("A permanent product SKU could not be reserved.");
+
+            return productStock;
+        }
+
+        private LabelPrintRequest CreateLabelPrintRequest(GrnLine line) => new(
+            line.ProductSku!,
+            line.ProductDesc ?? string.Empty,
+            line.SuppVaPercent.GetValueOrDefault(),
+            line.NetWeight!.Value,
+            line.StoneWeight.GetValueOrDefault(),
+            line.ProductPurity ?? string.Empty,
+            Company!.CompanyName ?? "MATHA");
         private void SelectNextPrintableLine(int completedLineNumber)
         {
             if (GrnLineList is null || GrnLineList.Count == 0)
@@ -465,7 +547,7 @@ namespace InvEntry.ViewModels
 
             // Do not assume that line numbers are continuous.
             var nextLine = GrnLineList
-                .Where(line => line.LineNbr > completedLineNumber)
+                .Where(line => !line.IsPrinted && line.LineNbr > completedLineNumber)
                 .OrderBy(line => line.LineNbr)
                 .FirstOrDefault();
 
@@ -488,15 +570,36 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task SelectionGrnSumryListChanged()
         {
+            ClearErrors();
+            ResetWorkstationState();
 
-            if (SelectedGrnLineSumry is null) return;
-
-
-            if (_lineGrnLookup.TryGetValue(SelectedGrnLineSumry.GKey, out var grnLines))
-            {
-                GrnLineList = new(grnLines);
+            if (SelectedGrnLineSumry is null)
                 return;
-            }
+
+            var pendingStocks = (await _productStockService
+                    .GetPendingByGrnLineSummary(SelectedGrnLineSumry.GKey))
+                .OrderBy(stock => stock.GKey)
+                .ToList();
+            var completedLines = (await _grnService.GetByLineSumryGkey(
+                    SelectedGrnLineSumry.GKey,
+                    SelectedGrnLineSumry.GrnHdrGkey.GetValueOrDefault()))
+                .OrderBy(line => line.LineNbr)
+                .ToList();
+
+            TotalQuantity = SelectedGrnLineSumry.SuppliedQty.GetValueOrDefault();
+            PendingQuantity = pendingStocks.Count;
+            CompletedQuantity = completedLines.Count;
+            CompletedItems = new(completedLines);
+            CanContinueToWeighing = SelectedGrn is not null && PendingQuantity > 0;
+            IsWorkflowComplete = TotalQuantity > 0 && PendingQuantity == 0;
+            OnPropertyChanged(nameof(ProgressText));
+        }
+
+        [RelayCommand]
+        private async Task ContinueToWeighingAsync()
+        {
+            if (!CanContinueToWeighing || SelectedGrnLineSumry is null)
+                return;
 
             var result = _messageBoxService.ShowMessage(
                 "Do you want to print in AUTO mode?",
@@ -504,106 +607,131 @@ namespace InvEntry.ViewModels
                 MessageButton.YesNoCancel,
                 MessageIcon.Question);
 
-            if (result == MessageResult.Yes)
-            {
-                isManualMode = false;
-            }
-            else if (result == MessageResult.No)
-            {
-                isManualMode = true;
-            }
-            else if (result == MessageResult.Cancel)
-            {
+            if (result == MessageResult.Cancel)
                 return;
-            }
 
+            isManualMode = result == MessageResult.No;
+            await LoadWorkstationAsync();
 
-            //var category = GrnLineSumryList.First().ProductCategory;
-
-            var category = GrnLineSumryList.Where(x => x.GKey == SelectedGrnLineSumry.GKey)
-                            .Select(x => x.ProductCategory).FirstOrDefault();
-
-
-            if (category == null) return;
-
-            mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", category);
-
-            if (mtblReference is null)
+            if (PendingQuantity > 0)
             {
-                return;
+                IsWeighingTabEnabled = true;
+                SelectedWorkflowTabIndex = 1;
             }
-
-            productSkuSeq = int.Parse(mtblReference.RefValue);
-
-            var prdView = await _productViewService.GetProduct(category);
-
-            // check grn line has any records already in table
-            // if there populate the old records and then allow user to add new rec
-
-            GrnLineList = new();
-
-            var grnLineSkuCnt = 0;
-            var grnLineSkuToPrint = 0;
-
-            var grnLineList_1 = await _grnService.GetByLineSumryGkey(SelectedGrnLineSumry.GKey, (int)SelectedGrnLineSumry.GrnHdrGkey);
-
-            if (grnLineList_1 is not null)
-                grnLineSkuCnt = grnLineList_1.Count(x => x.ProductId == prdView.Id &&
-                                                        x.ProductSku != null);
-
-            if (grnLineSkuCnt > 0)
-            //records already exist, then populate
-            {
-                grnLineSkuToPrint = (int)(SelectedGrnLineSumry.SuppliedQty - grnLineSkuCnt);
-            }
-            else
-            {
-                grnLineSkuToPrint = (int)SelectedGrnLineSumry.SuppliedQty;
-            }
-
-            var tempSku = productSkuSeq;
-
-            for (int i = grnLineSkuCnt + 1; i <= grnLineSkuToPrint + 1; i++)
-            {
-                //Sequence number as product sku alongwith product code
-
-                tempSku++;
-
-                GrnLine grnLine = new();
-
-                grnLine.GrnHdrGkey = SelectedGrnLineSumry.GrnHdrGkey;
-                grnLine.ProductId = SelectedGrnLineSumry.ProductCategory;
-                grnLine.ProductGkey = SelectedGrnLineSumry.ProductGkey;
-                grnLine.LineNbr = i;
-                grnLine.ProductDesc = prdView.Description;
-                grnLine.ProductPurity = prdView?.Purity;
-                grnLine.SuppVaPercent = prdView.VaPercent;
-                grnLine.GrnLineSumryGkey = SelectedGrnLineSumry.GKey;
-
-                //grnLine.ProductSku = SelectedGrnLineSumry.ProductCategory;
-
-                var tagPurityCode = "";
-                if (grnLine.ProductPurity == "916")
-                    tagPurityCode = "2";
-                else if (grnLine.ProductPurity == "750")
-                    tagPurityCode = "8";
-
-                var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", tempSku.ToString("D4")); //, grnLine.NetWeight);
-                grnLine.ProductSku = productSku;
-
-                //string.Format("{0}{1}", mtblReference.RefDesc, ProductSku.ToString("D4"));
-
-                GrnLineList.Add(grnLine);
-
-            }
-
-            _lineGrnLookup[SelectedGrnLineSumry.GKey] = GrnLineList;
         }
 
+        private async Task LoadWorkstationAsync()
+        {
+            ClearErrors();
+            ResetWorkstationState();
+
+            if (SelectedGrnLineSumry is null)
+                return;
+
+            string? category = SelectedGrnLineSumry.ProductCategory;
+            if (string.IsNullOrWhiteSpace(category))
+                return;
+
+            mtblReference = await _mtblReferencesService.GetReference(
+                "PRODUCT_CATEGORY", category);
+            if (mtblReference is null)
+            {
+                ShowError("Unable to load pending stock",
+                    $"SKU sequence is not configured for category '{category}'.");
+                return;
+            }
+
+            var productView = await _productViewService.GetProduct(category);
+            if (productView is null)
+            {
+                ShowError("Unable to load pending stock",
+                    $"Product details were not found for category '{category}'.");
+                return;
+            }
+
+            var pendingStocks = (await _productStockService
+                    .GetPendingByGrnLineSummary(SelectedGrnLineSumry.GKey))
+                .OrderBy(stock => stock.GKey)
+                .ToList();
+            var completedLines = (await _grnService.GetByLineSumryGkey(
+                    SelectedGrnLineSumry.GKey,
+                    SelectedGrnLineSumry.GrnHdrGkey.GetValueOrDefault()))
+                .OrderBy(line => line.LineNbr)
+                .ToList();
+
+            ProductStockList = new(pendingStocks);
+            CompletedItems = new(completedLines);
+            int nextLineNumber = completedLines.Select(x => x.LineNbr.GetValueOrDefault())
+                .DefaultIfEmpty(0).Max();
+
+            foreach (var pendingStock in pendingStocks)
+            {
+                var stock = pendingStock;
+                if (string.IsNullOrWhiteSpace(stock.ProductSku) ||
+                    stock.ProductSku.StartsWith("TMP-", StringComparison.OrdinalIgnoreCase))
+                {
+                    stock = await _productStockService.ReserveProductSku(stock.GKey);
+                }
+                var line = new GrnLine
+                {
+                    GrnHdrGkey = SelectedGrnLineSumry.GrnHdrGkey,
+                    ProductId = category,
+                    ProductGkey = stock.ProductGkey ?? SelectedGrnLineSumry.ProductGkey,
+                    LineNbr = ++nextLineNumber,
+                    ProductDesc = productView.Description,
+                    ProductPurity = productView.Purity,
+                    SuppVaPercent = productView.VaPercent,
+                    GrnLineSumryGkey = SelectedGrnLineSumry.GKey,
+                    ProductStockGkey = stock.GKey,
+                    ProductSku = !string.IsNullOrWhiteSpace(stock.ProductSku) &&
+                                 !stock.ProductSku.StartsWith("TMP-", StringComparison.OrdinalIgnoreCase)
+                        ? stock.ProductSku
+                        : null,
+                    GrossWeight = stock.GrossWeight,
+                    StoneWeight = stock.StoneWeight.GetValueOrDefault(),
+                    NetWeight = stock.NetWeight
+                };
+
+                GrnLineList.Add(line);
+                _pendingStockByGkey[stock.GKey] = stock;
+                _stockGkeyByLine[line] = stock.GKey;
+            }
+
+            TotalQuantity = SelectedGrnLineSumry.SuppliedQty.GetValueOrDefault();
+            PendingQuantity = pendingStocks.Count;
+            CompletedQuantity = completedLines.Count;
+            CanContinueToWeighing = PendingQuantity > 0;
+            IsWorkflowComplete = TotalQuantity > 0 && PendingQuantity == 0;
+            SelectedGrnLine = GrnLineList.FirstOrDefault();
+            OnPropertyChanged(nameof(ProgressText));
+        }
+
+        [RelayCommand]
+        private async Task BackToSelectionAsync()
+        {
+            SelectedWorkflowTabIndex = 0;
+            IsWeighingTabEnabled = false;
+            ResetWorkstationState();
+            await SelectionGrnSumryListChanged();
+        }
+
+        private void ResetWorkstationState()
+        {
+            _pendingStockByGkey.Clear();
+            _stockGkeyByLine.Clear();
+            GrnLineList = new();
+            ProductStockList = new();
+            SelectedGrnLine = null;
+            InvalidateLabelPreview();
+        }
+        partial void OnSelectedGrnLineChanged(GrnLine value)
+        {
+            InvalidateLabelPreview();
+        }
         partial void OnSelectedGrnLineSumryChanged(GrnLineSummary oldValue, GrnLineSummary newValue)
         {
-            if (oldValue is not null)
-                _lineGrnLookup[oldValue.GKey] = GrnLineList;
+            _pendingStockByGkey.Clear();
+            _stockGkeyByLine.Clear();
         }
 
         partial void OnSelectedGrnChanged(GrnHeader oldValue, GrnHeader newValue)
@@ -623,6 +751,21 @@ namespace InvEntry.ViewModels
         private async Task SelectionGRNChanged()
         {
             ClearErrors();
+            _pendingStockByGkey.Clear();
+            _stockGkeyByLine.Clear();
+            GrnLineList = new();
+            ProductStockList = new();
+
+            SelectedGrnLineSumry = null;
+            TotalQuantity = 0;
+            CompletedQuantity = 0;
+            PendingQuantity = 0;
+            CanContinueToWeighing = false;
+            IsWorkflowComplete = false;
+            IsWeighingTabEnabled = false;
+            SelectedWorkflowTabIndex = 0;
+            CompletedItems = new();
+            OnPropertyChanged(nameof(ProgressText));
 
             if (SelectedGrn is null) return;
 
@@ -706,36 +849,47 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task Submit()
         {
-
             if (SelectedGrn is null)
+                return;
+
+            var summaries = (await _grnService.GetBySumryHdrGkey(SelectedGrn.GKey)).ToList();
+            int remainingCount = 0;
+
+            foreach (var summary in summaries)
             {
+                remainingCount += (await _productStockService
+                        .GetPendingByGrnLineSummary(summary.GKey))
+                    .Count();
+            }
+
+            if (remainingCount > 0)
+            {
+                ShowError(
+                    "GRN cannot be closed",
+                    $"{remainingCount} item(s) still require weighing and tagging.");
                 return;
             }
 
-            // saving immediate no need below line
-            // await SavingGrnLinesList();
             _lineGrnLookup.Clear();
+            _pendingStockByGkey.Clear();
+            _stockGkeyByLine.Clear();
 
-            //check should be introduced here to find any leftover line to be closed, if any do not set closed otherwise do
             SelectedGrn.Status = "Closed";
             await _grnService.UpdateHeader(SelectedGrn);
 
             if (GrnHdrList.Contains(SelectedGrn))
-            {
                 GrnHdrList.Remove(SelectedGrn);
-            }
 
             GrnLineList.Clear();
             GrnLineSumryList.Clear();
             ProductStockList.Clear();
 
-            //StopScale();
-
-            _messageBoxService.ShowMessage("Stock Updated Successfully", "Stock Created",
-                                MessageButton.OK, MessageIcon.Exclamation);
-
+            _messageBoxService.ShowMessage(
+                "Stock Updated Successfully",
+                "Stock Created",
+                MessageButton.OK,
+                MessageIcon.Exclamation);
         }
-
         private async void CreateProductTransaction(ProductStock productStock)
         {
             ProductTransaction productTransaction = new();
@@ -782,46 +936,93 @@ namespace InvEntry.ViewModels
             await _productTransactionService.CreateProductTransaction(productTransaction);
         }
 
-        private async Task ProcessStockLinesAsync(GrnLine grnLineStock)
+        private async Task<ProductStock> ProcessStockLinesAsync(GrnLine grnLineStock)
         {
+            int stockGkey = grnLineStock.ProductStockGkey.GetValueOrDefault();
+            if (stockGkey <= 0)
+                throw new InvalidOperationException("Pending stock association was not found.");
 
-            var prdStk = await _productStockService.GetProductStock(grnLineStock.ProductSku);
-            if (prdStk is not null)
-                return;     //avoid duplication of product stock
+            var productStock = await _productStockService.GetProductStock(stockGkey);
+            if (productStock is null)
+                throw new InvalidOperationException($"Product stock {stockGkey} was not found.");
 
-            if (ProductStockList is null)
-                ProductStockList = new();
-
-            ProductStock productStock = new ProductStock();
-
-            productStock.ProductGkey = grnLineStock.ProductGkey;
+            productStock.ProductSku = grnLineStock.ProductSku;
             productStock.GrossWeight = grnLineStock.GrossWeight;
             productStock.StoneWeight = grnLineStock.StoneWeight;
             productStock.NetWeight = grnLineStock.NetWeight;
             productStock.SuppliedGrossWeight = grnLineStock.GrossWeight;
-            productStock.AdjustedWeight = 0;
-            productStock.SoldWeight = 0;
             productStock.BalanceWeight = grnLineStock.NetWeight;
-            productStock.SuppliedQty = grnLineStock.SuppliedQty;
+            productStock.SuppliedQty = 1;
+            productStock.StockQty = 1;
             productStock.SoldQty = 0;
-            productStock.StockQty = 1; //hardcoded to be reviewed later >>>> grnLineStock.AcceptedQty;
             productStock.Status = "In-Stock";
-            productStock.SupplierId = SelectedGrn.SupplierId;
-            productStock.IsProductSold = false;
-            productStock.Category = grnLineStock.ProductId;
-            productStock.ProductSku = grnLineStock.ProductSku;
             productStock.IsBarcodePrinted = true;
-            productStock.CreatedOn = DateTime.Now;
-            productStock.CreatedBy = "System";
-            productStock.WastageAmount = 0;
-            productStock.WastagePercent = 0;
+            productStock.IsProductSold = false;
+            productStock.ModifiedOn = DateTime.Now;
 
-            // ProductStockList.Add(productStock);
-            //save to db immediate - if list has 100 or more nos, it takes lots of time
-            await _productStockService.CreateProductStock(productStock);
+            await _productStockService.UpdateProductStock(productStock);
+            _pendingStockByGkey[stockGkey] = productStock;
 
+            return productStock;
+        }
+        private async Task<ProductStock> ResolvePendingStockAsync(
+            GrnLine line,
+            int stockGkey)
+        {
+            if (!_pendingStockByGkey.TryGetValue(stockGkey, out var productStock))
+                productStock = await _productStockService.GetProductStock(stockGkey);
+
+            string? rejectionReason = GetPendingStockRejectionReason(
+                productStock,
+                line,
+                stockGkey);
+
+            if (rejectionReason is not null)
+                throw new InvalidOperationException(rejectionReason);
+
+            _pendingStockByGkey[stockGkey] = productStock!;
+            _stockGkeyByLine[line] = stockGkey;
+            return productStock!;
         }
 
+        private static string? GetPendingStockRejectionReason(
+            ProductStock? productStock,
+            GrnLine line,
+            int requestedStockGkey)
+        {
+            if (productStock is null)
+                return $"Pending ProductStock GKEY {requestedStockGkey} was not found.";
+
+            if (productStock.GKey != requestedStockGkey)
+            {
+                return $"ProductStock lookup returned GKEY {productStock.GKey} " +
+                       $"instead of requested GKEY {requestedStockGkey}.";
+            }
+
+            if (productStock.GrnLineSummaryGkey != line.GrnLineSumryGkey)
+            {
+                return $"ProductStock GKEY {requestedStockGkey} belongs to GRN line summary " +
+                       $"{productStock.GrnLineSummaryGkey?.ToString() ?? "<null>"}, but the selected row " +
+                       $"belongs to summary {line.GrnLineSumryGkey?.ToString() ?? "<null>"}.";
+            }
+
+            if (!string.Equals(
+                    productStock.Status,
+                    "Pending Tag",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return $"ProductStock GKEY {requestedStockGkey} is not pending tag; " +
+                       $"its status is '{productStock.Status ?? "<null>"}'.";
+            }
+
+            if (productStock.IsBarcodePrinted)
+                return $"ProductStock GKEY {requestedStockGkey} is already marked as barcode printed.";
+
+            if (productStock.IsProductSold == true)
+                return $"ProductStock GKEY {requestedStockGkey} is already marked as sold.";
+
+            return null;
+        }
         [RelayCommand]
         private void CellUpdate(CellValueChangedEventArgs args)
         {
@@ -853,7 +1054,10 @@ namespace InvEntry.ViewModels
         private void EvaluateGrnLine(GrnLine grnLine)
         {
             if (grnLine.StoneWeight.HasValue)
-                grnLine.NetWeight = grnLine.GrossWeight.GetValueOrDefault() - grnLine.StoneWeight.GetValueOrDefault();
+                grnLine.NetWeight = Math.Round(
+                    grnLine.GrossWeight.GetValueOrDefault() - grnLine.StoneWeight.GetValueOrDefault(),
+                    3,
+                    MidpointRounding.AwayFromZero);
 
             grnLine.OrderedQty = 1;
             grnLine.ReceivedQty = 1;

@@ -1,23 +1,19 @@
 ﻿<UserControl x:Class="InvEntry.Views.ProductStockEntryView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
-             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
-             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
-             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
-             xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
-             xmlns:ext="clr-namespace:InvEntry.Extension"
-             d:DataContext="{d:DesignInstance Type=viewmodels:ProductStockEntryViewModel}"
-             DataContext="{ext:DISource Type=viewmodels:ProductStockEntryViewModel}"
-             mc:Ignorable="d"
-             d:DesignWidth="1500"
-             d:DesignHeight="900">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+    xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+    xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+    xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+    xmlns:ext="clr-namespace:InvEntry.Extension"
+    d:DataContext="{d:DesignInstance Type=viewmodels:ProductStockEntryViewModel}"
+    DataContext="{ext:DISource Type=viewmodels:ProductStockEntryViewModel}"
+    mc:Ignorable="d" d:DesignWidth="1500" d:DesignHeight="900">
 
     <UserControl.Resources>
-
-        <!-- Theme -->
         <SolidColorBrush x:Key="PageBg" Color="#111827"/>
         <SolidColorBrush x:Key="CardBg" Color="#1F2937"/>
         <SolidColorBrush x:Key="InsetBg" Color="#172234"/>
@@ -25,852 +21,226 @@
         <SolidColorBrush x:Key="Primary" Color="#F9FAFB"/>
         <SolidColorBrush x:Key="Muted" Color="#AAB7C9"/>
         <SolidColorBrush x:Key="Good" Color="#6EE7B7"/>
-
+        <dxmvvm:BooleanNegationConverter x:Key="NegationConverter"/>
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background"
-                    Value="{StaticResource CardBg}"/>
-            <Setter Property="BorderBrush"
-                    Value="{StaticResource Stroke}"/>
+            <Setter Property="Background" Value="{StaticResource CardBg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
         </Style>
-
         <Style x:Key="Caption" TargetType="TextBlock">
-            <Setter Property="Foreground"
-                    Value="{StaticResource Muted}"/>
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
-
         <Style x:Key="Metric" TargetType="TextBlock">
-            <Setter Property="Foreground"
-                    Value="{StaticResource Primary}"/>
+            <Setter Property="Foreground" Value="{StaticResource Primary}"/>
             <Setter Property="FontSize" Value="19"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
-
-        <Style x:Key="NumberFormatStyle"
-               TargetType="dxe:TextEditSettings">
-            <Setter Property="MaskType" Value="Numeric"/>
-            <Setter Property="Mask" Value="######.000"/>
-            <Setter Property="MaskShowPlaceHolders" Value="False"/>
-            <Setter Property="MaskUseAsDisplayFormat" Value="True"/>
-            <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator"
-                    Value="False"/>
-        </Style>
-
-        <dxmvvm:BooleanNegationConverter
-            x:Key="NegationConverter"/>
-
     </UserControl.Resources>
 
     <Grid Background="{StaticResource PageBg}">
-
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ==========================================
-             HEADER
-             ========================================== -->
-
-        <Border Grid.Row="0"
-                Background="#0B1220"
-                Padding="18,12"
-                BorderBrush="{StaticResource Stroke}"
-                BorderThickness="0,0,0,1">
-
+        <Border Grid.Row="0" Background="#0B1220" Padding="18,12"
+                BorderBrush="{StaticResource Stroke}" BorderThickness="0,0,0,1">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
                 <StackPanel>
-                    <TextBlock Text="STOCK CLOSING"
-                               Foreground="{StaticResource Primary}"
-                               FontSize="22"
-                               FontWeight="SemiBold"/>
-
-                    <TextBlock Text="Select receipt  •  Select product  •  Weigh  •  Print tag"
-                               Foreground="{StaticResource Muted}"
-                               FontSize="12"/>
+                    <TextBlock Text="GRN STOCK CLOSING" Foreground="{StaticResource Primary}"
+                               FontSize="22" FontWeight="SemiBold"/>
+                    <TextBlock Text="Select receipt and product, then weigh and tag one item at a time"
+                               Foreground="{StaticResource Muted}"/>
                 </StackPanel>
-
-                <TextBlock Grid.Column="1"
-                           Text="ITEM WEIGHING"
-                           Foreground="{StaticResource Good}"
-                           FontSize="12"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
+                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Text="SIMULATION MODE — NO PHYSICAL LABEL PRINTED"
+                           Foreground="#FBBF24" FontWeight="Bold"
+                           Visibility="{Binding IsLabelPrintSimulation, Converter={dxmvvm:BooleanToVisibilityConverter}}"/>
             </Grid>
         </Border>
 
-        <!-- ==========================================
-             FILTER BAR
-             ========================================== -->
-
-        <Border Grid.Row="1"
-                Style="{StaticResource Card}"
-                Margin="14,10,14,0"
-                Padding="12">
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="155"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="155"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="SUPPLIER"
-                               Style="{StaticResource Caption}"
-                               Margin="0,0,0,4"/>
-
-                    <dxe:ComboBoxEdit
-                        EditValue="{Binding SupplierID,
-                                            Mode=TwoWay,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                        ItemsSource="{Binding SupplierReferencesList}"
-                        IsTextEditable="False"
-                        NullText="All suppliers"
-                        Height="32"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="FROM"
-                               Style="{StaticResource Caption}"
-                               Margin="0,0,0,4"/>
-
-                    <dxe:DateEdit
-                        EditValue="{Binding SearchOption.From,
-                                            Mode=TwoWay}"
-                        DisplayFormatString="dd-MMM-yyyy"
-                        MaskUseAsDisplayFormat="True"
-                        Height="32"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="4">
-                    <TextBlock Text="TO"
-                               Style="{StaticResource Caption}"
-                               Margin="0,0,0,4"/>
-
-                    <dxe:DateEdit
-                        EditValue="{Binding SearchOption.To,
-                                            Mode=TwoWay}"
-                        MaxValue="{Binding Today}"
-                        DisplayFormatString="dd-MMM-yyyy"
-                        MaskUseAsDisplayFormat="True"
-                        Height="32"/>
-                </StackPanel>
-
-                <dx:SimpleButton
-                    Grid.Column="6"
-                    Content="Refresh GRN"
-                    Command="{Binding RefreshGRNCommand}"
-                    Height="32"
-                    Padding="12,4"
-                    VerticalAlignment="Bottom"/>
-            </Grid>
-        </Border>
-
-        <!-- ==========================================
-             ERROR PANEL
-             ========================================== -->
-
-        <Border Grid.Row="2"
-                Margin="14,8,14,0"
-                Padding="10"
-                Background="#3A171C"
-                BorderBrush="#EF4444"
-                BorderThickness="1"
-                CornerRadius="6">
-
+        <Border Grid.Row="1" Margin="14,8,14,0" Padding="10" Background="#3A171C"
+                BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="Visibility"
-                            Value="Collapsed"/>
-
+                    <Setter Property="Visibility" Value="Collapsed"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding HasError}"
-                                     Value="True">
-                            <Setter Property="Visibility"
-                                    Value="Visible"/>
+                        <DataTrigger Binding="{Binding HasError}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-
             <DockPanel>
-
-                <Button DockPanel.Dock="Right"
-                        Content="×"
-                        Command="{Binding ClearErrorsCommand}"
-                        Background="Transparent"
-                        Foreground="#FCA5A5"
-                        BorderThickness="0"
-                        Width="26"/>
-
+                <Button DockPanel.Dock="Right" Content="×" Command="{Binding ClearErrorsCommand}"
+                        Background="Transparent" Foreground="#FCA5A5" BorderThickness="0" Width="26"/>
                 <StackPanel>
-                    <TextBlock Text="{Binding ErrorPanelTitle}"
-                               Foreground="#FECACA"
-                               FontWeight="SemiBold"/>
-
-                    <TextBlock Text="{Binding ErrorPanelMessage}"
-                               Foreground="#FCA5A5"
-                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ErrorPanelTitle}" Foreground="#FECACA" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding ErrorPanelMessage}" Foreground="#FCA5A5" TextWrapping="Wrap"/>
                 </StackPanel>
-
             </DockPanel>
         </Border>
 
-        <!-- ==========================================
-             MAIN WORKSPACE
-             ========================================== -->
-
-        <Grid Grid.Row="3"
-              Margin="14,10,14,10">
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="310"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- ======================================
-                 LEFT: GRN NAVIGATOR
-                 ====================================== -->
-
-            <Grid Grid.Column="0">
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1.1*"/>
-                    <RowDefinition Height="10"/>
-                    <RowDefinition Height="0.9*"/>
-                </Grid.RowDefinitions>
-
-                <!-- OPEN MATERIAL RECEIPTS -->
-
-                <Border Grid.Row="0"
-                        Style="{StaticResource Card}">
-
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <DockPanel Margin="12,10">
-
-                            <TextBlock DockPanel.Dock="Right"
-                                       Text="{Binding GrnHdrList.Count,
-                                                      StringFormat={}{0} open}"
-                                       Foreground="{StaticResource Good}"/>
-
-                            <TextBlock Text="OPEN MATERIAL RECEIPTS"
-                                       Foreground="{StaticResource Primary}"
-                                       FontWeight="SemiBold"/>
-                        </DockPanel>
-
-                        <dxg:GridControl
-                            Grid.Row="1"
-                            ItemsSource="{Binding GrnHdrList}"
-                            SelectedItem="{Binding SelectedGrn, Mode=TwoWay}"
-                            AutoGenerateColumns="None">
-
-                            <dxmvvm:Interaction.Behaviors>
-                                <dxmvvm:EventToCommand
-                                    EventName="SelectedItemChanged"
-                                    Command="{Binding SelectionGRNChangedCommand}"/>
-                            </dxmvvm:Interaction.Behaviors>
-
-                            <dxg:GridControl.View>
-                                <dxg:TableView
-                                    AllowEditing="False"
-                                    AllowGrouping="False"
-                                    ShowGroupPanel="False"
-                                    ShowIndicator="False"
-                                    AutoWidth="True"
-                                    NavigationStyle="Row"
-                                    RowMinHeight="34"/>
-                            </dxg:GridControl.View>
-
-                            <dxg:GridControl.Columns>
-
-                                <dxg:GridColumn
-                                    FieldName="GrnNbr"
-                                    Header="GRN #"
-                                    Width="95"/>
-
-                                <dxg:GridColumn
-                                    FieldName="GrnDate"
-                                    Header="Date"
-                                    Width="95">
-
-                                    <dxg:GridColumn.EditSettings>
-                                        <dxe:DateEditSettings
-                                            DisplayFormat="dd-MMM-yy"/>
-                                    </dxg:GridColumn.EditSettings>
-
-                                </dxg:GridColumn>
-
-                                <dxg:GridColumn
-                                    FieldName="DocumentRef"
-                                    Header="Ref"
-                                    Width="*"/>
-
-                            </dxg:GridControl.Columns>
-
-                        </dxg:GridControl>
-
-                    </Grid>
-                </Border>
-
-                <!-- PRODUCTS TO PROCESS -->
-
-                <Border Grid.Row="2"
-                        Style="{StaticResource Card}">
-
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <DockPanel Margin="12,10">
-
-                            <TextBlock DockPanel.Dock="Right"
-                                       Text="{Binding GrnLineSumryList.Count,
-                                                      StringFormat={}{0} products}"
-                                       Foreground="{StaticResource Good}"/>
-
-                            <TextBlock Text="PRODUCTS TO PROCESS"
-                                       Foreground="{StaticResource Primary}"
-                                       FontWeight="SemiBold"/>
-                        </DockPanel>
-
-                        <dxg:GridControl
-                            Grid.Row="1"
-                            ItemsSource="{Binding GrnLineSumryList}"
-                            SelectedItem="{Binding SelectedGrnLineSumry,
-                                                   Mode=TwoWay}"
-                            AutoGenerateColumns="None">
-
-                            <dxmvvm:Interaction.Behaviors>
-                                <dxmvvm:EventToCommand
-                                    EventName="SelectedItemChanged"
-                                    Command="{Binding SelectionGrnSumryListChangedCommand}"/>
-                            </dxmvvm:Interaction.Behaviors>
-
-                            <dxg:GridControl.View>
-                                <dxg:TableView
-                                    AllowEditing="False"
-                                    AllowGrouping="False"
-                                    ShowGroupPanel="False"
-                                    ShowIndicator="False"
-                                    AutoWidth="True"
-                                    NavigationStyle="Row"
-                                    RowMinHeight="36"/>
-                            </dxg:GridControl.View>
-
-                            <dxg:GridControl.Columns>
-
-                                <dxg:GridColumn
-                                    FieldName="ProductCategory"
-                                    Header="Product"
-                                    Width="*"/>
-
-                                <dxg:GridColumn
-                                    FieldName="ProductPurity"
-                                    Header="Purity"
-                                    Width="65"/>
-
-                                <dxg:GridColumn
-                                    FieldName="SuppliedQty"
-                                    Header="Qty"
-                                    Width="45"/>
-
-                            </dxg:GridControl.Columns>
-
-                        </dxg:GridControl>
-
-                    </Grid>
-                </Border>
-
-            </Grid>
-
-            <!-- ======================================
-                 RIGHT: WEIGHING WORKSTATION
-                 ====================================== -->
-
-            <Grid Grid.Column="2">
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="10"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="10"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="10"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- CURRENT PRODUCT -->
-
-                <Border Grid.Row="0"
-                        Style="{StaticResource Card}"
-                        Padding="14">
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="125"/>
-                            <ColumnDefinition Width="145"/>
-                            <ColumnDefinition Width="145"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel>
-
-                            <TextBlock Text="CURRENT PRODUCT"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.ProductCategory,
-                                               TargetNullValue='Select a product'}"
-                                Foreground="{StaticResource Primary}"
-                                FontSize="21"
-                                FontWeight="SemiBold"/>
-
-                            <StackPanel Orientation="Horizontal">
-
-                                <TextBlock Text="Purity: "
-                                           Foreground="{StaticResource Muted}"/>
-
-                                <TextBlock
-                                    Text="{Binding SelectedGrnLineSumry.ProductPurity}"
-                                    Foreground="{StaticResource Primary}"/>
-
-                                <TextBlock Text="   UOM: "
-                                           Foreground="{StaticResource Muted}"/>
-
-                                <TextBlock
-                                    Text="{Binding SelectedGrnLineSumry.Uom}"
-                                    Foreground="{StaticResource Primary}"/>
-
+        <TabControl Grid.Row="2" Margin="14,10" SelectedIndex="{Binding SelectedWorkflowTabIndex, Mode=TwoWay}"
+                    Background="{StaticResource PageBg}" BorderBrush="{StaticResource Stroke}">
+            <TabItem Header="1  GRN SELECTION">
+                <Grid Background="{StaticResource PageBg}" Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Border Style="{StaticResource Card}" Padding="12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/><ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/><ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="SUPPLIER" Style="{StaticResource Caption}"/>
+                                <dxe:ComboBoxEdit EditValue="{Binding SupplierID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  ItemsSource="{Binding SupplierReferencesList}" IsTextEditable="False"
+                                                  NullText="Select supplier" Height="32"/>
                             </StackPanel>
-                        </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="FROM" Style="{StaticResource Caption}"/>
+                                <dxe:DateEdit EditValue="{Binding SearchOption.From, Mode=TwoWay}"
+                                              DisplayFormatString="dd-MMM-yyyy" Height="32"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="TO" Style="{StaticResource Caption}"/>
+                                <dxe:DateEdit EditValue="{Binding SearchOption.To, Mode=TwoWay}" MaxValue="{Binding Today}"
+                                              DisplayFormatString="dd-MMM-yyyy" Height="32"/>
+                            </StackPanel>
+                            <dx:SimpleButton Grid.Column="6" Content="Refresh GRN" Command="{Binding RefreshGRNCommand}"
+                                             Height="32" Padding="14,4" VerticalAlignment="Bottom"/>
+                        </Grid>
+                    </Border>
 
-                        <StackPanel Grid.Column="1">
-
-                            <TextBlock Text="RECEIVED"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.SuppliedQty,
-                                               StringFormat={}{0} pcs,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-
-                            <TextBlock Text="GRN GROSS"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.GrossWeight,
-                                               StringFormat={}{0:N3} g,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="3">
-
-                            <TextBlock Text="GRN NET"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.NetWeight,
-                                               StringFormat={}{0:N3} g,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"
-                                Foreground="{StaticResource Good}"/>
-
-                        </StackPanel>
-
+                    <Grid Grid.Row="1" Margin="0,10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                                <TextBlock Text="OPEN MATERIAL RECEIPTS" Margin="12,10" Foreground="{StaticResource Primary}" FontWeight="SemiBold"/>
+                                <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnHdrList}" SelectedItem="{Binding SelectedGrn, Mode=TwoWay}" AutoGenerateColumns="None">
+                                    <dxmvvm:Interaction.Behaviors><dxmvvm:EventToCommand EventName="SelectedItemChanged" Command="{Binding SelectionGRNChangedCommand}"/></dxmvvm:Interaction.Behaviors>
+                                    <dxg:GridControl.View><dxg:TableView AllowEditing="False" ShowGroupPanel="False" ShowIndicator="False" AutoWidth="True" NavigationStyle="Row"/></dxg:GridControl.View>
+                                    <dxg:GridColumn FieldName="GrnNbr" Header="GRN #"/><dxg:GridColumn FieldName="GrnDate" Header="Date"/><dxg:GridColumn FieldName="DocumentRef" Header="Reference"/>
+                                </dxg:GridControl>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                                <TextBlock Text="PRODUCT / GRN LINE SUMMARY" Margin="12,10" Foreground="{StaticResource Primary}" FontWeight="SemiBold"/>
+                                <dxg:GridControl Grid.Row="1" ItemsSource="{Binding GrnLineSumryList}" SelectedItem="{Binding SelectedGrnLineSumry, Mode=TwoWay}" AutoGenerateColumns="None">
+                                    <dxmvvm:Interaction.Behaviors><dxmvvm:EventToCommand EventName="SelectedItemChanged" Command="{Binding SelectionGrnSumryListChangedCommand}"/></dxmvvm:Interaction.Behaviors>
+                                    <dxg:GridControl.View><dxg:TableView AllowEditing="False" ShowGroupPanel="False" ShowIndicator="False" AutoWidth="True" NavigationStyle="Row"/></dxg:GridControl.View>
+                                    <dxg:GridColumn FieldName="ProductCategory" Header="Product"/><dxg:GridColumn FieldName="ProductPurity" Header="Purity"/><dxg:GridColumn FieldName="SuppliedQty" Header="Qty"/>
+                                </dxg:GridControl>
+                            </Grid>
+                        </Border>
                     </Grid>
-                </Border>
 
-                <!-- SELECTED ITEM FOCUS PANEL -->
+                    <Border Grid.Row="2" Style="{StaticResource Card}" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="SELECTED RECEIPT / PRODUCT" Style="{StaticResource Caption}"/><TextBlock Foreground="{StaticResource Primary}" FontSize="17"><Run Text="{Binding SelectedGrn.GrnNbr}"/><Run Text="  •  "/><Run Text="{Binding SelectedGrnLineSumry.ProductCategory}"/><Run Text="  •  "/><Run Text="{Binding SelectedGrnLineSumry.ProductPurity}"/></TextBlock></StackPanel>
+                            <StackPanel Grid.Column="1"><TextBlock Text="TOTAL" Style="{StaticResource Caption}"/><TextBlock Text="{Binding TotalQuantity}" Style="{StaticResource Metric}"/></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="COMPLETED" Style="{StaticResource Caption}"/><TextBlock Text="{Binding CompletedQuantity}" Style="{StaticResource Metric}" Foreground="{StaticResource Good}"/></StackPanel>
+                            <StackPanel Grid.Column="3"><TextBlock Text="PENDING" Style="{StaticResource Caption}"/><TextBlock Text="{Binding PendingQuantity}" Style="{StaticResource Metric}"/></StackPanel>
+                            <dx:SimpleButton Grid.Column="4" Margin="8,0" Content="Continue to Weighing" Command="{Binding ContinueToWeighingCommand}" IsEnabled="{Binding CanContinueToWeighing}" Padding="18,8"/>
+                            <dx:SimpleButton Grid.Column="5" Content="Close GRN" Command="{Binding SubmitCommand}" Padding="14,8"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
 
-                <Border Grid.Row="2"
-                        Style="{StaticResource Card}"
-                        Padding="14">
+            <TabItem Header="2  WEIGHING &amp; TAGGING" IsEnabled="{Binding IsWeighingTabEnabled}">
+                <Grid Background="{StaticResource PageBg}" Margin="8">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Border Style="{StaticResource Card}" Padding="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="SUPPLIER" Style="{StaticResource Caption}"/><TextBlock Text="{Binding SelectedGrn.SupplierId}" Style="{StaticResource Metric}"/></StackPanel>
+                            <StackPanel Grid.Column="1"><TextBlock Text="GRN NUMBER" Style="{StaticResource Caption}"/><TextBlock Text="{Binding SelectedGrn.GrnNbr}" Style="{StaticResource Metric}"/></StackPanel>
+                            <StackPanel Grid.Column="2"><TextBlock Text="PRODUCT / PURITY" Style="{StaticResource Caption}"/><TextBlock Foreground="{StaticResource Primary}" FontSize="19"><Run Text="{Binding SelectedGrnLineSumry.ProductCategory}"/><Run Text=" / "/><Run Text="{Binding SelectedGrnLineSumry.ProductPurity}"/></TextBlock></StackPanel>
+                            <StackPanel Grid.Column="3"><TextBlock Text="PROGRESS" Style="{StaticResource Caption}"/><TextBlock Text="{Binding ProgressText}" Style="{StaticResource Metric}" Foreground="{StaticResource Good}"/></StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <Grid>
+                    <Grid Grid.Row="1" Margin="0,10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="1.05*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="0.95*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel VerticalAlignment="Center">
+                        <Border Style="{StaticResource Card}" Padding="18">
+                            <Grid>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="1.35*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <StackPanel><TextBlock Text="CURRENT ITEM SKU" Style="{StaticResource Caption}"/><TextBlock Text="{Binding SelectedGrnLine.ProductSku, TargetNullValue='Permanent SKU reserved on Preview or Print'}" Style="{StaticResource Metric}"/></StackPanel>
+                                <StackPanel Grid.Column="1"><TextBlock Text="GROSS WEIGHT (g)" Style="{StaticResource Caption}"/><dxe:TextEdit EditValue="{Binding SelectedGrnLine.GrossWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Mask="n3" MaskType="Numeric" Height="36"><dxmvvm:Interaction.Behaviors><dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding CalculateCurrentWeightsCommand}"/></dxmvvm:Interaction.Behaviors></dxe:TextEdit></StackPanel>
+                                <StackPanel Grid.Column="2"><TextBlock Text="STONE WEIGHT (g)" Style="{StaticResource Caption}"/><dxe:TextEdit EditValue="{Binding SelectedGrnLine.StoneWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Mask="n3" MaskType="Numeric" Height="36"><dxmvvm:Interaction.Behaviors><dxmvvm:EventToCommand EventName="EditValueChanged" Command="{Binding CalculateCurrentWeightsCommand}"/></dxmvvm:Interaction.Behaviors></dxe:TextEdit></StackPanel>
+                                <StackPanel Grid.Column="3"><TextBlock Text="NET WEIGHT (g)" Style="{StaticResource Caption}"/><dxe:TextEdit EditValue="{Binding SelectedGrnLine.NetWeight}" IsReadOnly="True" Mask="n3" MaskType="Numeric" Height="36"/></StackPanel>
+                                <StackPanel Grid.Row="1" Margin="0,12,0,0"><TextBlock Text="VA / MAKING CHARGE" Style="{StaticResource Caption}"/><TextBlock Text="{Binding SelectedGrnLine.SuppVaPercent, StringFormat={}{0:0.##}%}" Style="{StaticResource Metric}"/></StackPanel>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="12" Text="{Binding SimulationLabelPreview}" Foreground="#FBBF24" TextWrapping="Wrap" Visibility="{Binding IsLabelPrintSimulation, Converter={dxmvvm:BooleanToVisibilityConverter}}"/>
+                                <StackPanel Grid.Row="2" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+                                    <dx:SimpleButton Content="Capture Scale Weight" Command="{Binding CaptureScaleWeightCommand}" Margin="0,0,8,0" Padding="14,8"/>
+                                    <dx:SimpleButton Content="Preview Tag" Command="{Binding PreviewTagCommand}" Margin="0,0,8,0" Padding="16,8"/>
+                                    <dx:SimpleButton Content="PRINT TAG" Command="{Binding PrintTagCommand}" CommandParameter="{Binding SelectedGrnLine}" IsEnabled="{Binding IsPrintingTag, Converter={StaticResource NegationConverter}}" Padding="22,8" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
-                            <TextBlock Text="SELECTED ITEM"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLine.ProductSku,
-                                               TargetNullValue='Select a row below'}"
-                                Foreground="{StaticResource Primary}"
-                                FontSize="20"
-                                FontWeight="SemiBold"/>
-
-                            <TextBlock
-                                Text="Click its Gross cell below to capture scale weight; or type in manual mode."
-                                Foreground="{StaticResource Muted}"
-                                FontSize="11"
-                                TextWrapping="Wrap"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-
-                            <TextBlock Text="GROSS (g)"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLine.GrossWeight,
-                                               StringFormat={}{0:N3},
-                                               TargetNullValue='—'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-
-                            <TextBlock Text="STONE (g)"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLine.StoneWeight,
-                                               StringFormat={}{0:N3},
-                                               TargetNullValue='—'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="3">
-
-                            <TextBlock Text="NET (g)"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLine.NetWeight,
-                                               StringFormat={}{0:N3},
-                                               TargetNullValue='—'}"
-                                Style="{StaticResource Metric}"
-                                Foreground="{StaticResource Good}"/>
-
-                        </StackPanel>
-
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Padding="12">
+                            <Grid>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                                <DockPanel Margin="2,0,2,8">
+                                    <TextBlock Text="LABEL PREVIEW" Foreground="{StaticResource Primary}" FontWeight="SemiBold"/>
+                                    <TextBlock DockPanel.Dock="Right" Text="700 × 250 dots  •  203 DPI  •  Code 128" Foreground="{StaticResource Muted}" FontSize="10"/>
+                                </DockPanel>
+                                <TabControl Grid.Row="1" Background="{StaticResource InsetBg}" BorderBrush="{StaticResource Stroke}">
+                                    <TabItem Header="Visual Preview">
+                                        <Grid Background="{StaticResource InsetBg}" MinHeight="190">
+                                            <Border Margin="12" Padding="8" Background="White" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <Image Source="{Binding LabelPreviewImage}" Width="700" Height="250" Stretch="Uniform" SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                            </Border>
+                                            <TextBlock Text="Enter valid weights and click Preview Tag" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                                                <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding HasLabelPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </TabItem>
+                                    <TabItem Header="ZPL Text">
+                                        <dxe:MemoEdit EditValue="{Binding LabelPreviewZpl}" IsReadOnly="True" FontFamily="Consolas" FontSize="11" ShowBorder="False" NullText="Preview Tag to generate ZPL"/>
+                                    </TabItem>
+                                </TabControl>
+                            </Grid>
+                        </Border>
                     </Grid>
-                </Border>
-
-                <!-- INDIVIDUAL ITEM GRID -->
-
-                <Border Grid.Row="4"
-                        Style="{StaticResource Card}">
-
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <DockPanel Margin="14,10">
-
-                            <TextBlock DockPanel.Dock="Right"
-                                       Text="Select row → weigh → Print"
-                                       Foreground="{StaticResource Good}"
-                                       FontSize="11"/>
-
-                            <TextBlock Text="INDIVIDUAL ITEMS"
-                                       Foreground="{StaticResource Primary}"
-                                       FontWeight="SemiBold"/>
-
-                        </DockPanel>
-
-                        <dxg:GridControl
-                            Grid.Row="1"
-                            ItemsSource="{Binding GrnLineList}"
-                            SelectedItem="{Binding SelectedGrnLine,
-                                                   Mode=TwoWay}"
-                            AutoGenerateColumns="None">
-
-                            <dxg:GridControl.View>
-
-                                <dxg:TableView
-                                    x:Name="tableView3"
-                                    AllowGrouping="False"
-                                    ShowGroupPanel="False"
-                                    ShowAutoFilterRow="False"
-                                    AutoWidth="True"
-                                    TotalSummaryPosition="Bottom"
-                                    VerticalScrollbarVisibility="Auto"
-                                    AllowEditing="True"
-                                    EditorShowMode="MouseDown"
-                                    NavigationStyle="Cell"
-                                    ShowIndicator="False"
-                                    RowMinHeight="40">
-
-                                    <!-- Preserve existing weighing logic -->
-
-                                    <dxmvvm:Interaction.Behaviors>
-
-                                        <dxmvvm:EventToCommand
-                                            EventName="CellValueChanged"
-                                            Command="{Binding CellUpdateCommand}"
-                                            PassEventArgsToCommand="True"/>
-
-                                        <dxmvvm:EventToCommand
-                                            EventName="ShowingEditor"
-                                            Command="{Binding EditorActivatedCommand}"
-                                            PassEventArgsToCommand="True"/>
-
-                                        <dxmvvm:EventToCommand
-                                            EventName="ValidateCell"
-                                            Command="{Binding ValidateCellCommand}"
-                                            PassEventArgsToCommand="True"/>
-
-                                    </dxmvvm:Interaction.Behaviors>
-
-                                </dxg:TableView>
-
-                            </dxg:GridControl.View>
-
-                            <dxg:GridControl.Columns>
-
-                                <dxg:GridColumn
-                                    FieldName="LineNbr"
-                                    Header="#"
-                                    Width="45"
-                                    ReadOnly="True"/>
-
-                                <dxg:GridColumn
-                                    FieldName="ProductSku"
-                                    Header="SKU / BARCODE"
-                                    Width="*"
-                                    ReadOnly="True"/>
-
-                                <dxg:GridColumn
-                                    FieldName="GrossWeight"
-                                    Header="GROSS (g)"
-                                    Width="110"
-                                    AllowedTotalSummaries="Sum">
-
-                                    <dxg:GridColumn.EditSettings>
-                                        <dxe:TextEditSettings
-                                            Style="{StaticResource NumberFormatStyle}"
-                                            HorizontalContentAlignment="Right"/>
-                                    </dxg:GridColumn.EditSettings>
-
-                                </dxg:GridColumn>
-
-                                <dxg:GridColumn
-                                    FieldName="StoneWeight"
-                                    Header="STONE (g)"
-                                    Width="105">
-
-                                    <dxg:GridColumn.EditSettings>
-                                        <dxe:TextEditSettings
-                                            Style="{StaticResource NumberFormatStyle}"
-                                            HorizontalContentAlignment="Right"/>
-                                    </dxg:GridColumn.EditSettings>
-
-                                </dxg:GridColumn>
-
-                                <dxg:GridColumn
-                                    FieldName="NetWeight"
-                                    Header="NET (g)"
-                                    Width="105"
-                                    ReadOnly="True">
-
-                                    <dxg:GridColumn.EditSettings>
-                                        <dxe:TextEditSettings
-                                            Style="{StaticResource NumberFormatStyle}"
-                                            HorizontalContentAlignment="Right"/>
-                                    </dxg:GridColumn.EditSettings>
-
-                                </dxg:GridColumn>
-
-                                <!-- Existing print command -->
-
-                                <dxg:GridColumn
-                                    Header="TAG"
-                                    Width="92"
-                                    AllowEditing="False">
-
-                                    <dxg:GridColumn.CellTemplate>
-
-                                        <DataTemplate>
-
-                                            <dx:SimpleButton
-                                                Content="Print"
-                                                Padding="8,3"
-                                                Command="{Binding DataContext.PrintTagCommand,
-                                                                  RelativeSource={RelativeSource AncestorType=dxg:GridControl}}"
-                                                CommandParameter="{Binding RowData.Row}"
-                                                HorizontalAlignment="Center"/>
-
-                                        </DataTemplate>
-
-                                    </dxg:GridColumn.CellTemplate>
-
-                                </dxg:GridColumn>
-
-                            </dxg:GridControl.Columns>
-
-                            <dxg:GridControl.TotalSummary>
-
-                                <dxg:GridSummaryItem
-                                    FieldName="GrossWeight"
-                                    SummaryType="Sum"
-                                    DisplayFormat="{}{0:N3}"/>
-
-                                <dxg:GridSummaryItem
-                                    FieldName="StoneWeight"
-                                    SummaryType="Sum"
-                                    DisplayFormat="{}{0:N3}"/>
-
-                                <dxg:GridSummaryItem
-                                    FieldName="NetWeight"
-                                    SummaryType="Sum"
-                                    DisplayFormat="{}{0:N3}"/>
-
-                            </dxg:GridControl.TotalSummary>
-
-                        </dxg:GridControl>
-
-                    </Grid>
-                </Border>
-
-                <!-- GRN TOTALS -->
-
-                <Border Grid.Row="6"
-                        Style="{StaticResource Card}"
-                        Padding="12">
-
-                    <Grid>
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel>
-
-                            <TextBlock Text="GRN QTY"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.SuppliedQty,
-                                               StringFormat={}{0} pcs,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-
-                            <TextBlock Text="GRN GROSS"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.GrossWeight,
-                                               StringFormat={}{0:N3} g,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-
-                            <TextBlock Text="GRN STONE"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.StoneWeight,
-                                               StringFormat={}{0:N3} g,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"/>
-
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="3">
-
-                            <TextBlock Text="GRN NET"
-                                       Style="{StaticResource Caption}"/>
-
-                            <TextBlock
-                                Text="{Binding SelectedGrnLineSumry.NetWeight,
-                                               StringFormat={}{0:N3} g,
-                                               TargetNullValue='-'}"
-                                Style="{StaticResource Metric}"
-                                Foreground="{StaticResource Good}"/>
-
-                        </StackPanel>
-
-                    </Grid>
-                </Border>
-
-            </Grid>
-
-        </Grid>
-
-        <!-- ==========================================
-             BOTTOM ACTION BAR
-             ========================================== -->
-
-        <Border Grid.Row="4"
-                Background="#0B1220"
-                BorderBrush="{StaticResource Stroke}"
-                BorderThickness="0,1,0,0"
-                Padding="14,9">
-
-            <DockPanel>
-
-                <dx:SimpleButton
-                    DockPanel.Dock="Right"
-                    Content="CLOSE / SUBMIT GRN"
-                    Command="{Binding SubmitCommand}"
-                    Padding="18,8"
-                    FontWeight="SemiBold"/>
-
-                <TextBlock
-                    Text="AUTO: click Gross cell to read scale     •     MANUAL: type Gross / Stone     •     Print each tag before closing"
-                    Foreground="{StaticResource Muted}"
-                    VerticalAlignment="Center"
-                    TextWrapping="Wrap"/>
-
-            </DockPanel>
-
-        </Border>
-
+                    <Border Grid.Row="2" Style="{StaticResource Card}">
+                        <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <TextBlock Text="COMPLETED ITEMS" Margin="12,10" Foreground="{StaticResource Primary}" FontWeight="SemiBold"/>
+                            <dxg:GridControl Grid.Row="1" ItemsSource="{Binding CompletedItems}" AutoGenerateColumns="None">
+                                <dxg:GridControl.View><dxg:TableView AllowEditing="False" ShowGroupPanel="False" ShowIndicator="False" AutoWidth="True" VerticalScrollbarVisibility="Auto"/></dxg:GridControl.View>
+                                <dxg:GridColumn FieldName="LineNbr" Header="#"/><dxg:GridColumn FieldName="ProductSku" Header="SKU"/><dxg:GridColumn FieldName="GrossWeight" Header="Gross"/><dxg:GridColumn FieldName="StoneWeight" Header="Stone"/><dxg:GridColumn FieldName="NetWeight" Header="Net"/><dxg:GridColumn FieldName="Status" Header="Status"/>
+                            </dxg:GridControl>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="3" Style="{StaticResource Card}" Padding="12" Margin="0,10,0,0">
+                        <DockPanel><dx:SimpleButton DockPanel.Dock="Left" Content="← Change GRN / Back to Selection" Command="{Binding BackToSelectionCommand}" Padding="14,7"/><TextBlock Text="All pending items completed. Return to selection to close the GRN." Foreground="{StaticResource Good}" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="{Binding IsWorkflowComplete, Converter={dxmvvm:BooleanToVisibilityConverter}}"/></DockPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
-
 </UserControl>

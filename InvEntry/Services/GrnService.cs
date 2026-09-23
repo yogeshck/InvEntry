@@ -29,7 +29,7 @@ namespace InvEntry.Services
 
         Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey, int hdrGkey);
 
-        Task CreateGrnLineSummary(GrnLineSummary lineSumry);
+        Task<GrnLineSummary> CreateGrnLineSummary(GrnLineSummary lineSumry);
 
         Task CreateGrnLineSummary(IEnumerable<GrnLineSummary> lineSumry);
 
@@ -107,19 +107,18 @@ namespace InvEntry.Services
             return await _mijmsApiService.GetEnumerable<GrnLine>($"api/grnline/hdrGkey/{hdrGkey}");
         }
 
-        public async Task CreateGrnLineSummary(GrnLineSummary lineSumry)
+        public async Task<GrnLineSummary> CreateGrnLineSummary(GrnLineSummary lineSumry)
         {
-            await _mijmsApiService.Post($"api/GrnLineSummary/", lineSumry);
+            return await _mijmsApiService.Post($"api/GrnLineSummary/", lineSumry);
         }
 
         public async Task CreateGrnLineSummary(IEnumerable<GrnLineSummary> lineSumry)
         {
-            var list = new List<Task>();
-
             foreach (var line in lineSumry)
-                list.Add(CreateGrnLineSummary(line));
-
-            await Task.WhenAll(list);
+            {
+                var savedLine = await CreateGrnLineSummary(line);
+                line.GKey = savedLine.GKey;
+            }
         }
 
         public async Task<GrnLine> GetByProductSku(string productSku)

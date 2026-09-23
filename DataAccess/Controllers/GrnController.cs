@@ -87,10 +87,12 @@ namespace DataAccess.Controllers
 
         // PUT api/<GrnController>/5
         [HttpPut("{grnNbr}")]
-        public void Put(string grnNbr, [FromBody] GrnHeader value)
+        public async Task<IActionResult> Put(string grnNbr, [FromBody] GrnHeader value)
         {
             value.GrnNbr = grnNbr;
             _grnHeaderRepository.Update(value);
+            await _unitOfWork.SaveChangesAsync();
+            return Ok(value);
         }
 
         // DELETE api/<GrnController>/5

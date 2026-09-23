@@ -14,6 +14,9 @@ namespace InvEntry.Models
         public int? _stockSummaryGkey;
 
         [ObservableProperty]
+        public int? _grnLineSummaryGkey;
+
+        [ObservableProperty]
         public int? _productGkey;
 
         [ObservableProperty]

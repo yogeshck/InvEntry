@@ -63,5 +63,7 @@ public partial class ProductStock
 
     public bool? IsBarcodePrinted { get; set; }
 
+    public int? GrnLineSummaryGkey { get; set; }
+
     public virtual ICollection<StockTransferLine> StockTransferLines { get; set; } = new List<StockTransferLine>();
 }

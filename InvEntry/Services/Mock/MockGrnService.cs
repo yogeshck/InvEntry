@@ -20,7 +20,7 @@ namespace InvEntry.Services.Mock
             throw new NotImplementedException();
         }
 
-        public Task CreateGrnLineSummary(GrnLineSummary lineSumry)
+        public Task<GrnLineSummary> CreateGrnLineSummary(GrnLineSummary lineSumry)
         {
             throw new NotImplementedException();
         }

@@ -175,17 +175,12 @@ public sealed class Bootstrapper
                  .AddTransient<IGstClassificationService,GstClassificationService>()
                  //           .AddSingleton<IMtblVoucherTypeService, MtblVoucherTypeService>()
 
+                 .AddSingleton<ILabelPreviewRenderer, ZplLabelPreviewRenderer>()
                  .AddSingleton<ILabelPrinter>(serviceProvider =>
                  {
-                     if (ctx.HostingEnvironment.IsDevelopment())
-                     {
-                         return new SimulatedLabelPrinter
-                         {
-                             Outcome = SimulatedPrintOutcome.PrinterOffline
-                         };
-                     }
-
-                     return new ZplLabelPrinter();
+                     return LabelPrinterFactory.Create(
+                         ctx.Configuration["LabelPrinting:Mode"],
+                         ctx.Configuration["LabelPrinting:SimulationOutcome"]);
                  })
 
                  .AddMockService()

@@ -13,6 +13,8 @@ namespace InvEntry.Services
         Task<ProductStock> GetProduct(string productId);
         Task<ProductStock> GetProductStock(string productId);
         Task<IEnumerable<ProductStock>> GetCategoryList(string category);
+        Task<IEnumerable<ProductStock>> GetPendingByGrnLineSummary(int grnLineSummaryGkey);
+        Task<ProductStock> ReserveProductSku(int gKey);
         Task CreateProductStock(ProductStock productStock);
 
         Task UpdateProductStock(ProductStock product);
@@ -47,6 +49,18 @@ namespace InvEntry.Services
             return await _mijmsApiService.GetEnumerable<ProductStock>($"api/productstock/category/{category}");
         }
 
+        public async Task<IEnumerable<ProductStock>> GetPendingByGrnLineSummary(int grnLineSummaryGkey)
+        {
+            return await _mijmsApiService.GetEnumerable<ProductStock>(
+                $"api/productstock/pending/grn-line-summary/{grnLineSummaryGkey}");
+        }
+
+        public async Task<ProductStock> ReserveProductSku(int gKey)
+        {
+            return await _mijmsApiService.PostResponse<ProductStock>(
+                $"api/productstock/{gKey}/reserve-sku");
+        }
+
         public async Task CreateProductStock(ProductStock productStock)
         {
 
@@ -55,7 +69,7 @@ namespace InvEntry.Services
 
         public async Task UpdateProductStock(ProductStock productStock)
         {
-            await _mijmsApiService.Put($"api/productstock/{productStock.ProductGkey}", productStock);
+            await _mijmsApiService.Put($"api/productstock/{productStock.GKey}", productStock);
         }
 
 /*        public async Task DeleteProductStock(ProductStock productStock)

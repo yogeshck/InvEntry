@@ -51,25 +51,14 @@ public static class BarCodePrint
                 if (!EnsurePrinterInitialized(out var initializationError))
                     return Failed(initializationError ?? "Printer initialization failed.");
 
-                var productWeightText = productWeight.ToString(
-                    "F3",
-                    CultureInfo.InvariantCulture);
-
-                var stoneWeightText = productStoneWeight > 0m
-                    ? productStoneWeight.ToString("F3", CultureInfo.InvariantCulture)
-                    : string.Empty;
-
-                var vaPercentText =
-                    $"{vaPercent.ToString("0.##", CultureInfo.InvariantCulture)}%";
-
-                var zplCommand = GenerateZpl(
-                    EscapeZpl(productCode),
-                    EscapeZpl(productName),
-                    vaPercentText,
-                    productWeightText,
-                    stoneWeightText,
-                    EscapeZpl(productPurity),
-                    EscapeZpl(companyName));
+                var zplCommand = CreateZpl(
+                    productCode,
+                    productName,
+                    vaPercent,
+                    productWeight,
+                    productStoneWeight,
+                    productPurity,
+                    companyName);
 
                 if (!RawPrinterHelper.SendZPLToPrinter(
                         PrinterName,
@@ -152,6 +141,30 @@ public static class BarCodePrint
         return null;
     }
 
+    public static string CreateZpl(
+        string productCode,
+        string productName,
+        decimal vaPercent,
+        decimal productWeight,
+        decimal productStoneWeight,
+        string productPurity,
+        string companyName = "MATHA")
+    {
+        var productWeightText = productWeight.ToString("F3", CultureInfo.InvariantCulture);
+        var stoneWeightText = productStoneWeight > 0m
+            ? productStoneWeight.ToString("F3", CultureInfo.InvariantCulture)
+            : string.Empty;
+        var vaPercentText = $"{vaPercent.ToString("0.##", CultureInfo.InvariantCulture)}%";
+
+        return GenerateZpl(
+            EscapeZpl(productCode),
+            EscapeZpl(productName),
+            vaPercentText,
+            productWeightText,
+            stoneWeightText,
+            EscapeZpl(productPurity),
+            EscapeZpl(companyName));
+    }
     private static LabelPrintResult Failed(string message) =>
         new(LabelPrintStatus.Failed, message);
 

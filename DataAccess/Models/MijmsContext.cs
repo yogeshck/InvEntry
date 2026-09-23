@@ -2674,6 +2674,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.CreatedOn)
                 .HasPrecision(6)
                 .HasColumnName("CREATED_ON");
+            entity.Property(e => e.GrnLineSummaryGkey).HasColumnName("GRN_LINE_SUMMARY_GKEY");
             entity.Property(e => e.GrossWeight)
                 .HasColumnType("decimal(10, 3)")
                 .HasColumnName("GROSS_WEIGHT");

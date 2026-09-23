@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace InvEntry.Models
 {
@@ -102,6 +103,10 @@ namespace InvEntry.Models
 
         [ObservableProperty]
         private bool _isPrinted = false;
+
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private int? _productStockGkey;
 
 
     }

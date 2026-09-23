@@ -9,10 +9,14 @@ namespace DataAccess.Controllers
     public class GrnLineController : ControllerBase
     {
         private IRepositoryBase<GrnLine> _grnLineRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GrnLineController(IRepositoryBase<GrnLine> grnLineRepository)
+        public GrnLineController(
+            IRepositoryBase<GrnLine> grnLineRepository,
+            IUnitOfWork unitOfWork)
         {
             _grnLineRepository = grnLineRepository;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<GrnController>
@@ -67,10 +71,11 @@ namespace DataAccess.Controllers
 
         // POST api/<GrnController>
         [HttpPost]
-        public GrnLine Post([FromBody] GrnLine value)
+        public async Task<ActionResult<GrnLine>> Post([FromBody] GrnLine value)
         {
             _grnLineRepository.Add(value);
-            return value;
+            await _unitOfWork.SaveChangesAsync();
+            return Ok(value);
         }
 
         // PUT api/<GrnController>/5

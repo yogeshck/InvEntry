@@ -1,84 +1,58 @@
 ﻿using InvEntry.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace InvEntry.Services.Printing
+namespace InvEntry.Services.Printing;
+
+public sealed class SimulatedLabelPrinter : ILabelPrinter
 {
-    public sealed class SimulatedLabelPrinter : ILabelPrinter
+    public SimulatedPrintOutcome Outcome { get; set; } = SimulatedPrintOutcome.Success;
+
+    public LabelPrintRequest? LastRequest { get; private set; }
+    public string? LastZpl { get; private set; }
+
+    public Task<LabelPrintResult> PrintAsync(
+        LabelPrintRequest request,
+        CancellationToken cancellationToken = default)
     {
-        public SimulatedPrintOutcome Outcome { get; set; } =
-            SimulatedPrintOutcome.Success;
+        cancellationToken.ThrowIfCancellationRequested();
+        LastRequest = request;
+        LastZpl = BarCodePrint.CreateZpl(
+            request.ProductCode,
+            request.ProductName,
+            request.VaPercent,
+            request.ProductWeight,
+            request.StoneWeight,
+            request.ProductPurity,
+            request.CompanyName);
 
-        public async Task<LabelPrintResult> PrintAsync(
-            LabelPrintRequest request,
-            CancellationToken cancellationToken = default)
+        var result = Outcome switch
         {
-            // Simulate the time taken to print.
-            await Task.Delay(800, cancellationToken);
+            SimulatedPrintOutcome.Success =>
+                new LabelPrintResult(LabelPrintStatus.Submitted),
 
-            return Outcome switch
-            {
-                SimulatedPrintOutcome.Success =>
-                    new LabelPrintResult(
-                        LabelPrintStatus.Submitted),
-
-                SimulatedPrintOutcome.PrinterOffline =>
-                    new LabelPrintResult(
-                        LabelPrintStatus.Failed,
-                        "The label printer is offline."),
-
-                SimulatedPrintOutcome.PaperOut =>
-                    new LabelPrintResult(
-                        LabelPrintStatus.Failed,
-                        "The printer is out of labels."),
-
-                SimulatedPrintOutcome.RibbonOut =>
-                    new LabelPrintResult(
-                        LabelPrintStatus.Failed,
-                        "The printer ribbon is empty."),
-
-                SimulatedPrintOutcome.InvalidZpl =>
-                    new LabelPrintResult(
-                        LabelPrintStatus.Failed,
-                        "The generated label data is invalid."),
-
-                SimulatedPrintOutcome.Timeout =>
-                    await SimulateTimeoutAsync(cancellationToken),
-
-                SimulatedPrintOutcome.UnexpectedException =>
-                    throw new InvalidOperationException(
-                        "Simulated printer communication exception."),
-
-                _ => new LabelPrintResult(
+            SimulatedPrintOutcome.Failure =>
+                new LabelPrintResult(
                     LabelPrintStatus.Failed,
-                    "Unknown simulated printing error.")
-            };
-        }
+                    "Simulated label printing failure."),
 
-        private static async Task<LabelPrintResult> SimulateTimeoutAsync(
-            CancellationToken cancellationToken)
-        {
-            await Task.Delay(3000, cancellationToken);
+            SimulatedPrintOutcome.Exception =>
+                throw new InvalidOperationException(
+                    "Simulated label printer is unavailable."),
 
-            return new LabelPrintResult(
+            _ => new LabelPrintResult(
                 LabelPrintStatus.Failed,
-                "The printer did not respond within the expected time.");
-        }
-    }
+                "Unknown simulated printing error.")
+        };
 
-
-    public enum SimulatedPrintOutcome
-    {
-        Success,
-        PrinterOffline,
-        PaperOut,
-        RibbonOut,
-        InvalidZpl,
-        Timeout,
-        UnexpectedException
+        return Task.FromResult(result);
     }
+}
+
+public enum SimulatedPrintOutcome
+{
+    Success,
+    Failure,
+    Exception
 }
