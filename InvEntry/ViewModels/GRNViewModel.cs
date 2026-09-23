@@ -59,6 +59,7 @@ namespace InvEntry.ViewModels
         private readonly IProductTransactionService _productTransactionService;
         private readonly IProductTransactionSummaryService _productTransactionSummaryService;
         private readonly IProductStockSummaryService _productStockSummaryService;
+        private readonly IProductStockService _productStockService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
         private readonly IMtblReferencesService _mtblReferencesService;
@@ -77,6 +78,7 @@ namespace InvEntry.ViewModels
                             IDialogService                      dialogService,
                             IProductCategoryService             productCategoryService,
                             IMessageBoxService                  messageBoxService ,
+                            IProductStockService                productStockService,
                             IMtblReferencesService              mtblReferencesService)
         {
             _grnService = grnService;
@@ -86,6 +88,7 @@ namespace InvEntry.ViewModels
             _productTransactionSummaryService = productTransactionSummaryService;
             _dialogService = dialogService;
             _productCategoryService = productCategoryService;
+            _productStockService = productStockService;
             _messageBoxService = messageBoxService;
             _mtblReferencesService = mtblReferencesService;
 
@@ -122,14 +125,12 @@ namespace InvEntry.ViewModels
             SupplierReferencesList = new(suppRefServiceList.Select(x => x.RefValue));
         }
 
-        partial void OnSupplierIdChanged(MtblReference value)
+        partial void OnSupplierIdChanged(MtblReference? value)
         {
-            //if (Buyer is null) return;
-            
-            if (value.RefValue is not null)
-            {
-                Header.SupplierId = value.RefValue;
-            }
+            if (Header is null)
+                return;
+
+            Header.SupplierId = value?.RefValue;
         }
 
         [RelayCommand]
@@ -178,13 +179,29 @@ namespace InvEntry.ViewModels
            // line.NetWeight = product.GrossWeight - product.StoneWeight;
         }
 
-        [RelayCommand]
+/*        [RelayCommand]
         private void CellUpdate(CellValueChangedEventArgs args)
         {
             if (args.Row is GrnLineSummary line)
             {
                EvaluateFormula(line);
             }
+        }*/
+
+
+        [RelayCommand]
+        private void CellUpdate(CellValueChangedEventArgs args)
+        {
+            if (args?.Row is not GrnLineSummary line)
+                return;
+
+            decimal gross = line.GrossWeight.GetValueOrDefault();
+            decimal stone = line.StoneWeight.GetValueOrDefault();
+
+            line.NetWeight = Math.Round(
+                gross - stone,
+                3,
+                MidpointRounding.AwayFromZero);
         }
 
         [RelayCommand]
@@ -205,7 +222,11 @@ namespace InvEntry.ViewModels
 
                 await _grnService.CreateGrnLineSummary(Header.GrnLineSumry);
 
-                ProcessStockSummary(Header.GrnLineSumry);
+                var summaryKeys = await ProcessStockSummary(Header.GrnLineSumry);
+
+                await CreateTemporaryStockItemsAsync(
+                    Header.GrnLineSumry,
+                    summaryKeys);
 
                 _messageBoxService.ShowMessage( "GRN " + Header.GrnNbr + " Created Successfully",
                                                 "GRN Creation", 
@@ -272,6 +293,55 @@ namespace InvEntry.ViewModels
             SetHeader();
 
             SupplierId = null;
+        }
+
+        private async Task CreateTemporaryStockItemsAsync(
+            IEnumerable<GrnLineSummary> summaries,
+            IReadOnlyDictionary<string, int> summaryKeys)
+        {
+            foreach (var line in summaries)
+            {
+                if (string.IsNullOrWhiteSpace(line.ProductCategory) ||
+                    !summaryKeys.TryGetValue(
+                        line.ProductCategory,
+                        out int stockSummaryGkey))
+                {
+                    throw new InvalidOperationException(
+                        $"Stock summary not found for category {line.ProductCategory}.");
+                }
+
+                int quantity = line.SuppliedQty.GetValueOrDefault();
+
+                for (int i = 0; i < quantity; i++)
+                {
+                    var stock = new ProductStock
+                    {
+                        StockSummaryGkey = stockSummaryGkey,
+
+                        ProductGkey = line.ProductGkey,
+                        Category = line.ProductCategory,
+                        SupplierId = Header.SupplierId,
+
+                        ProductSku = $"TMP-{Guid.NewGuid():N}",
+
+                        SuppliedQty = 1,
+                        StockQty = 1,
+                        SoldQty = 0,
+
+                        GrossWeight = null,
+                        StoneWeight = 0,
+                        NetWeight = null,
+
+                        IsProductSold = false,
+                        Status = "Pending Tag",
+                        IsBarcodePrinted = false,
+
+                        CreatedOn = DateTime.Now
+                    };
+
+                    await _productStockService.CreateProductStock(stock);
+                }
+            }
         }
 
 
@@ -406,68 +476,144 @@ namespace InvEntry.ViewModels
             }
 
         }
-        private async void ProcessStockSummary(IEnumerable<GrnLineSummary> grnLineSummary)
+
+        private async Task<Dictionary<string, int>> ProcessStockSummary(
+            IEnumerable<GrnLineSummary> grnLineSummary)
         {
-            int currentStock = 0;
+            var summaryKeys = new Dictionary<string, int>(
+                StringComparer.OrdinalIgnoreCase);
 
-            Header.GrnLineSumry.ForEach(async x =>
+            foreach (var x in grnLineSummary)
             {
-                var createProductStockSummary = false;
+                var productStockSummary =
+                    await _productStockSummaryService
+                        .GetProductStockSummaryByCategory(x.ProductCategory);
 
-                var productStockSummary = await _productStockSummaryService.GetProductStockSummaryByCategory(x.ProductCategory);
+                bool createProductStockSummary = productStockSummary is null;
 
-                if (productStockSummary is null)
-                {
-                    productStockSummary = new();
-                    createProductStockSummary = true;
+                productStockSummary ??= new();
 
-                }
+                int currentStock = productStockSummary.StockQty.GetValueOrDefault();
 
-                currentStock = (productStockSummary.StockQty).GetValueOrDefault();
+                productStockSummary.Category = x.ProductCategory;
+                productStockSummary.ProductGkey = x.ProductGkey;
 
-                productStockSummary.Category            = x.ProductCategory;
-                productStockSummary.ProductGkey         = x.ProductGkey;
-                //productStockSummary.ProductSku          = productStockSummary.ProductSku;
-                productStockSummary.GrossWeight         = (productStockSummary.GrossWeight).GetValueOrDefault() + x.GrossWeight;
-                productStockSummary.StoneWeight         = (productStockSummary.StoneWeight).GetValueOrDefault() + x.StoneWeight;
-                productStockSummary.NetWeight           = (productStockSummary.NetWeight).GetValueOrDefault() + x.NetWeight;
-                productStockSummary.SuppliedGrossWeight = (productStockSummary.SuppliedGrossWeight).GetValueOrDefault() + x.GrossWeight;
-                productStockSummary.AdjustedWeight      = (productStockSummary.AdjustedWeight).GetValueOrDefault();
-                productStockSummary.SoldWeight          = (productStockSummary.SoldWeight).GetValueOrDefault();
-                productStockSummary.BalanceWeight       = (productStockSummary.BalanceWeight).GetValueOrDefault() + x.NetWeight;
-                productStockSummary.SuppliedQty         = (productStockSummary.SuppliedQty).GetValueOrDefault() + x.SuppliedQty;
-                productStockSummary.SoldQty             = (productStockSummary.SoldQty).GetValueOrDefault();
-                productStockSummary.StockQty            = (productStockSummary.StockQty).GetValueOrDefault() + x.SuppliedQty;
-                productStockSummary.AdjustedQty         = (productStockSummary.AdjustedQty).GetValueOrDefault();
-                productStockSummary.Status              = "In-Stock";
+                productStockSummary.GrossWeight =
+                    productStockSummary.GrossWeight.GetValueOrDefault()
+                    + x.GrossWeight.GetValueOrDefault();
+
+                productStockSummary.StoneWeight =
+                    productStockSummary.StoneWeight.GetValueOrDefault()
+                    + x.StoneWeight.GetValueOrDefault();
+
+                productStockSummary.NetWeight =
+                    productStockSummary.NetWeight.GetValueOrDefault()
+                    + x.NetWeight.GetValueOrDefault();
+
+                productStockSummary.SuppliedGrossWeight =
+                    productStockSummary.SuppliedGrossWeight.GetValueOrDefault()
+                    + x.GrossWeight.GetValueOrDefault();
+
+                productStockSummary.AdjustedWeight =
+                    productStockSummary.AdjustedWeight.GetValueOrDefault();
+
+                productStockSummary.SoldWeight =
+                    productStockSummary.SoldWeight.GetValueOrDefault();
+
+                productStockSummary.BalanceWeight =
+                    productStockSummary.BalanceWeight.GetValueOrDefault()
+                    + x.NetWeight.GetValueOrDefault();
+
+                productStockSummary.SuppliedQty =
+                    productStockSummary.SuppliedQty.GetValueOrDefault()
+                    + x.SuppliedQty.GetValueOrDefault();
+
+                productStockSummary.SoldQty =
+                    productStockSummary.SoldQty.GetValueOrDefault();
+
+                productStockSummary.StockQty =
+                    productStockSummary.StockQty.GetValueOrDefault()
+                    + x.SuppliedQty.GetValueOrDefault();
+
+                productStockSummary.AdjustedQty =
+                    productStockSummary.AdjustedQty.GetValueOrDefault();
+
+                productStockSummary.Status = "In-Stock";
 
                 if (createProductStockSummary)
                 {
-                   await _productStockSummaryService.CreateProductStockSummary(productStockSummary);
+                    await _productStockSummaryService
+                        .CreateProductStockSummary(productStockSummary);
                 }
                 else
                 {
-                   await _productStockSummaryService.UpdateProductStockSummary(productStockSummary);
+                    await _productStockSummaryService
+                        .UpdateProductStockSummary(productStockSummary);
                 }
-            
-                CreateProductTransaction(productStockSummary, (int)x.SuppliedQty, (int)currentStock);
 
-            });
+                // Retrieve the saved record so we have its actual database GKey.
+                var savedSummary =
+                    await _productStockSummaryService
+                        .GetProductStockSummaryByCategory(x.ProductCategory);
 
+                if (savedSummary is null || savedSummary.GKey <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Stock summary was not saved for category {x.ProductCategory}.");
+                }
+
+                summaryKeys[x.ProductCategory] = savedSummary.GKey;
+
+                // Preserve the existing category-level receipt transaction.
+                CreateProductTransaction(
+                    productStockSummary,
+                    x.SuppliedQty.GetValueOrDefault(),
+                    currentStock);
+            }
+
+            return summaryKeys;
         }
 
-        private void EvaluateFormula<T>(T item, bool isInit = false) where T : class
+
+        private void EvaluateFormula<T>(T item, bool isInit = false)
+            where T : class
         {
+            if (item is null)
+                return;
+
+            if (item is GrnLineSummary line)
+            {
+                decimal gross = line.GrossWeight.GetValueOrDefault();
+                decimal stone = line.StoneWeight.GetValueOrDefault();
+
+                line.NetWeight = Math.Round(
+                    gross - stone,
+                    3,
+                    MidpointRounding.AwayFromZero);
+
+                return;
+            }
+
             var formulas = FormulaStore.Instance.GetFormulas<T>();
+
+            if (formulas is null)
+                return;
 
             foreach (var formula in formulas)
             {
-                //if (!isInit && IGNORE_UPDATE.Contains(formula.FieldName)) continue;
+                if (formula is null)
+                    continue;
 
                 var val = formula.Evaluate<T, decimal>(item, 0M);
 
-                if (item is GrnLineSummary grnLineSumry)
-                    copyGRNLineSumryExpression[formula.FieldName].Invoke(grnLineSumry, val);
+                if (item is GrnLineSummary grnLineSumry &&
+                    copyGRNLineSumryExpression is not null &&
+                    copyGRNLineSumryExpression.TryGetValue(
+                        formula.FieldName,
+                        out var setter))
+                {
+                    setter(grnLineSumry, val);
+                }
             }
         }
 
@@ -478,18 +624,5 @@ namespace InvEntry.ViewModels
             copyGRNLineSumryExpression.Add($"{nameof(GrnLineSummary.NetWeight)}", (item, val) => item.NetWeight = val);
         }
 
-            //private void EvaluateFormula<T>(T item, string fieldName, bool isInit = false) where T : class
-            //{
-            //    //if (!isInit && IGNORE_UPDATE.Contains(fieldName)) return;
-
-            //    var formula = FormulaStore.Instance.GetFormula<T>(fieldName);
-
-            //    var val = formula.Evaluate<T, decimal>(item, 0M);
-
-            //    if (item is InvoiceLine invLine)
-            //        copyGRNExpression[fieldName].Invoke(invLine, val);
-            //    else if (item is InvoiceHeader head)
-            //        copyHeaderExpression[fieldName].Invoke(head, val);
-            //}
         }
 }

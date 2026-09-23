@@ -1,6 +1,7 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,11 +14,14 @@ namespace DataAccess.Controllers
     {
         private readonly IRepositoryBase<ProductStock> _productStock;
         private readonly ILogger<ProductStockController> _logger;
+        private readonly MijmsContext _context;
 
-        public ProductStockController( IRepositoryBase<ProductStock> _productStockRepo, 
+        public ProductStockController( IRepositoryBase<ProductStock> _productStockRepo,
+                                        MijmsContext context,
                                         ILogger<ProductStockController> logger) 
         {
             _productStock = _productStockRepo;
+            _context = context;
             _logger = logger;
         }
 
@@ -72,13 +76,17 @@ namespace DataAccess.Controllers
                                           x.IsProductSold == false  );
         }
 
-        // POST api/<ProductStockController>
         [HttpPost]
-        public IActionResult Post([FromBody] ProductStock value)
+        public async Task<IActionResult> Post([FromBody] ProductStock value)
         {
-             _productStock.Add(value);
-            return Ok(value);
+            if (value is null)
+                return BadRequest("ProductStock payload is required.");
 
+            _productStock.Add(value);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(value);
         }
 
         // PUT api/<ProductStockController>/5
