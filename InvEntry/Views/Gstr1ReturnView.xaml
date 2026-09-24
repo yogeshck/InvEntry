@@ -7,6 +7,7 @@
     xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
     xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
     xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+    xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
     xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
     xmlns:ext="clr-namespace:InvEntry.Extension"
 
@@ -555,6 +556,7 @@
                 <dxg:GridControl
                     Grid.Row="1"
                     ItemsSource="{Binding Categories}"
+                    SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
                     BorderThickness="0">
 
                     <dxg:GridControl.Columns>
@@ -936,6 +938,24 @@
                     </dxg:GridControl.View>
 
                 </dxg:GridControl>
+
+                <Border
+                    Grid.Row="1"
+                    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                    IsHitTestVisible="False"
+                    Visibility="{Binding ShowDocumentsEmptyState, Converter={dxmvvm:BooleanToVisibilityConverter}}">
+
+                    <TextBlock
+                        Text="{Binding DocumentsEmptyMessage}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap"
+                        FontSize="13"
+                        Opacity="0.68"
+                        Margin="24"/>
+
+                </Border>
 
             </Grid>
 

@@ -42,6 +42,12 @@ public abstract partial class BaseListViewModel<T>
     private string statusMessage = string.Empty;
 
 
+    [ObservableProperty]
+    private bool hasLoadError;
+
+    public bool HasItems => Items.Count > 0;
+
+
     // ============================================================
     // CONSTRUCTOR
     // ============================================================
@@ -164,6 +170,7 @@ public abstract partial class BaseListViewModel<T>
         try
         {
             IsBusy = true;
+            HasLoadError = false;
 
             StatusMessage =
                 "Loading records...";
@@ -192,6 +199,8 @@ public abstract partial class BaseListViewModel<T>
                 Items.Count == 1
                     ? "1 record"
                     : $"{Items.Count:N0} records";
+
+            OnPropertyChanged(nameof(HasItems));
         }
         catch (Exception ex)
         {
@@ -201,12 +210,24 @@ public abstract partial class BaseListViewModel<T>
 
             StatusMessage =
                 $"Unable to load records: {ex.Message}";
+
+            HasLoadError = true;
+            OnPropertyChanged(nameof(HasItems));
         }
         finally
         {
             IsBusy = false;
         }
     }
+
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    private async Task ResetAsync()
+    {
+        InitializeSearchOptions();
+        OnPropertyChanged(nameof(SearchOption));
+        await RefreshAsync();
+    }
+
 
     // ============================================================
     // OPEN / EDIT
@@ -290,6 +311,9 @@ public abstract partial class BaseListViewModel<T>
         bool value)
     {
         RefreshCommand
+            .NotifyCanExecuteChanged();
+
+        ResetCommand
             .NotifyCanExecuteChanged();
 
         OpenSelectedCommand

@@ -6,6 +6,7 @@ using InvEntry.Contracts.Gst;
 using InvEntry.Services;
 using InvEntry.Extension;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -55,6 +56,9 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private ObservableCollection<Gstr1CategorySummaryResponse>
         _categories = new();
 
+    [ObservableProperty]
+    private Gstr1CategorySummaryResponse? _selectedCategory;
+
 
     // =========================================================
     // DOCUMENTS
@@ -66,6 +70,13 @@ public partial class Gstr1ReturnViewModel : ObservableObject
 
     [ObservableProperty]
     private Gstr1DocumentResponse? _selectedDocument;
+
+    [ObservableProperty]
+    private string _documentsEmptyMessage =
+        "Select a category above to view its documents.";
+
+    [ObservableProperty]
+    private bool _showDocumentsEmptyState = true;
 
 
     // =========================================================
@@ -110,6 +121,9 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private string? _exportStatusMessage;
 
     private bool _isLoadingReturn;
+    private IReadOnlyList<Gstr1DocumentResponse> _monthlyDocuments = [];
+    private int _returnLoadVersion;
+    private int _documentLinesVersion;
 
     public bool CanChangeScope => !IsBusy && !IsExporting;
 
@@ -124,7 +138,11 @@ public partial class Gstr1ReturnViewModel : ObservableObject
         Validation.SupplierGstin == SupplierGstin &&
         Validation.ReturnPeriod == ReturnPeriod;
 
-    partial void OnSupplierGstinChanged(string value) => InvalidateValidation();
+    partial void OnSupplierGstinChanged(string value)
+    {
+        InvalidateValidation();
+        InvalidateReturnScope();
+    }
 
     private void InvalidateValidation()
     {
@@ -314,12 +332,29 @@ public partial class Gstr1ReturnViewModel : ObservableObject
         }
 
         InvalidateValidation();
+        InvalidateReturnScope();
 
         OnPropertyChanged(
             nameof(ReturnPeriod));
 
         OnPropertyChanged(
             nameof(ReturnPeriodDisplay));
+    }
+
+
+    private void InvalidateReturnScope()
+    {
+        _returnLoadVersion++;
+        _documentLinesVersion++;
+        Summary = null;
+        Categories.Clear();
+        SelectedCategory = null;
+        _monthlyDocuments = [];
+        Documents.Clear();
+        SelectedDocument = null;
+        DocumentLines.Clear();
+        DocumentsEmptyMessage = "Select a category above to view its documents.";
+        ShowDocumentsEmptyState = true;
     }
 
 
@@ -337,112 +372,74 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private async Task LoadReturnAsync()
     {
         if (_isLoadingReturn || IsExporting)
-        {
             return;
-        }
 
-        if (string.IsNullOrWhiteSpace(
-                SupplierGstin))
+        if (string.IsNullOrWhiteSpace(SupplierGstin))
         {
             _messageBoxService.ShowMessage(
-                "Supplier GSTIN is not available.",
-                "GSTR-1",
-                MessageButton.OK,
-                MessageIcon.Warning);
-
+                "Supplier GSTIN is not available.", "GSTR-1",
+                MessageButton.OK, MessageIcon.Warning);
             return;
         }
 
         var supplierGstin = SupplierGstin;
         var returnPeriod = ReturnPeriod;
+        var loadVersion = ++_returnLoadVersion;
         try
         {
             _isLoadingReturn = true;
             IsBusy = true;
             InvalidateValidation();
 
-            StatusMessage =
-                $"Loading GSTR-1 for {ReturnPeriodDisplay}...";
-
-            /*
-             * Clear the drill-down first so that lines from the
-             * previous return period are never shown against the
-             * newly selected month.
-             */
+            SelectedCategory = null;
+            _monthlyDocuments = [];
+            Documents.Clear();
             SelectedDocument = null;
             DocumentLines.Clear();
+            DocumentsEmptyMessage = "Select a category above to view its documents.";
+            ShowDocumentsEmptyState = true;
+            StatusMessage = $"Loading GSTR-1 for {ReturnPeriodDisplay}...";
 
-            var summaryTask =
-                _gstr1ReportService
-                    .GetSummaryAsync(
-                        supplierGstin,
-                        returnPeriod);
-
-            var documentsTask =
-                _gstr1ReportService
-                    .GetDocumentsAsync(
-                        supplierGstin,
-                        returnPeriod);
-
-            await Task.WhenAll(
-                summaryTask,
-                documentsTask);
+            var summaryTask = _gstr1ReportService.GetSummaryAsync(supplierGstin, returnPeriod);
+            var documentsTask = _gstr1ReportService.GetDocumentsAsync(supplierGstin, returnPeriod);
+            await Task.WhenAll(summaryTask, documentsTask);
 
             var validation = await _gstr1ReportService.GetValidationAsync(supplierGstin, returnPeriod);
-            if (!ScopeMatches(supplierGstin, returnPeriod))
+            if (loadVersion != _returnLoadVersion || !ScopeMatches(supplierGstin, returnPeriod))
                 return;
+
             Validation = validation;
+            Summary = await summaryTask;
+            Categories = new ObservableCollection<Gstr1CategorySummaryResponse>(Summary?.Categories ?? []);
+            _monthlyDocuments = await documentsTask ?? [];
 
-            Summary =
-                await summaryTask;
-
-            var documents =
-                await documentsTask;
-
-
-            // -----------------------------------------------------
-            // CATEGORY SUMMARY
-            // -----------------------------------------------------
-
-            Categories =
-                new ObservableCollection<Gstr1CategorySummaryResponse>(
-                    Summary?.Categories
-                    ?? []);
-
-
-            // -----------------------------------------------------
-            // DOCUMENTS
-            // -----------------------------------------------------
-
-            Documents =
-                new ObservableCollection<Gstr1DocumentResponse>(
-                    documents
-                    ?? []);
-
-
-            StatusMessage =
-                Documents.Count == 0
-                    ? $"No staged GSTR-1 documents found for " +
-                      $"{ReturnPeriodDisplay}."
-                    : $"{Documents.Count} staged document(s) loaded.";
+            // Documents remain hidden until the operator chooses the exact
+            // ReturnCategory/Gstr1Table summary row.
+            SelectedCategory = null;
+            Documents.Clear();
+            SelectedDocument = null;
+            DocumentLines.Clear();
+            DocumentsEmptyMessage = "Select a category above to view its documents.";
+            ShowDocumentsEmptyState = true;
+            StatusMessage = $"GSTR-1 summary loaded for {ReturnPeriodDisplay}. Select a category to view documents.";
         }
         catch (Exception ex)
         {
+            if (loadVersion != _returnLoadVersion)
+                return;
+
             Validation = null;
             Summary = null;
             Categories.Clear();
+            SelectedCategory = null;
+            _monthlyDocuments = [];
             Documents.Clear();
-            DocumentLines.Clear();
             SelectedDocument = null;
-
-            StatusMessage =
-                "Unable to load GSTR-1 data.";
-
-            _messageBoxService.ShowMessage(
-                ex.Message,
-                "GSTR-1",
-                MessageButton.OK,
-                MessageIcon.Error);
+            DocumentLines.Clear();
+            DocumentsEmptyMessage = "Select a category above to view its documents.";
+            ShowDocumentsEmptyState = true;
+            StatusMessage = "Unable to load GSTR-1 data.";
+            _messageBoxService.ShowMessage(ex.Message, "GSTR-1", MessageButton.OK, MessageIcon.Error);
         }
         finally
         {
@@ -451,6 +448,41 @@ public partial class Gstr1ReturnViewModel : ObservableObject
         }
     }
 
+    // =========================================================
+    // SELECTED CATEGORY
+    // =========================================================
+
+    partial void OnSelectedCategoryChanged(Gstr1CategorySummaryResponse? value)
+    {
+        _documentLinesVersion++;
+        SelectedDocument = null;
+        DocumentLines.Clear();
+        Documents.Clear();
+
+        if (value is null)
+        {
+            DocumentsEmptyMessage = "Select a category above to view its documents.";
+            ShowDocumentsEmptyState = true;
+            return;
+        }
+
+        var matches = _monthlyDocuments.Where(document =>
+            string.Equals(document.ReturnCategory?.Trim(), value.Category?.Trim(),
+                StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(document.Gstr1Table?.Trim(), value.Gstr1Table?.Trim(),
+                StringComparison.OrdinalIgnoreCase));
+
+        foreach (var document in matches)
+            Documents.Add(document);
+
+        ShowDocumentsEmptyState = Documents.Count == 0;
+        DocumentsEmptyMessage = Documents.Count == 0
+            ? "No documents found for the selected category."
+            : string.Empty;
+        StatusMessage = Documents.Count == 0
+            ? $"No documents found for {value.Category}."
+            : $"{Documents.Count:N0} {value.Category} document(s).";
+    }
 
     // =========================================================
     // SELECTED DOCUMENT
@@ -459,6 +491,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     partial void OnSelectedDocumentChanged(
         Gstr1DocumentResponse? value)
     {
+        _documentLinesVersion++;
         DocumentLines.Clear();
 
         if (value is null ||
@@ -478,6 +511,10 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private async Task LoadDocumentLinesAsync(
         Gstr1DocumentResponse document)
     {
+        var requestVersion = _documentLinesVersion;
+        var supplierGstin = SupplierGstin;
+        var returnPeriod = ReturnPeriod;
+
         try
         {
             StatusMessage =
@@ -487,8 +524,8 @@ public partial class Gstr1ReturnViewModel : ObservableObject
                 await _gstr1ReportService
                     .GetDocumentLinesAsync(
                         document.Gkey,
-                        SupplierGstin,
-                        ReturnPeriod);
+                        supplierGstin,
+                        returnPeriod);
 
             /*
              * Selection may have changed while the HTTP request
@@ -496,8 +533,9 @@ public partial class Gstr1ReturnViewModel : ObservableObject
              *
              * Do not display lines belonging to an old selection.
              */
-            if (SelectedDocument?.Gkey !=
-                document.Gkey)
+            if (requestVersion != _documentLinesVersion ||
+                !ScopeMatches(supplierGstin, returnPeriod) ||
+                SelectedDocument?.Gkey != document.Gkey)
             {
                 return;
             }
@@ -517,8 +555,9 @@ public partial class Gstr1ReturnViewModel : ObservableObject
              * document. Otherwise it belongs to an obsolete
              * request.
              */
-            if (SelectedDocument?.Gkey ==
-                document.Gkey)
+            if (requestVersion == _documentLinesVersion &&
+                ScopeMatches(supplierGstin, returnPeriod) &&
+                SelectedDocument?.Gkey == document.Gkey)
             {
                 DocumentLines.Clear();
 

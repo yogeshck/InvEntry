@@ -680,7 +680,7 @@
                         NavigationTargetType=
                             "{x:Type views:GRNListView}"
 
-                        Content="MRN List"
+                        Content="Material Receipt List"
 
                         HideMenuWhenSelected="True"/>
 
@@ -689,7 +689,7 @@
                         NavigationTargetType=
                             "{x:Type page:ProductStockPage}"
 
-                        Content="Stock Closing"
+                        Content="Tag Printing"
 
                         HideMenuWhenSelected="True"/>
 
@@ -716,7 +716,7 @@
                         NavigationTargetType=
                             "{x:Type views:BarCodeTagListView}"
 
-                        Content="Barcode"
+                        Content="Barcode Maintenance"
 
                         HideMenuWhenSelected="True"/>
 
@@ -725,7 +725,7 @@
                         NavigationTargetType=
                             "{x:Type views:DailyStockSummaryListView}"
 
-                        Content="Daily Stock Summary"
+                        Content="Daily Stock Summary List"
 
                         HideMenuWhenSelected="True"/>
 
@@ -736,6 +736,31 @@
             </dxwui:HamburgerSubMenu>
 
 
+            <!-- =================================================
+                 REPORTS
+                 ================================================= -->
+
+            <dxwui:HamburgerSubMenu
+                Content="Tax"
+
+                MoreButtonVisibilityMode="Hidden"
+
+                Glyph="{dx:DXImage
+                    'SvgImages/XAF/ActionGroup_EasyTestRecorder.svg'}">
+
+
+                <dxwui:HamburgerSubMenu.Items>
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                            NavigationTargetType="{x:Type views:Gstr1ReturnView}"
+                            Content="GSTR-1 Return"
+                            HideMenuWhenSelected="True" />
+
+                </dxwui:HamburgerSubMenu.Items>
+
+
+            </dxwui:HamburgerSubMenu>
+            
 
             <!-- =================================================
                  REPORTS
@@ -769,11 +794,6 @@
                         Content="Stock Report"
 
                         HideMenuWhenSelected="True"/>
-
-                    <dxwui:HamburgerSubMenuNavigationButton
-    NavigationTargetType="{x:Type views:Gstr1ReturnView}"
-    Content="GSTR-1 Return"
-    HideMenuWhenSelected="True" />
 
                 </dxwui:HamburgerSubMenu.Items>
 
