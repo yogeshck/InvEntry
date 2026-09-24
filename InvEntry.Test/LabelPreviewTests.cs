@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using InvEntry.Models;
+using InvEntry.Controls;
 using InvEntry.Services.Printing;
 using InvEntry.Utils;
 using InvEntry.ViewModels;
@@ -85,6 +86,83 @@ public class LabelPreviewTests
     }
 
     [Test]
+    public void Renderer_PreservesPrinterDotCanvasAndWpfPixelMetadata()
+    {
+        var image = new ZplLabelPreviewRenderer().Render(Request).Image;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(image.PixelWidth, Is.EqualTo(700));
+            Assert.That(image.PixelHeight, Is.EqualTo(250));
+            Assert.That(image.PixelWidth / (double)image.PixelHeight, Is.EqualTo(2.8d));
+            Assert.That(image.DpiX, Is.EqualTo(96d).Within(0.01d));
+            Assert.That(image.DpiY, Is.EqualTo(96d).Within(0.01d));
+        });
+    }
+
+    [Test]
+    public void PhysicalTagGeometry_MatchesManufacturerDimensions()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(JewelleryTagShape.OverallLengthMm / JewelleryTagShape.MaximumHeightMm,
+                Is.EqualTo(100d / 13d));
+            Assert.That(JewelleryTagShape.PrintableBodyLengthMm, Is.EqualTo(55d));
+            Assert.That(JewelleryTagShape.AttachmentTailLengthMm, Is.EqualTo(45d));
+            Assert.That(JewelleryTagShape.FoldLineMm, Is.EqualTo(27.5d));
+            Assert.That(JewelleryTagShape.PrintableBodyLengthMm + JewelleryTagShape.AttachmentTailLengthMm,
+                Is.EqualTo(JewelleryTagShape.OverallLengthMm));
+            Assert.That(JewelleryTagShape.PrintableBodyLengthMm / JewelleryTagShape.AttachmentTailLengthMm,
+                Is.EqualTo(55d / 45d));
+        });
+    }
+
+    [Test]
+    public void PhysicalTag_UsesUniformScale()
+    {
+        double scale = JewelleryTagShape.CalculateUniformScale(500d, 200d);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(scale, Is.EqualTo(5d));
+            Assert.That(JewelleryTagShape.OverallLengthMm * scale, Is.EqualTo(500d));
+            Assert.That(JewelleryTagShape.MaximumHeightMm * scale, Is.EqualTo(65d));
+        });
+    }
+
+    [Test]
+    public void ProductionZpl_KeepsOriginalBarcodeAndTextCoordinates()
+    {
+        string zpl = BarCodePrint.CreateZpl(
+            Request.ProductCode, Request.ProductName, Request.VaPercent,
+            Request.ProductWeight, Request.StoneWeight,
+            Request.ProductPurity, Request.CompanyName);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(zpl, Does.Contain("^PW700\n^LL250\n"));
+            Assert.That(zpl, Does.Contain("^FO5,5\n^BY1,2.0,40\n^BCN,40,N,N,N\n^FDGBL2-0176^FS"));
+            Assert.That(zpl, Does.Contain("^FO5,55\n^A0N,20,20\n^FDGBL2-0176^FS"));
+            Assert.That(zpl, Does.Contain("^FO250,5\n^A0N,22,22\n^FDGold Bangle^FS"));
+            Assert.That(zpl, Does.Contain("^FO250,85\n^A0N,20,20\n^FDPurity: 916^FS"));
+            Assert.That(zpl, Does.Not.Contain("^BY2"));
+        });
+    }
+    [Test]
+    public void FitMode_UsesUniformDiscreteScaling()
+    {
+        double fit = PixelPerfectImage.CalculateFitScale(500, 220, 700, 250);
+        double enlarged = PixelPerfectImage.CalculateFitScale(1500, 600, 700, 250);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(fit, Is.EqualTo(0.5d));
+            Assert.That(700d * fit / (250d * fit), Is.EqualTo(2.8d));
+            Assert.That(enlarged, Is.EqualTo(2d));
+        });
+    }
+
+    [Test]
     public void WeightChange_InvalidatesPreviewWithoutChangingStockIdentity()
     {
         var viewModel = (ProductStockEntryViewModel)
@@ -125,6 +203,12 @@ public class LabelPreviewTests
             Assert.That(xaml, Does.Contain("Command=\"{Binding PreviewTagCommand}\""));
             Assert.That(xaml, Does.Contain("Command=\"{Binding PrintTagCommand}\""));
             Assert.That(xaml, Does.Contain("Header=\"Visual Preview\""));
+            Assert.That(xaml, Does.Contain("Header=\"Fit to Panel\""));
+            Assert.That(xaml, Does.Contain("Header=\"Actual Pixels\""));
+            Assert.That(xaml, Does.Not.Contain("203 DPI"));
+            Assert.That(xaml, Does.Contain("controls:JewelleryTagShape"));
+            Assert.That(xaml, Does.Contain("Physical alignment is not calibrated"));
+            Assert.That(xaml, Does.Contain("45 mm blank tail"));
             Assert.That(xaml, Does.Contain("Header=\"ZPL Text\""));
         });
     }

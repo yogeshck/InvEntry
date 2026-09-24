@@ -47,6 +47,7 @@ public sealed partial class ZplLabelPreviewRenderer : ILabelPreviewRenderer
         int width = ReadInt(zpl, PwRegex(), 700);
         int height = ReadInt(zpl, LlRegex(), 250);
         var visual = new DrawingVisual();
+        RenderOptions.SetEdgeMode(visual, EdgeMode.Aliased);
 
         using (DrawingContext drawing = visual.RenderOpen())
         {
@@ -106,7 +107,9 @@ public sealed partial class ZplLabelPreviewRenderer : ILabelPreviewRenderer
                             value,
                             CultureInfo.InvariantCulture,
                             FlowDirection.LeftToRight,
-                            new Typeface("Arial"),
+                            // This is a local approximation only. Zebra font 0 remains
+                            // authoritative for native physical-printer output.
+                            new Typeface("Segoe UI"),
                             fontHeight,
                             Brushes.Black,
                             1d)
