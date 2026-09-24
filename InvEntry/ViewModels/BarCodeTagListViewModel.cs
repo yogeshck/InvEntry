@@ -1,310 +1,470 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DevExpress.Data;
 using DevExpress.Mvvm;
-using DevExpress.Xpf.Bars;
-using DevExpress.XtraLayout.Customization;
-using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
-using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
-using InvEntry.Store;
+using InvEntry.Services.Printing;
 using InvEntry.Utils;
-using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using IDialogService = DevExpress.Mvvm.IDialogService;
+using System.Windows.Media.Imaging;
 
-namespace InvEntry.ViewModels
+namespace InvEntry.ViewModels;
+
+public partial class BarCodeTagListViewModel : ObservableObject
 {
-    public partial class BarCodeTagListViewModel : ObservableObject
+    private readonly IProductService _productService;
+    private readonly IProductStockSummaryService _productStockSummaryService;
+    private readonly IProductStockService _productStockService;
+    private readonly IMessageBoxService? _messageBoxService;
+    private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
+    private readonly IProductCategoryService _productCategoryService;
+    private readonly ILabelPrinter _labelPrinter;
+    private readonly ILabelPreviewRenderer _labelPreviewRenderer;
+    private int _searchVersion;
+    private int _categoryVersion;
+    private CancellationTokenSource? _skuLookupCts;
+
+    [ObservableProperty] private ObservableCollection<string> _productSkuStrList = new();
+    [ObservableProperty] private ObservableCollection<string> _productCategoryList = new();
+    [ObservableProperty] private ObservableCollection<ProductStock> _productStockList = new();
+    [ObservableProperty] private ProductStock? _selectedGridLine;
+    [ObservableProperty] private OrgThisCompanyView? _company;
+    [ObservableProperty] private string? _selectedCategory;
+    [ObservableProperty] private string? _selectedProductSku;
+    [ObservableProperty] private string? _maintenanceStatus;
+    [ObservableProperty] private bool _isErrorStatus;
+    [ObservableProperty] private bool _isLoadingStock;
+    [ObservableProperty] private bool _isPreviewingTag;
+    [ObservableProperty] private bool _isPrintingTag;
+    [ObservableProperty] private BitmapSource? _labelPreviewImage;
+    [ObservableProperty] private string? _labelPreviewZpl;
+    [ObservableProperty] private bool _hasLabelPreview;
+    [ObservableProperty] private string? _previewStatusHeading = "Tag preview";
+    [ObservableProperty] private string? _previewStatusMessage = "Select a stock record to preview its tag.";
+
+    public bool IsLabelPrintSimulation => _labelPrinter is SimulatedLabelPrinter;
+    public Task InitializationTask { get; }
+
+    public BarCodeTagListViewModel(
+        IProductService productService,
+        IProductStockService productStockService,
+        IProductStockSummaryService productStockSummaryService,
+        IProductCategoryService productCategoryService,
+        IMessageBoxService messageBoxService,
+        IOrgThisCompanyViewService orgThisCompanyViewService,
+        ILabelPrinter labelPrinter,
+        ILabelPreviewRenderer labelPreviewRenderer)
     {
+        _productStockService = productStockService;
+        _productService = productService;
+        _productStockSummaryService = productStockSummaryService;
+        _productCategoryService = productCategoryService;
+        _messageBoxService = messageBoxService;
+        _orgThisCompanyViewService = orgThisCompanyViewService;
+        _labelPrinter = labelPrinter;
+        _labelPreviewRenderer = labelPreviewRenderer;
+        InitializationTask = InitializeAsync();
+    }
 
-        // private readonly ReferenceLoader _referenceLoader;
-
-        [ObservableProperty]
-        private ObservableCollection<MtblReference> mtblReferencesList;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _productSkuStrList;
-
-        private readonly IProductViewService _productViewService;
-        private readonly IProductTransactionService _productTransactionService;
-        private readonly IProductStockService _productStockService;
-        private readonly IMessageBoxService _messageBoxService;
-        private readonly IDialogService _dialogService;
-        private readonly IMtblReferencesService _mtblReferencesService;
-        private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
-        private readonly IProductCategoryService _productCategoryService;
-
-
-        [ObservableProperty]
-        private ObservableCollection<string> _productCategoryLst;
-
-        [ObservableProperty]
-        private ObservableCollection<string> _productCategoryList;
-
-        [ObservableProperty]
-        private ObservableCollection<ProductStock> _productStockList;
-
-        [ObservableProperty]
-        private ProductStock _SelectedGridLine;
-
-        [ObservableProperty]
-        private OrgThisCompanyView _company;
-
-        // [ObservableProperty]
-        // private Product _product;
-
-        [ObservableProperty]
-        private ObservableCollection<ProductStock> _prdStockList;
-
-        [ObservableProperty]
-        private string _selectedCategory;
-
-        [ObservableProperty]
-        private string _selectedProductSku;
-
-        [ObservableProperty]
-        private string _optionsStr;
-
-        private int productSkuSeq = 0;
-        private MtblReference mtblReference;
-        private DateTime startdate;
-
-        public BarCodeTagListViewModel(
-                            IProductViewService productViewService,
-                            IProductStockService productStockService,
-                            IProductCategoryService productCategoryService,
-                            IMtblReferencesService mtblReferencesService,
-                            IMessageBoxService messageBoxService,
-                            IProductTransactionService productTransactionService,
-                            IOrgThisCompanyViewService orgThisCompanyViewService,
-                            ReferenceLoader referenceLoader)
+    private async Task InitializeAsync()
+    {
+        try
         {
-            _productStockService = productStockService;
-            _productViewService = productViewService;
-            _productCategoryService = productCategoryService;
-            _messageBoxService = messageBoxService;
-            _mtblReferencesService = mtblReferencesService;
-            _productTransactionService = productTransactionService;
-            _orgThisCompanyViewService = orgThisCompanyViewService;
-
-            //_referenceLoader = referenceLoader;
-
-            SetThisCompany();
-
-            _ = PopulateProductCategoryLst();
-            _ = PopulateProductSkuList();
-
+            MaintenanceStatus = "Loading barcode maintenance data...";
+            var categoriesTask = _productCategoryService.GetProductCategoryList();
+            var companyTask = _orgThisCompanyViewService.GetOrgThisCompany();
+            await Task.WhenAll(categoriesTask, companyTask);
+            ProductCategoryList = new ObservableCollection<string>(
+                (await categoriesTask)
+                    .Select(category => category.Name)
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(name => name));
+            Company = await companyTask;
+            MaintenanceStatus = "Enter or scan an exact SKU, or select a category and refresh.";
         }
-
-        private async void SetThisCompany()
+        catch (Exception ex)
         {
-            Company = new();
-            Company = await _orgThisCompanyViewService.GetOrgThisCompany();
-            //Header.TenantGkey = Company.TenantGkey;
+            SetError("Unable to load barcode maintenance data", ex.Message, showDialog: false);
         }
+    }
 
-        private async Task PopulateProductCategoryLst()
+    partial void OnSelectedCategoryChanged(string? value)
+    {
+        SelectedProductSku = null;
+        SelectedGridLine = null;
+        InvalidatePreview();
+        _ = LoadCategorySkusSafelyAsync(value, Interlocked.Increment(ref _categoryVersion));
+    }
+
+    partial void OnSelectedProductSkuChanged(string? value)
+    {
+        _skuLookupCts?.Cancel();
+        _skuLookupCts?.Dispose();
+        _skuLookupCts = null;
+        if (string.IsNullOrWhiteSpace(value)) return;
+
+        var cancellation = new CancellationTokenSource();
+        _skuLookupCts = cancellation;
+        _ = LookupScannedSkuSafelyAsync(cancellation.Token);
+    }
+
+    private async Task LookupScannedSkuSafelyAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            var categoryList = await _productCategoryService.GetProductCategoryList();
-
-            ProductCategoryList = new(categoryList.
-                                            Select(x => x.Name));
-
-        }
-
-        private async Task PopulateProductSkuList(string category = "RING")
-        {
-            var skuList = await _productStockService.GetCategoryList(category);
-
-
-            ProductSkuStrList = new(skuList
-                        .Select(x => x.ProductSku));
-
-        }
-
-        partial void OnSelectedCategoryChanged(string value)
-        {
-            _ = PopulateProductSkuList(value);
-        }
-
-        [RelayCommand]
-        private void ResetForm()
-        {
-            ProductStockList = null;
-            SelectedProductSku = null;
-        }
-
-        [RelayCommand]
-        private async Task RefreshBarcodeAsync()
-        {
-
-            ProductStockList = new();
-
-            if (SelectedCategory is not null && SelectedProductSku is null)
-            {
-                // Load all stock only products for choosen category
-                var product = await _productStockService.GetCategoryList(SelectedCategory);
-
-                // Build a lookup of duplicate SKUs
-                var duplicateSkus = product
-                    .GroupBy(p => p.ProductSku)
-                    .Where(g => g.Count() > 1)
-                    .Select(g => g.Key)
-                    .ToHashSet();
-
-                // Mark each product with flag
-                foreach (var prods in product)
-                {
-                    prods.DuplicateFlag = duplicateSkus.Contains(prods.ProductSku) ? "D" : "";
-                }
-
-                ProductStockList = new(product);
-            }
-
-            else if (!string.IsNullOrEmpty(SelectedProductSku))
-            {
-                // Load single product by ID/SKU
-                var product = await _productStockService.GetProductStock(SelectedProductSku);
-                if (product is not null)
-                {
-                    ProductStockList = new ObservableCollection<ProductStock> { product };
-                }
-            }
-
-            //    else if (productStock is not null)
-            //     {
-            // Reset and show only this product
-            //         ProductStockList = new List<ProductStock> { productStock };
-            //     }
-        }
-
-        private ProductStock SetProduct(ProductStock prdStk)
-        {
-            // var prdStk = await _productStockService.GetProductStock(SelectedGridLine.GKey);
-            //  if (prdStk is not null)
-            //    return;     //avoid duplication of product stock
-
-            ProductStock newProductStock = new ProductStock();
-
-            newProductStock.ProductGkey = prdStk.ProductGkey;
-            newProductStock.GrossWeight = prdStk.GrossWeight;
-            newProductStock.StoneWeight = prdStk.StoneWeight;
-            newProductStock.NetWeight = prdStk.NetWeight;
-            newProductStock.SuppliedGrossWeight = prdStk.GrossWeight;
-            newProductStock.AdjustedWeight = 0;
-            newProductStock.SoldWeight = 0;
-            newProductStock.BalanceWeight = prdStk.NetWeight;
-            newProductStock.SuppliedQty = prdStk.SuppliedQty;
-            newProductStock.SoldQty = 0;
-            newProductStock.StockQty = 1; //hardcoded to be reviewed later >>>> grnLineStock.AcceptedQty;
-            newProductStock.Status = "In-Stock";
-            newProductStock.SupplierId = prdStk.SupplierId;
-            newProductStock.IsProductSold = false;
-            newProductStock.Category = prdStk.Category;
-            newProductStock.ProductSku = prdStk.ProductSku;
-            newProductStock.IsBarcodePrinted = true;
-            newProductStock.CreatedOn = DateTime.Now;
-            newProductStock.CreatedBy = "ReCreated";
-            newProductStock.WastageAmount = 0;
-            newProductStock.WastagePercent = 0;
-
-            return newProductStock;
-
-            //await PrintTagAsync(productStock);
-
-
-        }
-
-        [RelayCommand]
-        private async Task PrintTagAsync(ProductStock productStock)
-        {
-
-            var newPrdStk = productStock;
-
-            var productView = await _productViewService.GetByCategory(productStock.Category);
-
-            if (productStock.IsReAssign)
-            {
-                mtblReference = await _mtblReferencesService.GetReference("PRODUCT_CATEGORY", SelectedCategory);
-
-                productSkuSeq = int.Parse(mtblReference.RefValue);
-
-                var oldPrdStk = productStock;
-
-                newPrdStk = SetProduct(productStock);
-
-                newPrdStk = SetProductSku(newPrdStk, productView);
-
-
-                //save to db immediate - if list has 100 or more nos, it takes lots of time
-                await _productStockService.CreateProductStock(newPrdStk);
-
-                oldPrdStk.Status = "InActive";
-                oldPrdStk.IsProductSold = true;
-                oldPrdStk.NetWeight = 0;
-                oldPrdStk.BalanceWeight = 0;
-                oldPrdStk.StockQty = 0;
-                oldPrdStk.ModifiedBy = "DeActivated";
-                oldPrdStk.ModifiedOn = DateTime.Now;
-                await _productStockService.UpdateProductStock(oldPrdStk);
-
-                //if user maintains seq nbr for product sku - this needs to be executed - but in difference place - need to fix
-                mtblReference.RefValue = productSkuSeq.ToString();
-                await _mtblReferencesService.UpdateReference(mtblReference);
-
-            }
-
-            PrintTag(newPrdStk, productView);
-
-            //after modification refresh the list
+            await Task.Delay(300, cancellationToken);
             await RefreshBarcodeAsync();
-
         }
-
-        private void PrintTag(ProductStock newPrdStk, ProductView productView)
+        catch (OperationCanceledException)
         {
+            // A keyboard-wedge scan or manual edit supplied a newer value.
+        }
+        catch (Exception ex)
+        {
+            SetError("Unable to look up SKU", ex.Message, showDialog: false);
+        }
+    }
+    partial void OnSelectedGridLineChanged(ProductStock? value)
+    {
+        InvalidatePreview();
+        var eligibility = BarcodeMaintenanceEligibilityEvaluator.Evaluate(value);
+        SetPreviewUnavailableState(value, eligibility);
+        if (value is not null) MaintenanceStatus = $"{eligibility.DisplayText}: {eligibility.Guidance}";
+        PreviewTagCommand.NotifyCanExecuteChanged();
+        ReprintTagCommand.NotifyCanExecuteChanged();
+    }
 
-            /*            if (productView.VaPercent <1 )
-                            _messageBoxService.ShowMessage("V A Percent error. ", "Estimate Created", MessageButton.OK, MessageIcon.Exclamation);*/
+    partial void OnIsPrintingTagChanged(bool value) => ReprintTagCommand.NotifyCanExecuteChanged();
+    partial void OnIsPreviewingTagChanged(bool value) => PreviewTagCommand.NotifyCanExecuteChanged();
 
-
-            if (newPrdStk.NetWeight > 0.00m)
+    private async Task LoadCategorySkusSafelyAsync(string? category, int requestVersion)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(category))
             {
-
-                var result = BarCodePrint.ProcessBarCode(newPrdStk.ProductSku, productView.Description,
-                                                                              productView.VaPercent.Value,
-                                                                              newPrdStk.NetWeight.Value,
-                                                                              newPrdStk.StoneWeight.Value,
-                                                                              productView.Purity,
-                                                                              Company.CompanyName);
-
+                if (requestVersion == _categoryVersion)
+                    ProductSkuStrList = new();
+                return;
             }
 
+            var stock = (await _productStockService.GetCategoryList(category)).ToList();
+            if (requestVersion != _categoryVersion) return;
+            ProductSkuStrList = new ObservableCollection<string>(stock
+                .Select(item => item.ProductSku)
+                .Where(sku => !string.IsNullOrWhiteSpace(sku))
+                .Select(sku => sku!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(sku => sku));
         }
-
-        private ProductStock SetProductSku(ProductStock prdSku, ProductView prdView)
+        catch (Exception ex)
         {
-
-            var tagPurityCode = "";
-            if (prdView.Purity == "916")
-                tagPurityCode = "2";
-            else if (prdView.Purity == "750")
-                tagPurityCode = "8";
-
-            productSkuSeq++;
-
-            var productSku = string.Format("{0}{1}{2}{3}", mtblReference.RefDesc, tagPurityCode, "-", productSkuSeq.ToString("D4")); //, grnLine.NetWeight);
-            prdSku.ProductSku = productSku;
-
-            return prdSku;
-
+            if (requestVersion == _categoryVersion)
+                SetError("Unable to load category SKUs", ex.Message, showDialog: false);
         }
+    }
+
+    [RelayCommand]
+    private void ResetForm()
+    {
+        _skuLookupCts?.Cancel();
+        Interlocked.Increment(ref _searchVersion);
+        Interlocked.Increment(ref _categoryVersion);
+        SelectedCategory = null;
+        SelectedProductSku = null;
+        SelectedGridLine = null;
+        ProductSkuStrList = new();
+        ProductStockList = new();
+        InvalidatePreview();
+        IsErrorStatus = false;
+        MaintenanceStatus = "Enter or scan an exact SKU, or select a category and refresh.";
+    }
+
+    [RelayCommand]
+    private async Task RefreshBarcodeAsync()
+    {
+        int requestVersion = Interlocked.Increment(ref _searchVersion);
+        IsLoadingStock = true;
+        IsErrorStatus = false;
+        MaintenanceStatus = "Loading stock...";
+        InvalidatePreview();
+
+        try
+        {
+            string? sku = string.IsNullOrWhiteSpace(SelectedProductSku)
+                ? null
+                : SelectedProductSku.Trim();
+            string? category = string.IsNullOrWhiteSpace(SelectedCategory)
+                ? null
+                : SelectedCategory.Trim();
+            List<ProductStock> matches;
+
+            if (category is not null)
+            {
+                matches = (await _productStockService.GetCategoryList(category)).ToList();
+            }
+            else if (sku is not null)
+            {
+                var categoryNames = ProductCategoryList.ToList();
+                var tasks = categoryNames.Select(_productStockService.GetCategoryList).ToArray();
+                var categoryResults = await Task.WhenAll(tasks);
+                matches = categoryResults.SelectMany(items => items).ToList();
+            }
+            else
+            {
+                matches = new List<ProductStock>();
+            }
+
+            if (sku is not null)
+            {
+                matches = matches
+                    .Where(stock => string.Equals(stock.ProductSku?.Trim(), sku, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            if (requestVersion != _searchVersion) return;
+            MarkDuplicates(matches);
+            ProductStockList = new ObservableCollection<ProductStock>(matches.OrderBy(stock => stock.ProductSku).ThenBy(stock => stock.GKey));
+            SelectedGridLine = null;
+
+            MaintenanceStatus = matches.Count switch
+            {
+                0 => sku is null && category is null
+                    ? "Select a category or enter/scan an exact SKU."
+                    : "No matching ProductStock records were found.",
+                1 => "Ready to preview or reprint the selected stock record.",
+                _ when sku is not null => $"{matches.Count} records match SKU {sku}. Select the required ProductStock GKey.",
+                _ => $"Loaded {matches.Count} stock records."
+            };
+        }
+        catch (Exception ex)
+        {
+            if (requestVersion == _searchVersion)
+            {
+                ProductStockList = new();
+                SelectedGridLine = null;
+                SetError("Unable to load stock", ex.Message);
+            }
+        }
+        finally
+        {
+            if (requestVersion == _searchVersion)
+                IsLoadingStock = false;
+        }
+    }
+
+    private static void MarkDuplicates(IReadOnlyCollection<ProductStock> stock)
+    {
+        var duplicates = stock
+            .Where(item => !string.IsNullOrWhiteSpace(item.ProductSku))
+            .GroupBy(item => item.ProductSku!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (ProductStock item in stock)
+            item.DuplicateFlag = item.ProductSku is not null && duplicates.Contains(item.ProductSku.Trim()) ? "D" : string.Empty;
+    }
+
+    private bool CanPreviewTag(ProductStock? stock) =>
+        !IsPreviewingTag && BarcodeMaintenanceEligibilityEvaluator.Evaluate(stock).CanPreviewOrReprint;
+
+    [RelayCommand(CanExecute = nameof(CanPreviewTag))]
+    private async Task PreviewTagAsync(ProductStock? stock)
+    {
+        if (stock is null || IsPreviewingTag) return;
+        BarcodeMaintenanceEligibility eligibility = BarcodeMaintenanceEligibilityEvaluator.Evaluate(stock);
+        if (!eligibility.CanPreviewOrReprint)
+        {
+            InvalidatePreview();
+            SetPreviewUnavailableState(stock, eligibility);
+            MaintenanceStatus = eligibility.DisplayText;
+            return;
+        }
+
+        SelectedGridLine = stock;
+        IsPreviewingTag = true;
+        IsErrorStatus = false;
+        MaintenanceStatus = "Generating tag preview...";
+
+        try
+        {
+            LabelPrintRequest request = await CreateLabelPrintRequestAsync(stock);
+            LabelPreviewResult preview = _labelPreviewRenderer.Render(request);
+            LabelPreviewZpl = preview.Zpl;
+            LabelPreviewImage = preview.Image;
+            HasLabelPreview = true;
+            PreviewStatusHeading = null;
+            PreviewStatusMessage = null;
+            MaintenanceStatus = $"Preview generated for {stock.ProductSku}.";
+        }
+        catch (Exception ex)
+        {
+            InvalidatePreview();
+            PreviewStatusHeading = "Unable to generate tag preview";
+            PreviewStatusMessage = ex.Message;
+            SetError("Unable to preview label", ex.Message);
+        }
+        finally
+        {
+            IsPreviewingTag = false;
+        }
+    }
+
+    private bool CanReprintTag(ProductStock? stock) =>
+        !IsPrintingTag && BarcodeMaintenanceEligibilityEvaluator.Evaluate(stock).CanPreviewOrReprint;
+
+    [RelayCommand(CanExecute = nameof(CanReprintTag))]
+    private async Task ReprintTagAsync(ProductStock? stock)
+    {
+        if (stock is null || IsPrintingTag) return;
+        BarcodeMaintenanceEligibility eligibility = BarcodeMaintenanceEligibilityEvaluator.Evaluate(stock);
+        if (!eligibility.CanPreviewOrReprint)
+        {
+            MaintenanceStatus = eligibility.DisplayText;
+            return;
+        }
+
+        SelectedGridLine = stock;
+        IsPrintingTag = true;
+        IsErrorStatus = false;
+        MaintenanceStatus = $"Printing {stock.ProductSku}...";
+
+        try
+        {
+            LabelPrintRequest request = await CreateLabelPrintRequestAsync(stock);
+            LabelPrintResult result = await _labelPrinter.PrintAsync(request);
+            if (!result.Success)
+            {
+                SetError("Label reprint failed", result.ErrorMessage ?? "The printer did not accept the label.");
+                return;
+            }
+
+            MaintenanceStatus = IsLabelPrintSimulation
+                ? $"Simulated print success for {stock.ProductSku}; no physical label was printed."
+                : $"Physical print submitted successfully for {stock.ProductSku}.";
+            _messageBoxService?.ShowMessage(MaintenanceStatus, "Barcode reprint", MessageButton.OK, MessageIcon.Information);
+        }
+        catch (Exception ex)
+        {
+            SetError("Label reprint failed", ex.Message);
+        }
+        finally
+        {
+            IsPrintingTag = false;
+        }
+    }
+
+    private async Task<LabelPrintRequest> CreateLabelPrintRequestAsync(ProductStock stock)
+    {
+        var errors = ValidateStock(stock).ToList();
+        Product? product = null;
+        ProductStockSummary? stockSummary = null;
+        OrgThisCompanyView? company = Company;
+        string stockIdentity = $"SKU {stock.ProductSku ?? "<missing>"}, ProductStock GKey {stock.GKey}";
+
+        if (stock.ProductGkey.GetValueOrDefault() > 0)
+        {
+            product = await _productService.GetByGkey(stock.ProductGkey!.Value);
+            if (product is null)
+                errors.Add($"Associated PRODUCT GKey {stock.ProductGkey.Value} was not found for {stockIdentity}.");
+        }
+
+        decimal? vaPercent = stock.VaPercent;
+        if (!vaPercent.HasValue && stock.StockSummaryGkey.GetValueOrDefault() > 0)
+        {
+            stockSummary = await _productStockSummaryService.GetByGkey(stock.StockSummaryGkey!.Value);
+            if (stockSummary is null)
+                errors.Add($"PRODUCT_STOCK_SUMMARY GKey {stock.StockSummaryGkey.Value} was not found for {stockIdentity}.");
+            else if (stockSummary.ProductGkey != stock.ProductGkey)
+                errors.Add($"PRODUCT_STOCK_SUMMARY GKey {stockSummary.GKey} does not belong to PRODUCT GKey {stock.ProductGkey} for {stockIdentity}.");
+            else
+                vaPercent = stockSummary.VaPercent;
+        }
+
+        if (company is null)
+        {
+            company = await _orgThisCompanyViewService.GetOrgThisCompany();
+            Company = company;
+        }
+        if (company is null || string.IsNullOrWhiteSpace(company.CompanyName))
+            errors.Add($"Company details are unavailable for {stockIdentity}.");
+
+        if (product is not null)
+        {
+            if (string.IsNullOrWhiteSpace(product.Description)) errors.Add($"Product description is unavailable for {stockIdentity}.");
+            if (string.IsNullOrWhiteSpace(product.Purity)) errors.Add($"Product purity is unavailable for {stockIdentity}.");
+        }
+        if (!vaPercent.HasValue || vaPercent.Value < 0m)
+            errors.Add($"Making charge / VA percentage is unavailable or invalid for {stockIdentity}.");
+
+        if (errors.Count > 0)
+            throw new InvalidOperationException(string.Join(Environment.NewLine, errors.Distinct()));
+
+        return new LabelPrintRequest(
+            stock.ProductSku!,
+            product!.Description!,
+            vaPercent!.Value,
+            stock.NetWeight!.Value,
+            stock.StoneWeight!.Value,
+            product.Purity!,
+            company!.CompanyName!);
+    }
+    private static IEnumerable<string> ValidateStock(ProductStock stock)
+    {
+        if (stock.GKey <= 0) yield return "ProductStock GKey is invalid.";
+        if (string.IsNullOrWhiteSpace(stock.ProductSku)) yield return "Product SKU is required.";
+        if (!stock.ProductGkey.HasValue || stock.ProductGkey.Value <= 0) yield return "Product identity is unavailable.";
+        if (string.IsNullOrWhiteSpace(stock.Category)) yield return "Product category is unavailable.";
+        if (!stock.GrossWeight.HasValue || stock.GrossWeight.Value <= 0m) yield return "Gross weight must be greater than zero.";
+        if (!stock.NetWeight.HasValue || stock.NetWeight.Value <= 0m) yield return "Net weight must be greater than zero.";
+        if (!stock.StoneWeight.HasValue || stock.StoneWeight.Value < 0m) yield return "Stone weight is unavailable or invalid.";
+        if (stock.StoneWeight.GetValueOrDefault() > stock.GrossWeight.GetValueOrDefault()) yield return "Stone weight cannot exceed gross weight.";
+    }
+
+    private void SetPreviewUnavailableState(ProductStock? stock, BarcodeMaintenanceEligibility eligibility)
+    {
+        if (stock is null)
+        {
+            PreviewStatusHeading = "Tag preview";
+            PreviewStatusMessage = "Select a stock record to preview its tag.";
+            return;
+        }
+
+        switch (eligibility.State)
+        {
+            case BarcodeMaintenanceEligibilityState.PendingInitialTagging:
+                PreviewStatusHeading = "Initial weighing and tagging required";
+                PreviewStatusMessage = "Complete this item through GRN Weighing & Tagging before using Barcode Maintenance.";
+                break;
+            case BarcodeMaintenanceEligibilityState.InvalidStockData:
+                PreviewStatusHeading = "Tag preview unavailable";
+                PreviewStatusMessage = "The selected stock record has missing or invalid weight data. Correct it through the appropriate existing stock/GRN workflow.";
+                break;
+            default:
+                PreviewStatusHeading = "Tag preview unavailable";
+                PreviewStatusMessage = eligibility.Guidance;
+                break;
+        }
+    }
+    private void InvalidatePreview()
+    {
+        LabelPreviewImage = null;
+        LabelPreviewZpl = null;
+        HasLabelPreview = false;
+    }
+
+    private void SetError(string title, string message, bool showDialog = true)
+    {
+        IsErrorStatus = true;
+        MaintenanceStatus = $"{title}: {message}";
+        if (showDialog)
+            _messageBoxService?.ShowMessage(message, title, MessageButton.OK, MessageIcon.Error);
     }
 }

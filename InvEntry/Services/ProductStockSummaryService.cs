@@ -1,4 +1,4 @@
-﻿using InvEntry.Models;
+using InvEntry.Models;
 using InvEntry.Utils.Options;
 using System;
 using System.Collections.Generic;
@@ -14,33 +14,40 @@ namespace InvEntry.Services
 
         Task<ProductStockSummary> GetByProductGkey(int? productGkey);
 
+        Task<ProductStockSummary> GetByGkey(int stockSummaryGkey);
+
         Task<ProductStockSummary> GetProductStockSummary(string productId);
- 
+
         Task<ProductStockSummary> GetProductStockSummaryByProductSku(string productSku);
-  
+
         Task<ProductStockSummary> GetProductStockSummaryByCategory(string category);
-  
+
         Task CreateProductStockSummary(ProductStockSummary productStockSummary);
-   
+
         Task UpdateProductStockSummary(ProductStockSummary productStockSummary);
 
         Task<IEnumerable<ProductStockSummary>> GetAll();
 
     }
- 
+
     public class ProductStockSummaryService : IProductStockSummaryService
     {
-            
+
         private readonly IMijmsApiService _mijmsApiService;
- 
+
         public ProductStockSummaryService(IMijmsApiService mijmsApiService)
-        {  
+        {
             _mijmsApiService = mijmsApiService;
         }
 
         public async Task<ProductStockSummary> GetByProductGkey(int? productGkey)
         {
             return await _mijmsApiService.Get<ProductStockSummary>($"api/productStockSummary/productGkey/{productGkey}");
+        }
+
+        public async Task<ProductStockSummary> GetByGkey(int stockSummaryGkey)
+        {
+            return await _mijmsApiService.Get<ProductStockSummary>($"api/productStockSummary/gkey/{stockSummaryGkey}");
         }
 
         public async Task<ProductStockSummary> GetProductStockSummary(string productId)
@@ -76,4 +83,4 @@ namespace InvEntry.Services
     }
 
 }
-    
+

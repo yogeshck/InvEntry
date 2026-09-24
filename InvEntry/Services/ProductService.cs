@@ -1,4 +1,4 @@
-﻿using InvEntry.Models;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,8 @@ namespace InvEntry.Services
     public interface IProductService
     {
         Task<Product> GetProduct(string productId);
+
+        Task<Product> GetByGkey(int productGkey);
 
         Task<Product> GetByCategory(string category);
 
@@ -30,6 +32,11 @@ namespace InvEntry.Services
         public async Task<Product> GetProduct(string productId)
         {
             return await _mijmsApiService.Get<Product>($"api/product/{productId}");
+        }
+
+        public async Task<Product> GetByGkey(int productGkey)
+        {
+            return await _mijmsApiService.Get<Product>($"api/product/gkey/{productGkey}");
         }
 
         public async Task<Product> GetByCategory(string category)

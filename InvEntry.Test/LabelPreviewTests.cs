@@ -166,6 +166,69 @@ public class LabelPreviewTests
     }
 
     [Test]
+    public void CompositeTag_RendersZplInsideBodyWithUndistortedBarcodeAndBlankTail()
+    {
+        var result = new ZplLabelPreviewRenderer().Render(Request);
+        var preview = new JewelleryTagPreview
+        {
+            Width = JewelleryTagPreview.CanvasWidth,
+            Height = JewelleryTagPreview.CanvasHeight,
+            Source = result.Image,
+            Zpl = result.Zpl,
+            Mode = PixelPerfectImageMode.ActualPixels
+        };
+        preview.Measure(new Size(JewelleryTagPreview.CanvasWidth, JewelleryTagPreview.CanvasHeight));
+        preview.Arrange(new Rect(0, 0, JewelleryTagPreview.CanvasWidth, JewelleryTagPreview.CanvasHeight));
+        var composite = new System.Windows.Media.Imaging.RenderTargetBitmap(
+            (int)JewelleryTagPreview.CanvasWidth, (int)JewelleryTagPreview.CanvasHeight,
+            96d, 96d, PixelFormats.Pbgra32);
+        composite.Render(preview);
+
+        int[] rawRuns = ReadBlackRuns(result.Image, 10, 0, 250);
+        int[] compositeRuns = ReadBlackRuns(composite, 20, 12, 262);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rawRuns, Is.Not.Empty);
+            Assert.That(compositeRuns, Is.EqualTo(rawRuns),
+                "Actual Pixels must preserve every barcode bar width at 1:1.");
+            Assert.That(CountDarkPixels(composite, new Int32Rect(1, 1, 273, 128)), Is.GreaterThan(100),
+                "Barcode, SKU and company ink must be inside the left section.");
+            Assert.That(CountDarkPixels(composite, new Int32Rect(277, 1, 272, 128)), Is.GreaterThan(100),
+                "Product-detail ink must be inside the right section.");
+            Assert.That(CountDarkPixels(composite, new Int32Rect(575, 55, 400, 20)), Is.EqualTo(0),
+                "The attachment-tail interior must remain blank.");
+            Assert.That(JewelleryTagPreview.DetectOverflow(result.Zpl), Is.EqualTo(PhysicalTagOverflow.None));
+        });
+    }
+
+    private static int[] ReadBlackRuns(System.Windows.Media.Imaging.BitmapSource image, int y, int startX, int endX)
+    {
+        int width = endX - startX;
+        var pixels = new byte[width * 4];
+        image.CopyPixels(new Int32Rect(startX, y, width, 1), pixels, width * 4, 0);
+        var runs = new List<int>();
+        int run = 0;
+        for (int x = 0; x < width; x++)
+        {
+            bool black = pixels[x * 4] < 64 && pixels[x * 4 + 1] < 64 && pixels[x * 4 + 2] < 64;
+            if (black) run++;
+            else if (run > 0) { runs.Add(run); run = 0; }
+        }
+        if (run > 0) runs.Add(run);
+        return runs.ToArray();
+    }
+
+    private static int CountDarkPixels(System.Windows.Media.Imaging.BitmapSource image, Int32Rect area)
+    {
+        var pixels = new byte[area.Width * area.Height * 4];
+        image.CopyPixels(area, pixels, area.Width * 4, 0);
+        int count = 0;
+        for (int i = 0; i < pixels.Length; i += 4)
+            if (pixels[i] < 96 && pixels[i + 1] < 96 && pixels[i + 2] < 96) count++;
+        return count;
+    }
+    [Test]
     public void CompositeTag_LongContentProducesExplicitOverflowIndicator()
     {
         const string longSkuZpl = "^XA^PW700^LL250^FO5,5^BY2,2.0,40^BCN,40,N,N,N^FDTHIS-SKU-IS-FAR-TOO-LONG-FOR-THE-LEFT-SECTION^FS^XZ";

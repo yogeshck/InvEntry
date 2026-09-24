@@ -1,4 +1,4 @@
-﻿using DataAccess.Models;
+using DataAccess.Models;
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,6 +25,18 @@ namespace DataAccess.Controllers
         {
             _logger.LogInformation("All Product Info");
             return Ok(_product.GetAll());
+        }
+
+        [HttpGet("gkey/{productGkey:int}")]
+        public IActionResult GetByGkey(int productGkey)
+        {
+            if (productGkey <= 0)
+                return BadRequest("Product GKey must be greater than zero.");
+
+            var product = _product.Get(x => x.Gkey == productGkey);
+            return product is null
+                ? NotFound($"PRODUCT GKey {productGkey} was not found.")
+                : Ok(product);
         }
 
         // GET api/<ProductController>/5

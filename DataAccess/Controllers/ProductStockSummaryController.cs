@@ -1,4 +1,4 @@
-﻿using DataAccess.Models;
+using DataAccess.Models;
 using DataAccess.Repository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +24,18 @@ namespace DataAccess.Controllers
         {
             _logger.LogInformation("All Product Stock Summary");
             return Ok(_productStockSummary.GetAll().OrderBy(x => x.ProductSku));   //using productsku instead of metal
+        }
+
+        [HttpGet("gkey/{stockSummaryGkey:int}")]
+        public IActionResult GetByGkey(int stockSummaryGkey)
+        {
+            if (stockSummaryGkey <= 0)
+                return BadRequest("Product stock summary GKey must be greater than zero.");
+
+            var summary = _productStockSummary.Get(x => x.Gkey == stockSummaryGkey);
+            return summary is null
+                ? NotFound($"PRODUCT_STOCK_SUMMARY GKey {stockSummaryGkey} was not found.")
+                : Ok(summary);
         }
 
         // GET api/<ProductStockSummaryController>/5

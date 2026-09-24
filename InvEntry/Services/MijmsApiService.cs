@@ -1,4 +1,4 @@
-﻿using InvEntry.Models;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,55 +72,59 @@ public class MijmsApiService : IMijmsApiService
     // GET SINGLE
     // ============================================================
 
-    public async Task<T> Get<T>(
-        string url)
+    public async Task<T> Get<T>(string url)
         where T : BaseEntity
     {
+        var httpClient = _httpClientFactory.CreateClient("mijms");
+        Uri requestUri = new(httpClient.BaseAddress
+            ?? throw new InvalidOperationException("The mijms API BaseAddress is not configured."), url);
+
         try
         {
-            var httpClient =
-                _httpClientFactory
-                    .CreateClient("mijms");
-
-            var completeUrl =
-                $"{httpClient.BaseAddress}{url}";
-
-            var httpResponse =
-                await httpClient
-                    .GetAsync(completeUrl);
+            using var httpResponse = await httpClient.GetAsync(requestUri);
+            string responseText = await httpResponse.Content.ReadAsStringAsync();
 
             if (!httpResponse.IsSuccessStatusCode)
             {
-                var errorContent =
-                    await httpResponse.Content
-                        .ReadAsStringAsync();
-
                 Serilog.Log.Error(
-                    "GET {Url} failed. Status: {StatusCode}, Response: {Response}",
-                    url,
+                    "GET {Path} failed. Status: {StatusCode}, Response: {Response}",
+                    requestUri.AbsolutePath,
                     httpResponse.StatusCode,
-                    errorContent);
+                    responseText);
 
-                return default!;
+                throw new HttpRequestException(
+                    $"GET '{requestUri.AbsolutePath}' failed with HTTP {(int)httpResponse.StatusCode} ({httpResponse.StatusCode}). " +
+                    $"{responseText}",
+                    null,
+                    httpResponse.StatusCode);
             }
 
-            var content =
-                await httpResponse.Content
-                    .ReadFromJsonAsync<T>();
-
-            return content!;
+            try
+            {
+                T? content = System.Text.Json.JsonSerializer.Deserialize<T>(responseText,
+                    new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+                return content ?? throw new InvalidOperationException(
+                    $"GET '{requestUri.AbsolutePath}' returned HTTP 200 with an empty response.");
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                throw new InvalidOperationException(
+                    $"GET '{requestUri.AbsolutePath}' returned HTTP 200 but its JSON did not match {typeof(T).Name}.", ex);
+            }
         }
-        catch (Exception ex)
+        catch (HttpRequestException ex) when (ex.StatusCode is null)
         {
-            Serilog.Log.Error(
-                ex,
-                "Error while GET on {Url}",
-                url);
-
-            return default!;
+            Serilog.Log.Error(ex, "Connection failure while GET {Path}", requestUri.AbsolutePath);
+            throw new HttpRequestException(
+                $"Unable to reach the mijms API for GET '{requestUri.AbsolutePath}'.", ex);
+        }
+        catch (Exception ex) when (ex is not HttpRequestException && ex is not InvalidOperationException)
+        {
+            Serilog.Log.Error(ex, "Connection failure while GET {Path}", requestUri.AbsolutePath);
+            throw new HttpRequestException(
+                $"Unable to reach the mijms API for GET '{requestUri.AbsolutePath}'.", ex);
         }
     }
-
 
     // ============================================================
     // GET COLLECTION
