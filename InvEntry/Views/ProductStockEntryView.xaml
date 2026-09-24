@@ -213,47 +213,46 @@
                                     <TabItem Header="Visual Preview">
                                         <TabControl Background="{StaticResource InsetBg}" BorderThickness="0">
                                             <TabItem Header="Fit to Panel">
-                                                <Grid Background="#172033" MinHeight="330" ClipToBounds="True">
+                                                <Grid Background="#172033" MinHeight="250" ClipToBounds="True">
                                                     <Grid Margin="12">
                                                         <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="82"/>
                                                             <RowDefinition Height="Auto"/>
                                                             <RowDefinition Height="*"/>
                                                             <RowDefinition Height="Auto"/>
                                                         </Grid.RowDefinitions>
-                                                        <DockPanel Margin="0,0,0,4">
-                                                            <TextBlock Text="PHYSICAL TAG PREVIEW" Foreground="#E2E8F0" FontWeight="SemiBold"/>
+                                                        <DockPanel Margin="0,0,0,8">
+                                                            <TextBlock Text="PHYSICAL TAG LAYOUT SIMULATION" Foreground="#E2E8F0" FontWeight="SemiBold"/>
                                                             <TextBlock DockPanel.Dock="Right" Text="100 × 13 mm" Foreground="#94A3B8" FontSize="10"/>
                                                         </DockPanel>
-                                                        <controls:JewelleryTagShape Grid.Row="1" Margin="4"/>
-                                                        <TextBlock Grid.Row="2" Text="27.5 mm printable  |  27.5 mm printable  |  45 mm blank tail" Foreground="#94A3B8" FontSize="10" HorizontalAlignment="Center" Margin="0,2,0,8"/>
-                                                        <Border Grid.Row="3" Background="White" BorderBrush="#64748B" BorderThickness="1" Padding="4" MinHeight="125">
-                                                            <controls:PixelPerfectImage Source="{Binding LabelPreviewImage}" Mode="Fit"/>
-                                                        </Border>
-                                                        <TextBlock Grid.Row="4" Text="Existing ZPL preview: native 700 × 250-dot canvas, uniformly scaled. Physical alignment is not calibrated." Foreground="#FBBF24" FontSize="10" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                        <controls:JewelleryTagPreview Grid.Row="1" Source="{Binding LabelPreviewImage}" Zpl="{Binding LabelPreviewZpl}" Mode="Fit" Margin="4"/>
+                                                        <StackPanel Grid.Row="2" Margin="0,8,0,0">
+                                                            <TextBlock Text="Physical tag layout simulation — printer alignment not calibrated." Foreground="#FBBF24" FontSize="10" HorizontalAlignment="Center"/>
+                                                            <TextBlock Text="A red corner marker indicates content outside a mapped 27.5 mm printable section." Foreground="#94A3B8" FontSize="10" HorizontalAlignment="Center"/>
+                                                        </StackPanel>
                                                     </Grid>
-                                                    <TextBlock Text="Enter valid weights and click Preview Tag" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                                                    <TextBlock Text="Enter valid weights and click Preview Tag" Foreground="#CBD5E1" Background="#172033" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
                                                         <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding HasLabelPreview}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
                                                     </TextBlock>
                                                 </Grid>
                                             </TabItem>
                                             <TabItem Header="Actual Pixels">
                                                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#172033">
-                                                    <StackPanel Width="1000" Margin="12">
-                                                        <TextBlock Text="PHYSICAL TAG PREVIEW — 100:13 PROPORTION" Foreground="#E2E8F0" FontWeight="SemiBold" Margin="0,0,0,4"/>
-                                                        <controls:JewelleryTagShape Height="130"/>
-                                                        <TextBlock Text="EXISTING ZPL PREVIEW — 700 × 250 NATIVE PIXELS" Foreground="#E2E8F0" FontWeight="SemiBold" Margin="0,12,0,4"/>
-                                                        <Border Width="700" Height="250" HorizontalAlignment="Left" Background="White" BorderBrush="#64748B" BorderThickness="1">
-                                                            <controls:PixelPerfectImage Source="{Binding LabelPreviewImage}" Mode="ActualPixels"/>
-                                                        </Border>
-                                                        <TextBlock Text="Not overlaid: printer DPI, media orientation and dot-to-millimetre mapping require calibration." Foreground="#FBBF24" Margin="0,8,0,0"/>
+                                                    <StackPanel Margin="12">
+                                                        <TextBlock Text="PHYSICAL TAG LAYOUT SIMULATION — NATIVE PREVIEW PIXELS" Foreground="#E2E8F0" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                                        <controls:JewelleryTagPreview Width="1000" Height="130" HorizontalAlignment="Left" Source="{Binding LabelPreviewImage}" Zpl="{Binding LabelPreviewZpl}" Mode="ActualPixels"/>
+                                                        <TextBlock Text="Physical tag layout simulation — printer alignment not calibrated." Foreground="#FBBF24" Margin="0,8,0,0"/>
                                                     </StackPanel>
                                                 </ScrollViewer>
                                             </TabItem>
                                         </TabControl>
                                     </TabItem>
-                                    <TabItem Header="ZPL Text">
+                                    <TabItem Header="Raw ZPL Preview">
+                                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{StaticResource InsetBg}">
+                                            <Border Width="700" Height="250" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top" Background="White" BorderBrush="{StaticResource Stroke}" BorderThickness="1">
+                                                <controls:PixelPerfectImage Source="{Binding LabelPreviewImage}" Mode="ActualPixels"/>
+                                            </Border>
+                                        </ScrollViewer>
+                                    </TabItem>                                    <TabItem Header="ZPL Text">
                                         <dxe:MemoEdit EditValue="{Binding LabelPreviewZpl}" IsReadOnly="True" FontFamily="Consolas" FontSize="11" ShowBorder="False" NullText="Preview Tag to generate ZPL"/>
                                     </TabItem>
                                 </TabControl>

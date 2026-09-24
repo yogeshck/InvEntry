@@ -149,6 +149,37 @@ public class LabelPreviewTests
         });
     }
     [Test]
+    public void CompositeTag_MapsBothZplSectionsAtOneToOneWithoutUsingTail()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(JewelleryTagPreview.FoldX, Is.EqualTo(275d));
+            Assert.That(JewelleryTagPreview.BodyWidth, Is.EqualTo(550d));
+            Assert.That(JewelleryTagPreview.TailStartX, Is.EqualTo(JewelleryTagPreview.BodyWidth));
+            Assert.That(JewelleryTagPreview.ContentLeftGutter + JewelleryTagPreview.SectionSourceWidth,
+                Is.LessThan(JewelleryTagPreview.FoldX));
+            Assert.That(JewelleryTagPreview.FoldX + JewelleryTagPreview.ContentLeftGutter +
+                JewelleryTagPreview.SectionSourceWidth, Is.LessThan(JewelleryTagPreview.TailStartX));
+            Assert.That(JewelleryTagPreview.CalculateScale(1000d, 130d, PixelPerfectImageMode.ActualPixels),
+                Is.EqualTo(1d));
+        });
+    }
+
+    [Test]
+    public void CompositeTag_LongContentProducesExplicitOverflowIndicator()
+    {
+        const string longSkuZpl = "^XA^PW700^LL250^FO5,5^BY2,2.0,40^BCN,40,N,N,N^FDTHIS-SKU-IS-FAR-TOO-LONG-FOR-THE-LEFT-SECTION^FS^XZ";
+        const string longDescriptionZpl = "^XA^PW700^LL250^FO250,5^A0N,22,22^FDTHIS DESCRIPTION IS FAR TOO LONG FOR THE RIGHT SECTION^FS^XZ";
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(JewelleryTagPreview.DetectOverflow(longSkuZpl),
+                Is.EqualTo(PhysicalTagOverflow.Left));
+            Assert.That(JewelleryTagPreview.DetectOverflow(longDescriptionZpl),
+                Is.EqualTo(PhysicalTagOverflow.Right));
+        });
+    }
+    [Test]
     public void FitMode_UsesUniformDiscreteScaling()
     {
         double fit = PixelPerfectImage.CalculateFitScale(500, 220, 700, 250);
@@ -206,9 +237,9 @@ public class LabelPreviewTests
             Assert.That(xaml, Does.Contain("Header=\"Fit to Panel\""));
             Assert.That(xaml, Does.Contain("Header=\"Actual Pixels\""));
             Assert.That(xaml, Does.Not.Contain("203 DPI"));
-            Assert.That(xaml, Does.Contain("controls:JewelleryTagShape"));
-            Assert.That(xaml, Does.Contain("Physical alignment is not calibrated"));
-            Assert.That(xaml, Does.Contain("45 mm blank tail"));
+            Assert.That(xaml, Does.Contain("controls:JewelleryTagPreview"));
+            Assert.That(xaml, Does.Contain("printer alignment not calibrated."));
+            Assert.That(xaml, Does.Contain("Header=\"Raw ZPL Preview\""));
             Assert.That(xaml, Does.Contain("Header=\"ZPL Text\""));
         });
     }
