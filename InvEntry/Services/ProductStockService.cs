@@ -12,6 +12,7 @@ namespace InvEntry.Services
         Task<ProductStock> GetProductStock(int gKey);
         Task<ProductStock> GetProduct(string productId);
         Task<ProductStock> GetProductStock(string productId);
+        Task<ProductStock?> GetExactProductStock(string productSku);
         Task<IEnumerable<ProductStock>> GetCategoryList(string category);
         Task<IEnumerable<ProductStock>> GetPendingByGrnLineSummary(int grnLineSummaryGkey);
         Task<ProductStock> ReserveProductSku(int gKey);
@@ -44,6 +45,11 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<ProductStock>($"api/productstock/stock/{productId}");
         }
 
+        public async Task<ProductStock?> GetExactProductStock(string productSku)
+        {
+            return await _mijmsApiService.GetOptional<ProductStock>(
+                $"api/productstock/exact/{Uri.EscapeDataString(productSku)}");
+        }
         public async Task<IEnumerable<ProductStock>> GetCategoryList(string category)
         {
             return await _mijmsApiService.GetEnumerable<ProductStock>($"api/productstock/category/{category}");

@@ -15,6 +15,7 @@ using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
 using InvEntry.Services;
+using InvEntry.Services.Customers;
 using InvEntry.Store;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
@@ -139,6 +140,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly ReferenceLoader _referenceLoader;
 
     private readonly ICustomerService _customerService;
+    private readonly ICustomerLookupService _customerLookupService;
     private readonly IProductViewService _productViewService;
     private readonly IAddressService _addressService;
     private readonly IProductStockService _productStockService;
@@ -179,6 +181,7 @@ public partial class InvoiceViewModel : ObservableObject
     private ProductView OldMetalProductView;
 
     public InvoiceViewModel(ICustomerService customerService,
+        ICustomerLookupService customerLookupService,
         IProductViewService productViewService,
         IAddressService addressService,
         IProductStockService productStockService,
@@ -207,6 +210,7 @@ public partial class InvoiceViewModel : ObservableObject
 
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
+        _customerLookupService = customerLookupService;
         _addressService = addressService;
         _productViewService = productViewService;
         _productStockService = productStockService;
@@ -711,19 +715,66 @@ public partial class InvoiceViewModel : ObservableObject
         if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
             return;
 
+        var previousBuyer = Buyer;
+        var previousCustomerState = CustomerState;
+        var previousCustomerGkey = Header.CustGkey;
+        var previousCustomerMobile = Header.CustMobile;
+        var previousGstLocation = Header.GstLocBuyer;
+        var previousPlaceOfSupply = Header.PlaceOfSupply;
+        var previousCustomerReadOnly = CustomerReadOnly;
+        var previousCreateCustomer = createCustomer;
+        var previousUpdateCustomer = updateCustomer;
+
         CustomerReadOnly = false;
         createCustomer = false;
         updateCustomer = false;
 
         Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
 
-        Buyer = await _customerService.GetCustomer(phoneNumber);
+        CustomerLookupOutcome lookup;
 
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
+        try
+        {
+            lookup = await _customerLookupService.ResolveByMobileAsync(phoneNumber);
+            Buyer = lookup.Customer;
+        }
+        catch (Exception ex)
+        {
+            CustomerReadOnly = previousCustomerReadOnly;
+            createCustomer = previousCreateCustomer;
+            updateCustomer = previousUpdateCustomer;
 
-        if (Buyer is null)
+            _messageBoxService.ShowMessage(
+                "Failed to fetch customer: " + ex.Message,
+                "Customer Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+            return;
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+
+        if (!lookup.IsExisting)
         {
             await PrepareNewCustomerAsync(phoneNumber);
+
+            if (Buyer is null)
+            {
+                Buyer = previousBuyer;
+                CustomerState = previousCustomerState;
+                Header.CustGkey = previousCustomerGkey;
+                Header.CustMobile = previousCustomerMobile;
+                Header.GstLocBuyer = previousGstLocation;
+                Header.PlaceOfSupply = previousPlaceOfSupply;
+                CustomerReadOnly = previousCustomerReadOnly;
+                createCustomer = previousCreateCustomer;
+                updateCustomer = previousUpdateCustomer;
+                return;
+            }
         }
         else
         {
@@ -906,8 +957,6 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
-        var tagError = false;
-
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
         ProductIdUI = ProductIdUI.ToUpper();
@@ -927,36 +976,33 @@ public partial class InvoiceViewModel : ObservableObject
 
         //ProductStock productSkuStock = new ProductStock();
 
-        ProductSkuStock = new();
-        ProductSkuStock = await _productStockService.GetProductStock(ProductIdUI);
-        if (ProductSkuStock is not null)
+        var identifier = ProductIdUI;
+        var lookup = await new InvoiceProductLookupService(
+                _productStockService,
+                _productViewService)
+            .LookupAsync(identifier);
+
+        if (lookup.IsUnavailableSku)
         {
-            IsBarCodeEnabled = true;
-            ProductIdUI = ProductSkuStock.Category;
-        }
-        else
-        {
-            IsBarCodeEnabled = false;
-            tagError = true;
-            //return;
+            _messageBoxService.ShowMessage(
+                $"Product Tag {identifier} is sold or unavailable.",
+                "Product Tag unavailable",
+                MessageButton.OK,
+                MessageIcon.Error);
+            return;
         }
 
-        //this should be set as summary stock to avoid confusion
-        var productStk = await _productViewService.GetProduct(ProductIdUI);
+        ProductSkuStock = lookup.Stock!;
+        IsBarCodeEnabled = ProductSkuStock is not null;
+        var productStk = lookup.Product;
 
         if (productStk is null)
         {
-            if (tagError)
-            {
-                _messageBoxService.ShowMessage($"Product Tag not found for {ProductIdUI}, clear and select from list",
-                "Product Tag not found", MessageButton.OK, MessageIcon.Error);
-            }
-            else
-            {
-                _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
-                    "Product not found", MessageButton.OK, MessageIcon.Error);
-               // return;
-            }
+            _messageBoxService.ShowMessage(
+                $"No Product found for {identifier}, Please make sure it exists",
+                "Product not found",
+                MessageButton.OK,
+                MessageIcon.Error);
             return;
         }
 

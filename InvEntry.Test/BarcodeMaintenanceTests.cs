@@ -1,4 +1,4 @@
-using DevExpress.Mvvm;
+﻿using DevExpress.Mvvm;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Services.Printing;
@@ -469,6 +469,7 @@ public class BarcodeMaintenanceTests
         public Task<ProductStock> GetProductStock(int gKey) => Task.FromResult<ProductStock>(null!);
         public Task<ProductStock> GetProduct(string productId) => Task.FromResult<ProductStock>(null!);
         public Task<ProductStock> GetProductStock(string productId) => Task.FromResult<ProductStock>(null!);
+        public Task<ProductStock?> GetExactProductStock(string productSku) => Task.FromResult<ProductStock?>(null);
         public Task<IEnumerable<ProductStock>> GetCategoryList(string category) => Task.FromResult(CategoryStock);
         public Task<IEnumerable<ProductStock>> GetPendingByGrnLineSummary(int key) => Task.FromResult<IEnumerable<ProductStock>>(Array.Empty<ProductStock>());
         public Task<ProductStock> ReserveProductSku(int gKey) { ReserveCalls++; return Task.FromResult<ProductStock>(null!); }

@@ -57,6 +57,13 @@ namespace DataAccess.Controllers
         }
 
         // GET api/<ProductStockController>/5
+        [HttpGet("exact/{productSku}")]
+        public IActionResult GetExact(string productSku)
+        {
+            var stock = _productStock.Get(x => x.ProductSku == productSku);
+            return stock is null ? NotFound() : Ok(stock);
+        }
+
         [HttpGet("stock/{productSku}")]
         public IActionResult GetStock(string productSku)
         {

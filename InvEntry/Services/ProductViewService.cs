@@ -13,6 +13,8 @@ namespace InvEntry.Services
     {
         Task<ProductView> GetProduct(string productId);
 
+        Task<ProductView?> GetOptionalProduct(string productId);
+
         Task<ProductView> GetByProductSku(string productSku);
 
        // Task<IEnumerable<ProductView>> GetByCategory(string category);
@@ -35,6 +37,11 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<ProductView>($"api/ProductView/{productId}");
         }
 
+        public async Task<ProductView?> GetOptionalProduct(string productId)
+        {
+            return await _mijmsApiService.GetOptional<ProductView>(
+                $"api/ProductView/{Uri.EscapeDataString(productId)}");
+        }
         public async Task<ProductView> GetByProductSku(string productSku)
         {
             return await _mijmsApiService.Get<ProductView>($"api/ProductView/productSku/{productSku}");

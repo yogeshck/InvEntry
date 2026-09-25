@@ -1,4 +1,4 @@
-using InvEntry.Models;
+﻿using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,9 @@ namespace InvEntry.Services;
 public interface IMijmsApiService
 {
     Task<T> Get<T>(string url)
+        where T : BaseEntity;
+
+    Task<T?> GetOptional<T>(string url)
         where T : BaseEntity;
 
     Task<IEnumerable<T>> GetEnumerable<T>(string url)
@@ -126,6 +129,46 @@ public class MijmsApiService : IMijmsApiService
         }
     }
 
+    public async Task<T?> GetOptional<T>(string url)
+        where T : BaseEntity
+    {
+        var httpClient = _httpClientFactory.CreateClient("mijms");
+        Uri requestUri = new(httpClient.BaseAddress
+            ?? throw new InvalidOperationException("The mijms API BaseAddress is not configured."), url);
+
+        using var response = await httpClient.GetAsync(requestUri);
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound ||
+            response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            return null;
+        }
+
+        string responseText = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"GET '{requestUri.AbsolutePath}' failed with HTTP {(int)response.StatusCode} ({response.StatusCode}). {responseText}",
+                null,
+                response.StatusCode);
+        }
+
+        if (string.IsNullOrWhiteSpace(responseText) ||
+            string.Equals(responseText.Trim(), "null", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<T>(responseText,
+                new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            throw new InvalidOperationException(
+                $"GET '{requestUri.AbsolutePath}' returned HTTP {(int)response.StatusCode} but its JSON did not match {typeof(T).Name}.", ex);
+        }
+    }
     // ============================================================
     // GET COLLECTION
     // ============================================================

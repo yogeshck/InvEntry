@@ -56,10 +56,81 @@ public sealed class StockMovementService
     {
         ArgumentNullException.ThrowIfNull(requests);
 
-        foreach (var request in requests)
+        var movementRequests = requests.ToList();
+
+        ValidateMovementsBeforePosting(movementRequests);
+
+        foreach (var request in movementRequests)
         {
             PostMovement(request);
         }
+    }
+
+    private void ValidateMovementsBeforePosting(
+        IReadOnlyCollection<StockMovementRequest> requests)
+    {
+        foreach (var request in requests)
+        {
+            ValidateRequest(request);
+            EnsureNotAlreadyPosted(request);
+        }
+
+        var duplicateLine = requests
+            .Where(x => x.DocumentLineGkey.HasValue)
+            .GroupBy(x => new { x.DocumentType, x.DocumentLineGkey })
+            .FirstOrDefault(x => x.Count() > 1);
+
+        if (duplicateLine != null)
+        {
+            throw new InvalidOperationException(
+                $"Stock movement was supplied more than once for line " +
+                $"{duplicateLine.Key.DocumentLineGkey}.");
+        }
+
+        foreach (var productGroup in requests.GroupBy(x => x.ProductGkey))
+        {
+            var first = productGroup.First();
+            var summary = GetProductStockSummary(first);
+            ValidateSummaryStockOut(summary, CombineRequests(productGroup));
+        }
+
+        foreach (var skuGroup in requests
+                     .Where(x => !string.IsNullOrWhiteSpace(x.ProductSku))
+                     .GroupBy(x => new
+                     {
+                         x.ProductGkey,
+                         ProductSku = x.ProductSku.Trim().ToUpperInvariant()
+                     }))
+        {
+            var first = skuGroup.First();
+            var stock = GetTaggedProductStock(first);
+            ValidateTaggedStockOut(stock!, CombineRequests(skuGroup));
+        }
+    }
+
+    private static StockMovementRequest CombineRequests(
+        IEnumerable<StockMovementRequest> requests)
+    {
+        var items = requests.ToList();
+        var first = items[0];
+
+        return new StockMovementRequest
+        {
+            DocumentGkey = first.DocumentGkey,
+            DocumentLineGkey = first.DocumentLineGkey,
+            DocumentNumber = first.DocumentNumber,
+            DocumentDate = first.DocumentDate,
+            DocumentType = first.DocumentType,
+            ProductGkey = first.ProductGkey,
+            ProductSku = first.ProductSku,
+            ProductCategory = first.ProductCategory,
+            Direction = first.Direction,
+            Purpose = first.Purpose,
+            Quantity = items.Sum(x => x.Quantity),
+            GrossWeight = items.Sum(x => x.GrossWeight),
+            StoneWeight = items.Sum(x => x.StoneWeight),
+            NetWeight = items.Sum(x => x.NetWeight)
+        };
     }
 
 
@@ -451,30 +522,20 @@ public sealed class StockMovementService
         ProductStockSummary summary,
         StockMovementRequest request)
     {
-        // ---------------------------------------------------------
-        // IMPORTANT BUSINESS RULE
-        // ---------------------------------------------------------
-        //
-        // ProductStockSummary represents system-recorded stock.
-        //
-        // In some branches, physical stock may already be available
-        // for sale while GRN / stock-entry work is still pending
-        // because of operational/staff constraints.
-        //
-        // Therefore insufficient summary quantity/weight must NOT
-        // prevent an invoice from being finalised.
-        //
-        // Negative summary stock is allowed and will expose the
-        // pending stock-entry discrepancy for later reconciliation.
-        // ---------------------------------------------------------
+        if (request.Purpose != StockMovementPurpose.BranchTransferOut)
+        {
+            return;
+        }
 
-        var availableQty =
-            summary.StockQty.GetValueOrDefault();
-
-        var availableWeight =
-            summary.BalanceWeight.GetValueOrDefault();
-
-        // Intentionally no exception for insufficient summary stock.
+        if (request.Quantity > summary.StockQty.GetValueOrDefault() ||
+            request.GrossWeight > summary.GrossWeight.GetValueOrDefault() + WeightTolerance ||
+            request.StoneWeight > summary.StoneWeight.GetValueOrDefault() + WeightTolerance ||
+            request.NetWeight > summary.NetWeight.GetValueOrDefault() + WeightTolerance ||
+            request.NetWeight > summary.BalanceWeight.GetValueOrDefault() + WeightTolerance)
+        {
+            throw new InvalidOperationException(
+                $"Insufficient category stock for {GetProductReference(request)}.");
+        }
     }
 
     // =========================================================
@@ -571,6 +632,16 @@ public sealed class StockMovementService
             return;
         }
 
+        if (request.Purpose == StockMovementPurpose.Sale)
+        {
+            summary.GrossWeight = NormaliseWeight(
+                summary.GrossWeight.GetValueOrDefault() - request.GrossWeight);
+            summary.StoneWeight = NormaliseWeight(
+                summary.StoneWeight.GetValueOrDefault() - request.StoneWeight);
+            summary.NetWeight = NormaliseWeight(
+                summary.NetWeight.GetValueOrDefault() - request.NetWeight);
+        }
+
         summary.StockQty =
             summary.StockQty.GetValueOrDefault()
             - request.Quantity;
@@ -578,8 +649,10 @@ public sealed class StockMovementService
 
         summary.BalanceWeight =
             NormaliseWeight(
-                summary.BalanceWeight.GetValueOrDefault()
-                - request.GrossWeight);
+                summary.BalanceWeight.GetValueOrDefault() -
+                (request.Purpose == StockMovementPurpose.Sale
+                    ? request.NetWeight
+                    : request.GrossWeight));
 
 
         // -----------------------------------------------------
@@ -596,7 +669,7 @@ public sealed class StockMovementService
 
                 summary.SoldWeight =
                     summary.SoldWeight.GetValueOrDefault()
-                    + request.GrossWeight;
+                    + request.NetWeight;
 
                 break;
 

@@ -1,5 +1,7 @@
-using InvEntry.Models;
+﻿using InvEntry.Models;
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,7 +34,7 @@ public sealed class CustomerLookupService : ICustomerLookupService
         }
 
         var customer =
-            await _customerService.GetCustomer(
+            await GetByMobileOrNullAsync(
                 normalizedMobile);
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -112,7 +114,7 @@ public sealed class CustomerLookupService : ICustomerLookupService
         // when CustomerNbr / OrgContact becomes authoritative.
         //
         var existing =
-            await _customerService.GetCustomer(
+            await GetByMobileOrNullAsync(
                 customer.MobileNbr!);
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -171,6 +173,19 @@ public sealed class CustomerLookupService : ICustomerLookupService
         return customer;
     }
 
+    private async Task<Customer?> GetByMobileOrNullAsync(
+        string mobileNbr)
+    {
+        try
+        {
+            return await _customerService.GetCustomer(mobileNbr);
+        }
+        catch (HttpRequestException ex)
+            when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
     private static Customer CreateDraftCustomer(
         string mobileNbr)
     {
