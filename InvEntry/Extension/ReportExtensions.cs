@@ -1,4 +1,5 @@
 ﻿using DevExpress.Mvvm;
+using DevExpress.XtraReports.UI;
 using InvEntry.Models;
 using InvEntry.Tally;
 using InvEntry.ViewModels;
@@ -17,6 +18,14 @@ namespace InvEntry.Extension
         {
             var dialogVM = DISource.Resolve<ReportDialogViewModel>();
             dialogVM.Init(invoiceHeader);
+
+            reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        }
+
+        public static void PrintPreview(this IDialogService reportDialogService, XtraReport report)
+        {
+            var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+            dialogVM.Report = report;
 
             reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }

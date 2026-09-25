@@ -162,7 +162,7 @@
                    Grid.Column="1"
                    Text="{Binding SettlementAdvanceAdjustment,
                                   StringFormat='₹ {0:N2}'}"
-                           Foreground="#1565C0"
+                           Foreground="#C62828"
                         FontWeight="Bold"
                    HorizontalAlignment="Right"/>
 
@@ -178,7 +178,7 @@
                    Grid.Column="3"
                    Text="{Binding SettlementRdAdjustment,
                                   StringFormat='₹ {0:N2}'}"
-                           Foreground="#1565C0"
+                           Foreground="#C62828"
                             FontWeight="Bold"
                    HorizontalAlignment="Right"/>
 
@@ -326,7 +326,13 @@
 
                         <Button Content="+ Add Payment"
                             Command="{Binding AddReceiptCommand}"
-                            Padding="14,7"
+                                FontSize="18"
+                                FontWeight="Bold"
+                                Foreground="Red"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                
+                                Padding="12,8"
                             Margin="0,0,8,0"/>
 
                     </StackPanel>
@@ -639,6 +645,9 @@
             <Button Content="Confirm Settlement"
                 Width="160"
                 Padding="10,7"
+                    Foreground="#C62828"
+                    FontWeight="Bold"
+                    FontSize="15"
                 IsDefault="True"
                 IsEnabled="{Binding CanFinalise}"
                             Click="ConfirmSettlement_Click"/>

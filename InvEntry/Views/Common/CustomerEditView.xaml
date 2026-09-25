@@ -168,7 +168,10 @@
                             <dxe:TextEdit Grid.Row="1"
                                           Grid.Column="1"
                                           EditValue="{Binding CurrentCustomer.GstinNbr,
-                                                              UpdateSourceTrigger=PropertyChanged}"/>
+                                                                Mode=TwoWay,
+                                                              UpdateSourceTrigger=PropertyChanged}"
+                                            CharacterCasing="Upper"
+                                          MaxLength="15" />
 
 
                             <TextBlock Grid.Row="1"
@@ -179,7 +182,10 @@
                             <dxe:TextEdit Grid.Row="1"
                                           Grid.Column="4"
                                           EditValue="{Binding CurrentCustomer.PanNbr,
-                                                              UpdateSourceTrigger=PropertyChanged}"/>
+                                                            Mode=TwoWay,
+                                                              UpdateSourceTrigger=PropertyChanged}"
+                                          CharacterCasing="Upper"
+                                          MaxLength="10" /> 
 
 
                             <!-- =========================
@@ -344,7 +350,8 @@
                                                                   Mode=TwoWay,
                                                                   UpdateSourceTrigger=PropertyChanged}"
                                               IsTextEditable="False"
-                                              ImmediatePopup="True"/>
+                                              ImmediatePopup="True"
+                                              CharacterCasing="Upper"/>
 
 
                             <TextBlock Grid.Row="3"

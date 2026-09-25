@@ -6,6 +6,7 @@ using DevExpress.Xpf.Core;
 using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
+using DevExpress.XtraReports.UI;
 using InvEntry.Contracts.Invoices;
 using InvEntry.Extension;
 using InvEntry.Helper;
@@ -164,6 +165,7 @@ public partial class InvoiceViewModel : ObservableObject
     private readonly IServiceProvider _serviceProvider;
 
     private bool _isLoadingDraft;
+    private bool _isPreparingInvoiceDocument;
 
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
@@ -1822,19 +1824,7 @@ public partial class InvoiceViewModel : ObservableObject
             _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created",
                                                 MessageButton.OK, MessageIcon.Exclamation);
 
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
-
-            var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
-
-            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
             PrintPreviewInvoice();
-
-            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-            PrintInvoiceCommand.NotifyCanExecuteChanged();
-            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
 
         }
     }
@@ -2040,7 +2030,8 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintInvoice()
     {
-        var printed = PrintHelper.Print(_reportFactoryService.CreateInvoiceReport(Header.InvNbr));
+        var report = PrepareInvoiceDocument();
+        var printed = PrintHelper.Print(report);
 
         if (printed.HasValue && printed.Value)
             _messageBoxService.ShowMessage("Invoice printed Successfully", "Invoice print",
@@ -2052,15 +2043,42 @@ public partial class InvoiceViewModel : ObservableObject
         if (Header is null)
             return false;
 
-        return InvoiceStatus.IsFinal(Header.Status) &&
+        return !_isPreparingInvoiceDocument &&
+               InvoiceStatus.IsFinal(Header.Status) &&
                !string.IsNullOrWhiteSpace(Header.InvNbr);
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]
     private void PrintPreviewInvoice()
     {
-        _reportDialogService.PrintPreview(Header.InvNbr);
+        var report = PrepareInvoiceDocument();
+        _reportDialogService.PrintPreview(report);
         ResetInvoice();
+    }
+
+    private XtraReport PrepareInvoiceDocument()
+    {
+        _isPreparingInvoiceDocument = true;
+        PrintInvoiceCommand.NotifyCanExecuteChanged();
+        PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+
+        var waitVM = WaitIndicatorVM.ShowIndicator("Preparing invoice document...");
+
+        try
+        {
+            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+            return _reportFactoryService.CreateInvoiceReport(Header.InvNbr);
+        }
+        finally
+        {
+            SplashScreenManager.ActiveSplashScreens
+                .FirstOrDefault(x => x.ViewModel == waitVM)
+                ?.Close();
+
+            _isPreparingInvoiceDocument = false;
+            PrintInvoiceCommand.NotifyCanExecuteChanged();
+            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanPrintInvoice))]

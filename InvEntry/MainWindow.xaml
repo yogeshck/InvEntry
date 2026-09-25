@@ -370,7 +370,7 @@
 
             NavigationTarget="{Binding ElementName=frame}"
 
-            OpenPaneWidth="210"
+            OpenPaneWidth="140"
 
             AllowBuiltInNavigation="True"
 
