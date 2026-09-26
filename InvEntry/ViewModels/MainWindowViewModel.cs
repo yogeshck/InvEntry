@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.Xpf.Core;
 using InvEntry.Extension;
 using InvEntry.Models;
+using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace InvEntry.ViewModels
@@ -112,9 +115,34 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task OnLoaded()
         {
-            await _settingsPageViewModel
-                .LoadedCommand
-                .ExecuteAsync(null);
+            while (true)
+            {
+                try
+                {
+                    await _settingsPageViewModel
+                        .LoadedCommand
+                        .ExecuteAsync(null);
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error(
+                        ex,
+                        "Unable to verify daily rates during application startup");
+
+                    var retry = DXMessageBox.Show(
+                        "Today's prices could not be verified because the server or database is unavailable.\n\n" +
+                        "No Price Update page will be opened until the check succeeds.\n\n" +
+                        "Select Yes to retry.",
+                        "Price Check Failed",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Error);
+
+                    if (retry != MessageBoxResult.Yes)
+                        return;
+                }
+            }
 
             // Rates are calculated properties.
             // Notify the UI after Settings have been loaded.
@@ -123,26 +151,33 @@ namespace InvEntry.ViewModels
 
 
             // -----------------------------------------------------
-            // Always establish the application's normal root page.
+            // Navigate only after the price check itself has succeeded.
             // -----------------------------------------------------
 
-            NavigationService.Navigate(
-                "InvoiceEntryPage");
-
-
-            // -----------------------------------------------------
-            // If today's rates have not been entered,
-            // navigate to Settings on top of Invoice Entry.
-            //
-            // This preserves Invoice Entry in navigation history,
-            // allowing the user to press Back after entering rates.
-            // -----------------------------------------------------
-
-            if (!_settingsPageViewModel.IsAllPriceUpdated())
+            if (_settingsPageViewModel.IsAllPriceUpdated())
             {
                 NavigationService.Navigate(
-                    "SettingsPage");
+                    "InvoiceEntryPage");
+
+                return;
             }
+
+            var missingPrices =
+                _settingsPageViewModel
+                    .GetMissingRequiredPriceNames();
+
+            DXMessageBox.Show(
+                "Enter today's required prices for: " +
+                string.Join(", ", missingPrices),
+                "Today's Prices Required",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            _settingsPageViewModel
+                .NavigateToInvoiceWhenPricesComplete = true;
+
+            NavigationService.Navigate(
+                "SettingsPage");
         }
 
 
@@ -176,7 +211,7 @@ namespace InvEntry.ViewModels
             {
                 NavigationService.GoBack();
             }
-
+             
         }
 
 

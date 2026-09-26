@@ -20,6 +20,8 @@ public partial class SettingsPageViewModel : ObservableObject
     private readonly IMijmsApiService _mijmsApiService;
     private readonly IDailyRateDefinitionService _rateDefinitionService;
 
+    public bool NavigateToInvoiceWhenPricesComplete { get; set; }
+
     [ObservableProperty]
     private ObservableCollection<DailyRate> dailyMetalRate = new();
 
@@ -63,7 +65,7 @@ public partial class SettingsPageViewModel : ObservableObject
         {
             var dailyRates =
                 await _mijmsApiService
-                    .GetEnumerable<DailyRate>(
+                    .GetResponse<List<DailyRate>>(
                         "api/dailyrate/latest");
 
 /*            foreach (var rate in dailyRates ?? [])
@@ -255,10 +257,12 @@ public partial class SettingsPageViewModel : ObservableObject
 
 
         // ---------------------------------------------------------
-        // Find only rates whose PRICE actually changed
+        // Save a row when today's required record is missing, even if
+        // its value is unchanged from yesterday. Daily rates are an
+        // append-only history and startup completeness is date-based.
         // ---------------------------------------------------------
 
-        var changedRates =
+        var ratesToSave =
             TodayDailyMetalRate
                 .Where(current =>
                 {
@@ -275,12 +279,13 @@ public partial class SettingsPageViewModel : ObservableObject
                             .FirstOrDefault();
 
                     return latest is null ||
+                           latest.EffectiveDate.Date != DateTime.Today ||
                            latest.Price != current.Price;
                 })
                 .ToList();
 
 
-        if (changedRates.Count == 0)
+        if (ratesToSave.Count == 0)
         {
             DXMessageBox.Show(
                 "There are no rate changes to save.",
@@ -310,7 +315,7 @@ public partial class SettingsPageViewModel : ObservableObject
             var saveTime = DateTime.Now;
 
             var newRates =
-                changedRates
+                ratesToSave
                     .Select(x =>
                         new DailyRate
                         {
@@ -340,20 +345,21 @@ public partial class SettingsPageViewModel : ObservableObject
                 return;
 
 
-            // Add newly saved rows to our local history.
-            foreach (var savedRate in savedRates)
+            // Re-read persisted history before treating startup rates as
+            // complete. A successful HTTP response alone is not enough.
+            await LoadedCommand.ExecuteAsync(null);
+
+            if (!IsAllPriceUpdated())
             {
-                DailyMetalRate.Add(savedRate);
+                DXMessageBox.Show(
+                    $"The following required rates are still missing for today: " +
+                    string.Join(", ", GetMissingRequiredPriceNames()),
+                    "Daily Rate Incomplete",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                return;
             }
-
-
-            // Rebuild current cards using newly saved
-            // records as the latest rates.
-            BuildTodayRates();
-
-
-            // Refresh recent change history.
-            RefreshRateCollections();
 
 
             DXMessageBox.Show(
@@ -361,6 +367,14 @@ public partial class SettingsPageViewModel : ObservableObject
                 "Success",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+
+            if (NavigateToInvoiceWhenPricesComplete)
+            {
+                NavigateToInvoiceWhenPricesComplete = false;
+                Messenger.Default.Send(
+                    "InvoiceEntryPage",
+                    "NavigateToPage");
+            }
         }
         finally
         {
@@ -452,6 +466,20 @@ public partial class SettingsPageViewModel : ObservableObject
             x.EffectiveDate.Date ==
                 DateTime.Today &&
             x.Price.HasValue);
+    }
+
+    public IReadOnlyList<string> GetMissingRequiredPriceNames()
+    {
+        return TodayDailyMetalRate
+            .Where(x =>
+                x.EffectiveDate.Date != DateTime.Today ||
+                !x.Price.HasValue)
+            .Select(x =>
+                string.IsNullOrWhiteSpace(x.Carat)
+                    ? x.Metal ?? string.Empty
+                    : $"{x.Metal} ({x.Carat})")
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToList();
     }
 
 

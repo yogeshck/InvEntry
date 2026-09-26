@@ -19,7 +19,7 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:EstimateViewModel}"
              DataContext="{ext:DISource Type=viewmodels:EstimateViewModel}"
-             d:DesignHeight="450" HorizontalAlignment="Left" Width="1471">
+             d:DesignHeight="800" HorizontalAlignment="Stretch" d:DesignWidth="1471">
     <UserControl.Resources>
         <sys:String x:Key="Estl">EstimateLine</sys:String>
         <Style TargetType="dxe:TextEdit">
@@ -27,16 +27,16 @@
             <Setter Property="Height" Value="35"/>
         </Style>
     </UserControl.Resources>
-    <Grid Margin="0,0,37,0">
+    <Grid Margin="0,0,8,0">
         <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
         <dxb:BarContainerControl>
-            <dxb:MainMenuControl>
+            <dxb:MainMenuControl HorizontalAlignment="Stretch">
                 <dxb:BarButtonItem x:Name="btnReset" Content="Reset Estimate"
                    BarItemDisplayMode="ContentAndGlyph"
                    GlyphAlignment="Top"
@@ -128,9 +128,26 @@
                                     <dxe:DateEdit EditValue="{Binding Header.EstDate}" IsReadOnly="True"/>
                                 </dxlc:LayoutItem>
                             </dxlc:LayoutGroup>
-                            <dxlc:LayoutGroup View="GroupBox" Header="Customer Details"
+                            <dxlc:LayoutGroup View="GroupBox"
                                       HorizontalAlignment="Left" GroupBoxDisplayMode="Light"
                                       ItemLabelsAlignment="Local" Orientation="Vertical">
+                                <dxlc:LayoutGroup.Header>
+                                    <DockPanel HorizontalAlignment="Stretch"
+                                               LastChildFill="False">
+                                        <TextBlock Text="Customer Details"
+                                                   VerticalAlignment="Center" />
+                                        <dx:SimpleButton DockPanel.Dock="Right"
+                                                         Content="Edit Customer"
+                                                         Width="140"
+                                                         Height="30"
+                                                         Margin="16,0,0,0"
+                                                         Padding="8,2"
+                                                         VerticalAlignment="Center"
+                                                         ToolTip="Edit Customer Details"
+                                                         Glyph="{dx:DXImage 'Images/Actions/Edit_16x16.png'}"
+                                                         Command="{Binding EditCustomerCommand}" />
+                                    </DockPanel>
+                                </dxlc:LayoutGroup.Header>
                                 <dxlc:LayoutGroup>
                                     <dxlc:LayoutItem Label="Mobile" LabelPosition="Top" HorizontalAlignment="Left">
                                         <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber}" Name="CustomerMobileNbr">
@@ -405,10 +422,10 @@
                                     </dxb:BarManager.Bars>
                                     <dxg:GridControl ItemsSource="{Binding Header.Lines}"
                                                      DeleteKeyBehavior="DeleteFocusedRow"
-                                                     MaxHeight="600"
-                                                     MinHeight="400"
+                                                     Height="280"
+                                                     MinHeight="0"
                                                      SelectedItems="{Binding SelectedRows}"
-                                                     HorizontalAlignment="Left">
+                                                     HorizontalAlignment="Stretch">
                                         <dxg:GridControl.Resources>
                                             <Style x:Key="boldHeader"
                                                    TargetType="dxg:BaseGridHeader">
@@ -493,6 +510,7 @@
                                             <dxg:TableView AllowGrouping="False"
                                                            AllowBestFit="True"
                                                            ShowGroupPanel="False"
+                                                           VerticalScrollbarVisibility="Auto"
                                                            TotalSummaryPosition="Bottom">
                                                 <dxmvvm:Interaction.Behaviors>
                                                     <dxmvvm:EventToCommand EventName="CellValueChanged"
@@ -613,13 +631,16 @@
                                         <dxg:GridColumn FieldName="TransactionType" Header="Transaction" >
                                             <dxg:GridColumn.EditSettings>
                                                 <dxg:LookUpEditSettings ItemsSource="{Binding MtblReferencesList}"
-                                                 DisplayMember="RefValue"
-                                                    ValueMember="RefValue" >
+                                                    DisplayMember="RefValue"
+                                                    ValueMember="RefValue"
+                                                    PopupWidth="180">
                                                     <dxg:LookUpEditSettings.PopupContentTemplate>
                                                         <ControlTemplate>
-                                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="RemoveOld" >
+                                                            <dxg:GridControl Name="PART_GridControl" AutoGenerateColumns="None">
                                                                 <dxg:GridControl.Columns>
-                                                                    <dxg:GridColumn FieldName="RefValue"/>
+                                                                    <dxg:GridColumn FieldName="RefValue"
+                                                                                    Header="Pay Mode"
+                                                                                    Width="160" />
                                                                 </dxg:GridControl.Columns>
                                                                 <dxg:GridControl.View>
                                                                     <dxg:TableView AutoWidth="True"/>

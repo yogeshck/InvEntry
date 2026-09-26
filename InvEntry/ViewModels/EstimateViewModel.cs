@@ -9,10 +9,12 @@ using DevExpress.Xpf.Layout.Core;
 using DevExpress.Xpf.Printing;
 using InvEntry.Extension;
 using InvEntry.Helper;
+using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
 using InvEntry.Reports;
 using InvEntry.Services;
+using InvEntry.Services.Customers;
 using InvEntry.Store;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
@@ -115,6 +117,8 @@ public partial class EstimateViewModel: ObservableObject
     //private bool isStockTransfer = false;
 
     private readonly ICustomerService _customerService;
+    private readonly ICustomerLookupService _customerLookupService;
+    private readonly ReferenceLoader _referenceLoader;
     private readonly IProductViewService _productViewService;
     private readonly IProductStockService _productStockService;
 
@@ -133,6 +137,7 @@ public partial class EstimateViewModel: ObservableObject
     private readonly IOldMetalTransactionService _oldMetalTransactionService;
     private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IReportFactoryService _reportFactoryService;
+    private bool _isRefreshingCustomer;
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<EstimateLine, decimal?>> copyEstimateExpression;
     private Dictionary<string, Action<EstimateHeader, decimal?>> copyHeaderExpression;
@@ -149,6 +154,7 @@ public partial class EstimateViewModel: ObservableObject
     private ProductView OldMetalProduct;
 
     public EstimateViewModel(ICustomerService customerService,
+        ICustomerLookupService customerLookupService,
         IProductViewService productViewService,
         IProductStockService productStockService,
         IDialogService dialogService,
@@ -166,6 +172,7 @@ public partial class EstimateViewModel: ObservableObject
         IMtblLedgersService mtblLedgersService,
         SettingsPageViewModel settingsPageViewModel,
         IReportFactoryService reportFactoryService,
+        ReferenceLoader referenceLoader,
         [FromKeyedServices("ReportDialogService")] IDialogService reportDialogService)
     {
 
@@ -176,6 +183,8 @@ public partial class EstimateViewModel: ObservableObject
         _estimateService = estimateService;
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _customerService = customerService;
+        _customerLookupService = customerLookupService;
+        _referenceLoader = referenceLoader;
         _productViewService = productViewService;
         _productStockService = productStockService;
         _productStockSummaryService = productStockSummaryService;
@@ -354,6 +363,8 @@ public partial class EstimateViewModel: ObservableObject
 
     partial void OnCustomerStateChanged(MtblReference value)
     {
+            if (_isRefreshingCustomer)
+                return;
 
             if (Buyer is null) return;
 
@@ -367,6 +378,11 @@ public partial class EstimateViewModel: ObservableObject
             EvaluateForAllLines();
             EvaluateHeader();
         
+    }
+
+    partial void OnBuyerChanged(Customer value)
+    {
+        EditCustomerCommand.NotifyCanExecuteChanged();
     }
 
     private void getTaxInfo()
@@ -405,65 +421,226 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand]
     private async Task FetchCustomer(EditValueChangedEventArgs args)
     {
-        if (args.NewValue is not string phoneNumber) return;
+        if (args.NewValue is not string phoneNumber)
+            return;
 
         phoneNumber = phoneNumber.Trim();
 
-        if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
+        if (string.IsNullOrWhiteSpace(phoneNumber) ||
+            phoneNumber.Length < 10)
             return;
 
-        if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
+        if (Buyer is not null &&
+            Buyer.MobileNbr == phoneNumber &&
+            Buyer.GKey > 0)
             return;
 
-        CustomerReadOnly = false;
-        createCustomer = false;
+        var previousBuyer = Buyer;
+        var previousCustomerPhoneNumber = CustomerPhoneNumber;
+        var previousCustomerState = CustomerState;
+        var previousCustomerGkey = Header.CustGkey;
+        var previousCustomerMobile = Header.CustMobile;
+        var previousCustomerReadOnly = CustomerReadOnly;
+        var previousCreateCustomer = createCustomer;
 
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Fetching Customer details..."));
-
-        Buyer = await _customerService.GetCustomer(phoneNumber);
-
-        Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-
-        if (Buyer is null)
+        try
         {
-            _messageBoxService.ShowMessage("No customer details found.", "Customer not found", MessageButton.OK);
+            CustomerReadOnly = false;
+            createCustomer = false;
 
-            Buyer = new();
-            Buyer.MobileNbr = phoneNumber;
-            Buyer.Address.GstStateCode = Company.GstCode;
-            Buyer.Address.State = Company.State;
-            Buyer.Address.District = Company.District;
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(
+                    "Fetching Customer details..."));
 
-            createCustomer = true;
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == Company.GstCode);
+            var lookup =
+                await _customerLookupService.ResolveByMobileAsync(
+                    phoneNumber);
 
+            Buyer = lookup.Customer;
+            Buyer.Address ??= new OrgAddress();
 
-            Messenger.Default.Send("CustomerNameUI", MessageType.FocusTextEdit);
-        }
-        else
-        {
-            var gstCode = Buyer.Address is null ? Company.GstCode : Buyer.Address.GstStateCode;
-
-            if (Buyer.Address is null)
+            if (lookup.IsExisting)
             {
-                Buyer.Address = new();
-                Buyer.Address.GstStateCode = Company.GstCode;
+                await ApplyCustomerToEstimateAsync(Buyer);
+                return;
             }
 
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            Buyer.MobileNbr = phoneNumber;
+            Buyer.Address.GstStateCode = Company?.GstCode;
+            Buyer.Address.State = Company?.State;
+            Buyer.Address.District = Company?.District;
+            Buyer.GstStateCode = Company?.GstCode;
 
-            Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
+            createCustomer = true;
+            Header.CustGkey = null;
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+
+            var savedCustomer =
+                await _dialogService.EditCustomerAsync(
+                    Buyer,
+                    isNewCustomer: true);
+
+            if (savedCustomer is null)
+            {
+                Buyer = previousBuyer;
+                CustomerPhoneNumber = previousCustomerPhoneNumber;
+                CustomerState = previousCustomerState;
+                Header.CustGkey = previousCustomerGkey;
+                Header.CustMobile = previousCustomerMobile;
+                CustomerReadOnly = previousCustomerReadOnly;
+                createCustomer = previousCreateCustomer;
+                return;
+            }
+
+            await ApplyCustomerToEstimateAsync(savedCustomer);
+        }
+        catch (Exception ex)
+        {
+            Buyer = previousBuyer;
+            CustomerPhoneNumber = previousCustomerPhoneNumber;
+            CustomerState = previousCustomerState;
+            Header.CustGkey = previousCustomerGkey;
+            Header.CustMobile = previousCustomerMobile;
+            CustomerReadOnly = previousCustomerReadOnly;
+            createCustomer = previousCreateCustomer;
+
+            _messageBoxService.ShowMessage(
+                "Failed to fetch customer: " + ex.Message,
+                "Customer Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
+
+    private bool CanEditCustomer()
+    {
+        return Buyer is not null &&
+               Buyer.GKey > 0 &&
+               Header is not null &&
+               string.IsNullOrWhiteSpace(Header.EstNbr);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanEditCustomer))]
+    private async Task EditCustomer()
+    {
+        if (!CanEditCustomer())
+            return;
+
+        var customerGkey = Buyer.GKey;
+
+        try
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(
+                    "Loading Customer details..."));
+
+            var lookup =
+                await _customerLookupService.ResolveByGkeyAsync(
+                    customerGkey);
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+
+            var savedCustomer =
+                await _dialogService.EditCustomerAsync(
+                    lookup.Customer,
+                    isNewCustomer: false);
+
+            if (savedCustomer is null)
+                return;
+
+            if (savedCustomer.GKey != customerGkey)
+            {
+                throw new InvalidOperationException(
+                    "The edited customer identity does not match the selected customer.");
+            }
+
+            await ApplyCustomerToEstimateAsync(savedCustomer);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Failed to edit customer: " + ex.Message,
+                "Customer Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
+
+    private Task ApplyCustomerToEstimateAsync(
+        Customer customer)
+    {
+        if (customer.GKey <= 0)
+        {
+            throw new InvalidOperationException(
+                "Customer was saved but no valid GKey was returned.");
         }
 
-        Header.CustMobile = phoneNumber;
+        Buyer = customer;
+        Buyer.Address ??= new OrgAddress();
 
-        //to effect stock update though it is just estimate - being used for stock transfer to other branches
-      //  foreach (var item in StkTrfrList)
-      //  {
-      //      if (item is not null && item == phoneNumber)
-      //          IsStockTransfer = true;
-      //  }
+        var gstCode =
+            Buyer.Address.GstStateCode
+            ?? Buyer.GstStateCode
+            ?? Company?.GstCode;
 
+        var stateReference =
+            StateReferencesList?.FirstOrDefault(
+                x => x.RefCode == gstCode);
+
+        try
+        {
+            _isRefreshingCustomer = true;
+            CustomerState = stateReference;
+        }
+        finally
+        {
+            _isRefreshingCustomer = false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(gstCode))
+        {
+            Buyer.Address.GstStateCode = gstCode;
+            Buyer.GstStateCode = gstCode;
+            Header.GstLocBuyer = gstCode;
+            Header.PlaceOfSupply = gstCode;
+
+            if (!string.IsNullOrWhiteSpace(stateReference?.RefValue))
+            {
+                Buyer.Address.State = stateReference.RefValue;
+            }
+        }
+
+        Header.CustGkey = Buyer.GKey;
+        Header.CustMobile = Buyer.MobileNbr;
+        CustomerPhoneNumber = Buyer.MobileNbr;
+
+        createCustomer = false;
+        CustomerReadOnly = true;
+
+        Messenger.Default.Send(
+            "ProductIdUIName",
+            MessageType.FocusTextEdit);
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -525,9 +702,9 @@ public partial class EstimateViewModel: ObservableObject
         {
             ProdQty = 1,
             EstlBilledPrice = metalPrice,
-            EstlCgstPercent = Header.CgstPercent,
-            EstlSgstPercent = Header.SgstPercent,
-            EstlIgstPercent = Header.IgstPercent,
+            EstlCgstPercent = Header.CgstPercent.GetValueOrDefault(),
+            EstlSgstPercent = Header.SgstPercent.GetValueOrDefault(),
+            EstlIgstPercent = Header.IgstPercent.GetValueOrDefault(),
             EstlStoneAmount = 0M,
             TaxType = "GST"
 
@@ -535,13 +712,30 @@ public partial class EstimateViewModel: ObservableObject
 
         estimateLine.SetProductDetails(productStk);
 
+        // A category/master product may legitimately omit VA. In Estimate,
+        // an omitted percentage means that no VA is applied until the user
+        // enters one; formula operands must still be non-null.
+        estimateLine.VaPercent ??= 0M;
+
         if (ProductSkuStock is not null)
         {
             estimateLine.ProductSku = ProductSkuStock.ProductSku;
             estimateLine.ProdQty = ProductSkuStock.StockQty.GetValueOrDefault();
-            estimateLine.ProdGrossWeight = ProductSkuStock.GrossWeight;
-            estimateLine.ProdStoneWeight = ProductSkuStock.StoneWeight;
-            estimateLine.ProdNetWeight = ProductSkuStock.NetWeight;
+
+            // SetProductDetails initializes editable Estimate weights to zero.
+            // Preserve those valid defaults when an older tag has a missing
+            // nullable weight instead of feeding null into the formulas.
+            estimateLine.ProdGrossWeight =
+                ProductSkuStock.GrossWeight
+                ?? estimateLine.ProdGrossWeight;
+
+            estimateLine.ProdStoneWeight =
+                ProductSkuStock.StoneWeight
+                ?? estimateLine.ProdStoneWeight;
+
+            estimateLine.ProdNetWeight =
+                ProductSkuStock.NetWeight
+                ?? estimateLine.ProdNetWeight;
         }
 
         EvaluateFormula(estimateLine, isInit: true);
@@ -648,6 +842,7 @@ public partial class EstimateViewModel: ObservableObject
         {
             Header.GKey = header.Gkey;
             Header.EstNbr = header.EstNbr;
+            EditCustomerCommand.NotifyCanExecuteChanged();
             Header.Lines.ForEach(x =>
             {
                 x.EstimateHdrGkey = header.Gkey;

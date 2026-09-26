@@ -399,8 +399,26 @@
 
                 <StackPanel>
 
-                    <TextBlock Text="CUSTOMER"
-                               Style="{StaticResource SectionTitleStyle}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="CUSTOMER DETAILS"
+                                   Style="{StaticResource SectionTitleStyle}"/>
+
+                        <dx:SimpleButton Grid.Column="1"
+                                         Content="Edit Customer"
+                                         Width="140"
+                                         Height="30"
+                                         Padding="8,2"
+                                         VerticalAlignment="Center"
+                                         ToolTip="Edit Customer Details"
+                                         Glyph="{dx:DXImage 'Images/Actions/Edit_16x16.png'}"
+                                         Command="{Binding EditCustomerCommand}"/>
+                    </Grid>
 
 
                     <Grid>

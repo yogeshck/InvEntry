@@ -1,4 +1,5 @@
 ﻿using InvEntry.Models.UI;
+using InvEntry.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,14 +19,14 @@ public sealed class DailyRateDefinitionService
 {
     private const string ReferenceName = "DAILY_RATE";
 
-    private readonly IMtblReferencesService
-        _referencesService;
+    private readonly IMijmsApiService
+        _mijmsApiService;
 
 
     public DailyRateDefinitionService(
-        IMtblReferencesService referencesService)
+        IMijmsApiService mijmsApiService)
     {
-        _referencesService = referencesService;
+        _mijmsApiService = mijmsApiService;
     }
 
 
@@ -33,8 +34,9 @@ public sealed class DailyRateDefinitionService
         GetDefinitionsAsync()
     {
         var references =
-            await _referencesService
-                .GetReferenceList(ReferenceName);
+            await _mijmsApiService
+                .GetResponse<List<MtblReference>>(
+                    $"api/MtblReference/{ReferenceName}");
 
 
         if (references is null)

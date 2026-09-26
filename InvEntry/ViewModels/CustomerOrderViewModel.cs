@@ -141,6 +141,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private bool createCustomer = false;
     private bool updateOrder = false;
     private bool invBalanceChk = false;
+    private bool _isRefreshingCustomer;
     private decimal todaysRate;
 
     private readonly ReferenceLoader _referenceLoader;
@@ -286,12 +287,19 @@ public partial class CustomerOrderViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsOrderReadOnly));
         OnPropertyChanged(nameof(SaveButtonText));
+        EditCustomerCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsExistingOrderChanged(bool value)
     {
         OnPropertyChanged(nameof(IsOrderReadOnly));
         OnPropertyChanged(nameof(SaveButtonText));
+        EditCustomerCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnBuyerChanged(Customer value)
+    {
+        EditCustomerCommand.NotifyCanExecuteChanged();
     }
 
     private void displayRateErrorMsg()
@@ -695,6 +703,70 @@ public partial class CustomerOrderViewModel : ObservableObject
         return !HasValidationErrors;
     }
 
+    private bool CanEditCustomer()
+    {
+        return Buyer is not null &&
+               Buyer.GKey > 0 &&
+               (!IsExistingOrder || IsEditMode);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanEditCustomer))]
+    private async Task EditCustomer()
+    {
+        if (!CanEditCustomer())
+            return;
+
+        var customerGkey = Buyer.GKey;
+
+        try
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(
+                    "Loading Customer details..."));
+
+            var lookup =
+                await _customerLookupService.ResolveByGkeyAsync(
+                    customerGkey);
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+
+            var savedCustomer =
+                await _dialogService.EditCustomerAsync(
+                    lookup.Customer,
+                    isNewCustomer: false);
+
+            if (savedCustomer is null)
+                return;
+
+            if (savedCustomer.GKey != customerGkey)
+            {
+                throw new InvalidOperationException(
+                    "The edited customer identity does not match the selected customer.");
+            }
+
+            await ApplyCustomerToOrderAsync(
+                savedCustomer,
+                reevaluateLines: false);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Failed to edit customer: " + ex.Message,
+                "Customer Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
+    }
+
     [RelayCommand]
     private async Task FetchCustomer(
     EditValueChangedEventArgs args)
@@ -716,6 +788,14 @@ public partial class CustomerOrderViewModel : ObservableObject
         {
             return;
         }
+
+        var previousBuyer = Buyer;
+        var previousCustomerPhoneNumber = CustomerPhoneNumber;
+        var previousCustomerState = CustomerState;
+        var previousCustomerGkey = Header.CustGkey;
+        var previousCustomerMobile = Header.CustMobileNbr;
+        var previousCustomerReadOnly = CustomerReadOnly;
+        var previousCreateCustomer = createCustomer;
 
         try
         {
@@ -743,9 +823,28 @@ public partial class CustomerOrderViewModel : ObservableObject
             }
 
             await PrepareNewCustomerAsync(phoneNumber);
+
+            if (Buyer is null || Buyer.GKey <= 0)
+            {
+                Buyer = previousBuyer;
+                CustomerPhoneNumber = previousCustomerPhoneNumber;
+                CustomerState = previousCustomerState;
+                Header.CustGkey = previousCustomerGkey;
+                Header.CustMobileNbr = previousCustomerMobile;
+                CustomerReadOnly = previousCustomerReadOnly;
+                createCustomer = previousCreateCustomer;
+            }
         }
         catch (Exception ex)
         {
+            Buyer = previousBuyer;
+            CustomerPhoneNumber = previousCustomerPhoneNumber;
+            CustomerState = previousCustomerState;
+            Header.CustGkey = previousCustomerGkey;
+            Header.CustMobileNbr = previousCustomerMobile;
+            CustomerReadOnly = previousCustomerReadOnly;
+            createCustomer = previousCreateCustomer;
+
             _messageBoxService.ShowMessage(
                 "Failed to fetch customer: " + ex.Message,
                 "Customer Error",
@@ -914,6 +1013,9 @@ public partial class CustomerOrderViewModel : ObservableObject
 
     partial void OnCustomerStateChanged(string value)
     {
+        if (_isRefreshingCustomer)
+            return;
+
         _ = ApplyCustomerStateAsync(value);
     }
 
@@ -1621,7 +1723,22 @@ public partial class CustomerOrderViewModel : ObservableObject
                 "Customer was saved but no valid GKey was returned.");
         }
 
-        Buyer = savedCustomer;
+        await ApplyCustomerToOrderAsync(
+            savedCustomer,
+            reevaluateLines: true);
+    }
+
+    private async Task ApplyCustomerToOrderAsync(
+        Customer customer,
+        bool reevaluateLines)
+    {
+        if (customer.GKey <= 0)
+        {
+            throw new InvalidOperationException(
+                "Customer was saved but no valid GKey was returned.");
+        }
+
+        Buyer = customer;
         Buyer.Address ??= new OrgAddress();
 
         Header.CustGkey = Buyer.GKey;
@@ -1640,10 +1757,20 @@ public partial class CustomerOrderViewModel : ObservableObject
             Buyer.Address.GstStateCode = gstCode;
             Buyer.GstStateCode = gstCode;
 
-            CustomerState =
+            var state =
                 await _referenceLoader.GetValueAsync(
                     "CUST_STATE",
                     gstCode);
+
+            try
+            {
+                _isRefreshingCustomer = true;
+                CustomerState = state;
+            }
+            finally
+            {
+                _isRefreshingCustomer = false;
+            }
 
             if (!string.IsNullOrWhiteSpace(CustomerState))
             {
@@ -1651,8 +1778,19 @@ public partial class CustomerOrderViewModel : ObservableObject
             }
         }
 
-        EvaluateForAllLines();
-        await ResolveOrderStatusAsync();
+        if (reevaluateLines)
+            EvaluateForAllLines();
+
+        if (Header is not null)
+        {
+            Header.CustGkey = Buyer.GKey;
+            Header.CustMobileNbr = Buyer.MobileNbr;
+        }
+
+        CustomerPhoneNumber = Buyer.MobileNbr;
+
+        if (reevaluateLines)
+            await ResolveOrderStatusAsync();
 
         Messenger.Default.Send(
             "ProductIdUIName",
