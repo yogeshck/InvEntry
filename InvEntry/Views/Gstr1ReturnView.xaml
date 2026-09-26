@@ -217,12 +217,12 @@
             <!-- Documents - PRIMARY WORK AREA -->
             <RowDefinition
                 Height="3*"
-                MinHeight="300"/>
+                MinHeight="100"/>
 
             <!-- Selected Document / HSN -->
             <RowDefinition
                 Height="2*"
-                MinHeight="170"/>
+                MinHeight="145"/>
 
             <!-- Status -->
             <RowDefinition Height="Auto"/>

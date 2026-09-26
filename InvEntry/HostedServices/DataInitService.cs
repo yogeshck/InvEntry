@@ -19,13 +19,17 @@ public class DataInitService : IHostedService
     private readonly ILogger<DataInitService> _logger;
     private readonly IHostApplicationLifetime _appLifeTime;
     private readonly IMasterDataService _masterDataService;
+    private readonly IApplicationIdentityService _applicationIdentity;
 
     public DataInitService(ILogger<DataInitService> logger,
-        IHostApplicationLifetime appLifeTime, IMasterDataService masterDataService)
+        IHostApplicationLifetime appLifeTime,
+        IMasterDataService masterDataService,
+        IApplicationIdentityService applicationIdentity)
     {
         _logger = logger;
         _appLifeTime = appLifeTime;
         _masterDataService = masterDataService;
+        _applicationIdentity = applicationIdentity;
     }
 
 
@@ -49,11 +53,18 @@ public class DataInitService : IHostedService
         {
             Copyright = "All rights reserved",
             IsIndeterminate = true,
-            Title = "InvEntry",
-            Status = "Loading..."
+            Title = _applicationIdentity.ApplicationName,
+            Subtitle = $"Version {_applicationIdentity.ApplicationVersion}",
+            Status = "Loading company configuration..."
         };
 
         SplashScreenManager.CreateThemed(splashScreenViewModel, topmost: true).ShowOnStartup();
+
+        await _applicationIdentity.InitializeAsync();
+
+        splashScreenViewModel.Title = _applicationIdentity.CompanyName;
+        splashScreenViewModel.Subtitle =
+            $"{_applicationIdentity.ApplicationName}  •  Version {_applicationIdentity.ApplicationVersion}";
 
         splashScreenViewModel.Status = "Loading Product Categories .....";
 

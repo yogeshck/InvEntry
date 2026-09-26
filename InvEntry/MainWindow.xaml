@@ -14,7 +14,7 @@
     xmlns:ext="clr-namespace:InvEntry.Extension"
     xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
 
-    Title="InvEntry"
+    Title="{Binding Identity.WindowTitle}"
 
     Height="800"
     Width="1400"
@@ -131,6 +131,28 @@
                 Property="VerticalAlignment"
                 Value="Center"/>
 
+        </Style>
+
+        <!-- Submenu navigation buttons do not expose a Glyph property.
+             Use their standard Tag property as the verified SVG source and
+             render it alongside the existing content without changing navigation. -->
+        <Style TargetType="dxwui:HamburgerSubMenuNavigationButton">
+            <Setter Property="ContentTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image
+                                Width="18"
+                                Height="18"
+                                Margin="0,0,10,0"
+                                Source="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type dxwui:HamburgerSubMenuNavigationButton}}}"/>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
 
@@ -270,14 +292,14 @@
 
 
                         <TextBlock
-                            Text="InvEntry"
+                            Text="{Binding Identity.CompanyName}"
 
                             Style=
                                 "{StaticResource AppBrandTitleStyle}"/>
 
 
                         <TextBlock
-                            Text="JEWELLERY MANAGEMENT"
+                            Text="{Binding Identity.ApplicationName, StringFormat={}{0} · JEWELLERY MANAGEMENT}"
 
                             Style=
                                 "{StaticResource AppBrandSubtitleStyle}"/>
@@ -345,7 +367,7 @@
         CornerRadius="5">
 
                         <TextBlock
-            Text="{Binding Version}"
+            Text="{Binding Identity.ApplicationVersion, StringFormat=Version {0}}"
             FontSize="10"
             Opacity="0.60"
             VerticalAlignment="Center"/>
@@ -447,6 +469,8 @@
 
             Content="New Invoice"
 
+            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Invoice.svg'}"
+
             HideMenuWhenSelected="False"/>
 
 
@@ -457,6 +481,8 @@
                 "{x:Type views:Invoice.DraftInvoiceListView}"
 
             Content="Draft Invoices"
+
+            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Note.svg'}"
 
             HideMenuWhenSelected="True"/>
 
@@ -469,6 +495,8 @@
 
             Content="Invoice List"
 
+            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_List.svg'}"
+
             HideMenuWhenSelected="True"/>
 
 
@@ -480,6 +508,8 @@
 
             Content="Old Metal Purchase"
 
+            Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Cash.svg'}"
+
             HideMenuWhenSelected="True"/>
 
 
@@ -490,6 +520,8 @@
                 "{x:Type page:OSVoucherView}"
 
             Content="Outstanding Entry"
+
+            Tag="{dx:DXImage 'SvgImages/Outlook Inspired/PaymentUnpaid.svg'}"
 
             HideMenuWhenSelected="True"/>
 
@@ -523,6 +555,8 @@
 
                         Content="New Estimate"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Actions_New.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -531,6 +565,8 @@
                             "{x:Type views:EstimateListView}"
 
                         Content="Estimate List"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Actions_List.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -541,6 +577,8 @@
 
                         Content="Old Metal Transfer"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Travel_CurrencyExchange.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -549,6 +587,8 @@
                             "{x:Type views:OldMetalTransactionListView}"
 
                         Content="Old Metal Transactions"
+
+                        Tag="{dx:DXImage 'SvgImages/Business Objects/BO_List.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -570,7 +610,7 @@
                 MoreButtonVisibilityMode="Hidden"
 
                 Glyph="{dx:DXImage
-                    'SvgImages/Business Objects/BO_Note.svg'}">
+                    'SvgImages/Business Objects/BO_Order.svg'}">
 
 
                 <dxwui:HamburgerSubMenu.Items>
@@ -582,6 +622,8 @@
 
                         Content="New Order / Repair"
 
+                        Tag="{dx:DXImage 'SvgImages/Outlook Inspired/NewOrder.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -590,6 +632,8 @@
                             "{x:Type views:CustomerOrdersListView}"
 
                         Content="Order List"
+
+                        Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Order.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -623,6 +667,8 @@
 
                         Content="Expense"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -632,6 +678,8 @@
 
                         Content="Cash Receipt"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Cash.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -640,6 +688,8 @@
                             "{x:Type views:VoucherListView}"
 
                         Content="Voucher List"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_CashVoucher.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -656,12 +706,12 @@
                  ================================================= -->
 
             <dxwui:HamburgerSubMenu
-                Content="Inventory"
+                Content="Stock"
 
                 MoreButtonVisibilityMode="Hidden"
 
                 Glyph="{dx:DXImage
-                    'SvgImages/XAF/ActionGroup_EasyTestRecorder.svg'}">
+                    'SvgImages/Icon Builder/Shopping_Package.svg'}">
 
 
                 <dxwui:HamburgerSubMenu.Items>
@@ -673,6 +723,8 @@
 
                         Content="Material Receipt"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_Box.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -681,6 +733,8 @@
                             "{x:Type views:GRNListView}"
 
                         Content="Material Receipt List"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_Package.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -691,6 +745,8 @@
 
                         Content="Tag Printing"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_Barcode.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -699,6 +755,8 @@
                             "{x:Type views:StockAdjustmentView}"
 
                         Content="Stock Adjustment"
+
+                        Tag="{dx:DXImage 'SvgImages/Format/Replace.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -709,6 +767,8 @@
 
                         Content="Stock Verify"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Actions_CheckCircled.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -718,6 +778,8 @@
 
                         Content="Barcode Maintenance"
 
+                        Tag="{dx:DXImage 'SvgImages/Content/Barcode.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -726,6 +788,8 @@
                             "{x:Type views:DailyStockSummaryListView}"
 
                         Content="Daily Stock Summary List"
+
+                        Tag="{dx:DXImage 'SvgImages/Data/Summary.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -746,7 +810,7 @@
                 MoreButtonVisibilityMode="Hidden"
 
                 Glyph="{dx:DXImage
-                    'SvgImages/XAF/ActionGroup_EasyTestRecorder.svg'}">
+                    'SvgImages/Icon Builder/Shopping_Percent.svg'}">
 
 
                 <dxwui:HamburgerSubMenu.Items>
@@ -754,6 +818,7 @@
                     <dxwui:HamburgerSubMenuNavigationButton
                             NavigationTargetType="{x:Type views:Gstr1ReturnView}"
                             Content="GSTR-1 Return"
+                            Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_Percent.svg'}"
                             HideMenuWhenSelected="True" />
 
                 </dxwui:HamburgerSubMenu.Items>
@@ -772,7 +837,7 @@
                 MoreButtonVisibilityMode="Hidden"
 
                 Glyph="{dx:DXImage
-                    'SvgImages/XAF/ActionGroup_EasyTestRecorder.svg'}">
+                    'SvgImages/Business Objects/BO_Report.svg'}">
 
 
                 <dxwui:HamburgerSubMenu.Items>
@@ -784,6 +849,8 @@
 
                         Content="Daily Report"
 
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Report.svg'}"
+
                         HideMenuWhenSelected="True"/>
 
 
@@ -792,6 +859,8 @@
                             "{x:Type views:DailyStockEntryView}"
 
                         Content="Stock Report"
+
+                        Tag="{dx:DXImage 'SvgImages/Chart/ChartType_Stock.svg'}"
 
                         HideMenuWhenSelected="True"/>
 
@@ -812,7 +881,7 @@
                 MoreButtonVisibilityMode="Hidden"
 
                 Glyph="{dx:DXImage
-                    'SvgImages/XAF/Action_OrganizeDashboard.svg'}">
+                    'SvgImages/Icon Builder/Actions_Settings.svg'}">
 
 
                 <dxwui:HamburgerSubMenu.Items>
@@ -823,6 +892,8 @@
                             "{x:Type page:SettingsPage}"
 
                         Content="Price Setting"
+
+                        Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Price.svg'}"
 
                         HideMenuWhenSelected="True"/>
 

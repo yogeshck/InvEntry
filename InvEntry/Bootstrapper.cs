@@ -155,6 +155,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IMtblReferencesService, MtblReferencesService>()
                  .AddSingleton<IOldMetalTransactionService, OldMetalTransactionService>()
                  .AddSingleton<IOrgThisCompanyViewService, OrgThisCompanyViewService>()
+                 .AddSingleton<IApplicationIdentityService, ApplicationIdentityService>()
                  .AddSingleton<IProductCategoryService, ProductCategoryService>()
                  .AddSingleton<IProductService, ProductService>()
                  .AddSingleton<IProductStockService, ProductStockService>()

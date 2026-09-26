@@ -4,9 +4,9 @@ using DevExpress.Mvvm;
 using DevExpress.Xpf.Core;
 using InvEntry.Extension;
 using InvEntry.Models;
+using InvEntry.Services;
 using System;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -42,8 +42,7 @@ namespace InvEntry.ViewModels
         // APPLICATION INFORMATION
         // =========================================================
 
-        [ObservableProperty]
-        private string version = string.Empty;
+        public IApplicationIdentityService Identity { get; }
 
 
         // =========================================================
@@ -61,7 +60,8 @@ namespace InvEntry.ViewModels
         public MainWindowViewModel(
             INavigationService navigationService,
             SettingsPageViewModel settingsPageViewModel,
-            Dispatcher dispatcher)
+            Dispatcher dispatcher,
+            IApplicationIdentityService applicationIdentity)
         {
             NavigationService = navigationService;
 
@@ -70,6 +70,8 @@ namespace InvEntry.ViewModels
 
             _dispatcher =
                 dispatcher;
+
+            Identity = applicationIdentity;
 
 
             // -----------------------------------------------------
@@ -98,13 +100,6 @@ namespace InvEntry.ViewModels
                 NavigateToPage);
 
 
-            // -----------------------------------------------------
-            // Application Version
-            // -----------------------------------------------------
-
-            Version =
-                $"Version : " +
-                $"{Assembly.GetEntryAssembly()!.GetName().Version}";
         }
 
 
