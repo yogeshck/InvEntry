@@ -220,11 +220,27 @@
                         </dxlc:LayoutGroup>
 
                         <dxlc:LayoutGroup View="GroupBox"
-                                          Header="Customer Details"
                                           HorizontalAlignment="Left"
                                           GroupBoxDisplayMode="Light"
                                           ItemLabelsAlignment="Local"
                                           Orientation="Vertical">
+                            <dxlc:LayoutGroup.Header>
+                                <DockPanel HorizontalAlignment="Stretch"
+                                           LastChildFill="False">
+                                    <TextBlock Text="Customer Details"
+                                               VerticalAlignment="Center" />
+                                    <dx:SimpleButton DockPanel.Dock="Right"
+                                                     Content="Edit Customer"
+                                                     Width="140"
+                                                     Height="30"
+                                                     Margin="16,0,0,0"
+                                                     Padding="8,2"
+                                                     VerticalAlignment="Center"
+                                                     ToolTip="Edit Customer Details"
+                                                     Glyph="{dx:DXImage 'Images/Actions/Edit_16x16.png'}"
+                                                     Command="{Binding EditCustomerCommand}" />
+                                </DockPanel>
+                            </dxlc:LayoutGroup.Header>
                             <dxlc:LayoutGroup>
                                 <dxlc:LayoutItem Label="Mobile"
                                                  LabelPosition="Top"
@@ -994,4 +1010,3 @@
         </dxlc:LayoutControl>
     </Grid>
 </UserControl>
- 

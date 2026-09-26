@@ -77,8 +77,17 @@ public class CustomerService : ICustomerService
         if (customerGkey <= 0)
             return null;
 
-        return await _mijmsApiService.Get<Customer>(
+        var customer = await _mijmsApiService.Get<Customer>(
             $"api/customer/by-gkey/{customerGkey}");
+
+        if (customer?.AddressGkey > 0)
+        {
+            customer.Address =
+                await _mijmsApiService.Get<OrgAddress>(
+                    $"api/address/{customer.AddressGkey}");
+        }
+
+        return customer;
     }
 
     public async Task UpdateCustomer(

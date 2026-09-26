@@ -166,6 +166,7 @@ public partial class InvoiceViewModel : ObservableObject
 
     private bool _isLoadingDraft;
     private bool _isPreparingInvoiceDocument;
+    private bool _isRefreshingCustomer;
 
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
@@ -648,6 +649,9 @@ public partial class InvoiceViewModel : ObservableObject
 
     partial void OnCustomerStateChanged(string value)            //MtblReference value)
     {
+        if (_isRefreshingCustomer)
+            return;
+
         if (Buyer is null) return;
 
         Buyer.Address ??= new OrgAddress();
@@ -672,6 +676,11 @@ public partial class InvoiceViewModel : ObservableObject
 
         MarkDraftAsModified();
 
+    }
+
+    partial void OnBuyerChanged(Customer value)
+    {
+        EditCustomerCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnSalesPersonChanged(MtblReference value)
@@ -702,6 +711,118 @@ public partial class InvoiceViewModel : ObservableObject
             return vm.SelectedProduct;
         }
         return null;
+    }
+
+    private bool CanEditCustomer()
+    {
+        return Buyer is not null &&
+               Buyer.GKey > 0 &&
+               Header is not null &&
+               !InvoiceStatus.IsFinal(Header.Status) &&
+               !InvoiceStatus.IsCancelled(Header.Status);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanEditCustomer))]
+    private async Task EditCustomer()
+    {
+        if (!CanEditCustomer())
+            return;
+
+        var customerGkey = Buyer.GKey;
+
+        try
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.ShowIndicator(
+                    "Loading Customer details..."));
+
+            var lookup =
+                await _customerLookupService.ResolveByGkeyAsync(
+                    customerGkey);
+
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+
+            var savedCustomer =
+                await _dialogService.EditCustomerAsync(
+                    lookup.Customer,
+                    isNewCustomer: false);
+
+            // Cancel leaves the Invoice's existing customer instance untouched.
+            if (savedCustomer is null)
+                return;
+
+            if (savedCustomer.GKey != customerGkey)
+            {
+                throw new InvalidOperationException(
+                    "The edited customer identity does not match the selected customer.");
+            }
+
+            Buyer = savedCustomer;
+            Buyer.Address ??= new OrgAddress();
+
+            CustomerPhoneNumber = Buyer.MobileNbr;
+            Header.CustGkey = customerGkey;
+            Header.CustMobile = Buyer.MobileNbr;
+
+            var gstCode =
+                Buyer.Address.GstStateCode
+                ?? Buyer.GstStateCode;
+
+            var state = Buyer.Address.State;
+
+            if (!string.IsNullOrWhiteSpace(gstCode))
+            {
+                state =
+                    await _referenceLoader.GetValueAsync(
+                        "CUST_STATE",
+                        gstCode)
+                    ?? state;
+
+                Buyer.Address.GstStateCode = gstCode;
+                Buyer.GstStateCode = gstCode;
+                Header.GstLocBuyer = gstCode;
+                Header.PlaceOfSupply = gstCode;
+            }
+
+            try
+            {
+                _isRefreshingCustomer = true;
+                CustomerState = state;
+            }
+            finally
+            {
+                _isRefreshingCustomer = false;
+            }
+
+            Buyer.Address.State = state;
+
+            CustName = Buyer.CustomerName;
+            CustCity = Buyer.Address.City;
+
+            createCustomer = false;
+            updateCustomer = true;
+            CustomerReadOnly = true;
+
+            EvaluateGstClassification();
+            MarkDraftAsModified();
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Failed to edit customer: " + ex.Message,
+                "Customer Error",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            Messenger.Default.Send(
+                MessageType.WaitIndicator,
+                WaitIndicatorVM.HideIndicator());
+        }
     }
 
     [RelayCommand]
@@ -1404,6 +1525,7 @@ public partial class InvoiceViewModel : ObservableObject
             CreateInvoiceCommand.NotifyCanExecuteChanged();
             PrintInvoiceCommand.NotifyCanExecuteChanged();
             PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+            EditCustomerCommand.NotifyCanExecuteChanged();
 
             _messageBoxService.ShowMessage(
                 $"Invoice {result.InvNbr} has been finalised successfully.",
@@ -2062,18 +2184,30 @@ public partial class InvoiceViewModel : ObservableObject
         PrintInvoiceCommand.NotifyCanExecuteChanged();
         PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
 
-        var waitVM = WaitIndicatorVM.ShowIndicator("Preparing invoice document...");
+        var splashViewModel = new DXSplashScreenViewModel
+        {
+            Title = "InvEntry",
+            Status = "Preparing invoice document...",
+            IsIndeterminate = true
+        };
+        var splash = SplashScreenManager.CreateThemed(
+            splashViewModel,
+            topmost: false);
 
         try
         {
-            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+            splash.Show(
+                Application.Current.MainWindow,
+                WindowStartupLocation.CenterOwner,
+                trackOwnerPosition: true,
+                InputBlockMode.Owner,
+                timeout: 5000);
+
             return _reportFactoryService.CreateInvoiceReport(Header.InvNbr);
         }
         finally
         {
-            SplashScreenManager.ActiveSplashScreens
-                .FirstOrDefault(x => x.ViewModel == waitVM)
-                ?.Close();
+            splash.Close(force: true);
 
             _isPreparingInvoiceDocument = false;
             PrintInvoiceCommand.NotifyCanExecuteChanged();

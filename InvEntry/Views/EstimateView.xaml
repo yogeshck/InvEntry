@@ -379,12 +379,15 @@
                                                  AllowRemove="False"
                                                  AllowCustomizationMenu="False"
                                                  ShowDragWidget="False">
-                                            <dxb:BarEditItem EditValue="{Binding ProductIdUI}"
+                                            <dxb:BarEditItem EditValue="{Binding ProductIdUI, UpdateSourceTrigger=PropertyChanged}"
                                                              Content="Product Id"
-                                                             EditWidth="150"
+                                                             EditWidth="250"
                                                              EditHeight="30">
                                                 <dxb:BarEditItem.EditSettings>
-                                                    <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}" />
+                                                    <dxe:ComboBoxEditSettings ItemsSource="{Binding ProductCategoryList}"
+                                                                              IsTextEditable="True"
+                                                                              ImmediatePopup="True"
+                                                                              AllowNullInput="False" />
                                                 </dxb:BarEditItem.EditSettings>
                                             </dxb:BarEditItem>
                                             <dxb:BarButtonItem Glyph="{dx:DXImage 'SvgImages/Icon Builder/Actions_AddCircled.svg'}"

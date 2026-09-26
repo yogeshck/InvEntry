@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -92,6 +92,15 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Update="Reports\Gstr1MonthlyReport.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Reports\Gstr1MonthlyReport.Designer.cs">
+      <DependentUpon>Gstr1MonthlyReport.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="Reports\Gstr1MonthlyReport.resx">
+      <DependentUpon>Gstr1MonthlyReport.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

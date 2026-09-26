@@ -1,10 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
+using DevExpress.XtraPrinting;
+using DevExpress.XtraReports.UI;
 using DevExpress.XtraEditors.TextEditController.InputHandler;
 using InvEntry.Contracts.Gst;
 using InvEntry.Services;
 using InvEntry.Extension;
+using InvEntry.Models;
+using InvEntry.Reports;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,6 +27,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private readonly IGstr1ReportService _gstr1ReportService;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IMessageBoxService _messageBoxService;
+    private OrgThisCompanyView? _company;
 
 
     // =========================================================
@@ -45,6 +50,10 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     // =========================================================
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PrintPreviewGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
     private Gstr1ReturnSummaryResponse? _summary;
 
 
@@ -57,6 +66,10 @@ public partial class Gstr1ReturnViewModel : ObservableObject
         _categories = new();
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PrintPreviewGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
     private Gstr1CategorySummaryResponse? _selectedCategory;
 
 
@@ -95,6 +108,10 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ExportJsonCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoadReturnCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PrintPreviewGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
     [NotifyPropertyChangedFor(nameof(CanChangeScope))]
     private bool _isBusy;
 
@@ -114,8 +131,30 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ExportJsonCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoadReturnCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PrintPreviewGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
     [NotifyPropertyChangedFor(nameof(CanChangeScope))]
     private bool _isExporting;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PrintPreviewGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
+    [NotifyPropertyChangedFor(nameof(CanChangeScope))]
+    private bool _isReporting;
+
+    public IReadOnlyList<string> ReportScopes { get; } =
+        ["Selected Category", "Complete Monthly Return"];
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PrintPreviewGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
+    private string _selectedReportScope = "Complete Monthly Return";
 
     [ObservableProperty]
     private string? _exportStatusMessage;
@@ -125,7 +164,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private int _returnLoadVersion;
     private int _documentLinesVersion;
 
-    public bool CanChangeScope => !IsBusy && !IsExporting;
+    public bool CanChangeScope => !IsBusy && !IsExporting && !IsReporting;
 
     public string ValidationStatus => Validation is null
         ? "Validation unavailable — load the return."
@@ -259,6 +298,8 @@ public partial class Gstr1ReturnViewModel : ObservableObject
 
                 return;
             }
+
+            _company = company;
 
             CompanyName =
                 company.CompanyName ?? string.Empty;
@@ -575,6 +616,189 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     }
 
 
+    // =========================================================
+    // HUMAN-READABLE REPORTING
+    // =========================================================
+
+    private bool CanGenerateReport() =>
+        CanChangeScope &&
+        Summary is not null &&
+        (SelectedReportScope != "Selected Category" || SelectedCategory is not null);
+
+    [RelayCommand(CanExecute = nameof(CanGenerateReport))]
+    private void PrintPreviewGstr1() =>
+        ExecuteReport(report => new ReportPrintTool(report).ShowRibbonPreviewDialog());
+
+    [RelayCommand(CanExecute = nameof(CanGenerateReport))]
+    private void PrintGstr1() =>
+        ExecuteReport(report => new ReportPrintTool(report).PrintDialog());
+
+    [RelayCommand(CanExecute = nameof(CanGenerateReport))]
+    private void ExportGstr1Pdf()
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export GSTR-1 PDF",
+            FileName = GetReportFileName("pdf"),
+            Filter = "PDF files (*.pdf)|*.pdf",
+            DefaultExt = ".pdf",
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog() == true)
+            ExecuteReport(report => report.ExportToPdf(dialog.FileName));
+    }
+
+    [RelayCommand(CanExecute = nameof(CanGenerateReport))]
+    private void ExportGstr1Excel()
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export GSTR-1 Excel",
+            FileName = GetReportFileName("xlsx"),
+            Filter = "Excel files (*.xlsx)|*.xlsx",
+            DefaultExt = ".xlsx",
+            AddExtension = true,
+            OverwritePrompt = true
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            ExecuteReport(report => report.ExportToXlsx(
+                dialog.FileName,
+                new XlsxExportOptions
+                {
+                    TextExportMode = TextExportMode.Value,
+                    ShowGridLines = true
+                }));
+        }
+    }
+
+    private void ExecuteReport(Action<XtraReport> action)
+    {
+        if (!CanGenerateReport())
+            return;
+
+        try
+        {
+            IsReporting = true;
+            StatusMessage = "Preparing GSTR-1 report...";
+            using var report = new Gstr1MonthlyReport(CreateReportSnapshot());
+            report.CreateDocument();
+            action(report);
+            StatusMessage = "GSTR-1 report completed.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = "Unable to generate the GSTR-1 report.";
+            _messageBoxService.ShowMessage(
+                ex.Message,
+                "GSTR-1 Report",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            IsReporting = false;
+        }
+    }
+
+    private Gstr1ReportSnapshot CreateReportSnapshot()
+    {
+        var summary = Summary ?? throw new InvalidOperationException("Load the GSTR-1 return before reporting.");
+        var selectedScope = SelectedReportScope == "Selected Category";
+        var categories = selectedScope
+            ? new[] { SelectedCategory ?? throw new InvalidOperationException("Select a GSTR-1 category.") }
+            : summary.Categories.ToArray();
+        var monthlyDocuments = _monthlyDocuments.ToArray();
+        var rows = new List<Gstr1ReportRow>();
+
+        foreach (var category in categories)
+        {
+            rows.Add(new Gstr1ReportRow
+            {
+                RowType = "Category",
+                Category = category.Category,
+                Gstr1Table = category.Gstr1Table ?? string.Empty,
+                DocumentCount = category.DocumentCount,
+                InvoiceValue = category.InvoiceValue,
+                TaxableValue = category.TaxableValue,
+                CgstAmount = category.CgstAmount,
+                SgstAmount = category.SgstAmount,
+                IgstAmount = category.IgstAmount,
+                CessAmount = category.CessAmount
+            });
+
+            foreach (var document in monthlyDocuments.Where(document =>
+                document.IsReportable && CategoryMatches(document, category)))
+            {
+                rows.Add(new Gstr1ReportRow
+                {
+                    RowType = "Document",
+                    Category = category.Category,
+                    Gstr1Table = category.Gstr1Table ?? string.Empty,
+                    DocumentNbr = document.DocumentNbr,
+                    DocumentDate = document.DocumentDate.ToDateTime(TimeOnly.MinValue),
+                    Recipient = !string.IsNullOrWhiteSpace(document.RecipientGstin)
+                        ? document.RecipientGstin
+                        : document.RecipientStateCode ?? string.Empty,
+                    InvoiceValue = document.InvoiceValue,
+                    TaxableValue = document.TaxableValue,
+                    CgstAmount = document.CgstAmount,
+                    SgstAmount = document.SgstAmount,
+                    IgstAmount = document.IgstAmount,
+                    CessAmount = document.CessAmount
+                });
+            }
+        }
+
+        return new Gstr1ReportSnapshot
+        {
+            CompanyName = CompanyName,
+            Branch = GetBranchLocation(),
+            SupplierGstin = SupplierGstin,
+            FinancialYear = GetFinancialYear(ReturnMonth),
+            ReturnMonth = ReturnPeriodDisplay,
+            Scope = selectedScope
+                ? $"Selected Category — {SelectedCategory!.Category} / Table {SelectedCategory.Gstr1Table ?? "-"}"
+                : "Complete Monthly Return",
+            GeneratedAt = DateTime.Now,
+            DocumentCount = categories.Sum(category => category.DocumentCount),
+            InvoiceValue = categories.Sum(category => category.InvoiceValue),
+            TaxableValue = categories.Sum(category => category.TaxableValue),
+            CgstAmount = categories.Sum(category => category.CgstAmount),
+            SgstAmount = categories.Sum(category => category.SgstAmount),
+            IgstAmount = categories.Sum(category => category.IgstAmount),
+            CessAmount = categories.Sum(category => category.CessAmount),
+            Rows = rows
+        };
+    }
+
+    private static bool CategoryMatches(
+        Gstr1DocumentResponse document,
+        Gstr1CategorySummaryResponse category) =>
+        string.Equals(document.ReturnCategory?.Trim(), category.Category?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(document.Gstr1Table?.Trim(), category.Gstr1Table?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private string GetBranchLocation() =>
+        string.Join(", ", new[] { _company?.City, _company?.District, _company?.State }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase));
+
+    private static string GetFinancialYear(DateTime month)
+    {
+        var startYear = month.Month >= 4 ? month.Year : month.Year - 1;
+        return $"{startYear}-{(startYear + 1) % 100:00}";
+    }
+
+    private string GetReportFileName(string extension)
+    {
+        var scope = SelectedReportScope == "Selected Category"
+            ? SelectedCategory?.Category ?? "Category"
+            : "Monthly";
+        return $"GSTR1_{SupplierGstin}_{ReturnMonth:MMyyyy}_{scope}.{extension}";
+    }
     // =========================================================
     // CONVENIENCE TOTALS FOR UI
     // =========================================================

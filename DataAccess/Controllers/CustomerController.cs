@@ -127,6 +127,23 @@ public class CustomerController : ControllerBase
                 "Customer GKey is required for update.");
         }
 
+        if (string.IsNullOrWhiteSpace(value.MobileNbr))
+        {
+            return BadRequest(
+                "Customer mobile number is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(value.CustomerName))
+        {
+            return BadRequest(
+                "Customer name is required.");
+        }
+
+        value.MobileNbr = value.MobileNbr.Trim();
+        value.CustomerName = value.CustomerName.Trim();
+        value.PanNbr = NormalizeUpper(value.PanNbr);
+        value.GstinNbr = NormalizeUpper(value.GstinNbr);
+
         var existing =
             await _customer.GetAsync(
                 x => x.Gkey == value.Gkey);
@@ -134,17 +151,40 @@ public class CustomerController : ControllerBase
         if (existing is null)
             return NotFound();
 
-        //
-        // For now Update() is retained.
-        // Later we can move this mapping into
-        // CustomerWorkflow.
-        //
-        _customer.Update(value);
+        var duplicateMobile =
+            await _customer.GetAsync(
+                x => x.MobileNbr == value.MobileNbr &&
+                     x.Gkey != value.Gkey);
+
+        if (duplicateMobile is not null)
+        {
+            return Conflict(
+                "Another customer already uses this mobile number.");
+        }
+
+        // `existing` is already tracked by this request-scoped DbContext.
+        // Copy only fields supported by the customer editor so identity,
+        // audit data, and unrelated relationships remain intact.
+        existing.MobileNbr = value.MobileNbr;
+        existing.CustomerName = value.CustomerName;
+        existing.CustomerType = value.CustomerType;
+        existing.GstinNbr = value.GstinNbr;
+        existing.PanNbr = value.PanNbr;
+        existing.Salutations = value.Salutations;
+        existing.AddressGkey = value.AddressGkey;
+        existing.GstStateCode = value.GstStateCode;
 
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
 
-        return Ok(value);
+        return Ok(existing);
+    }
+
+    private static string? NormalizeUpper(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? null
+            : value.Trim().ToUpperInvariant();
     }
 
     // DELETE api/customer/{mobileNbr}

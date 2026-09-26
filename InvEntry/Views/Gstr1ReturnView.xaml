@@ -241,6 +241,11 @@
 
             <Grid>
 
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
                 <Grid.ColumnDefinitions>
 
                     <ColumnDefinition Width="*"/>
@@ -321,6 +326,57 @@
                     VerticalAlignment="Bottom"
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     Command="{Binding LoadReturnCommand}"/>
+
+                <StackPanel
+                    Grid.Row="1"
+                    Grid.ColumnSpan="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,8,0,0">
+
+                    <TextBlock
+                        Text="REPORT SCOPE"
+                        Style="{StaticResource FieldLabelStyle}"
+                        VerticalAlignment="Center"
+                        Margin="0,0,7,0"/>
+
+                    <dxe:ComboBoxEdit
+                        Width="210"
+                        Height="32"
+                        ItemsSource="{Binding ReportScopes}"
+                        SelectedItem="{Binding SelectedReportScope, Mode=TwoWay}"
+                        IsTextEditable="False"
+                        IsEnabled="{Binding CanChangeScope}"
+                        Margin="0,0,8,0"/>
+
+                    <dx:SimpleButton
+                        Content="Print Preview"
+                        Command="{Binding PrintPreviewGstr1Command}"
+                        Height="32"
+                        MinWidth="105"
+                        Margin="0,0,6,0"/>
+
+                    <dx:SimpleButton
+                        Content="Print"
+                        Command="{Binding PrintGstr1Command}"
+                        Height="32"
+                        MinWidth="75"
+                        Margin="0,0,6,0"/>
+
+                    <dx:SimpleButton
+                        Content="Export PDF"
+                        Command="{Binding ExportGstr1PdfCommand}"
+                        Height="32"
+                        MinWidth="95"
+                        Margin="0,0,6,0"/>
+
+                    <dx:SimpleButton
+                        Content="Export Excel"
+                        Command="{Binding ExportGstr1ExcelCommand}"
+                        Height="32"
+                        MinWidth="105"/>
+
+                </StackPanel>
 
             </Grid>
 

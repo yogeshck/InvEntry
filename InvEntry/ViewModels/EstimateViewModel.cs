@@ -469,54 +469,47 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
+        if (string.IsNullOrWhiteSpace(ProductIdUI))
+            return;
 
-        var tagError = false;
+        var identifier =
+            ProductIdUI.Trim().ToUpperInvariant();
 
-        if (string.IsNullOrEmpty(ProductIdUI)) return;
+        ProductIdUI = identifier;
 
-        ProductIdUI = ProductIdUI.ToUpper();
+        var lookup =
+            await new InvoiceProductLookupService(
+                    _productStockService,
+                    _productViewService)
+                .LookupAsync(identifier);
 
-       //var waitVM = WaitIndicatorVM.ShowIndicator("Fetching product details...");
-
-       // SplashScreenManager.CreateWaitIndicator(waitVM).Show();
-
-       // var product = await _productViewService.GetProduct(ProductIdUI);
-
-        // await Task.Delay(30000);
-
-       // SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
-
-
-        ProductSkuStock = new();
-        ProductSkuStock = await _productStockService.GetProductStock(ProductIdUI);
-        if (ProductSkuStock is not null)
+        if (lookup.IsUnavailableSku)
         {
-            IsBarCodeEnabled = true;
-            ProductIdUI = ProductSkuStock.Category;
-        }
-        else
-        {
+            ProductSkuStock = null;
             IsBarCodeEnabled = false;
-            tagError = true;
-            //return;
+
+            _messageBoxService.ShowMessage(
+                $"Product Tag {identifier} is sold or unavailable.",
+                "Product Tag unavailable",
+                MessageButton.OK,
+                MessageIcon.Error);
+
+            return;
         }
 
-        //this should be set as summary stock to avoid confusion
-        var productStk = await _productViewService.GetProduct(ProductIdUI);
+        ProductSkuStock = lookup.Stock!;
+        IsBarCodeEnabled = ProductSkuStock is not null;
+
+        var productStk = lookup.Product;
 
         if (productStk is null)
         {
-            if (tagError)
-            {
-                _messageBoxService.ShowMessage($"Product Tag not found for {ProductIdUI}, clear and select from list",
-                "Product Tag not found", MessageButton.OK, MessageIcon.Error);
-            }
-            else
-            {
-                _messageBoxService.ShowMessage($"No Product found for {ProductIdUI}, Please make sure it exists",
-                    "Product not found", MessageButton.OK, MessageIcon.Error);
-                // return;
-            }
+            _messageBoxService.ShowMessage(
+                $"No Product found for {identifier}, Please make sure it exists",
+                "Product not found",
+                MessageButton.OK,
+                MessageIcon.Error);
+
             return;
         }
 
@@ -545,11 +538,10 @@ public partial class EstimateViewModel: ObservableObject
         if (ProductSkuStock is not null)
         {
             estimateLine.ProductSku = ProductSkuStock.ProductSku;
-            estimateLine.ProdQty = (int)ProductSkuStock.StockQty;
+            estimateLine.ProdQty = ProductSkuStock.StockQty.GetValueOrDefault();
             estimateLine.ProdGrossWeight = ProductSkuStock.GrossWeight;
             estimateLine.ProdStoneWeight = ProductSkuStock.StoneWeight;
             estimateLine.ProdNetWeight = ProductSkuStock.NetWeight;
-
         }
 
         EvaluateFormula(estimateLine, isInit: true);
@@ -663,8 +655,8 @@ public partial class EstimateViewModel: ObservableObject
                 x.EstimateHdrGkey = Header.GKey;
                 x.TenantGkey = header.TenantGkey;
             });
-            if (IsStockTransfer)
-                await ProcessProductTransaction(Header.Lines);
+            // Estimates are non-posting documents. Stock is changed only by
+            // the applicable invoice or stock-transfer workflow.
 
             await ProcessOldMetalTransaction();
 
