@@ -25,10 +25,6 @@ public static class Gstr1GstnExportMapper
             throw new InvalidOperationException(
                 $"GSTN export blocked: validation returned {prepared.Validation.ErrorCount} error(s).");
 
-        // This wire contract cannot represent B2B HSN or other document types.
-        if (prepared.Hsn.B2B.Count != 0)
-            throw new InvalidOperationException("GSTN export blocked: HSN B2B is outside this export's scope.");
-
         return new Gstr1GstnExportResponse
         {
             Gstin = prepared.SupplierGstin,
@@ -37,28 +33,34 @@ public static class Gstr1GstnExportMapper
             B2cs = prepared.B2cs.Rows.Select(MapB2cs).ToList(),
             Hsn = new Gstr1GstnHsnSection
             {
-                B2C = prepared.Hsn.B2C
-                    .OrderBy(x => x.HsnCode, StringComparer.Ordinal)
-                    .ThenBy(x => x.Uqc, StringComparer.Ordinal)
-                    .ThenBy(x => x.GstRate)
-                    .Select((x, index) => new Gstr1GstnHsnRow
-                    {
-                        Number = index + 1,
-                        HsnCode = x.HsnCode,
-                        Description = x.Description,
-                        Uqc = x.Uqc,
-                        Quantity = x.TotalQuantity,
-                        GstRate = x.GstRate,
-                        TaxableValue = x.TaxableValue,
-                        IgstAmount = x.IgstAmount,
-                        CgstAmount = x.CgstAmount,
-                        SgstAmount = x.SgstAmount,
-                        CessAmount = x.CessAmount
-                    }).ToList()
+                B2B = MapHsn(prepared.Hsn.B2B),
+                B2C = MapHsn(prepared.Hsn.B2C)
             },
             DocumentsIssued = MapDocuments(prepared.DocumentsIssued)
         };
     }
+
+    private static List<Gstr1GstnHsnRow> MapHsn(
+        IEnumerable<Gstr1HsnSummaryRowResponse> rows) =>
+        rows
+            .OrderBy(x => x.HsnCode, StringComparer.Ordinal)
+            .ThenBy(x => x.Uqc, StringComparer.Ordinal)
+            .ThenBy(x => x.GstRate)
+            .Select((x, index) => new Gstr1GstnHsnRow
+            {
+                Number = index + 1,
+                HsnCode = x.HsnCode,
+                Description = x.Description,
+                Uqc = x.Uqc,
+                Quantity = x.TotalQuantity,
+                GstRate = x.GstRate,
+                TaxableValue = x.TaxableValue,
+                IgstAmount = x.IgstAmount,
+                CgstAmount = x.CgstAmount,
+                SgstAmount = x.SgstAmount,
+                CessAmount = x.CessAmount
+            })
+            .ToList();
 
     private static List<Gstr1GstnB2bRecipient> MapB2b(Gstr1B2bSummaryResponse source)
     {

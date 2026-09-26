@@ -76,11 +76,41 @@ public sealed class Gstr1JsonExportTests
         prepared.B2cs.Rows[0].Type = "E";
         Assert.Throws<InvalidOperationException>(() => Gstr1GstnExportMapper.Map(prepared));
         prepared = Prepared();
-        prepared.Hsn.B2B.Add(new());
-        Assert.Throws<InvalidOperationException>(() => Gstr1GstnExportMapper.Map(prepared));
-        prepared = Prepared();
         prepared.DocumentsIssued.Series[0].DocumentType = "Credit Note";
         Assert.Throws<InvalidOperationException>(() => Gstr1GstnExportMapper.Map(prepared));
+    }
+
+    [Test]
+    public void ExportReadySeptemberReturnMapsB2bAndB2cHsnWithoutChangingValues()
+    {
+        var prepared = Prepared();
+        prepared.Hsn.B2B.Add(new()
+        {
+            SupplyClass = "B2B",
+            HsnCode = "7113",
+            Description = "Gold jewellery",
+            Uqc = "GMS",
+            GstRate = 3M,
+            TotalQuantity = 12.345M,
+            TaxableValue = 250000M,
+            CgstAmount = 3750M,
+            SgstAmount = 3750M
+        });
+
+        var mapped = Gstr1GstnExportMapper.Map(prepared);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(prepared.Validation.IsExportReady, Is.True);
+            Assert.That(mapped.FilingPeriod, Is.EqualTo("092026"));
+            Assert.That(mapped.Hsn.B2B, Has.Count.EqualTo(1));
+            Assert.That(mapped.Hsn.B2C, Has.Count.EqualTo(1));
+            Assert.That(mapped.Hsn.B2B[0].HsnCode, Is.EqualTo("7113"));
+            Assert.That(mapped.Hsn.B2B[0].Quantity, Is.EqualTo(12.345M));
+            Assert.That(mapped.Hsn.B2B[0].TaxableValue, Is.EqualTo(250000M));
+            Assert.That(mapped.Hsn.B2B[0].CgstAmount, Is.EqualTo(3750M));
+            Assert.That(mapped.Hsn.B2B[0].SgstAmount, Is.EqualTo(3750M));
+        });
     }
 
     [Test]
@@ -96,7 +126,8 @@ public sealed class Gstr1JsonExportTests
         foreach (var name in new[] { "rt", "txval", "iamt", "camt", "samt", "csamt" })
             Assert.That(b2cs.GetProperty(name).ValueKind, Is.EqualTo(JsonValueKind.Number));
         var hsn = root.GetProperty("hsn");
-        AssertNames(hsn, "hsn_b2c");
+        AssertNames(hsn, "hsn_b2b", "hsn_b2c");
+        Assert.That(hsn.GetProperty("hsn_b2b").GetArrayLength(), Is.Zero);
         AssertNames(hsn.GetProperty("hsn_b2c")[0],
             "num", "hsn_sc", "desc", "uqc", "qty", "rt", "txval", "iamt", "camt", "samt", "csamt");
         Assert.That(hsn.GetProperty("hsn_b2c")[0].GetProperty("qty").GetDecimal(), Is.EqualTo(436.090M));

@@ -327,7 +327,7 @@
                     Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
                     Command="{Binding LoadReturnCommand}"/>
 
-                <StackPanel
+                <WrapPanel
                     Grid.Row="1"
                     Grid.ColumnSpan="4"
                     Orientation="Horizontal"
@@ -376,7 +376,15 @@
                         Height="32"
                         MinWidth="105"/>
 
-                </StackPanel>
+                    <dx:SimpleButton
+                        Content="Export GSTN JSON"
+                        AutomationProperties.AutomationId="ExportGstnJson"
+                        Command="{Binding ExportJsonCommand}"
+                        Height="32"
+                        MinWidth="160"
+                        Margin="6,0,0,0"/>
+
+                </WrapPanel>
 
             </Grid>
 
@@ -1287,11 +1295,6 @@
                 BorderThickness="1" CornerRadius="6">
             <StackPanel>
                 <DockPanel>
-                    <dx:SimpleButton DockPanel.Dock="Right"
-                                     Content="Export GSTN JSON"
-                                     AutomationProperties.AutomationId="ExportGstnJson"
-                                     Command="{Binding ExportJsonCommand}"
-                                     Height="34" MinWidth="160" Margin="12,0,0,0"/>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{Binding ValidationStatus}" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding StatusMessage}" FontSize="11" Opacity="0.70"/>

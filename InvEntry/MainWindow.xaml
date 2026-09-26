@@ -787,7 +787,7 @@
                         NavigationTargetType=
                             "{x:Type views:DailyStockSummaryListView}"
 
-                        Content="Daily Stock Summary List"
+                        Content="Daily Stock Summary Enquiry"
 
                         Tag="{dx:DXImage 'SvgImages/Data/Summary.svg'}"
 
@@ -847,7 +847,7 @@
                         NavigationTargetType=
                             "{x:Type page:GenericReportPage}"
 
-                        Content="Daily Report"
+                        Content="Daily Sales Report"
 
                         Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Report.svg'}"
 
@@ -858,7 +858,7 @@
                         NavigationTargetType=
                             "{x:Type views:DailyStockEntryView}"
 
-                        Content="Stock Report"
+                        Content="Stock Summary Entry"
 
                         Tag="{dx:DXImage 'SvgImages/Chart/ChartType_Stock.svg'}"
 
