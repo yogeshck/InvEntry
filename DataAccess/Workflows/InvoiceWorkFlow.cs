@@ -293,6 +293,58 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         var runningBalance =
             invoiceReceivableAmount;
 
+        var oldPurchaseApplied =
+            Math.Min(
+                request.OldPurchaseAdjustment,
+                Math.Max(0M, invoiceReceivableAmount));
+
+        if (oldPurchaseApplied > 0M)
+        {
+            var configuredVoucherType =
+                _voucherTypeRepository.Get(
+                    x => x.DocumentType == "OM Purchase" &&
+                         x.IsActive == true);
+
+            if (configuredVoucherType == null)
+            {
+                throw new InvalidOperationException(
+                    "The active OM Purchase voucher type is not configured. " +
+                    "Configure it before finalising this invoice.");
+            }
+
+            var oldPurchaseReference =
+                _oldMetalRepository
+                    .GetList(x => x.DocRefGkey == invoice.Gkey)
+                    .Select(x => x.TransNbr)
+                    .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+
+            var balanceBefore = runningBalance;
+            runningBalance -= oldPurchaseApplied;
+
+            if (Math.Abs(runningBalance) <= 0.01M)
+            {
+                runningBalance = 0M;
+            }
+
+            _voucherRepository.Add(
+                CreateOldPurchaseAdjustmentVoucher(
+                    invoice,
+                    oldPurchaseApplied,
+                    sequenceNumber,
+                    oldPurchaseReference));
+
+            _receiptRepository.Add(
+                CreateOldPurchaseAdjustmentReceipt(
+                    invoice,
+                    oldPurchaseApplied,
+                    sequenceNumber,
+                    balanceBefore,
+                    runningBalance,
+                    oldPurchaseReference));
+
+            sequenceNumber++;
+        }
+
 
         // =========================================================
         // RECEIPTS / ADJUSTMENTS
@@ -431,7 +483,65 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             totalCashReceived;
 
         invoice.InvBalance =
-            runningBalance;
+            Math.Max(0M, runningBalance);
+
+        invoice.InvRefund =
+            request.Refunds?.Sum(x => x.Amount) ?? 0M;
+    }
+
+    private static Voucher CreateOldPurchaseAdjustmentVoucher(
+        InvoiceHeader invoice,
+        decimal appliedAmount,
+        int sequenceNumber,
+        string? oldPurchaseReference)
+    {
+        return new Voucher
+        {
+            SeqNbr = sequenceNumber,
+            CustomerGkey = invoice.CustGkey,
+            TransType = "Journal",
+            VoucherType = "OM Purchase",
+            Mode = "OM Purchase",
+            TransAmount = appliedAmount,
+            VoucherNbr = invoice.InvNbr,
+            VoucherDate = invoice.InvDate,
+            RefDocGkey = invoice.Gkey,
+            RefDocNbr = invoice.InvNbr,
+            RefDocDate = invoice.InvDate,
+            TransDesc = string.IsNullOrWhiteSpace(oldPurchaseReference)
+                ? "Old Purc Adj/Inv Recvble"
+                : $"Old Purc Adj/{oldPurchaseReference}/Inv Recvble",
+            TransDate = DateTime.Now
+        };
+    }
+
+    private static InvoiceArReceipt CreateOldPurchaseAdjustmentReceipt(
+        InvoiceHeader invoice,
+        decimal appliedAmount,
+        int sequenceNumber,
+        decimal balanceBefore,
+        decimal balanceAfter,
+        string? oldPurchaseReference)
+    {
+        return new InvoiceArReceipt
+        {
+            SeqNbr = sequenceNumber,
+            CustGkey = invoice.CustGkey,
+            InvoiceGkey = invoice.Gkey,
+            InvoiceNbr = invoice.InvNbr,
+            InvoiceReceivableAmount = invoice.AmountPayable,
+            BalBeforeAdj = balanceBefore,
+            AdjustedAmount = appliedAmount,
+            BalanceAfterAdj = balanceAfter,
+            TransactionType = "OM Purchase",
+            ModeOfReceipt = "OM Purchase",
+            InternalVoucherNbr = invoice.InvNbr,
+            InternalVoucherDate = invoice.InvDate,
+            InvoiceReceiptNbr = GenerateReceiptReference(invoice.InvNbr),
+            Status = balanceAfter <= 0.01M ? "Adj" : "Partial",
+            ExternalTransactionDate = DateTime.Now,
+            OtherReference = oldPurchaseReference
+        };
     }
 
 
@@ -1765,7 +1875,9 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
 
             // ---------------------------------------------------------
-            // Recover amount before Draft discount
+            // Recover the sale amount before Draft discount. Old-metal
+            // purchases are settlement credits and are not part of this
+            // statutory invoice amount.
             // ---------------------------------------------------------
 
             var preDiscountSettlementAmount =
@@ -1812,12 +1924,34 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             // AUTHORITATIVE FINAL AMOUNT
             // =========================================================
 
-            var netSettlementAmount =
+            var finalInvoiceAmount =
                 preDiscountSettlementAmount
                 - requestedDiscount;
 
 
             // Normalise tiny rounding differences.
+            if (Math.Abs(finalInvoiceAmount) <= settlementTolerance)
+            {
+                finalInvoiceAmount = 0M;
+            }
+
+            var persistedOldPurchaseAdjustment =
+                invoice.OldGoldAmount.GetValueOrDefault()
+                + invoice.OldSilverAmount.GetValueOrDefault();
+
+            if (Math.Abs(
+                    request.OldPurchaseAdjustment
+                    - persistedOldPurchaseAdjustment) > settlementTolerance)
+            {
+                throw new InvalidOperationException(
+                    "The old purchase adjustment has changed. Reopen the " +
+                    "settlement screen and review the amounts before finalising.");
+            }
+
+            var netSettlementAmount =
+                finalInvoiceAmount
+                - persistedOldPurchaseAdjustment;
+
             if (Math.Abs(netSettlementAmount) <= settlementTolerance)
             {
                 netSettlementAmount = 0M;
@@ -1829,7 +1963,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 requestedDiscount;
 
             invoice.AmountPayable =
-                netSettlementAmount;
+                finalInvoiceAmount;
 
 
             // Draft contains no final receipt amount.
@@ -1878,6 +2012,9 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             var adjustmentAmount =
                 advanceAdjustmentAmount
                 + rdAdjustmentAmount;
+
+            invoice.AdvanceAdj = advanceAdjustmentAmount;
+            invoice.RdAmountAdj = rdAdjustmentAmount;
 
 
             // =========================================================
@@ -2168,28 +2305,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
 
             // =========================================================
-            // CREATE SETTLEMENT RECORDS
-            // =========================================================
-            //
-            // IMPORTANT:
-            //
-            // CreateSettlementRecords must interpret:
-            //
-            // Cash/Bank/Card/GPAY -> Receipt
-            // Advance Adj         -> Adjustment / Journal
-            // RD Adj              -> Adjustment / Journal
-            // Credit              -> Receivable
-            // Refund              -> Outward payment
-            //
-            // Everything remains inside the same DB transaction.
-            // =========================================================
-
-            CreateSettlementRecords(
-                invoice,
-                request);
-
-
-            // =========================================================
             // FINAL STATUS
             // =========================================================
 
@@ -2297,6 +2412,13 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                         "Sale Invoice";
                 }
             }
+
+            // Create settlement records after assigning the old-metal
+            // document number so the adjustment retains that audit link.
+            // The existing finalisation transaction still covers all writes.
+            CreateSettlementRecords(
+                invoice,
+                request);
 
             // =========================================================
             // GSTR-1 STAGING

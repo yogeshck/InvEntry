@@ -24,4 +24,10 @@ public class FinaliseInvoiceRequest
 
     public decimal DiscountAmount { get; set; }
 
+    /// <summary>
+    /// Combined old-gold and old-silver purchase value applied during
+    /// settlement. The API validates this against the persisted invoice.
+    /// </summary>
+    public decimal OldPurchaseAdjustment { get; set; }
+
 }

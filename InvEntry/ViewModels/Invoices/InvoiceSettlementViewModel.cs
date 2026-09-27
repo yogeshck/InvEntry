@@ -46,6 +46,14 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [ObservableProperty]
     private decimal oldSilverAdjustment;
 
+    public decimal OldPurchaseAdjustment =>
+        OldGoldAdjustment + OldSilverAdjustment;
+
+    public decimal OldPurchaseAppliedToInvoice =>
+        Math.Min(
+            OldPurchaseAdjustment,
+            Math.Max(0M, InvoiceAmount - DiscountAmount));
+
     [ObservableProperty]
     private decimal advanceAdjustment;
 
@@ -89,15 +97,11 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     /// For a positive receivable, Discount reduces the amount
     /// payable by the customer.
     ///
-    /// We deliberately do not use Discount to increase an
-    /// already-negative refund position.
+    /// Discount reduces the sale invoice before old purchase credit is
+    /// applied, so it can legitimately increase a refund position.
     /// </summary>
     public decimal AmountAfterDiscount =>
-        NetSettlementAmount > 0M
-            ? Math.Max(
-                0M,
-                NetSettlementAmount - DiscountAmount)
-            : NetSettlementAmount;
+        NetSettlementAmount - DiscountAmount;
 
 
     /// <summary>
@@ -107,9 +111,20 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     public bool IsDiscountValid =>
         DiscountAmount >= 0M &&
         (
-            NetSettlementAmount <= 0M ||
-            DiscountAmount <= NetSettlementAmount
+            DiscountAmount <= InvoiceAmount
         );
+
+    partial void OnOldGoldAdjustmentChanged(decimal value)
+    {
+        OnPropertyChanged(nameof(OldPurchaseAdjustment));
+        OnPropertyChanged(nameof(OldPurchaseAppliedToInvoice));
+    }
+
+    partial void OnOldSilverAdjustmentChanged(decimal value)
+    {
+        OnPropertyChanged(nameof(OldPurchaseAdjustment));
+        OnPropertyChanged(nameof(OldPurchaseAppliedToInvoice));
+    }
 
 
     // =========================================================
@@ -667,9 +682,9 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         }
 
 
-        if (NetSettlementAmount > 0M &&
+        if (InvoiceAmount > 0M &&
             DiscountAmount >
-            NetSettlementAmount)
+            InvoiceAmount)
         {
             ValidationMessage =
                 "Discount cannot exceed the amount payable.";
@@ -843,6 +858,9 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
         OnPropertyChanged(
             nameof(AmountAfterDiscount));
+
+        OnPropertyChanged(
+            nameof(OldPurchaseAppliedToInvoice));
 
         OnPropertyChanged(
             nameof(IsDiscountValid));

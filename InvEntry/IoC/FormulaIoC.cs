@@ -112,16 +112,16 @@ namespace InvEntry.IoC
         private static void ConfigureInvoiceHeaderFormulas(this FormulaStore store)
         {
             store.AddFormula<InvoiceHeader>(x => x.RoundOff,
-                $" Round([{nameof(InvoiceHeader.InvlTaxTotal)}]) - [{nameof(InvoiceHeader.InvlTaxTotal)}]");
+                $" Round([{nameof(InvoiceHeader.InvlTaxTotal)}] + [{nameof(InvoiceHeader.CgstAmount)}] + [{nameof(InvoiceHeader.SgstAmount)}] + [{nameof(InvoiceHeader.IgstAmount)}]) - ([{nameof(InvoiceHeader.InvlTaxTotal)}] + [{nameof(InvoiceHeader.CgstAmount)}] + [{nameof(InvoiceHeader.SgstAmount)}] + [{nameof(InvoiceHeader.IgstAmount)}])");
 
             store.AddFormula<InvoiceHeader>(x => x.GrossRcbAmount,
-                $"[{nameof(InvoiceHeader.InvlTaxTotal)}] + [{nameof(InvoiceHeader.RoundOff)}] - [{nameof(InvoiceHeader.DiscountAmount)}]");
+                $"[{nameof(InvoiceHeader.InvlTaxTotal)}] + [{nameof(InvoiceHeader.CgstAmount)}] + [{nameof(InvoiceHeader.SgstAmount)}] + [{nameof(InvoiceHeader.IgstAmount)}] + [{nameof(InvoiceHeader.RoundOff)}]");
 
             store.AddFormula<InvoiceHeader>(x => x.AmountPayable,
-                $"[{nameof(InvoiceHeader.GrossRcbAmount)}] - [{nameof(InvoiceHeader.OldGoldAmount)}] - [{nameof(InvoiceHeader.OldSilverAmount)}]");
+                $"[{nameof(InvoiceHeader.GrossRcbAmount)}] - [{nameof(InvoiceHeader.DiscountAmount)}]");
 
             store.AddFormula<InvoiceHeader>(x => x.InvBalance,
-                $"[{nameof(InvoiceHeader.AmountPayable)}] - [{nameof(InvoiceHeader.AdvanceAdj)}] - [{nameof(InvoiceHeader.RdAmountAdj)}] - [{nameof(InvoiceHeader.RecdAmount)}]");
+                $"Iif([{nameof(InvoiceHeader.AmountPayable)}] - [{nameof(InvoiceHeader.OldGoldAmount)}] - [{nameof(InvoiceHeader.OldSilverAmount)}] - [{nameof(InvoiceHeader.AdvanceAdj)}] - [{nameof(InvoiceHeader.RdAmountAdj)}] - [{nameof(InvoiceHeader.RecdAmount)}] < 0, 0, [{nameof(InvoiceHeader.AmountPayable)}] - [{nameof(InvoiceHeader.OldGoldAmount)}] - [{nameof(InvoiceHeader.OldSilverAmount)}] - [{nameof(InvoiceHeader.AdvanceAdj)}] - [{nameof(InvoiceHeader.RdAmountAdj)}] - [{nameof(InvoiceHeader.RecdAmount)}])");
         }
 
         private static void ConfigureGRNLineSumryFormulas(this FormulaStore store)

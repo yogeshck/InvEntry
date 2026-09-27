@@ -54,6 +54,9 @@ public static class InvoiceRequestMapper
             DiscountAmount =
             settlement.DiscountAmount,
 
+            OldPurchaseAdjustment =
+                settlement.OldPurchaseAdjustment,
+
             CreditAmount =
                 settlement.IsReceivable && settlement.UseCredit
                     ? settlement.CreditAmount

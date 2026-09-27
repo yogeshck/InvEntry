@@ -1231,17 +1231,22 @@ public partial class InvoiceViewModel : ObservableObject
                 OldSilverAdjustment =
                     Header.OldSilverAmount.GetValueOrDefault(),
 
+                DiscountAmount =
+                    Header.DiscountAmount.GetValueOrDefault(),
+
                 AdvanceAdjustment =
                     Header.AdvanceAdj.GetValueOrDefault(),
 
                 RdAdjustment =
                     Header.RdAmountAdj.GetValueOrDefault(),
 
-                // IMPORTANT:
-                // This is the existing Invoice calculation's signed
-                // settlement position.
+                // Settlement is deliberately separate from the statutory
+                // sale invoice amount. Old-metal purchases are applied only
+                // here and never reduce taxable value or GST.
                 NetSettlementAmount =
-                    Header.AmountPayable.GetValueOrDefault()
+                    Header.GrossRcbAmount.GetValueOrDefault()
+                    - Header.OldGoldAmount.GetValueOrDefault()
+                    - Header.OldSilverAmount.GetValueOrDefault()
             };
 
         if (PaymentModeList is not null)
@@ -2449,47 +2454,22 @@ public partial class InvoiceViewModel : ObservableObject
         // TaxableTotal from line without tax value
         Header.InvlTaxTotal = Header.Lines.Select(x => x.InvlTotal).Sum();
 
-        // Line Taxable Total minus Old Gold & Silver Amount
-        decimal BeforeTax = 0;
-        BeforeTax = Header.InvlTaxTotal.GetValueOrDefault() -
-                    Header.OldGoldAmount.GetValueOrDefault() -
-                    Header.OldSilverAmount.GetValueOrDefault();
+        // Old-metal purchases are settlement credits. They must never
+        // reduce the sale taxable value or the GST calculated on the sale.
+        var saleAmounts = InvoiceSaleAmountsCalculator.Calculate(
+            Header.InvlTaxTotal.GetValueOrDefault(),
+            Header.CgstPercent.GetValueOrDefault(),
+            Header.SgstPercent.GetValueOrDefault(),
+            Header.IgstPercent.GetValueOrDefault(),
+            Header.DiscountAmount.GetValueOrDefault());
 
-        if (BeforeTax >= 0)
-        {
-            Header.CgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.CgstPercent.GetValueOrDefault() / 100, 3));
-            Header.SgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.SgstPercent.GetValueOrDefault() / 100, 3));
-            Header.IgstAmount = MathUtils.Normalize(BeforeTax * Math.Round(Header.IgstPercent.GetValueOrDefault() / 100, 3));
-
-        }
-        else
-        {
-            Header.CgstAmount = 0;
-            Header.SgstAmount = 0;
-            Header.IgstAmount = 0;
-        }
-
-        Header.InvlTaxableAmount = BeforeTax;
-
-        // After Tax Gross Value
-        Header.GrossRcbAmount = BeforeTax +
-                                Header.CgstAmount.GetValueOrDefault() +
-                                Header.SgstAmount.GetValueOrDefault() +
-                                Header.IgstAmount.GetValueOrDefault();
-
-        decimal roundOff = 0;
-        roundOff = Math.Round(Header.GrossRcbAmount.GetValueOrDefault(), 0) -
-                        Header.GrossRcbAmount.GetValueOrDefault();
-
-        Header.RoundOff = roundOff;
-
-        Header.GrossRcbAmount = MathUtils.Normalize(Header.GrossRcbAmount.GetValueOrDefault(), 0);
-
-        decimal payableValue = 0;
-        payableValue = Header.GrossRcbAmount.GetValueOrDefault() -
-                        Header.DiscountAmount.GetValueOrDefault();
-
-        Header.AmountPayable = MathUtils.Normalize(payableValue);
+        Header.InvlTaxableAmount = saleAmounts.TaxableAmount;
+        Header.CgstAmount = saleAmounts.CgstAmount;
+        Header.SgstAmount = saleAmounts.SgstAmount;
+        Header.IgstAmount = saleAmounts.IgstAmount;
+        Header.RoundOff = saleAmounts.RoundOff;
+        Header.GrossRcbAmount = saleAmounts.GrossInvoiceAmount;
+        Header.AmountPayable = saleAmounts.FinalInvoiceAmount;
 
 
         // =========================================================
@@ -2524,12 +2504,15 @@ public partial class InvoiceViewModel : ObservableObject
         // =========================================================
 
         Header.InvBalance =
-            MathUtils.Normalize(
-                Header.AmountPayable.GetValueOrDefault()) -
-            (
-                Header.RecdAmount.GetValueOrDefault() +
-                Header.RdAmountAdj.GetValueOrDefault()
-            );
+            Math.Max(
+                0M,
+                MathUtils.Normalize(
+                    Header.AmountPayable.GetValueOrDefault())
+                - Header.OldGoldAmount.GetValueOrDefault()
+                - Header.OldSilverAmount.GetValueOrDefault()
+                - Header.RecdAmount.GetValueOrDefault()
+                - Header.AdvanceAdj.GetValueOrDefault()
+                - Header.RdAmountAdj.GetValueOrDefault());
 
         if (invBalanceChk)
         {

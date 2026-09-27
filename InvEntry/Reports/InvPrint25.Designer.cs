@@ -1260,7 +1260,7 @@
             this.RctSumryTotal.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[InvRctSumry].[InvAdjTotal]")});
             this.RctSumryTotal.Font = new DevExpress.Drawing.DXFont("Arial", 8.75F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.RctSumryTotal.LocationFloat = new DevExpress.Utils.PointFloat(82F, 0.3332011F);
+            this.RctSumryTotal.LocationFloat = new DevExpress.Utils.PointFloat(110F, 0.3332011F);
             this.RctSumryTotal.Multiline = true;
             this.RctSumryTotal.Name = "RctSumryTotal";
             this.RctSumryTotal.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -1279,9 +1279,9 @@
             this.RctTotalLbl.Multiline = true;
             this.RctTotalLbl.Name = "RctTotalLbl";
             this.RctTotalLbl.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
-            this.RctTotalLbl.SizeF = new System.Drawing.SizeF(82F, 15.99975F);
+            this.RctTotalLbl.SizeF = new System.Drawing.SizeF(110F, 15.99975F);
             this.RctTotalLbl.StylePriority.UseFont = false;
-            this.RctTotalLbl.Text = "Total : ";
+            this.RctTotalLbl.Text = "Net Settlement : ";
             // 
             // pInvNbr
             // 
@@ -2158,7 +2158,7 @@
             // taxableAmt
             // 
             this.taxableAmt.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[INVL_TAX_TOTAL]-[OLD_GOLD_AMOUNT]-[OLD_SILVER_AMOUNT]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[INV_TAXABLE_AMOUNT]")});
             this.taxableAmt.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
             this.taxableAmt.Multiline = true;
             this.taxableAmt.Name = "taxableAmt";
