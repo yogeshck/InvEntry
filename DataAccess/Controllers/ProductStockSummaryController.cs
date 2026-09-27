@@ -9,12 +9,15 @@ namespace DataAccess.Controllers
     public class ProductStockSummaryController : ControllerBase
     {
         private readonly IRepositoryBase<ProductStockSummary> _productStockSummary;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ProductStockSummaryController> _logger;
 
         public ProductStockSummaryController(IRepositoryBase<ProductStockSummary> _productStockSummaryRepo,
+                                            IUnitOfWork unitOfWork,
                                             ILogger<ProductStockSummaryController> logger)
         {
             _productStockSummary = _productStockSummaryRepo;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -62,18 +65,20 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockSummaryController>
         [HttpPost]
-        public IActionResult Post([FromBody] ProductStockSummary value)
+        public async Task<IActionResult> Post([FromBody] ProductStockSummary value)
         {
             _productStockSummary.Add(value);
+            await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
         }
 
         // PUT api/<ProductStockSummaryController>/5
         [HttpPut("{productGkey}")]
-        public IActionResult Put(int productGkey, [FromBody] ProductStockSummary value)
+        public async Task<IActionResult> Put(int productGkey, [FromBody] ProductStockSummary value)
         {
             _productStockSummary.Update(value);
+            await _unitOfWork.SaveChangesAsync();
             return Ok(value);
         }
 

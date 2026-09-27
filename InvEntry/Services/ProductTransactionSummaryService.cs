@@ -13,7 +13,7 @@ namespace InvEntry.Services
     {
         Task<IEnumerable<ProductTransactionSummary>> GetAll(DateSearchOption options);
 
-        Task<ProductTransactionSummary> GetLastProductTranSumryByCategory(string category);
+        Task<ProductTransactionSummary?> GetLastProductTranSumryByCategory(string category);
 
         Task<ProductTransactionSummary> CreateProductTransactionSummary(ProductTransactionSummary productTransSumry);
 
@@ -42,9 +42,13 @@ namespace InvEntry.Services
                                                     ($"api/ProductTransactionSummary/filter", options);
         }
 
-        public async Task<ProductTransactionSummary> GetLastProductTranSumryByCategory(string category)
+        public async Task<ProductTransactionSummary?> GetLastProductTranSumryByCategory(string category)
         {
-            return await _mijmsApiService.Get<ProductTransactionSummary>($"api/ProductTransactionSummary/lastTransaction/Category/{category}");
+            if (string.IsNullOrWhiteSpace(category))
+                return null;
+
+            return await _mijmsApiService.GetOptional<ProductTransactionSummary>(
+                $"api/ProductTransactionSummary/lastTransaction/Category/{Uri.EscapeDataString(category.Trim())}");
         }
 
         public async Task UpdateProductTransactionSummary(ProductTransactionSummary productTransSumry)

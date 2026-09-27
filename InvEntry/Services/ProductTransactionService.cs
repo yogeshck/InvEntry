@@ -17,7 +17,7 @@ namespace InvEntry.Services
 
         Task<ProductTransaction> GetLastProductTransactionByCategory(string lastTransaction);
 
-        Task<ProductTransaction> GetByCategory(string category);
+        Task<ProductTransaction?> GetByCategory(string category);
 
         Task<ProductTransaction> CreateProductTransaction(ProductTransaction productTrans);
 
@@ -43,9 +43,13 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<ProductTransaction>($"api/productTransaction/{lastTransaction}");
         }
 
-        public async Task<ProductTransaction> GetByCategory(string category)
+        public async Task<ProductTransaction?> GetByCategory(string category)
         {
-            return await _mijmsApiService.Get<ProductTransaction>($"api/productTransaction/{category}");
+            if (string.IsNullOrWhiteSpace(category))
+                return null;
+
+            return await _mijmsApiService.GetOptional<ProductTransaction>(
+                $"api/productTransaction/category/{Uri.EscapeDataString(category.Trim())}");
         }
 
         public async Task<ProductTransaction> CreateProductTransaction(ProductTransaction productTrans)

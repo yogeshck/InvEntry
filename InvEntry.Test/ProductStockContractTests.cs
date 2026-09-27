@@ -9,6 +9,49 @@ namespace InvEntry.Test;
 public class ProductStockContractTests
 {
     [Test]
+    public void TemporaryStockFactory_CreatesOneLinkedPendingRowPerSuppliedUnit()
+    {
+        var lines = new[]
+        {
+            new GrnLineSummary
+            {
+                GKey = 501,
+                ProductGkey = 6,
+                ProductCategory = "MALA",
+                SuppliedQty = 2
+            },
+            new GrnLineSummary
+            {
+                GKey = 502,
+                ProductGkey = 11,
+                ProductCategory = "SILVER",
+                SuppliedQty = 1
+            }
+        };
+        var summaryKeys = new Dictionary<string, int>
+        {
+            ["MALA"] = 20,
+            ["SILVER"] = 21
+        };
+
+        var stocks = BuildTemporaryStocks(lines, summaryKeys, "SUP-1");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(stocks, Has.Count.EqualTo(3));
+            Assert.That(stocks.Count(x => x.GrnLineSummaryGkey == 501), Is.EqualTo(2));
+            Assert.That(stocks.Count(x => x.GrnLineSummaryGkey == 502), Is.EqualTo(1));
+            Assert.That(stocks, Has.All.Matches<ProductStock>(x =>
+                x.Status == "Pending Tag" &&
+                x.IsBarcodePrinted == false &&
+                x.IsProductSold == false &&
+                x.ProductSku?.StartsWith("TMP-", StringComparison.Ordinal) == true &&
+                x.SuppliedQty == 1 &&
+                x.StockQty == 1));
+        });
+    }
+
+    [Test]
     public void JsonRoundTrip_PreservesStockAndGrnLineSummaryKeys()
     {
         var source = new ProductStock
@@ -116,4 +159,20 @@ public class ProductStockContractTests
             line,
             line.ProductStockGkey.GetValueOrDefault()
         });
-    }}
+    }
+
+    private static IReadOnlyList<ProductStock> BuildTemporaryStocks(
+        IEnumerable<GrnLineSummary> lines,
+        IReadOnlyDictionary<string, int> summaryKeys,
+        string supplierId)
+    {
+        var method = typeof(GRNViewModel).GetMethod(
+            "BuildTemporaryStockItems",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.That(method, Is.Not.Null);
+        return (IReadOnlyList<ProductStock>)method!.Invoke(
+            null,
+            new object[] { lines, summaryKeys, supplierId })!;
+    }
+}

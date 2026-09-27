@@ -9,6 +9,8 @@ public partial class ProductTransaction
 
     public int? RefGkey { get; set; }
 
+    public int? SourceLineGkey { get; set; }
+
     public DateTime? TransactionDate { get; set; }
 
     public string? ProductCategory { get; set; }

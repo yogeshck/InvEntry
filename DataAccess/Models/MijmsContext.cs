@@ -2944,6 +2944,7 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_SKU");
             entity.Property(e => e.RefGkey).HasColumnName("REF_GKEY");
+            entity.Property(e => e.SourceLineGkey).HasColumnName("SOURCE_LINE_GKEY");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
             entity.Property(e => e.TransactionGrossWeight)
                 .HasColumnType("decimal(10, 3)")

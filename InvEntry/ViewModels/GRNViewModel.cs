@@ -15,6 +15,7 @@ using InvEntry.Store;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -65,6 +66,8 @@ namespace InvEntry.ViewModels
         private readonly IMtblReferencesService _mtblReferencesService;
 
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
+        private bool _isSubmitting;
+        private bool _isPersisted;
 
         //private readonly IProductStockService _productStockService;
         //private readonly IDialogService _reportDialogService;
@@ -204,37 +207,99 @@ namespace InvEntry.ViewModels
                 MidpointRounding.AwayFromZero);
         }
 
-        [RelayCommand]
+        private bool CanSubmit() =>
+            !_isSubmitting &&
+            !_isPersisted &&
+            Header is not null &&
+            Header.GKey <= 0;
+
+        [RelayCommand(CanExecute = nameof(CanSubmit))]
         private async Task Submit()
         {
-            var header = await _grnService.CreateHeader(Header);
-
-            if (header is not null)
+            if (!CanSubmit())
             {
+                _messageBoxService.ShowMessage(
+                    "This material receipt has already been saved or is currently being saved.",
+                    "Material Receipt",
+                    MessageButton.OK,
+                    MessageIcon.Information);
+                return;
+            }
+
+            _isSubmitting = true;
+            SubmitCommand.NotifyCanExecuteChanged();
+
+            string? savedGrnNumber = null;
+
+            try
+            {
+                var lines = Header.GrnLineSumry.ToList();
+                var header = await _grnService.CreateHeader(Header);
+
+                if (header is null || header.GKey <= 0)
+                {
+                    throw new InvalidOperationException(
+                        "The GRN header response did not contain a valid record key.");
+                }
+
                 Header.GKey = header.GKey;
                 Header.GrnNbr = header.GrnNbr;
-                
-                Header.GrnLineSumry.ForEach(x =>
+                savedGrnNumber = header.GrnNbr;
+                _isPersisted = true;
+                SubmitCommand.NotifyCanExecuteChanged();
+
+                var savedDocumentDate = Header.GrnDate;
+                var savedSupplierId = Header.SupplierId;
+
+                lines.ForEach(x =>
                 {
                     x.GrnHdrGkey    = header.GKey;
-                    x.LineNbr       = Header.GrnLineSumry.IndexOf(x) + 1;
+                    x.LineNbr       = lines.IndexOf(x) + 1;
                 });
 
-                await _grnService.CreateGrnLineSummary(Header.GrnLineSumry);
+                await _grnService.CreateGrnLineSummary(lines);
 
-                var summaryKeys = await ProcessStockSummary(Header.GrnLineSumry);
+                var summaryKeys = await ProcessStockSummary(
+                    lines,
+                    savedGrnNumber,
+                    savedDocumentDate);
 
                 await CreateTemporaryStockItemsAsync(
-                    Header.GrnLineSumry,
-                    summaryKeys);
+                    lines,
+                    summaryKeys,
+                    savedSupplierId);
 
-                _messageBoxService.ShowMessage( "GRN " + Header.GrnNbr + " Created Successfully",
-                                                "GRN Creation", 
-                                                MessageButton.OK, 
-                                                MessageIcon.Exclamation);
+                _messageBoxService.ShowMessage(
+                    "GRN " + savedGrnNumber + " was created successfully.",
+                    "GRN Creation",
+                    MessageButton.OK,
+                    MessageIcon.Information);
 
                 ResetGRN();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(
+                    ex,
+                    "GRN save processing encountered an exception. Persisted: {Persisted}, GRN: {GrnNumber}",
+                    _isPersisted,
+                    savedGrnNumber ?? Header?.GrnNbr);
 
+                var message = _isPersisted
+                    ? $"GRN {savedGrnNumber ?? Header?.GrnNbr} was saved, but follow-up processing could not be completed. " +
+                      "Please contact support before continuing. Saving this receipt again has been disabled."
+                    : "The material receipt could not be saved. Please review the details and try again, or contact support.";
+
+                _messageBoxService.ShowMessage(
+                    message,
+                    "Material Receipt",
+                    MessageButton.OK,
+                    MessageIcon.Error);
+            }
+            finally
+            {
+                _isSubmitting = false;
+                SubmitCommand.NotifyCanExecuteChanged();
             }
         }
 
@@ -290,15 +355,35 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private void ResetGRN()
         {
+            _isPersisted = false;
             SetHeader();
 
             SupplierId = null;
+            SelectedRows?.Clear();
+            SubmitCommand.NotifyCanExecuteChanged();
         }
 
         private async Task CreateTemporaryStockItemsAsync(
             IEnumerable<GrnLineSummary> summaries,
-            IReadOnlyDictionary<string, int> summaryKeys)
+            IReadOnlyDictionary<string, int> summaryKeys,
+            string? supplierId)
         {
+            foreach (var stock in BuildTemporaryStockItems(
+                         summaries,
+                         summaryKeys,
+                         supplierId))
+            {
+                await _productStockService.CreateProductStock(stock);
+            }
+        }
+
+        private static IReadOnlyList<ProductStock> BuildTemporaryStockItems(
+            IEnumerable<GrnLineSummary> summaries,
+            IReadOnlyDictionary<string, int> summaryKeys,
+            string? supplierId)
+        {
+            var stocks = new List<ProductStock>();
+
             foreach (var line in summaries)
             {
                 if (line.GKey <= 0)
@@ -308,51 +393,47 @@ namespace InvEntry.ViewModels
                 }
 
                 if (string.IsNullOrWhiteSpace(line.ProductCategory) ||
-                    !summaryKeys.TryGetValue(
-                        line.ProductCategory,
-                        out int stockSummaryGkey))
+                    !summaryKeys.TryGetValue(line.ProductCategory, out int stockSummaryGkey))
                 {
                     throw new InvalidOperationException(
                         $"Stock summary not found for category {line.ProductCategory}.");
                 }
 
-                int quantity = line.SuppliedQty.GetValueOrDefault();
-
-                for (int i = 0; i < quantity; i++)
+                for (int i = 0; i < line.SuppliedQty.GetValueOrDefault(); i++)
                 {
-                    var stock = new ProductStock
+                    stocks.Add(new ProductStock
                     {
                         StockSummaryGkey = stockSummaryGkey,
                         GrnLineSummaryGkey = line.GKey,
-
                         ProductGkey = line.ProductGkey,
                         Category = line.ProductCategory,
-                        SupplierId = Header.SupplierId,
-
+                        SupplierId = supplierId,
                         ProductSku = $"TMP-{Guid.NewGuid():N}",
-
                         SuppliedQty = 1,
                         StockQty = 1,
                         SoldQty = 0,
-
                         GrossWeight = null,
                         StoneWeight = 0,
                         NetWeight = null,
-
                         IsProductSold = false,
                         Status = "Pending Tag",
                         IsBarcodePrinted = false,
-
                         CreatedOn = DateTime.Now
-                    };
-
-                    await _productStockService.CreateProductStock(stock);
+                    });
                 }
             }
+
+            return stocks;
         }
 
 
-        private async void CreateProductTransaction(ProductStockSummary productStockSummary, int suppliedQty, int stockQty)
+        private async Task CreateProductTransaction(
+            ProductStockSummary productStockSummary,
+            int sourceLineGkey,
+            int suppliedQty,
+            int stockQty,
+            string? grnNumber,
+            DateTime? grnDate)
         {
             ProductTransaction productTransaction = new();
 
@@ -375,12 +456,13 @@ namespace InvEntry.ViewModels
 
             productTransaction.ProductSku = productStockSummary.ProductSku;
             productTransaction.RefGkey = productStockSummary.ProductGkey;
+            productTransaction.SourceLineGkey = sourceLineGkey;
             productTransaction.TransactionDate = DateTime.Now;
             productTransaction.ProductCategory = productStockSummary.Category;
 
             productTransaction.TransactionType = "Receipt";
-            productTransaction.DocumentNbr = Header.GrnNbr;
-            productTransaction.DocumentDate = Header.GrnDate;
+            productTransaction.DocumentNbr = grnNumber;
+            productTransaction.DocumentDate = grnDate;
             productTransaction.DocumentType = "GRN";
             productTransaction.VoucherType = "Stock Receipt";
 
@@ -396,12 +478,14 @@ namespace InvEntry.ViewModels
             productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight + productStockSummary.StoneWeight;
             productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight + productStockSummary.NetWeight;
 
-            await _productTransactionService.CreateProductTransaction(productTransaction);
+            var persistedTransaction =
+                await _productTransactionService.CreateProductTransaction(productTransaction);
 
-            createProductTransactionSummary(productTransaction);
+            await CreateProductTransactionSummary(persistedTransaction);
         }
 
-        private async void createProductTransactionSummary(ProductTransaction productTransaction)
+        private async Task CreateProductTransactionSummary(
+            ProductTransaction productTransaction)
         {
 
             ProductTransactionSummary productTransSumry = new();
@@ -409,32 +493,26 @@ namespace InvEntry.ViewModels
             SearchOption = new();
             SearchOption.To = DateTime.Today;
             SearchOption.From = DateTime.Today;
-            SearchOption.Filter1 ??= productTransaction.ProductCategory;
+            SearchOption.Filter1 = productTransaction.ProductCategory;
 
             var prodTransSumry = await _productTransactionSummaryService.GetAll(SearchOption);
 
-            productTransSumry = prodTransSumry.FirstOrDefault();
+            var matchingSummaries = prodTransSumry.ToList();
+            if (matchingSummaries.Count > 1)
+            {
+                throw new InvalidOperationException(
+                    $"More than one daily transaction summary exists for category " +
+                    $"{productTransaction.ProductCategory} on {DateTime.Today:yyyy-MM-dd}. " +
+                    "The records require reconciliation before this GRN can update the daily summary.");
+            }
+
+            productTransSumry = matchingSummaries.SingleOrDefault();
 
             if (productTransSumry is not null)
             {
                 // then add up with the existing total
 
-                productTransSumry.StockInQty = productTransSumry.StockInQty.GetValueOrDefault() + productTransaction.TransactionQty;
-                productTransSumry.ClosingQty = productTransSumry.ClosingQty.GetValueOrDefault() + productTransaction.TransactionQty;
-
-                productTransSumry.StockInGrossWeight = productTransSumry.StockInGrossWeight.GetValueOrDefault()
-                                                                        + productTransaction.TransactionGrossWeight;
-                productTransSumry.StockInStoneWeight = productTransSumry.StockOutStoneWeight.GetValueOrDefault()
-                                                                        + productTransaction.TransactionStoneWeight;
-                productTransSumry.StockInNetWeight = productTransSumry.StockInNetWeight.GetValueOrDefault()
-                                                                        + productTransaction.TransactionNetWeight;
-
-                productTransSumry.ClosingGrossWeight = productTransSumry.ClosingGrossWeight.GetValueOrDefault()
-                                                                    + productTransaction.TransactionGrossWeight;
-                productTransSumry.ClosingStoneWeight = productTransSumry.ClosingStoneWeight.GetValueOrDefault()
-                                                                    + productTransaction.TransactionStoneWeight;
-                productTransSumry.ClosingNetWeight = productTransSumry.ClosingNetWeight.GetValueOrDefault()
-                                                                    + productTransaction.TransactionNetWeight;
+                ApplyReceiptToDailySummary(productTransSumry, productTransaction);
 
                 await _productTransactionSummaryService.UpdateProductTransactionSummary(productTransSumry);
             }
@@ -484,8 +562,34 @@ namespace InvEntry.ViewModels
 
         }
 
+        private static void ApplyReceiptToDailySummary(
+            ProductTransactionSummary summary,
+            ProductTransaction transaction)
+        {
+            summary.StockInQty = summary.StockInQty.GetValueOrDefault()
+                + transaction.TransactionQty.GetValueOrDefault();
+            summary.ClosingQty = summary.ClosingQty.GetValueOrDefault()
+                + transaction.TransactionQty.GetValueOrDefault();
+
+            summary.StockInGrossWeight = summary.StockInGrossWeight.GetValueOrDefault()
+                + transaction.TransactionGrossWeight.GetValueOrDefault();
+            summary.StockInStoneWeight = summary.StockInStoneWeight.GetValueOrDefault()
+                + transaction.TransactionStoneWeight.GetValueOrDefault();
+            summary.StockInNetWeight = summary.StockInNetWeight.GetValueOrDefault()
+                + transaction.TransactionNetWeight.GetValueOrDefault();
+
+            summary.ClosingGrossWeight = summary.ClosingGrossWeight.GetValueOrDefault()
+                + transaction.TransactionGrossWeight.GetValueOrDefault();
+            summary.ClosingStoneWeight = summary.ClosingStoneWeight.GetValueOrDefault()
+                + transaction.TransactionStoneWeight.GetValueOrDefault();
+            summary.ClosingNetWeight = summary.ClosingNetWeight.GetValueOrDefault()
+                + transaction.TransactionNetWeight.GetValueOrDefault();
+        }
+
         private async Task<Dictionary<string, int>> ProcessStockSummary(
-            IEnumerable<GrnLineSummary> grnLineSummary)
+            IEnumerable<GrnLineSummary> grnLineSummary,
+            string? grnNumber,
+            DateTime? grnDate)
         {
             var summaryKeys = new Dictionary<string, int>(
                 StringComparer.OrdinalIgnoreCase);
@@ -572,10 +676,13 @@ namespace InvEntry.ViewModels
                 summaryKeys[x.ProductCategory] = savedSummary.GKey;
 
                 // Preserve the existing category-level receipt transaction.
-                CreateProductTransaction(
+                await CreateProductTransaction(
                     productStockSummary,
+                    x.GKey,
                     x.SuppliedQty.GetValueOrDefault(),
-                    currentStock);
+                    currentStock,
+                    grnNumber,
+                    grnDate);
             }
 
             return summaryKeys;

@@ -1,0 +1,44 @@
+/*
+    Additive GRN source-line identity migration.
+    Existing rows remain NULL and REF_GKEY semantics are unchanged.
+*/
+SET XACT_ABORT ON;
+SET NOCOUNT ON;
+
+IF COL_LENGTH('dbo.PRODUCT_TRANSACTION', 'SOURCE_LINE_GKEY') IS NULL
+BEGIN
+    ALTER TABLE dbo.PRODUCT_TRANSACTION
+        ADD SOURCE_LINE_GKEY int NULL;
+END;
+
+IF EXISTS
+(
+    SELECT 1
+    FROM dbo.PRODUCT_TRANSACTION
+    WHERE SOURCE_LINE_GKEY IS NOT NULL
+      AND DOCUMENT_TYPE = 'GRN'
+      AND TRANSACTION_TYPE = 'Receipt'
+    GROUP BY DOCUMENT_TYPE, TRANSACTION_TYPE, SOURCE_LINE_GKEY
+    HAVING COUNT_BIG(*) > 1
+)
+BEGIN
+    THROW 51000,
+        'Duplicate GRN source-line identities exist. Review them before creating the unique index.',
+        1;
+END;
+
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE object_id = OBJECT_ID('dbo.PRODUCT_TRANSACTION')
+      AND name = 'UX_PRODUCT_TRANSACTION_GRN_SOURCE_LINE'
+)
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX UX_PRODUCT_TRANSACTION_GRN_SOURCE_LINE
+        ON dbo.PRODUCT_TRANSACTION
+           (DOCUMENT_TYPE, TRANSACTION_TYPE, SOURCE_LINE_GKEY)
+        WHERE SOURCE_LINE_GKEY IS NOT NULL
+          AND DOCUMENT_TYPE = 'GRN'
+          AND TRANSACTION_TYPE = 'Receipt';
+END;

@@ -12,13 +12,16 @@ namespace DataAccess.Controllers
     {
 
         private readonly IRepositoryBase<ProductTransactionSummary> _prodTransSumryRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ProductTransactionController> _logger;
 
         public ProductTransactionSummaryController(IRepositoryBase<ProductTransactionSummary> prodTransSumryRepo,
+                                                    IUnitOfWork unitOfWork,
                                                     ILogger<ProductTransactionController> logger)
 
         {
             _prodTransSumryRepo = prodTransSumryRepo;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -40,7 +43,7 @@ namespace DataAccess.Controllers
                                                                     .OrderByDescending(x => x.Gkey)
                                                                     .FirstOrDefault();
 
-            return Ok(productTransSumry);
+            return productTransSumry is null ? NotFound() : Ok(productTransSumry);
 
         }
 
@@ -69,18 +72,20 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductTransactionSummaryController>
         [HttpPost]
-        public IActionResult Post([FromBody] ProductTransactionSummary value)
+        public async Task<IActionResult> Post([FromBody] ProductTransactionSummary value)
         {
             _prodTransSumryRepo.Add(value);
+            await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
         }
 
         // PUT api/<ProductTransactionController>/5
         [HttpPut("{transGkey}")]
-        public IActionResult Put(int transactionGkey, [FromBody] ProductTransactionSummary value)
+        public async Task<IActionResult> Put(int transactionGkey, [FromBody] ProductTransactionSummary value)
         {
             _prodTransSumryRepo.Update(value);
+            await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
         }
