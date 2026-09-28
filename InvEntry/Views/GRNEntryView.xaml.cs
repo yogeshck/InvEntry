@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using InvEntry.ViewModels;
 
 namespace InvEntry.Views
 {
@@ -20,9 +21,53 @@ namespace InvEntry.Views
     /// </summary>
     public partial class GRNEntryView : UserControl
     {
+        public static readonly RoutedCommand SaveWithGridValidationCommand = new();
+
         public GRNEntryView()
         {
             InitializeComponent();
+            DataContextChanged += GRNEntryView_DataContextChanged;
+        }
+
+        private void GRNEntryView_DataContextChanged(
+            object sender,
+            DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is GRNViewModel oldViewModel)
+                oldViewModel.SubmitCommand.CanExecuteChanged -= SubmitCommand_CanExecuteChanged;
+
+            if (e.NewValue is GRNViewModel newViewModel)
+                newViewModel.SubmitCommand.CanExecuteChanged += SubmitCommand_CanExecuteChanged;
+
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private static void SubmitCommand_CanExecuteChanged(object? sender, EventArgs e)
+        {
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private void SaveWithGridValidation_CanExecute(
+            object sender,
+            CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute =
+                DataContext is GRNViewModel viewModel &&
+                viewModel.SubmitCommand.CanExecute(null);
+        }
+
+        private void SaveWithGridValidation_Executed(
+            object sender,
+            ExecutedRoutedEventArgs e)
+        {
+            if (!GrnLinesView.CommitEditing())
+                return;
+
+            if (DataContext is GRNViewModel viewModel &&
+                viewModel.SubmitCommand.CanExecute(null))
+            {
+                viewModel.SubmitCommand.Execute(null);
+            }
         }
     }
 }

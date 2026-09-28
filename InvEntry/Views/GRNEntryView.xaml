@@ -12,6 +12,7 @@
 
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
+             xmlns:local="clr-namespace:InvEntry.Views"
 
              mc:Ignorable="d"
 
@@ -23,6 +24,12 @@
 
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
+
+    <UserControl.CommandBindings>
+        <CommandBinding Command="{x:Static local:GRNEntryView.SaveWithGridValidationCommand}"
+                        CanExecute="SaveWithGridValidation_CanExecute"
+                        Executed="SaveWithGridValidation_Executed"/>
+    </UserControl.CommandBindings>
 
 
     <!-- =========================================================
@@ -114,7 +121,7 @@
                     Style="{StaticResource AppDxPrimaryActionButtonStyle}"
                     Glyph="{dx:DXImage 'Images/Save/Save_16x16.png'}"
                     ToolTip="Save material receipt"
-                    Command="{Binding SubmitCommand}"/>
+                    Command="{x:Static local:GRNEntryView.SaveWithGridValidationCommand}"/>
 
 
             </StackPanel>
@@ -807,6 +814,7 @@
 
 
                             <dxg:TableView
+                                x:Name="GrnLinesView"
                                 NewItemRowPosition="None"
 
                                 AllowGrouping="False"
@@ -836,6 +844,11 @@
 
                                         Command="{Binding CellUpdateCommand}"
 
+                                        PassEventArgsToCommand="True"/>
+
+                                    <dxmvvm:EventToCommand
+                                        EventName="ValidateCell"
+                                        Command="{Binding ValidateGrnCellCommand}"
                                         PassEventArgsToCommand="True"/>
 
 

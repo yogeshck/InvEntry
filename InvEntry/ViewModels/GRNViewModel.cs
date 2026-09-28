@@ -19,6 +19,8 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using IDialogService = DevExpress.Mvvm.IDialogService;
@@ -107,6 +109,8 @@ namespace InvEntry.ViewModels
 
         private void SetHeader()
         {
+            DetachLineValidationNotifications();
+
             Header = new()
             {
                 GrnDate = DateTime.Now,
@@ -114,6 +118,8 @@ namespace InvEntry.ViewModels
                 ItemReceivedDate = DateTime.Now,
                 Status = "Open"
             };
+
+            AttachLineValidationNotifications();
         }
 
         private async void PopulateProductCategoryList()
@@ -207,22 +213,89 @@ namespace InvEntry.ViewModels
                 MidpointRounding.AwayFromZero);
         }
 
+        [RelayCommand]
+        private void ValidateGrnCell(GridCellValidationEventArgs args)
+        {
+            if (args?.Row is not GrnLineSummary line || args.Column is null)
+                return;
+
+            decimal? proposedValue = TryConvertDecimal(args.Value);
+
+            if (args.Column.FieldName == nameof(GrnLineSummary.GrossWeight) &&
+                (!proposedValue.HasValue || proposedValue.Value <= 0M))
+            {
+                args.SetError("Gross Weight must be greater than zero.");
+            }
+            else if (args.Column.FieldName == nameof(GrnLineSummary.StoneWeight))
+            {
+                if (!proposedValue.HasValue || proposedValue.Value < 0M)
+                {
+                    args.SetError("Stone Weight cannot be negative.");
+                }
+                else if (line.GrossWeight.HasValue &&
+                         proposedValue.Value > line.GrossWeight.Value)
+                {
+                    args.SetError("Stone Weight cannot exceed Gross Weight.");
+                }
+            }
+        }
+
+        private static decimal? TryConvertDecimal(object? value)
+        {
+            if (value is null || string.IsNullOrWhiteSpace(value.ToString()))
+                return null;
+
+            try
+            {
+                return Convert.ToDecimal(value);
+            }
+            catch (Exception) when (value is string || value is IConvertible)
+            {
+                return null;
+            }
+        }
+
         private bool CanSubmit() =>
             !_isSubmitting &&
             !_isPersisted &&
             Header is not null &&
-            Header.GKey <= 0;
+            Header.GKey <= 0 &&
+            Header.GrnLineSumry is { Count: > 0 } &&
+            Header.GrnLineSumry.All(IsValidLine);
 
         [RelayCommand(CanExecute = nameof(CanSubmit))]
         private async Task Submit()
         {
-            if (!CanSubmit())
+            if (_isSubmitting ||
+                _isPersisted ||
+                Header is null ||
+                Header.GKey > 0)
             {
                 _messageBoxService.ShowMessage(
                     "This material receipt has already been saved or is currently being saved.",
                     "Material Receipt",
                     MessageButton.OK,
                     MessageIcon.Information);
+                return;
+            }
+
+            if (Header.GrnLineSumry is not { Count: > 0 })
+            {
+                _messageBoxService.ShowMessage(
+                    "Please add at least one item before saving the GRN.",
+                    "Material Receipt",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+                return;
+            }
+
+            if (!TryValidateLines(Header.GrnLineSumry, out string validationMessage))
+            {
+                _messageBoxService.ShowMessage(
+                    validationMessage,
+                    "Material Receipt",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
                 return;
             }
 
@@ -363,6 +436,115 @@ namespace InvEntry.ViewModels
             SubmitCommand.NotifyCanExecuteChanged();
         }
 
+        private void AttachLineValidationNotifications()
+        {
+            if (Header?.GrnLineSumry is null)
+                return;
+
+            Header.GrnLineSumry.CollectionChanged += GrnLines_CollectionChanged;
+            foreach (var line in Header.GrnLineSumry)
+                line.PropertyChanged += GrnLine_PropertyChanged;
+        }
+
+        private void DetachLineValidationNotifications()
+        {
+            if (Header?.GrnLineSumry is null)
+                return;
+
+            Header.GrnLineSumry.CollectionChanged -= GrnLines_CollectionChanged;
+            foreach (var line in Header.GrnLineSumry)
+                line.PropertyChanged -= GrnLine_PropertyChanged;
+        }
+
+        private void GrnLines_CollectionChanged(
+            object? sender,
+            NotifyCollectionChangedEventArgs e)
+        {
+            if (e.OldItems is not null)
+            {
+                foreach (GrnLineSummary line in e.OldItems)
+                    line.PropertyChanged -= GrnLine_PropertyChanged;
+            }
+
+            if (e.NewItems is not null)
+            {
+                foreach (GrnLineSummary line in e.NewItems)
+                    line.PropertyChanged += GrnLine_PropertyChanged;
+            }
+
+            SubmitCommand.NotifyCanExecuteChanged();
+        }
+
+        private void GrnLine_PropertyChanged(
+            object? sender,
+            PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(GrnLineSummary.GrossWeight) or
+                nameof(GrnLineSummary.StoneWeight) or
+                nameof(GrnLineSummary.NetWeight))
+            {
+                SubmitCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        private static bool IsValidLine(GrnLineSummary line) =>
+            TryValidateLine(line, 0, out _);
+
+        private static bool TryValidateLines(
+            IReadOnlyList<GrnLineSummary> lines,
+            out string message)
+        {
+            for (int index = 0; index < lines.Count; index++)
+            {
+                if (!TryValidateLine(lines[index], index + 1, out message))
+                    return false;
+            }
+
+            message = string.Empty;
+            return true;
+        }
+
+        private static bool TryValidateLine(
+            GrnLineSummary line,
+            int rowNumber,
+            out string message)
+        {
+            string prefix = rowNumber > 0 ? $"Row {rowNumber}: " : string.Empty;
+
+            if (!line.GrossWeight.HasValue || line.GrossWeight.Value <= 0M)
+            {
+                message = prefix + "Gross Weight must be greater than zero.";
+                return false;
+            }
+
+            decimal stone = line.StoneWeight.GetValueOrDefault();
+            if (stone < 0M)
+            {
+                message = prefix + "Stone Weight cannot be negative.";
+                return false;
+            }
+
+            if (stone > line.GrossWeight.Value)
+            {
+                message = prefix + "Stone Weight cannot exceed Gross Weight.";
+                return false;
+            }
+
+            decimal expectedNet = Math.Round(
+                line.GrossWeight.Value - stone,
+                3,
+                MidpointRounding.AwayFromZero);
+
+            if (line.NetWeight != expectedNet)
+            {
+                message = prefix + "Net Weight must equal Gross Weight minus Stone Weight.";
+                return false;
+            }
+
+            message = string.Empty;
+            return true;
+        }
+
         private async Task CreateTemporaryStockItemsAsync(
             IEnumerable<GrnLineSummary> summaries,
             IReadOnlyDictionary<string, int> summaryKeys,
@@ -429,6 +611,7 @@ namespace InvEntry.ViewModels
 
         private async Task CreateProductTransaction(
             ProductStockSummary productStockSummary,
+            int grnLineSummaryGkey,
             int suppliedQty,
             int stockQty,
             string? grnNumber,
@@ -454,7 +637,10 @@ namespace InvEntry.ViewModels
             }
 
             productTransaction.ProductSku = productStockSummary.ProductSku;
-            productTransaction.RefGkey = productStockSummary.ProductGkey;
+            // A GRN can contain more than one line for the same product/category.
+            // Use the persisted line-summary key as the movement source so the API's
+            // retry protection does not collapse distinct GRN lines together.
+            productTransaction.RefGkey = grnLineSummaryGkey;
             productTransaction.TransactionDate = DateTime.Now;
             productTransaction.ProductCategory = productStockSummary.Category;
 
@@ -675,7 +861,8 @@ namespace InvEntry.ViewModels
 
                 // Preserve the existing category-level receipt transaction.
                 await CreateProductTransaction(
-                    productStockSummary,
+                    savedSummary,
+                    x.GKey,
                     x.SuppliedQty.GetValueOrDefault(),
                     currentStock,
                     grnNumber,
