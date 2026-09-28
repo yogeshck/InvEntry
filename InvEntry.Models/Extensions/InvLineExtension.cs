@@ -20,9 +20,9 @@ namespace InvEntry.Models.Extensions
             line.ProductDesc = product.Description;
             line.ProductName = product.Name;
             line.ProductPurity = product.Purity;
-            line.VaPercent = product.VaPercent;
+            line.VaPercent = product.VaPercent ?? 0M;
             line.ProductId = product.Id;
-            line.VaAmount = 0;
+            line.VaAmount = 0M;
             line.Metal = product.Metal;
             line.IsTaxable = product.IsTaxable;
             line.ProdCategory = product.Category;

@@ -15,6 +15,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IRepositoryBase<OldMetalTransaction> _oldMetalRepository;
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
     private readonly IRepositoryBase<Voucher> _voucherRepository;
+    private readonly IRepositoryBase<OrgCustomer> _customerRepository;
 
     //private readonly IRepositoryBase<ProductStock> _productStockRepository;
     //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
@@ -35,6 +36,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IRepositoryBase<OldMetalTransaction> oldMetalRepository,
         IRepositoryBase<VoucherType> voucherTypeRepository,
         IRepositoryBase<Voucher> voucherRepository,
+        IRepositoryBase<OrgCustomer> customerRepository,
         IStockMovementService stockMovementService,
         IGstr1StagingService gstr1StagingService,
         IUnitOfWork unitOfWork)
@@ -56,6 +58,9 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         _voucherRepository =
             voucherRepository;
+
+        _customerRepository =
+            customerRepository;
 
         _gstr1StagingService =
             gstr1StagingService;
@@ -79,12 +84,27 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Header);
 
+        ValidateCustomerAssociation(
+            request.Header.CustMobile,
+            request.Header.CustGkey);
+
         if (request.Lines == null ||
             request.Lines.Count == 0)
         {
             throw new InvalidOperationException(
                 "Invoice must contain at least one line.");
         }
+
+        ValidateInvoiceLines(
+            request.Lines.Select((line, index) =>
+                InvoiceLineWeightValidator.Validate(
+                    index + 1,
+                    line.ProductName,
+                    line.ProductId,
+                    line.Metal,
+                    line.ProdGrossWeight,
+                    line.ProdStoneWeight,
+                    line.ProdNetWeight)));
 
         var isNew =
             request.Header.Gkey <= 0;
@@ -1588,10 +1608,10 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             source.TaxType;
 
         destination.VaAmount =
-            source.VaAmount;
+            source.VaAmount ?? 0M;
 
         destination.VaPercent =
-            source.VaPercent;
+            source.VaPercent ?? 0M;
 
         destination.InvlCgstPercent =
             source.InvlCgstPercent;
@@ -1829,6 +1849,25 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 throw new InvalidOperationException(
                     "Invoice must contain at least one line before finalisation.");
             }
+
+            // Validate the persisted association before invoice numbering,
+            // settlement, stock, vouchers, receivables or GST staging.
+            ValidateCustomerAssociation(
+                invoice.CustMobile,
+                invoice.CustGkey);
+
+            // This occurs before numbering, settlement, stock, voucher,
+            // receivable, GST or invoice-status mutations.
+            ValidateInvoiceLines(
+                lines.Select((line, index) =>
+                    InvoiceLineWeightValidator.Validate(
+                        line.InvLineNbr ?? index + 1,
+                        line.ProductName,
+                        line.ProductId,
+                        line.Metal,
+                        line.ProdGrossWeight,
+                        line.ProdStoneWeight,
+                        line.ProdNetWeight)));
 
 
             // =========================================================
@@ -2923,6 +2962,38 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             Status = invoice.Status,
             ModifiedOn = invoice.ModifiedOn
         };
+    }
+
+    private void ValidateCustomerAssociation(
+        string? invoiceMobile,
+        int? customerGkey)
+    {
+        var key = customerGkey.GetValueOrDefault();
+        var customer = key > 0
+            ? _customerRepository.Get(x => x.Gkey == key)
+            : null;
+
+        var result = InvoiceCustomerAssociationValidator.Validate(
+            invoiceMobile,
+            customerGkey,
+            customer?.MobileNbr,
+            customer?.CustomerName,
+            customer is not null && customer.DeleteFlag != true);
+
+        if (!result.IsValid)
+            throw new InvoiceCustomerBusinessValidationException(result.Message);
+    }
+
+    private static void ValidateInvoiceLines(
+        IEnumerable<InvoiceLineWeightValidationResult> results)
+    {
+        var errors = results
+            .Where(result => !result.IsValid)
+            .Select(result => result.Message)
+            .ToList();
+
+        if (errors.Count > 0)
+            throw new InvoiceLineBusinessValidationException(errors);
     }
 
 

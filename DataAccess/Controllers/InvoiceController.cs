@@ -602,12 +602,27 @@ public class InvoiceController : ControllerBase
             return BadRequest(
                 "Invoice GKey in the URL does not match the request.");
 
-        var result =
-            await _invoiceWorkflow.FinaliseAsync(
-                request,
-                cancellationToken);
+        try
+        {
+            var result =
+                await _invoiceWorkflow.FinaliseAsync(
+                    request,
+                    cancellationToken);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (InvoiceLineBusinessValidationException ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message,
+                errors = ex.Errors
+            });
+        }
+        catch (InvoiceCustomerBusinessValidationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     // =========================================================

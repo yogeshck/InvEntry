@@ -22,9 +22,66 @@ namespace InvEntry.Views
     /// </summary>
     public partial class InvoiceView : UserControl
     {
+        public static readonly RoutedCommand SaveDraftWithGridValidationCommand = new();
+        public static readonly RoutedCommand FinaliseWithGridValidationCommand = new();
+
         public InvoiceView()
         {
             InitializeComponent();
+        }
+
+        private void SaveDraftWithGridValidation_CanExecute(
+            object sender,
+            CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute =
+                DataContext is InvoiceViewModel viewModel &&
+                viewModel.SaveDraftInvoiceCommand.CanExecute(null);
+        }
+
+        private void SaveDraftWithGridValidation_Executed(
+            object sender,
+            ExecutedRoutedEventArgs e)
+        {
+            if (!TryCommitInvoiceGridEdit())
+                return;
+
+            if (DataContext is InvoiceViewModel viewModel &&
+                viewModel.SaveDraftInvoiceCommand.CanExecute(null))
+            {
+                viewModel.SaveDraftInvoiceCommand.Execute(null);
+            }
+        }
+
+        private void FinaliseWithGridValidation_CanExecute(
+            object sender,
+            CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute =
+                DataContext is InvoiceViewModel viewModel &&
+                viewModel.FinaliseInvoiceCommand.CanExecute(null);
+        }
+
+        private void FinaliseWithGridValidation_Executed(
+            object sender,
+            ExecutedRoutedEventArgs e)
+        {
+            if (!TryCommitInvoiceGridEdit())
+                return;
+
+            if (DataContext is InvoiceViewModel viewModel &&
+                viewModel.FinaliseInvoiceCommand.CanExecute(null))
+            {
+                viewModel.FinaliseInvoiceCommand.Execute(null);
+            }
+        }
+
+        private bool TryCommitInvoiceGridEdit()
+        {
+            // DevExpress retains a rejected editor value separately from the
+            // bound row. CommitEditing re-runs ValidateCell and returns false
+            // without closing the editor when that value cannot be posted.
+            return InvoiceLinesView.CommitEditing();
         }
     }
 }

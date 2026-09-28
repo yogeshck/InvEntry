@@ -4,6 +4,13 @@ namespace InvEntry.Models;
 
 public partial class InvoiceLine : BaseEntity
 {
+    public InvoiceLine()
+    {
+        _prodStoneWeight = 0M;
+        _vaPercent = 0M;
+        _vaAmount = 0M;
+    }
+
     [ObservableProperty]
     private string? _hsnCode;
 

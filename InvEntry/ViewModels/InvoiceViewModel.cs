@@ -27,6 +27,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -167,6 +169,10 @@ public partial class InvoiceViewModel : ObservableObject
     private bool _isLoadingDraft;
     private bool _isPreparingInvoiceDocument;
     private bool _isRefreshingCustomer;
+    private bool _isCustomerLookupInProgress;
+    private bool _isCustomerResolved;
+    private int _customerLookupVersion;
+    private string? _activeCustomerLookupMobile;
 
     private SettingsPageViewModel _settingsPageViewModel;
     private Dictionary<string, Action<InvoiceLine, decimal?>> copyInvoiceExpression;
@@ -346,9 +352,6 @@ public partial class InvoiceViewModel : ObservableObject
                                 MapDraftReceipt(source));
                         }*/
 
-            CustomerPhoneNumber =
-                Header.CustMobile;
-
             if (!string.IsNullOrWhiteSpace(Header.CustMobile))
             {
                 Buyer =
@@ -374,6 +377,19 @@ public partial class InvoiceViewModel : ObservableObject
                 }
             }
 
+            // Assign the editor value only after the persisted customer is
+            // resolved. The EditValueChanged command then observes the same
+            // Buyer/mobile pair and cannot start a competing lookup.
+            try
+            {
+                _isRefreshingCustomer = true;
+                CustomerPhoneNumber = Header.CustMobile;
+            }
+            finally
+            {
+                _isRefreshingCustomer = false;
+            }
+
             InvLineChk =
                 Header.Lines.Count > 0;
 
@@ -390,16 +406,18 @@ public partial class InvoiceViewModel : ObservableObject
             // The invoice has just been loaded from the database.
             // Therefore the UI exactly represents the persisted Draft.
             HasUnsavedChanges = false;
+            RefreshInvoiceCommands();
 
-            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
-            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
-            CancelInvoiceCommand.NotifyCanExecuteChanged();
-
-            CreateInvoiceCommand.NotifyCanExecuteChanged();
-
-            PrintInvoiceCommand.NotifyCanExecuteChanged();
-            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-            ExportToPdfCommand.NotifyCanExecuteChanged();
+            Serilog.Log.Information(
+                "Invoice draft load completed. GKey={InvoiceGkey}, Status={Status}, " +
+                "HasUnsavedChanges={HasUnsavedChanges}, CustomerGkey={CustomerGkey}, " +
+                "LineCount={LineCount}, CanFinalise={CanFinalise}",
+                Header?.GKey,
+                Header?.Status,
+                HasUnsavedChanges,
+                Header?.CustGkey,
+                Header?.Lines?.Count ?? 0,
+                CanFinaliseInvoice());
 
             Messenger.Default.Send(
                 MessageType.WaitIndicator,
@@ -681,6 +699,50 @@ public partial class InvoiceViewModel : ObservableObject
     partial void OnBuyerChanged(Customer value)
     {
         EditCustomerCommand.NotifyCanExecuteChanged();
+
+        if (!_isLoadingDraft &&
+            !_isRefreshingCustomer &&
+            Header?.GKey > 0 &&
+            value?.GKey != Header.CustGkey)
+        {
+            MarkDraftAsModified();
+        }
+    }
+
+    partial void OnCustomerPhoneNumberChanged(string value)
+    {
+        if (_isLoadingDraft ||
+            _isRefreshingCustomer)
+        {
+            return;
+        }
+
+        if (!string.Equals(
+                value?.Trim(),
+                Header.CustMobile?.Trim(),
+                StringComparison.Ordinal))
+        {
+            _customerLookupVersion++;
+            _isCustomerResolved = false;
+            Buyer = null;
+            Header.CustGkey = null;
+            Header.CustMobile = null;
+            MarkDraftAsModified();
+        }
+    }
+
+    partial void OnHeaderChanged(
+        InvoiceHeader oldValue,
+        InvoiceHeader newValue)
+    {
+        DetachPersistedStateTracking(oldValue);
+        AttachPersistedStateTracking(newValue);
+        RefreshInvoiceCommands();
+    }
+
+    partial void OnHasUnsavedChangesChanged(bool value)
+    {
+        RefreshInvoiceCommands();
     }
 
     partial void OnSalesPersonChanged(MtblReference value)
@@ -832,11 +894,22 @@ public partial class InvoiceViewModel : ObservableObject
 
         phoneNumber = phoneNumber.Trim();
 
+        _activeCustomerLookupMobile = phoneNumber;
+
         if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 10)
+        {
+            _customerLookupVersion++;
+            return;
+        }
+
+        if (_isLoadingDraft || _isRefreshingCustomer)
             return;
 
         if (Buyer is not null && Buyer.MobileNbr == phoneNumber)
             return;
+
+        var lookupVersion = ++_customerLookupVersion;
+        _isCustomerLookupInProgress = true;
 
         var previousBuyer = Buyer;
         var previousCustomerState = CustomerState;
@@ -859,10 +932,12 @@ public partial class InvoiceViewModel : ObservableObject
         try
         {
             lookup = await _customerLookupService.ResolveByMobileAsync(phoneNumber);
-            Buyer = lookup.Customer;
         }
         catch (Exception ex)
         {
+            if (lookupVersion != _customerLookupVersion)
+                return;
+
             CustomerReadOnly = previousCustomerReadOnly;
             createCustomer = previousCreateCustomer;
             updateCustomer = previousUpdateCustomer;
@@ -876,10 +951,24 @@ public partial class InvoiceViewModel : ObservableObject
         }
         finally
         {
+            if (lookupVersion == _customerLookupVersion)
+                _isCustomerLookupInProgress = false;
+
             Messenger.Default.Send(
                 MessageType.WaitIndicator,
                 WaitIndicatorVM.HideIndicator());
         }
+
+        if (lookupVersion != _customerLookupVersion ||
+            !string.Equals(
+                _activeCustomerLookupMobile,
+                phoneNumber,
+                StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Buyer = lookup.Customer;
 
         if (!lookup.IsExisting)
         {
@@ -947,10 +1036,30 @@ public partial class InvoiceViewModel : ObservableObject
 
         }
 
-        Header.CustMobile = phoneNumber;
+        SynchronizeResolvedCustomer(phoneNumber);
 
         MarkDraftAsModified();
 
+    }
+
+    private void SynchronizeResolvedCustomer(string phoneNumber)
+    {
+        if (Buyer is null)
+            return;
+
+        try
+        {
+            _isRefreshingCustomer = true;
+            CustomerPhoneNumber = phoneNumber;
+            Buyer.MobileNbr = phoneNumber;
+            Header.CustMobile = phoneNumber;
+            Header.CustGkey = Buyer.GKey;
+            _isCustomerResolved = Buyer.GKey > 0;
+        }
+        finally
+        {
+            _isRefreshingCustomer = false;
+        }
     }
 
     private async Task PrepareNewCustomerAsync(
@@ -1080,6 +1189,9 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand]
     private async Task FetchProduct()
     {
+        if (!TryValidateResolvedCustomer())
+            return;
+
         if (string.IsNullOrEmpty(ProductIdUI)) return;
 
         ProductIdUI = ProductIdUI.ToUpper();
@@ -1151,6 +1263,8 @@ public partial class InvoiceViewModel : ObservableObject
             InvlSgstPercent = Header.SgstPercent,
             InvlIgstPercent = Header.IgstPercent,
             InvlStoneAmount = 0M,
+            VaPercent = 0M,
+            VaAmount = 0M,
             TaxType = "GST"
         };
 
@@ -1163,6 +1277,10 @@ public partial class InvoiceViewModel : ObservableObject
             invoiceLine.ProdGrossWeight = ProductSkuStock.GrossWeight;
             invoiceLine.ProdStoneWeight = ProductSkuStock.StoneWeight;
             invoiceLine.ProdNetWeight = ProductSkuStock.NetWeight;
+            invoiceLine.VaPercent =
+                InvoiceLineVaDefaults.ResolvePercent(
+                    ProductSkuStock.VaPercent,
+                    productStk.VaPercent);
 
         }
 
@@ -1461,6 +1579,19 @@ public partial class InvoiceViewModel : ObservableObject
             return;
         }
 
+        if (!TryValidateResolvedCustomer())
+            return;
+
+        if (!TryValidateInvoiceLines(out var lineValidationMessage))
+        {
+            _messageBoxService.ShowMessage(
+                lineValidationMessage,
+                "Invoice Item Validation",
+                MessageButton.OK,
+                MessageIcon.Warning);
+            return;
+        }
+
         // Recalculate before opening settlement.
         EvaluateHeader();
 
@@ -1575,6 +1706,89 @@ public partial class InvoiceViewModel : ObservableObject
         CancelInvoiceCommand.NotifyCanExecuteChanged();
     }
 
+    private void AttachPersistedStateTracking(InvoiceHeader? header)
+    {
+        if (header is null)
+            return;
+
+        header.PropertyChanged += PersistedStatePropertyChanged;
+
+        if (header.Lines is not null)
+        {
+            header.Lines.CollectionChanged += InvoiceLinesChanged;
+            foreach (var line in header.Lines)
+                line.PropertyChanged += PersistedStatePropertyChanged;
+        }
+
+        if (header.OldMetalTransactions is not null)
+        {
+            header.OldMetalTransactions.CollectionChanged += OldMetalLinesChanged;
+            foreach (var line in header.OldMetalTransactions)
+                line.PropertyChanged += PersistedStatePropertyChanged;
+        }
+    }
+
+    private void DetachPersistedStateTracking(InvoiceHeader? header)
+    {
+        if (header is null)
+            return;
+
+        header.PropertyChanged -= PersistedStatePropertyChanged;
+
+        if (header.Lines is not null)
+        {
+            header.Lines.CollectionChanged -= InvoiceLinesChanged;
+            foreach (var line in header.Lines)
+                line.PropertyChanged -= PersistedStatePropertyChanged;
+        }
+
+        if (header.OldMetalTransactions is not null)
+        {
+            header.OldMetalTransactions.CollectionChanged -= OldMetalLinesChanged;
+            foreach (var line in header.OldMetalTransactions)
+                line.PropertyChanged -= PersistedStatePropertyChanged;
+        }
+    }
+
+    private void PersistedStatePropertyChanged(
+        object? sender,
+        PropertyChangedEventArgs args)
+    {
+        MarkDraftAsModified();
+    }
+
+    private void InvoiceLinesChanged(
+        object? sender,
+        NotifyCollectionChangedEventArgs args)
+    {
+        UpdateItemTracking<InvoiceLine>(args);
+        MarkDraftAsModified();
+    }
+
+    private void OldMetalLinesChanged(
+        object? sender,
+        NotifyCollectionChangedEventArgs args)
+    {
+        UpdateItemTracking<OldMetalTransaction>(args);
+        MarkDraftAsModified();
+    }
+
+    private void UpdateItemTracking<T>(NotifyCollectionChangedEventArgs args)
+        where T : INotifyPropertyChanged
+    {
+        if (args.OldItems is not null)
+        {
+            foreach (T item in args.OldItems)
+                item.PropertyChanged -= PersistedStatePropertyChanged;
+        }
+
+        if (args.NewItems is not null)
+        {
+            foreach (T item in args.NewItems)
+                item.PropertyChanged += PersistedStatePropertyChanged;
+        }
+    }
+
 
     private void MarkDraftAsSaved()
     {
@@ -1606,6 +1820,9 @@ public partial class InvoiceViewModel : ObservableObject
             if (Header is null)
                 return;
 
+            if (!TryValidateResolvedCustomer())
+                return;
+
             if (Header.Lines is null ||
                 Header.Lines.Count == 0)
             {
@@ -1615,6 +1832,18 @@ public partial class InvoiceViewModel : ObservableObject
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
 
+                return;
+            }
+
+            // Grid editors use Immediate posting, so the active edit value is
+            // already present on the bound line before collection validation.
+            if (!TryValidateInvoiceLines(out var lineValidationMessage))
+            {
+                _messageBoxService.ShowMessage(
+                    lineValidationMessage,
+                    "Invoice Item Validation",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
                 return;
             }
 
@@ -1781,36 +2010,18 @@ public partial class InvoiceViewModel : ObservableObject
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);*/
 
-            // Start a clean invoice only after the Draft
-            // has been successfully persisted.
-            if (isNewDraft)
-            {
-                var finaliseNow =
-                    DXMessageBox.Show(
-                        $"Draft invoice saved successfully.\n\n" +
-                        $"Draft Number: DRAFT-{result.Gkey}\n\n" +
-                        "Do you want to settle and finalise this invoice now?",
-                        "Draft Saved",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
+            // Retain the persisted identity for the confirmation, then
+            // start a clean invoice. A failed API call never reaches this
+            // transition and therefore preserves the complete form.
+            DXMessageBox.Show(
+                isNewDraft
+                    ? $"Draft invoice DRAFT-{result.Gkey} saved successfully."
+                    : $"Draft invoice DRAFT-{result.Gkey} updated successfully.",
+                "Draft Saved",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
 
-                if (finaliseNow == MessageBoxResult.Yes)
-                {
-                    await FinaliseInvoice();
-                }
-                else
-                {
-                    ResetInvoice();
-                }
-            }
-            else
-            {
-                DXMessageBox.Show(
-                    $"Draft invoice DRAFT-{result.Gkey} updated successfully.",
-                    "Draft Saved",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-            }
+            ResetInvoice();
 
         }
         catch (HttpRequestException ex)
@@ -2262,6 +2473,63 @@ public partial class InvoiceViewModel : ObservableObject
 
     }
 
+    [RelayCommand]
+    private void ValidateInvoiceCell(GridCellValidationEventArgs args)
+    {
+        if (args?.Row is not InvoiceLine line || args.Column is null)
+            return;
+
+        if (!InvoiceLineWeightValidator.IsWeightBased(line.Metal))
+            return;
+
+        var rowNumber = Header?.Lines?.IndexOf(line) + 1 ?? 1;
+        var product = line.ProductName ?? line.ProductId ?? "Unnamed product";
+
+        if (args.Column.FieldName == nameof(InvoiceLine.ProdGrossWeight))
+        {
+            var result = InvoiceLineWeightValidator.ValidateGrossCell(
+                args.Value,
+                line.ProdStoneWeight);
+            if (!result.IsValid)
+            {
+                args.SetError(
+                    $"Row {rowNumber} ({product}): {result.Message}");
+            }
+        }
+        else if (args.Column.FieldName == nameof(InvoiceLine.ProdStoneWeight))
+        {
+            var result = InvoiceLineWeightValidator.ValidateStoneCell(
+                args.Value,
+                line.ProdGrossWeight);
+            if (!result.IsValid)
+            {
+                args.SetError(
+                    $"Row {rowNumber} ({product}): {result.Message}");
+            }
+        }
+    }
+
+    private bool TryValidateInvoiceLines(out string message)
+    {
+        var invalidLines = (Header?.Lines ?? [])
+            .Select((line, index) => InvoiceLineWeightValidator.Validate(
+                index + 1,
+                line.ProductName,
+                line.ProductId,
+                line.Metal,
+                line.ProdGrossWeight,
+                line.ProdStoneWeight,
+                line.ProdNetWeight))
+            .Where(result => !result.IsValid)
+            .ToList();
+
+        message = string.Join(
+            Environment.NewLine,
+            invalidLines.Select(result => result.Message));
+
+        return invalidLines.Count == 0;
+    }
+
 
     [RelayCommand]
     private void EvaluateOldMetalTransactions(OldMetalTransaction oldMetalTransaction)
@@ -2589,6 +2857,8 @@ public partial class InvoiceViewModel : ObservableObject
         PrintInvoiceCommand.NotifyCanExecuteChanged();
         PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
         ExportToPdfCommand.NotifyCanExecuteChanged();
+        CreateInvoiceCommand.NotifyCanExecuteChanged();
+        EditCustomerCommand.NotifyCanExecuteChanged();
     }
 
     private void ProcessSettlements()
@@ -2880,8 +3150,8 @@ public partial class InvoiceViewModel : ObservableObject
     private void ResetInvoice()
     {
 
-        HasUnsavedChanges = false; 
-        
+        HasUnsavedChanges = false;
+
         SetHeader();
 
         Buyer = null;
@@ -2894,6 +3164,11 @@ public partial class InvoiceViewModel : ObservableObject
         ProductIdUI = null;
         ProductSku = null;
         OldMetalIdUI = null;
+        ProductSkuStock = null;
+
+        SelectedRows?.Clear();
+        InvoiceArReceipt = null;
+        GstClassification = null;
 
         createCustomer = false;
         updateCustomer = false;
@@ -2910,23 +3185,11 @@ public partial class InvoiceViewModel : ObservableObject
         IsBalance = true;
         IsRefund = false;
 
-        SaveDraftInvoiceCommand
-            .NotifyCanExecuteChanged();
+        RefreshInvoiceCommands();
 
-        FinaliseInvoiceCommand
-            .NotifyCanExecuteChanged();
-
-        CreateInvoiceCommand
-            .NotifyCanExecuteChanged();
-
-        PrintInvoiceCommand
-            .NotifyCanExecuteChanged();
-
-        PrintPreviewInvoiceCommand
-            .NotifyCanExecuteChanged();
-
-        CancelInvoiceCommand
-            .NotifyCanExecuteChanged();
+        Messenger.Default.Send(
+            "CustomerMobileNbr",
+            MessageType.FocusTextEdit);
 
     }
 
@@ -2986,7 +3249,10 @@ public partial class InvoiceViewModel : ObservableObject
         {
             InvDate = DateTime.Now,
             IsTaxApplicable = true,
-            Status = InvoiceStatus.Draft
+            Status = InvoiceStatus.Draft,
+            TenantGkey = Company?.TenantGkey,
+            GstLocSeller = Company?.GstCode,
+            PlaceOfSupply = Company?.GstCode
           
         };
     }
@@ -3094,6 +3360,31 @@ public partial class InvoiceViewModel : ObservableObject
         }
 
         return true;
+    }
+
+    private bool TryValidateResolvedCustomer()
+    {
+        var result = InvoiceCustomerAssociationValidator.Validate(
+            CustomerPhoneNumber,
+            Header?.CustGkey,
+            Buyer?.MobileNbr,
+            Buyer?.CustomerName,
+            Buyer is not null);
+
+        if (result.IsValid)
+            return true;
+
+        _messageBoxService.ShowMessage(
+            result.Message,
+            "Customer Information",
+            MessageButton.OK,
+            MessageIcon.Warning);
+
+        Messenger.Default.Send(
+            "CustomerMobileNbr",
+            MessageType.FocusTextEdit);
+
+        return false;
     }
 
     private InvoiceHeader MapDraftHeader(
@@ -3266,8 +3557,8 @@ public partial class InvoiceViewModel : ObservableObject
             TaxPercent = source.TaxPercent,
             TaxType = source.TaxType,
 
-            VaAmount = source.VaAmount,
-            VaPercent = source.VaPercent,
+            VaAmount = InvoiceLineVaDefaults.PreserveOrZero(source.VaAmount),
+            VaPercent = InvoiceLineVaDefaults.PreserveOrZero(source.VaPercent),
 
             InvoiceHdrGkey = source.InvoiceHdrGkey,
             InvoiceId = source.InvoiceId,
