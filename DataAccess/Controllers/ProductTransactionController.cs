@@ -81,21 +81,8 @@ namespace DataAccess.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ProductTransaction value)
         {
-            bool isSourceIdentifiedGrnReceipt =
-                string.Equals(value.DocumentType, "GRN", StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(value.TransactionType, "Receipt", StringComparison.OrdinalIgnoreCase) &&
-                value.SourceLineGkey.HasValue;
-
             ProductTransaction? FindExisting()
             {
-                if (isSourceIdentifiedGrnReceipt)
-                {
-                    return _productTransaction.Get(x =>
-                        x.DocumentType == "GRN" &&
-                        x.TransactionType == "Receipt" &&
-                        x.SourceLineGkey == value.SourceLineGkey);
-                }
-
                 if (string.IsNullOrWhiteSpace(value.DocumentNbr) ||
                     string.IsNullOrWhiteSpace(value.DocumentType) ||
                     !value.RefGkey.HasValue)
@@ -115,28 +102,14 @@ namespace DataAccess.Controllers
             if (existing is not null)
             {
                 _logger.LogInformation(
-                    "Product transaction already exists for {DocumentType} {DocumentNbr}, source line {SourceLineGkey}",
+                    "Product transaction already exists for {DocumentType} {DocumentNbr}",
                     value.DocumentType,
-                    value.DocumentNbr,
-                    value.SourceLineGkey);
+                    value.DocumentNbr);
                 return Ok(existing);
             }
 
             _productTransaction.Add(value);
-            try
-            {
-                await _unitOfWork.SaveChangesAsync();
-            }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateException)
-                when (isSourceIdentifiedGrnReceipt)
-            {
-                _unitOfWork.ClearChanges();
-                existing = FindExisting();
-                if (existing is not null)
-                    return Ok(existing);
-
-                throw;
-            }
+            await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
 

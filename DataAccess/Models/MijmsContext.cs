@@ -1176,10 +1176,6 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("GST_GSTR1_DOCUMENT");
 
-            entity.HasIndex(e => e.DocumentDate, "IX_GST_GSTR1_DOCUMENT_DATE");
-
-            entity.HasIndex(e => new { e.SupplierGstin, e.ReturnPeriod, e.IsReportable, e.ReturnCategory }, "IX_GST_GSTR1_DOCUMENT_RETURN");
-
             entity.HasIndex(e => new { e.SupplierGstin, e.DocumentType, e.SourceGkey }, "UQ_GST_GSTR1_DOCUMENT_SOURCE").IsUnique();
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
@@ -1287,8 +1283,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey);
 
             entity.ToTable("GST_GSTR1_DOCUMENT_LINE");
-
-            entity.HasIndex(e => new { e.HsnCode, e.GstRate }, "IX_GST_GSTR1_LINE_HSN");
 
             entity.HasIndex(e => new { e.GstDocumentGkey, e.LineNbr }, "UQ_GST_GSTR1_DOCUMENT_LINE").IsUnique();
 
@@ -2944,7 +2938,6 @@ public partial class MijmsContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("PRODUCT_SKU");
             entity.Property(e => e.RefGkey).HasColumnName("REF_GKEY");
-            entity.Property(e => e.SourceLineGkey).HasColumnName("SOURCE_LINE_GKEY");
             entity.Property(e => e.TransactionDate).HasColumnName("TRANSACTION_DATE");
             entity.Property(e => e.TransactionGrossWeight)
                 .HasColumnType("decimal(10, 3)")
@@ -2977,10 +2970,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey);
 
             entity.ToTable("PRODUCT_TRANSACTION_SUMMARY");
-
-            entity.HasIndex(e => new { e.DocumentType, e.RefLineGkey }, "IX_PRODUCT_TRANSACTION_SUMMARY_DOCUMENT");
-
-            entity.HasIndex(e => new { e.ProductGkey, e.TransactionDate }, "IX_PRODUCT_TRANSACTION_SUMMARY_PRODUCT_DATE");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.ClosingGrossWeight)
@@ -3207,12 +3196,6 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("STOCK_TRANSFER_HEADER");
 
-            entity.HasIndex(e => new { e.Status, e.TransferType, e.ToReferenceGkey }, "IX_STOCK_TRANSFER_HEADER_STATUS_TYPE_DESTINATION");
-
-            entity.HasIndex(e => e.TransferDate, "IX_STOCK_TRANSFER_HEADER_TRANSFER_DATE").IsDescending();
-
-            entity.HasIndex(e => e.TransferNbr, "UX_STOCK_TRANSFER_HEADER_TRANSFER_NBR").IsUnique();
-
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.CreatedBy)
                 .HasMaxLength(50)
@@ -3283,10 +3266,6 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey);
 
             entity.ToTable("STOCK_TRANSFER_LINE");
-
-            entity.HasIndex(e => e.ProductStockGkey, "IX_STOCK_TRANSFER_LINE_PRODUCT_STOCK");
-
-            entity.HasIndex(e => new { e.TransferHdrGkey, e.LineNbr }, "UX_STOCK_TRANSFER_LINE_HEADER_LINE").IsUnique();
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.GrossWeight)

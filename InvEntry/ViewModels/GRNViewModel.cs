@@ -429,7 +429,6 @@ namespace InvEntry.ViewModels
 
         private async Task CreateProductTransaction(
             ProductStockSummary productStockSummary,
-            int sourceLineGkey,
             int suppliedQty,
             int stockQty,
             string? grnNumber,
@@ -456,7 +455,6 @@ namespace InvEntry.ViewModels
 
             productTransaction.ProductSku = productStockSummary.ProductSku;
             productTransaction.RefGkey = productStockSummary.ProductGkey;
-            productTransaction.SourceLineGkey = sourceLineGkey;
             productTransaction.TransactionDate = DateTime.Now;
             productTransaction.ProductCategory = productStockSummary.Category;
 
@@ -678,7 +676,6 @@ namespace InvEntry.ViewModels
                 // Preserve the existing category-level receipt transaction.
                 await CreateProductTransaction(
                     productStockSummary,
-                    x.GKey,
                     x.SuppliedQty.GetValueOrDefault(),
                     currentStock,
                     grnNumber,

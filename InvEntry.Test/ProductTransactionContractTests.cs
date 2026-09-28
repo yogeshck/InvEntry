@@ -77,75 +77,6 @@ public sealed class ProductTransactionContractTests
         });
     }
 
-    [Test]
-    public async Task Post_TwoGrnLinesForSameProductAndCategory_CreatesTwoTransactions()
-    {
-        var repository = new FakeRepository<DataAccess.Models.ProductTransaction>();
-        var unitOfWork = new FakeUnitOfWork();
-        var controller = CreateController(repository, unitOfWork);
-
-        await controller.Post(Receipt("GRN-003", "MALA", 6, 501));
-        await controller.Post(Receipt("GRN-003", "MALA", 6, 502));
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(repository.Items, Has.Count.EqualTo(2));
-            Assert.That(repository.Items.Select(x => x.SourceLineGkey),
-                Is.EquivalentTo(new int?[] { 501, 502 }));
-            Assert.That(unitOfWork.SaveCount, Is.EqualTo(2));
-        });
-    }
-
-    [Test]
-    public async Task Post_SameSourceLineRetry_ReturnsExactExistingTransaction()
-    {
-        var existing = Receipt("GRN-004", "RING", 8, 601);
-        existing.Gkey = 44;
-        var repository = new FakeRepository<DataAccess.Models.ProductTransaction>(existing);
-        var unitOfWork = new FakeUnitOfWork();
-        var controller = CreateController(repository, unitOfWork);
-
-        var result = await controller.Post(Receipt("GRN-004", "RING", 8, 601));
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(repository.Items, Has.Count.EqualTo(1));
-            Assert.That(unitOfWork.SaveCount, Is.Zero);
-            Assert.That(((DataAccess.Models.ProductTransaction)((OkObjectResult)result).Value!).Gkey,
-                Is.EqualTo(44));
-        });
-    }
-
-    [Test]
-    public async Task Post_ConcurrentUniqueConflict_ReloadsAndReturnsCommittedTransaction()
-    {
-        var request = Receipt("GRN-005", "SILVER", 11, 701);
-        var committed = Receipt("GRN-005", "SILVER", 11, 701);
-        committed.Gkey = 55;
-        var repository = new FakeRepository<DataAccess.Models.ProductTransaction>();
-        var unitOfWork = new FakeUnitOfWork
-        {
-            SaveHandler = () =>
-            {
-                repository.Items.Remove(request);
-                repository.Items.Add(committed);
-                return Task.FromException<int>(
-                    new Microsoft.EntityFrameworkCore.DbUpdateException("Simulated unique-index race."));
-            }
-        };
-        var controller = CreateController(repository, unitOfWork);
-
-        var result = await controller.Post(request);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(unitOfWork.ClearCount, Is.EqualTo(1));
-            Assert.That(repository.Items, Has.Count.EqualTo(1));
-            Assert.That(((DataAccess.Models.ProductTransaction)((OkObjectResult)result).Value!).Gkey,
-                Is.EqualTo(55));
-        });
-    }
-
     private static ProductTransactionController CreateController(
         IRepositoryBase<DataAccess.Models.ProductTransaction> repository,
         IUnitOfWork unitOfWork) =>
@@ -154,14 +85,12 @@ public sealed class ProductTransactionContractTests
     private static DataAccess.Models.ProductTransaction Receipt(
         string documentNumber,
         string category,
-        int productGkey,
-        int? sourceLineGkey = null) => new()
+        int productGkey) => new()
         {
             DocumentNbr = documentNumber,
             DocumentType = "GRN",
             ProductCategory = category,
             RefGkey = productGkey,
-            SourceLineGkey = sourceLineGkey,
             TransactionType = "Receipt"
         };
 

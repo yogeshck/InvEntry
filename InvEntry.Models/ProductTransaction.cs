@@ -15,9 +15,6 @@ namespace InvEntry.Models
         public int? _refGkey;
 
         [ObservableProperty]
-        public int? _sourceLineGkey;
-
-        [ObservableProperty]
         public DateTime? _transactionDate;
 
         [ObservableProperty]
