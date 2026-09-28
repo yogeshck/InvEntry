@@ -345,6 +345,14 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
         }
 
 
+        // Do not start product/stock processing until the
+        // mandatory transfer destination has been established.
+        if (!HasValidDestination())
+        {
+            return;
+        }
+
+
         _ = LoadSelectedProductStockAsync(
             value);
     }
@@ -457,6 +465,35 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
         if (!CanEditPurchase ||
             IsBusy)
         {
+            return;
+        }
+
+
+        // ---------------------------------------------------------
+        // TRANSFER HEADER
+        // ---------------------------------------------------------
+
+        if (Company is null ||
+            string.IsNullOrWhiteSpace(FromBranch))
+        {
+            _messageBoxService.ShowMessage(
+                "Source company details are unavailable.",
+                "Company Details",
+                MessageButton.OK,
+                MessageIcon.Error);
+
+            return;
+        }
+
+
+        if (!HasValidDestination())
+        {
+            _messageBoxService.ShowMessage(
+                "Please select the To Site before adding transfer items.",
+                "To Site Required",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
             return;
         }
 
@@ -817,7 +854,9 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
             CanCreateStockTransfer))]
     private async Task CreateStockTransfer()
     {
-        if (!CanCreateStockTransfer())
+        if (!CanEditPurchase ||
+            IsBusy ||
+            !string.IsNullOrWhiteSpace(TransferNbr))
         {
             return;
         }
@@ -1134,9 +1173,26 @@ public partial class OldMetalTransferEntryViewModel : ObservableObject
             !IsBusy &&
             string.IsNullOrWhiteSpace(
                 TransferNbr) &&
-            !string.IsNullOrWhiteSpace(
-                SentTo) &&
+            HasValidDestination() &&
             OmTransUIList.Count > 0;
+    }
+
+
+    private bool HasValidDestination()
+    {
+        if (string.IsNullOrWhiteSpace(SentTo))
+        {
+            return false;
+        }
+
+
+        return ReceipientsList.Any(
+            x =>
+                x.IsActive &&
+                string.Equals(
+                    x.RefCode,
+                    SentTo,
+                    StringComparison.OrdinalIgnoreCase));
     }
 
 
