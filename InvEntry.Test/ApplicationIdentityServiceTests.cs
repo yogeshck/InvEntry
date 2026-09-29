@@ -7,6 +7,35 @@ namespace InvEntry.Test;
 public class ApplicationIdentityServiceTests
 {
     [Test]
+    public void BeforeInitialization_ShowsStartingState()
+    {
+        var service = CreateService(new StubCompanyService(
+            new OrgThisCompanyView { CompanyName = "Matha Jewellery" }));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(service.CompanyName, Is.EqualTo(ApplicationIdentityService.LoadingCompanyName));
+            Assert.That(service.WindowTitle, Is.EqualTo("Starting... - InvEntry.Test"));
+        });
+    }
+
+    [Test]
+    public async Task InitializeAsync_KeepsStartingStateWhileLookupIsPending()
+    {
+        var lookup = new TaskCompletionSource<OrgThisCompanyView>();
+        var service = CreateService(new PendingCompanyService(lookup.Task));
+
+        var initialization = service.InitializeAsync();
+
+        Assert.That(service.CompanyName, Is.EqualTo(ApplicationIdentityService.LoadingCompanyName));
+
+        lookup.SetResult(new OrgThisCompanyView { CompanyName = "Matha Jewellery" });
+        await initialization;
+
+        Assert.That(service.CompanyName, Is.EqualTo("Matha Jewellery"));
+    }
+
+    [Test]
     public async Task InitializeAsync_UsesConfiguredCompanyName()
     {
         var service = CreateService(new StubCompanyService(
@@ -36,12 +65,12 @@ public class ApplicationIdentityServiceTests
     }
 
     [Test]
-    public void InitializeAsync_UsesFallbackWhenCompanyLookupFails()
+    public void InitializeAsync_UsesLoadFailureMessageWhenCompanyLookupFails()
     {
         var service = CreateService(new StubCompanyService(new InvalidOperationException("Unavailable")));
 
         Assert.DoesNotThrowAsync(service.InitializeAsync);
-        Assert.That(service.CompanyName, Is.EqualTo(ApplicationIdentityService.MissingCompanyName));
+        Assert.That(service.CompanyName, Is.EqualTo(ApplicationIdentityService.CompanyLoadFailedMessage));
     }
 
     [TestCase(1, 2, 3, 4, "1.2.3.4")]
@@ -90,5 +119,10 @@ public class ApplicationIdentityServiceTests
             _exception is null
                 ? Task.FromResult(_company!)
                 : Task.FromException<OrgThisCompanyView>(_exception);
+    }
+
+    private sealed class PendingCompanyService(Task<OrgThisCompanyView> lookup) : IOrgThisCompanyViewService
+    {
+        public Task<OrgThisCompanyView> GetOrgThisCompany() => lookup;
     }
 }

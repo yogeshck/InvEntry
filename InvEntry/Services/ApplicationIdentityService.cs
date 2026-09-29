@@ -23,10 +23,12 @@ public interface IApplicationIdentityService
 
 public sealed class ApplicationIdentityService : ObservableObject, IApplicationIdentityService
 {
+    public const string LoadingCompanyName = "Starting...";
     public const string MissingCompanyName = "Company not configured";
+    public const string CompanyLoadFailedMessage = "Unable to load company configuration.";
 
     private readonly IOrgThisCompanyViewService _companyService;
-    private string _companyName = MissingCompanyName;
+    private string _companyName = LoadingCompanyName;
     private string? _branchName;
 
     public ApplicationIdentityService(IOrgThisCompanyViewService companyService)
@@ -69,6 +71,9 @@ public sealed class ApplicationIdentityService : ObservableObject, IApplicationI
 
     public async Task InitializeAsync()
     {
+        CompanyName = LoadingCompanyName;
+        BranchName = null;
+
         try
         {
             OrgThisCompanyView? company = await _companyService.GetOrgThisCompany();
@@ -80,7 +85,7 @@ public sealed class ApplicationIdentityService : ObservableObject, IApplicationI
         }
         catch (Exception ex)
         {
-            CompanyName = MissingCompanyName;
+            CompanyName = CompanyLoadFailedMessage;
             BranchName = null;
             Serilog.Log.Warning(ex, "Unable to load application company identity");
         }
