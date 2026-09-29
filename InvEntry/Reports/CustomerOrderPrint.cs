@@ -1,6 +1,4 @@
 ﻿using DevExpress.XtraReports.UI;
-using DevExpress.DataAccess;
-using DevExpress.DataAccess.Sql;
 using InvEntry.Utils;
 using System;
 using System.Collections;
@@ -18,73 +16,7 @@ namespace InvEntry.Reports
         public CustomerOrderPrint()
         {
             InitializeComponent();
-            AddCustomerOrderSettlementQueries();
             AddCustomerOrderSettlementSections();
-        }
-
-        private void AddCustomerOrderSettlementQueries()
-        {
-            sqlDataSource1.Queries.Add(CreateOrderQuery("CUSTOMER_ORDER_OLD_METAL", """
-                select OMT.GKEY, OMT.TRANS_NBR, OMT.PRODUCT_CATEGORY, OMT.METAL, OMT.PURITY,
-                       OMT.TRANSACTED_RATE, OMT.GROSS_WEIGHT, OMT.STONE_WEIGHT, OMT.NET_WEIGHT,
-                       OMT.FINAL_PURCHASE_PRICE
-                  from dbo.OLD_METAL_TRANSACTION OMT
-                  join dbo.CUSTOMER_ORDER CO on CO.GKEY = OMT.DOC_REF_GKEY
-                 where CO.ORDER_NBR = @paramOrderNbr
-                   and OMT.DOC_REF_NBR = @paramOrderNbr
-                   and upper(ltrim(rtrim(OMT.DOC_REF_TYPE))) = 'CUSTOMER ORDER'
-                 order by OMT.GKEY
-                """));
-
-            sqlDataSource1.Queries.Add(CreateOrderQuery("CUSTOMER_ORDER_RECEIPTS", """
-                select V.GKEY, V.VOUCHER_NBR, V.VOUCHER_DATE, V.MODE, V.VOUCHER_TYPE,
-                       V.TRANS_TYPE, V.TRANS_AMOUNT
-                  from dbo.VOUCHER V
-                  join dbo.CUSTOMER_ORDER CO on CO.GKEY = V.REF_DOC_GKEY
-                 where CO.ORDER_NBR = @paramOrderNbr
-                   and V.REF_DOC_NBR = @paramOrderNbr
-                   and upper(ltrim(rtrim(V.TRANS_TYPE))) = 'RECEIPT'
-                   and upper(ltrim(rtrim(V.VOUCHER_TYPE))) = 'ADVANCE RECEIPT'
-                 order by V.VOUCHER_DATE, V.SEQ_NBR, V.GKEY
-                """));
-
-            sqlDataSource1.Queries.Add(CreateOrderQuery("CUSTOMER_ORDER_SETTLEMENT", """
-                select CO.TOTAL_ORDER_AMOUNT,
-                       coalesce(OM.OLD_METAL_TOTAL, 0) as OLD_METAL_TOTAL,
-                       coalesce(RC.ADVANCE_RECEIPT_TOTAL, 0) as ADVANCE_RECEIPT_TOTAL,
-                       coalesce(CO.TOTAL_ORDER_AMOUNT, 0)
-                         - coalesce(OM.OLD_METAL_TOTAL, 0)
-                         - coalesce(RC.ADVANCE_RECEIPT_TOTAL, 0) as BALANCE_AMOUNT
-                  from dbo.CUSTOMER_ORDER CO
-                  outer apply (
-                       select sum(OMT.FINAL_PURCHASE_PRICE) as OLD_METAL_TOTAL
-                         from dbo.OLD_METAL_TRANSACTION OMT
-                        where OMT.DOC_REF_GKEY = CO.GKEY
-                          and OMT.DOC_REF_NBR = @paramOrderNbr
-                          and upper(ltrim(rtrim(OMT.DOC_REF_TYPE))) = 'CUSTOMER ORDER'
-                  ) OM
-                  outer apply (
-                       select sum(V.TRANS_AMOUNT) as ADVANCE_RECEIPT_TOTAL
-                         from dbo.VOUCHER V
-                        where V.REF_DOC_GKEY = CO.GKEY
-                          and V.REF_DOC_NBR = @paramOrderNbr
-                          and upper(ltrim(rtrim(V.TRANS_TYPE))) = 'RECEIPT'
-                          and upper(ltrim(rtrim(V.VOUCHER_TYPE))) = 'ADVANCE RECEIPT'
-                  ) RC
-                 where CO.ORDER_NBR = @paramOrderNbr
-                """));
-        }
-
-        private static CustomSqlQuery CreateOrderQuery(string name, string sql)
-        {
-            var query = new CustomSqlQuery(name, sql);
-            query.Parameters.Add(new QueryParameter
-            {
-                Name = "paramOrderNbr",
-                Type = typeof(Expression),
-                Value = new Expression("?pOrderNbr", typeof(string))
-            });
-            return query;
         }
 
         private void AddCustomerOrderSettlementSections()
@@ -134,10 +66,8 @@ namespace InvEntry.Reports
                 Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F)
             };
             AddSummaryRow(table, "Estimated Order Total", "[TOTAL_ORDER_AMOUNT]", true);
-            AddSummaryRow(table, "Less: Old Metal", "[OLD_METAL_TOTAL]", false,
-                "[OLD_METAL_TOTAL] != 0");
-            AddSummaryRow(table, "Less: Advance / Receipts", "[ADVANCE_RECEIPT_TOTAL]", false,
-                "[ADVANCE_RECEIPT_TOTAL] != 0");
+            AddSummaryRow(table, "Less: Old Metal", "[OLD_METAL_TOTAL]", false);
+            AddSummaryRow(table, "Less: Advance / Receipts", "[ADVANCE_RECEIPT_TOTAL]", false);
             AddBalanceSummaryRow(table);
             detail.Controls.Add(table);
             band.Bands.Add(detail);
@@ -202,8 +132,7 @@ namespace InvEntry.Reports
             return table;
         }
 
-        private static void AddSummaryRow(XRTable table, string caption, string expression, bool bold,
-            string visibilityExpression = null)
+        private static void AddSummaryRow(XRTable table, string caption, string expression, bool bold)
         {
             var row = new XRTableRow();
             var font = new DevExpress.Drawing.DXFont("Segoe UI", 8F,
@@ -218,8 +147,6 @@ namespace InvEntry.Reports
             };
             value.ExpressionBindings.Add(new ExpressionBinding("BeforePrint", "Text", expression));
             row.Cells.Add(value);
-            if (!string.IsNullOrEmpty(visibilityExpression))
-                row.ExpressionBindings.Add(new ExpressionBinding("BeforePrint", "Visible", visibilityExpression));
             table.Rows.Add(row);
         }
 

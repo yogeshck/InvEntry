@@ -45,26 +45,10 @@
             DevExpress.DataAccess.Sql.QueryParameter queryParameter6 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery8 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
             DevExpress.DataAccess.Sql.QueryParameter queryParameter7 = new DevExpress.DataAccess.Sql.QueryParameter();
-            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery9 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
-            DevExpress.DataAccess.Sql.QueryParameter queryParameter8 = new DevExpress.DataAccess.Sql.QueryParameter();
-            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery10 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
-            DevExpress.DataAccess.Sql.QueryParameter queryParameter9 = new DevExpress.DataAccess.Sql.QueryParameter();
-            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery11 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
-            DevExpress.DataAccess.Sql.QueryParameter queryParameter10 = new DevExpress.DataAccess.Sql.QueryParameter();
-            DevExpress.DataAccess.Sql.CustomSqlQuery customSqlQuery12 = new DevExpress.DataAccess.Sql.CustomSqlQuery();
-            DevExpress.DataAccess.Sql.QueryParameter queryParameter11 = new DevExpress.DataAccess.Sql.QueryParameter();
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo1 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo1 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
             DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo2 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
             DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo2 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
-            DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo3 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
-            DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo3 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
-            DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo4 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
-            DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo4 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
-            DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo5 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
-            DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo5 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
-            DevExpress.DataAccess.Sql.MasterDetailInfo masterDetailInfo6 = new DevExpress.DataAccess.Sql.MasterDetailInfo();
-            DevExpress.DataAccess.Sql.RelationColumnInfo relationColumnInfo6 = new DevExpress.DataAccess.Sql.RelationColumnInfo();
             this.TopMargin = new DevExpress.XtraReports.UI.TopMarginBand();
             this.xrLabel21 = new DevExpress.XtraReports.UI.XRLabel();
             this.xrLine2 = new DevExpress.XtraReports.UI.XRLine();
@@ -468,10 +452,10 @@
             // invoiceDate
             // 
             this.invoiceDate.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "'Order Date: ' + FormatString('{0:dd-MMM-yyyy}', [CUSTOMER_ORDER_HEADER].[ORDER_DATE]) + '\nExpected: ' + FormatString('{0:dd-MMM-yyyy}', [CUSTOMER_ORDER_HEADER].[ORDER_DUE_DATE]) + Iif(IsNull([CUSTOMER_ORDER_HEADER].[DELIVERY_DATE]), '', '\nDelivered: ' + FormatString('{0:dd-MMM-yyyy}', [CUSTOMER_ORDER_HEADER].[DELIVERY_DATE])) + '\nReference: ' + IsNull([CUSTOMER_ORDER_HEADER].[ORDER_REF_NBR], '') + '\nType: ' + IsNull([CUSTOMER_ORDER_HEADER].[ORDER_TYPE], '') + '     Status: ' + IsNull([CUSTOMER_ORDER_HEADER].[ORDER_STATUS], '')")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", resources.GetString("invoiceDate.ExpressionBindings"))});
             this.invoiceDate.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.invoiceDate.Name = "invoiceDate";
             this.invoiceDate.Multiline = true;
+            this.invoiceDate.Name = "invoiceDate";
             this.invoiceDate.StylePriority.UseFont = false;
             this.invoiceDate.StylePriority.UseTextAlignment = false;
             this.invoiceDate.Text = "InvoiceDate";
@@ -618,7 +602,7 @@
             // 
             this.customerContactName.CanShrink = true;
             this.customerContactName.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Concat(IsNull([ORG_CUSTOMER_ADDRESS_VIEW].[ADD_LINE1], ''), Iif(IsNullOrEmpty([ORG_CUSTOMER_ADDRESS_VIEW].[ADD_LINE2]), '', ', ' + [ORG_CUSTOMER_ADDRESS_VIEW].[ADD_LINE2]), Iif(IsNullOrEmpty([ORG_CUSTOMER_ADDRESS_VIEW].[CITY]), '', ', ' + [ORG_CUSTOMER_ADDRESS_VIEW].[CITY]))")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", resources.GetString("customerContactName.ExpressionBindings"))});
             this.customerContactName.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.customerContactName.Name = "customerContactName";
             this.customerContactName.StylePriority.UseFont = false;
@@ -653,7 +637,8 @@
             // 
             this.customerAddress.CanShrink = true;
             this.customerAddress.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ORG_CUSTOMER_ADDRESS_VIEW].[MOBILE_NBR] + Iif(IsNullOrEmpty([ORG_CUSTOMER_ADDRESS_VIEW].[STATE]), '', ' / ' + [ORG_CUSTOMER_ADDRESS_VIEW].[STATE])")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ORG_CUSTOMER_ADDRESS_VIEW].[MOBILE_NBR] + Iif(IsNullOrEmpty([ORG_CUSTOMER_ADDRES" +
+                    "S_VIEW].[STATE]), \'\', \' / \' + [ORG_CUSTOMER_ADDRESS_VIEW].[STATE])")});
             this.customerAddress.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.customerAddress.Name = "customerAddress";
             this.customerAddress.StylePriority.UseFont = false;
@@ -693,76 +678,47 @@
             customSqlQuery4.MetaSerializable = "<Meta X=\"1479\" Y=\"20\" Width=\"199\" Height=\"384\" />";
             customSqlQuery4.Name = "ORG_THIS_COMPANY_VIEW";
             customSqlQuery4.Sql = resources.GetString("customSqlQuery4.Sql");
-            customSqlQuery5.MetaSerializable = "<Meta X=\"1062\" Y=\"20\" Width=\"198\" Height=\"184\" />";
-            customSqlQuery5.Name = "DISABLED_RECEIPTS";
-            queryParameter4.Name = "paramInvNbr2";
+            customSqlQuery5.MetaSerializable = "<Meta X=\"2336\" Y=\"20\" Width=\"159\" Height=\"184\" />";
+            customSqlQuery5.Name = "CompBankDet";
+            queryParameter4.Name = "paramOrderNbr";
             queryParameter4.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter4.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
+            queryParameter4.Value = new DevExpress.DataAccess.Expression("?pOrderNbr", typeof(string));
             customSqlQuery5.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter4});
-            customSqlQuery5.Sql = string.Empty;
-            customSqlQuery6.MetaSerializable = "<Meta X=\"1698\" Y=\"20\" Width=\"108\" Height=\"204\" />";
-            customSqlQuery6.Name = "DISABLED_METAL_SUMMARY_1";
-            queryParameter5.Name = "paramInvNbr5";
+            customSqlQuery5.Sql = resources.GetString("customSqlQuery5.Sql");
+            customSqlQuery6.MetaSerializable = "<Meta X=\"2981\" Y=\"20\" Width=\"210\" Height=\"224\" />";
+            customSqlQuery6.Name = "CUSTOMER_ORDER_OLD_METAL";
+            queryParameter5.Name = "paramOrderNbr";
             queryParameter5.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter5.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
+            queryParameter5.Value = new DevExpress.DataAccess.Expression("?pOrderNbr", typeof(string));
             customSqlQuery6.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter5});
-            customSqlQuery6.Sql = string.Empty;
-            customSqlQuery7.MetaSerializable = "<Meta X=\"1826\" Y=\"20\" Width=\"108\" Height=\"204\" />";
-            customSqlQuery7.Name = "DISABLED_METAL_SUMMARY_2";
-            queryParameter6.Name = "paramInvNbr18K";
+            customSqlQuery6.Sql = resources.GetString("customSqlQuery6.Sql");
+            customSqlQuery7.MetaSerializable = "<Meta X=\"3211\" Y=\"20\" Width=\"218\" Height=\"184\" />";
+            customSqlQuery7.Name = "CUSTOMER_ORDER_RECEIPTS";
+            queryParameter6.Name = "paramOrderNbr";
             queryParameter6.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter6.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
+            queryParameter6.Value = new DevExpress.DataAccess.Expression("?pOrderNbr", typeof(string));
             customSqlQuery7.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter6});
-            customSqlQuery7.Sql = string.Empty;
-            customSqlQuery8.MetaSerializable = "<Meta X=\"1954\" Y=\"20\" Width=\"108\" Height=\"204\" />";
-            customSqlQuery8.Name = "DISABLED_METAL_SUMMARY_3";
-            queryParameter7.Name = "paramInvNbr6";
+            customSqlQuery7.Sql = resources.GetString("customSqlQuery7.Sql");
+            customSqlQuery8.MetaSerializable = "<Meta X=\"3449\" Y=\"20\" Width=\"220\" Height=\"104\" />";
+            customSqlQuery8.Name = "CUSTOMER_ORDER_SETTLEMENT";
+            queryParameter7.Name = "paramOrderNbr";
             queryParameter7.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter7.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
+            queryParameter7.Value = new DevExpress.DataAccess.Expression("?pOrderNbr", typeof(string));
             customSqlQuery8.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
             queryParameter7});
-            customSqlQuery8.Sql = string.Empty;
-            customSqlQuery9.MetaSerializable = "<Meta X=\"2336\" Y=\"20\" Width=\"159\" Height=\"184\" />";
-            customSqlQuery9.Name = "CompBankDet";
-            queryParameter8.Name = "paramOrderNbr";
-            queryParameter8.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter8.Value = new DevExpress.DataAccess.Expression("?pOrderNbr", typeof(string));
-            customSqlQuery9.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
-            queryParameter8});
-            customSqlQuery9.Sql = resources.GetString("customSqlQuery9.Sql");
-            customSqlQuery10.MetaSerializable = "<Meta X=\"2515\" Y=\"20\" Width=\"107\" Height=\"64\" />";
-            customSqlQuery10.Name = "DISABLED_RECEIPT_SUMMARY";
-            queryParameter9.Name = "paramInvNbrRct";
-            queryParameter9.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter9.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
-            customSqlQuery10.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
-            queryParameter9});
-            customSqlQuery10.Sql = string.Empty;
-            customSqlQuery11.MetaSerializable = "<Meta X=\"2642\" Y=\"20\" Width=\"145\" Height=\"64\" />";
-            customSqlQuery11.Name = "DISABLED_OLD_METAL_1";
-            queryParameter10.Name = "paramInvNbrOM";
-            queryParameter10.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter10.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
-            customSqlQuery11.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
-            queryParameter10});
-            customSqlQuery11.Sql = string.Empty;
-            customSqlQuery12.MetaSerializable = "<Meta X=\"2807\" Y=\"20\" Width=\"154\" Height=\"64\" />";
-            customSqlQuery12.Name = "DISABLED_OLD_METAL_2";
-            queryParameter11.Name = "paramInvNbrSilver";
-            queryParameter11.Type = typeof(global::DevExpress.DataAccess.Expression);
-            queryParameter11.Value = new DevExpress.DataAccess.Expression("?pInvNbr", typeof(string));
-            customSqlQuery12.Parameters.AddRange(new DevExpress.DataAccess.Sql.QueryParameter[] {
-            queryParameter11});
-            customSqlQuery12.Sql = string.Empty;
+            customSqlQuery8.Sql = resources.GetString("customSqlQuery8.Sql");
             this.sqlDataSource1.Queries.AddRange(new DevExpress.DataAccess.Sql.SqlQuery[] {
             customSqlQuery1,
             customSqlQuery2,
             customSqlQuery3,
             customSqlQuery4,
-            customSqlQuery9});
+            customSqlQuery5,
+            customSqlQuery6,
+            customSqlQuery7,
+            customSqlQuery8});
             masterDetailInfo1.DetailQueryName = "CUSTOMER_ORDER_LINES";
             relationColumnInfo1.NestedKeyColumn = "ORDER_GKEY";
             relationColumnInfo1.ParentKeyColumn = "GKEY";
@@ -851,16 +807,17 @@
             // productName
             // 
             this.productName.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Concat(IsNull([PRODUCT_NAME], ''), Iif(IsNullOrEmpty([DESIGN_NAME]), '', ' / ' + [DESIGN_NAME]), Iif(IsNullOrEmpty([ORDER_SPECIFICATION]), '', ' - ' + [ORDER_SPECIFICATION]))")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Concat(IsNull([PRODUCT_NAME], \'\'), Iif(IsNullOrEmpty([DESIGN_NAME]), \'\', \' / \' + " +
+                    "[DESIGN_NAME]), Iif(IsNullOrEmpty([ORDER_SPECIFICATION]), \'\', \' - \' + [ORDER_SPE" +
+                    "CIFICATION]))")});
             this.productName.Font = new DevExpress.Drawing.DXFont("Arial", 8.5F);
-            this.productName.CanGrow = true;
             this.productName.Multiline = true;
             this.productName.Name = "productName";
             this.productName.Padding = new DevExpress.XtraPrinting.PaddingInfo(5, 0, 5, 0, 100F);
             this.productName.StylePriority.UseFont = false;
             this.productName.StylePriority.UsePadding = false;
             this.productName.Text = "ProductName";
-            this.productName.Weight = 1.3833685835066903D;
+            this.productName.Weight = 1.3833685835066902D;
             // 
             // prodPurity
             // 
@@ -1150,13 +1107,12 @@
             this.DetailReport1.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
             this.Detail2,
             this.GroupFooter1});
-            this.DetailReport1.DataMember = null;
-            this.DetailReport1.Visible = false;
             this.DetailReport1.DataSource = this.sqlDataSource1;
             this.DetailReport1.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "[INVOICE_HEADERINVOICE_AR_RECEIPTS].[adjusted_amount]>0")});
             this.DetailReport1.Level = 0;
             this.DetailReport1.Name = "DetailReport1";
+            this.DetailReport1.Visible = false;
             // 
             // Detail2
             // 
@@ -1255,7 +1211,7 @@
             // 
             this.pOrderNbr.Description = "Customer Order Number";
             this.pOrderNbr.Name = "pOrderNbr";
-            this.pOrderNbr.ValueInfo = "";
+            this.pOrderNbr.ValueInfo = "CO-00010";
             // 
             // DetailReport2
             // 
@@ -1317,7 +1273,6 @@
             this.RateSumryTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
             this.RateSumryTable.LocationFloat = new DevExpress.Utils.PointFloat(2.000122F, 2.928619F);
             this.RateSumryTable.Name = "RateSumryTable";
-            this.RateSumryTable.Visible = false;
             this.RateSumryTable.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
             this.RateSumryTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.HdrRow,
@@ -1328,6 +1283,7 @@
             this.RateSumryTable.SizeF = new System.Drawing.SizeF(261.5001F, 111.2797F);
             this.RateSumryTable.StylePriority.UseBorders = false;
             this.RateSumryTable.StylePriority.UseFont = false;
+            this.RateSumryTable.Visible = false;
             // 
             // HdrRow
             // 
@@ -1620,7 +1576,6 @@
             this.xrLabel18.LocationFloat = new DevExpress.Utils.PointFloat(2.000122F, 182.6668F);
             this.xrLabel18.Multiline = true;
             this.xrLabel18.Name = "xrLabel18";
-            this.xrLabel18.Visible = false;
             this.xrLabel18.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
             this.xrLabel18.SizeF = new System.Drawing.SizeF(120.0954F, 23F);
             this.xrLabel18.StylePriority.UseBorders = false;
@@ -1628,6 +1583,7 @@
             this.xrLabel18.StylePriority.UseTextAlignment = false;
             this.xrLabel18.Text = "Receipt Summary";
             this.xrLabel18.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.xrLabel18.Visible = false;
             // 
             // xrLabel1
             // 
@@ -1637,13 +1593,13 @@
             this.xrLabel1.LocationFloat = new DevExpress.Utils.PointFloat(522.9031F, 159.3333F);
             this.xrLabel1.Multiline = true;
             this.xrLabel1.Name = "xrLabel1";
-            this.xrLabel1.Visible = false;
             this.xrLabel1.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
             this.xrLabel1.SizeF = new System.Drawing.SizeF(129.613F, 30F);
             this.xrLabel1.StylePriority.UseFont = false;
             this.xrLabel1.StylePriority.UseTextAlignment = false;
             this.xrLabel1.Text = "Balance Amount";
             this.xrLabel1.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleJustify;
+            this.xrLabel1.Visible = false;
             // 
             // xrLabel2
             // 
@@ -1653,13 +1609,13 @@
             this.xrLabel2.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9.75F, DevExpress.Drawing.DXFontStyle.Bold);
             this.xrLabel2.LocationFloat = new DevExpress.Utils.PointFloat(652.5161F, 159.3333F);
             this.xrLabel2.Name = "xrLabel2";
-            this.xrLabel2.Visible = false;
             this.xrLabel2.SizeF = new System.Drawing.SizeF(87.48376F, 30F);
             this.xrLabel2.StylePriority.UseFont = false;
             this.xrLabel2.StylePriority.UseTextAlignment = false;
             this.xrLabel2.Text = "0.00";
             this.xrLabel2.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleJustify;
             this.xrLabel2.TextFormatString = "{0:##,###,##0.00}";
+            this.xrLabel2.Visible = false;
             // 
             // oldExTable
             // 
@@ -1672,7 +1628,6 @@
             this.oldExTable.ForeColor = System.Drawing.Color.Black;
             this.oldExTable.LocationFloat = new DevExpress.Utils.PointFloat(304.2881F, 0F);
             this.oldExTable.Name = "oldExTable";
-            this.oldExTable.Visible = false;
             this.oldExTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.xrTableRow6,
             this.oldGoldRow,
@@ -1683,6 +1638,7 @@
             this.oldExTable.StylePriority.UseForeColor = false;
             this.oldExTable.StylePriority.UseTextAlignment = false;
             this.oldExTable.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleCenter;
+            this.oldExTable.Visible = false;
             // 
             // xrTableRow6
             // 
@@ -1996,13 +1952,13 @@
             | DevExpress.XtraPrinting.BorderSide.Bottom)));
             this.NewTaxTable.LocationFloat = new DevExpress.Utils.PointFloat(553.0175F, 20F);
             this.NewTaxTable.Name = "NewTaxTable";
-            this.NewTaxTable.Visible = false;
             this.NewTaxTable.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
             this.NewTaxTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.TaxTblHdrRow,
             this.taxAmtRow});
             this.NewTaxTable.SizeF = new System.Drawing.SizeF(186.9824F, 49.99999F);
             this.NewTaxTable.StylePriority.UseBorders = false;
+            this.NewTaxTable.Visible = false;
             // 
             // TaxTblHdrRow
             // 
@@ -2105,12 +2061,12 @@
             this.txblTbl.KeepTogether = true;
             this.txblTbl.LocationFloat = new DevExpress.Utils.PointFloat(553.0175F, 0F);
             this.txblTbl.Name = "txblTbl";
-            this.txblTbl.Visible = false;
             this.txblTbl.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 96F);
             this.txblTbl.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
             this.txblRow});
             this.txblTbl.SizeF = new System.Drawing.SizeF(186.9824F, 20F);
             this.txblTbl.StylePriority.UseBorders = false;
+            this.txblTbl.Visible = false;
             // 
             // txblRow
             // 
@@ -2423,7 +2379,6 @@
             // calculatedField1
             // 
             this.calculatedField1.DataMember = "CUSTOMER_ORDER_HEADER";
-            this.calculatedField1.Expression = "";
             this.calculatedField1.FieldType = DevExpress.XtraReports.UI.FieldType.String;
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
