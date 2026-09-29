@@ -194,6 +194,10 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     public ObservableCollection<InvoiceSettlementLine> Refunds { get; }
         = new();
 
+    public InvoiceSettlementLine? ReceiptRequiringCompletion { get; private set; }
+
+    public InvoiceSettlementLine? RefundRequiringCompletion { get; private set; }
+
 
     // =========================================================
     // SETTLEMENT DIRECTION
@@ -423,6 +427,17 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [RelayCommand]
     private void AddReceipt()
     {
+        if (!TryValidateLinesForAddition(
+                Receipts,
+                "receipt",
+                out var incompleteLine))
+        {
+            ReceiptRequiringCompletion = incompleteLine;
+            return;
+        }
+
+        ReceiptRequiringCompletion = null;
+
         var line =
             new InvoiceSettlementLine();
 
@@ -452,6 +467,17 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     [RelayCommand]
     private void AddRefund()
     {
+        if (!TryValidateLinesForAddition(
+                Refunds,
+                "refund",
+                out var incompleteLine))
+        {
+            RefundRequiringCompletion = incompleteLine;
+            return;
+        }
+
+        RefundRequiringCompletion = null;
+
         var line =
             new InvoiceSettlementLine();
 
@@ -631,10 +657,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         // Receipts
         // -----------------------------------------------------
 
-        if (Receipts.Any(x =>
-                x.Amount <= 0M ||
-                string.IsNullOrWhiteSpace(
-                    x.PaymentMode)))
+        if (Receipts.Any(x => !IsSettlementLineComplete(x)))
         {
             return false;
         }
@@ -644,10 +667,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         // Refunds
         // -----------------------------------------------------
 
-        if (Refunds.Any(x =>
-                x.Amount <= 0M ||
-                string.IsNullOrWhiteSpace(
-                    x.PaymentMode)))
+        if (Refunds.Any(x => !IsSettlementLineComplete(x)))
         {
             return false;
         }
@@ -661,6 +681,58 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             return false;
 
         return true;
+    }
+
+    private bool TryValidateLinesForAddition(
+        ObservableCollection<InvoiceSettlementLine> lines,
+        string lineType,
+        out InvoiceSettlementLine? incompleteLine)
+    {
+        incompleteLine = lines.FirstOrDefault(x => !IsSettlementLineComplete(x));
+
+        if (incompleteLine is null)
+            return true;
+
+        ValidationMessage = incompleteLine.Amount <= 0M
+            ? $"{char.ToUpperInvariant(lineType[0])}{lineType[1..]} amount must be greater than zero."
+            : $"Please select a {lineType} mode.";
+
+        return false;
+    }
+
+    private static bool IsSettlementLineComplete(
+        InvoiceSettlementLine line)
+    {
+        return line.Amount > 0M &&
+               !string.IsNullOrWhiteSpace(line.PaymentMode);
+    }
+
+    public bool ValidateForFinalise()
+    {
+        Recalculate();
+
+        if (!TryValidateLinesForAddition(
+                Receipts,
+                "receipt",
+                out var incompleteReceipt))
+        {
+            ReceiptRequiringCompletion = incompleteReceipt;
+            return false;
+        }
+
+        ReceiptRequiringCompletion = null;
+
+        if (!TryValidateLinesForAddition(
+                Refunds,
+                "refund",
+                out var incompleteRefund))
+        {
+            RefundRequiringCompletion = incompleteRefund;
+            return false;
+        }
+
+        RefundRequiringCompletion = null;
+        return CanFinalise;
     }
 
 
