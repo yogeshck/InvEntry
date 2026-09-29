@@ -359,6 +359,14 @@
                             FontWeight="Bold"/>
 
 
+                    <Button Content="PREVIEW / PRINT"
+                            Command="{Binding PrintPreviewCustomerOrderCommand}"
+                            Width="140"
+                            Height="36"
+                            Margin="0,0,8,0"
+                            FontWeight="Bold"/>
+
+
                     <Button Content="SAVE ORDER"
                             Click="SaveOrder_Click"
                             Width="130"

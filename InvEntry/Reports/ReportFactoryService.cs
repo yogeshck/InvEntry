@@ -22,6 +22,8 @@ public interface IReportFactoryService
 
     XtraReport CreateInvoiceReport(string pInvoiceNbr);
 
+    XtraReport CreateCustomerOrderReport(string orderNbr);
+
     Task CreateInvoiceReportPdf(string pInvoiceNbr, string filePath);
 
     XtraReport CreateEstimateReport();
@@ -82,6 +84,27 @@ public class ReportFactoryService : IReportFactoryService
         report.Parameters["pInvNbr"].Value = pInvoiceNbr;
         report.CreateDocument();
         return report;
+    }
+
+    public XtraReport CreateCustomerOrderReport(string orderNbr)
+    {
+        var report = PrepareCustomerOrderReport(orderNbr);
+        report.CreateDocument();
+
+        return report;
+    }
+
+    private CustomerOrderPrint PrepareCustomerOrderReport(string orderNbr)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(orderNbr);
+
+        var report =
+            new CustomerOrderPrint()
+                .AddDataSource(_appConfigName);
+
+        report.Parameters["pOrderNbr"].Value = orderNbr.Trim();
+
+        return (CustomerOrderPrint)report;
     }
 
     public async Task CreateInvoiceReportPdf(string pInvoiceNbr, string filePath)

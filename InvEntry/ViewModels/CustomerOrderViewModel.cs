@@ -148,6 +148,7 @@ public partial class CustomerOrderViewModel : ObservableObject
     private bool updateOrder = false;
     private bool invBalanceChk = false;
     private bool _isRefreshingCustomer;
+    private bool _isPreparingCustomerOrderReport;
     private decimal todaysRate;
 
     private readonly ReferenceLoader _referenceLoader;
@@ -294,6 +295,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         OnPropertyChanged(nameof(IsOrderReadOnly));
         OnPropertyChanged(nameof(SaveButtonText));
         EditCustomerCommand.NotifyCanExecuteChanged();
+        PrintPreviewCustomerOrderCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnIsExistingOrderChanged(bool value)
@@ -301,6 +303,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         OnPropertyChanged(nameof(IsOrderReadOnly));
         OnPropertyChanged(nameof(SaveButtonText));
         EditCustomerCommand.NotifyCanExecuteChanged();
+        PrintPreviewCustomerOrderCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnBuyerChanged(Customer value)
@@ -489,6 +492,56 @@ public partial class CustomerOrderViewModel : ObservableObject
             return;
 
         _dialogService.ShowOrderSummary(Header);
+    }
+
+    private bool CanPrintCustomerOrder()
+    {
+        return !_isPreparingCustomerOrderReport &&
+               IsExistingOrder &&
+               !IsEditMode &&
+               Header?.GKey > 0 &&
+               !string.IsNullOrWhiteSpace(Header.OrderNbr);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanPrintCustomerOrder))]
+    private void PrintPreviewCustomerOrder()
+    {
+        if (IsEditMode)
+        {
+            _messageBoxService.ShowMessage(
+                "Please save the order before printing.",
+                "Customer Order",
+                MessageButton.OK,
+                MessageIcon.Information);
+            return;
+        }
+
+        if (!CanPrintCustomerOrder())
+            return;
+
+        _isPreparingCustomerOrderReport = true;
+        PrintPreviewCustomerOrderCommand.NotifyCanExecuteChanged();
+
+        try
+        {
+            var report = _reportFactoryService
+                .CreateCustomerOrderReport(Header.OrderNbr);
+
+            _reportDialogService.PrintPreviewCustomerOrder(report);
+        }
+        catch (Exception)
+        {
+            _messageBoxService.ShowMessage(
+                "Unable to prepare the Customer Order preview.",
+                "Customer Order",
+                MessageButton.OK,
+                MessageIcon.Error);
+        }
+        finally
+        {
+            _isPreparingCustomerOrderReport = false;
+            PrintPreviewCustomerOrderCommand.NotifyCanExecuteChanged();
+        }
     }
 
 
