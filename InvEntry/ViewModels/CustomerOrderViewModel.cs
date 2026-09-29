@@ -87,6 +87,12 @@ public partial class CustomerOrderViewModel : ObservableObject
     private ObservableCollection<string> validationErrors = new();
 
     [ObservableProperty]
+    private CustomerOrderLine? firstInvalidOrderLine;
+
+    [ObservableProperty]
+    private string? firstInvalidOrderLineFieldName;
+
+    [ObservableProperty]
     private ObservableCollection<CustomerOrderLine> selectedRows;
 
     /*    [ObservableProperty]
@@ -229,7 +235,7 @@ public partial class CustomerOrderViewModel : ObservableObject
         _isBalance = true;
         _isRefund = false;
 
-        SetHeader();
+        InitializeNewOrder();
 
         // Start async init
         _ = InitializeAsync();
@@ -326,19 +332,15 @@ public partial class CustomerOrderViewModel : ObservableObject
         MtblLedger = await _mtblLedgersService.GetLedger(1000);
     }
 
-    private void SetHeader()
+    private static CustomerOrder CreateNewOrder()
     {
-
-        Header = new()
+        return new CustomerOrder
         {
             OrderDate = DateTime.Now,
             OrderType = "New",
             OrderStatusFlag = 1,
             OrderDueDate = DateTime.Now.AddDays(14)
         };
-
-        // OrderStatus = CustOrdStatusList.FirstOrDefault(x => x..Equals("1")).ToString();
-        OrderStatusUI = "OPEN";
     }
 
     private async Task LoadReferencesAsync()
@@ -497,19 +499,81 @@ public partial class CustomerOrderViewModel : ObservableObject
     }
 
 
-    [RelayCommand]
-    private void ResetCustomerOrder()
+    public bool ConfirmResetCustomerOrder()
+    {
+        if (!HasCurrentOrderData())
+            return true;
+
+        var result = _messageBoxService.ShowMessage(
+            "Clear the current order and start a new order?",
+            "Reset Customer Order",
+            MessageButton.YesNo,
+            MessageIcon.Question,
+            MessageResult.No);
+
+        return result == MessageResult.Yes;
+    }
+
+    public void InitializeNewOrder()
     {
         IsExistingOrder = false;
         IsEditMode = false;
-        SetHeader();
-        _ = SetThisCompany();
-        //SetMasterLedger();
+
+        Header = CreateNewOrder();
+        Header.TenantGkey = Company?.TenantGkey;
+        OrderStatusUI = "OPEN";
+
         Buyer = null;
         CustomerPhoneNumber = null;
         CustomerState = null;
-        //SalesPerson = null;
-        //invBalanceChk = false;  //reset to false for next invoice
+        CustomerReadOnly = false;
+        createCustomer = false;
+        _isRefreshingCustomer = false;
+
+        ProductIdUI = null;
+        SelectedRows = new();
+
+        SearchText = string.Empty;
+        IsOrderSearchVisible = false;
+
+        ValidationErrors.Clear();
+        HasValidationErrors = false;
+        FirstInvalidOrderLine = null;
+        FirstInvalidOrderLineFieldName = null;
+
+        IsBalance = true;
+        IsRefund = false;
+        invBalanceChk = false;
+
+        DeleteSingleRowCommand.NotifyCanExecuteChanged();
+        EditCustomerCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool HasCurrentOrderData()
+    {
+        return IsExistingOrder ||
+               Buyer is not null ||
+               !string.IsNullOrWhiteSpace(CustomerPhoneNumber) ||
+               !string.IsNullOrWhiteSpace(CustomerState) ||
+               !string.IsNullOrWhiteSpace(ProductIdUI) ||
+               !string.IsNullOrWhiteSpace(Header?.OrderNbr) ||
+               !string.IsNullOrWhiteSpace(Header?.OrderRefNbr) ||
+               !string.Equals(Header?.OrderType, "New", StringComparison.Ordinal) ||
+               Header?.OrderDate?.Date != DateTime.Today ||
+               Header?.OrderDueDate?.Date != DateTime.Today.AddDays(14) ||
+               Header?.DeliveryDate is not null ||
+               !string.IsNullOrWhiteSpace(Header?.Remark) ||
+               Header?.Lines?.Count > 0 ||
+               Header?.OldMetalTransactions?.Count > 0 ||
+               Header?.AdvanceReceiptLines?.Count > 0 ||
+               HasValidationErrors;
+    }
+
+    [RelayCommand]
+    private void ResetCustomerOrder()
+    {
+        if (ConfirmResetCustomerOrder())
+            InitializeNewOrder();
     }
 
     [RelayCommand]
@@ -585,6 +649,8 @@ public partial class CustomerOrderViewModel : ObservableObject
     private bool ValidateCustomerOrder()
     {
         ValidationErrors.Clear();
+        FirstInvalidOrderLine = null;
+        FirstInvalidOrderLineFieldName = null;
 
         if (Buyer is null)
         {
@@ -640,14 +706,17 @@ public partial class CustomerOrderViewModel : ObservableObject
 
                 if (string.IsNullOrWhiteSpace(line.ProductId))
                 {
-                    ValidationErrors.Add(
+                    AddLineValidationError(
+                        line,
                         $"{prefix}: Product is required.");
                 }
 
                 if (line.ProdQty <= 0)
                 {
-                    ValidationErrors.Add(
-                        $"{prefix}: Quantity must be greater than zero.");
+                    AddLineValidationError(
+                        line,
+                        $"{prefix}: Quantity must be greater than zero.",
+                        nameof(CustomerOrderLine.ProdQty));
                 }
 
                 var gross =
@@ -661,37 +730,46 @@ public partial class CustomerOrderViewModel : ObservableObject
 
                 if (gross <= 0M)
                 {
-                    ValidationErrors.Add(
-                        $"{prefix}: Gross weight must be greater than zero.");
+                    AddLineValidationError(
+                        line,
+                        $"{prefix}: Gross weight must be greater than zero.",
+                        nameof(CustomerOrderLine.ProdGrossWeight));
                 }
 
                 if (stone > gross)
                 {
-                    ValidationErrors.Add(
-                        $"{prefix}: Stone weight cannot exceed gross weight.");
+                    AddLineValidationError(
+                        line,
+                        $"{prefix}: Stone weight cannot exceed gross weight.",
+                        nameof(CustomerOrderLine.ProdStoneWeight));
                 }
 
                 if (net <= 0M)
                 {
-                    ValidationErrors.Add(
+                    AddLineValidationError(
+                        line,
                         $"{prefix}: Net weight must be greater than zero.");
                 }
 
                 if ((line.MetalRate ?? 0M) <= 0M)
                 {
-                    ValidationErrors.Add(
+                    AddLineValidationError(
+                        line,
                         $"{prefix}: Metal rate is not available.");
                 }
 
                 if (string.IsNullOrWhiteSpace(line.OrderType))
                 {
-                    ValidationErrors.Add(
-                        $"{prefix}: Order type is required.");
+                    AddLineValidationError(
+                        line,
+                        $"{prefix}: Order type is required.",
+                        nameof(CustomerOrderLine.OrderType));
                 }
 
                 if ((line.OrderAmount ?? 0M) <= 0M)
                 {
-                    ValidationErrors.Add(
+                    AddLineValidationError(
+                        line,
                         $"{prefix}: Estimated amount could not be calculated.");
                 }
             }
@@ -701,6 +779,20 @@ public partial class CustomerOrderViewModel : ObservableObject
             ValidationErrors.Count > 0;
 
         return !HasValidationErrors;
+    }
+
+    private void AddLineValidationError(
+        CustomerOrderLine line,
+        string message,
+        string? editableFieldName = null)
+    {
+        ValidationErrors.Add(message);
+
+        if (FirstInvalidOrderLine is not null)
+            return;
+
+        FirstInvalidOrderLine = line;
+        FirstInvalidOrderLineFieldName = editableFieldName;
     }
 
     private bool CanEditCustomer()
@@ -1491,7 +1583,7 @@ public partial class CustomerOrderViewModel : ObservableObject
             );
 
             Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.HideIndicator());
-            ResetCustomerOrder();
+            InitializeNewOrder();
         }
         catch (Exception ex)
         {

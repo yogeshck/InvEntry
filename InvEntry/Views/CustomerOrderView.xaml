@@ -352,7 +352,7 @@
 
 
                     <Button Content="Reset"
-                            Command="{Binding ResetCustomerOrderCommand}"
+                            Click="ResetCustomerOrder_Click"
                             Width="100"
                             Height="36"
                             Margin="0,0,8,0"
@@ -360,7 +360,7 @@
 
 
                     <Button Content="SAVE ORDER"
-                            Command="{Binding CreateCustomerOrderCommand}"
+                            Click="SaveOrder_Click"
                             Width="130"
                             Height="36"
                             FontWeight="Bold"/>
@@ -713,7 +713,8 @@
                      TABS
                      ================================================= -->
 
-                <dxlc:LayoutGroup View="Tabs"
+                <dxlc:LayoutGroup x:Name="OrderWorkspaceTabs"
+                                  View="Tabs"
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Stretch">
 
@@ -1096,7 +1097,7 @@
 
                                     <dxg:GridControl.View>
 
-                                        <dxg:TableView
+                                        <dxg:TableView x:Name="OrderLinesView"
                                             AutoWidth="True"
                                             NewItemRowPosition="None"
                                             AllowGrouping="False"
@@ -1409,7 +1410,7 @@
 
                                     <dxg:GridControl.View>
 
-                                        <dxg:TableView
+                                        <dxg:TableView x:Name="OldMetalLinesView"
                                             AutoWidth="True"
                                             AllowGrouping="False"
                                             AllowBestFit="True"
@@ -1593,7 +1594,7 @@
 
                                     <dxg:GridControl.View>
 
-                                        <dxg:TableView
+                                        <dxg:TableView x:Name="AdvanceReceiptLinesView"
                                             AutoWidth="True"
                                             AllowGrouping="False"
                                             AllowBestFit="True"
@@ -1649,6 +1650,7 @@
         <Border Grid.Row="3"
                 Margin="12,4,12,4"
                 Padding="12,8"
+                MaxHeight="140"
                 CornerRadius="6"
                 BorderThickness="1"
                 BorderBrush="#E5A3A3"
@@ -1707,6 +1709,10 @@
                                Margin="0,0,0,4"/>
 
 
+                    <ScrollViewer MaxHeight="92"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+
                     <ItemsControl ItemsSource="{Binding ValidationErrors}">
 
                         <ItemsControl.ItemTemplate>
@@ -1725,6 +1731,8 @@
                         </ItemsControl.ItemTemplate>
 
                     </ItemsControl>
+
+                    </ScrollViewer>
 
                 </StackPanel>
 
