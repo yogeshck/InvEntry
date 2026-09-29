@@ -732,6 +732,7 @@
             this.sqlDataSource1.Relations.AddRange(new DevExpress.DataAccess.Sql.MasterDetailInfo[] {
             masterDetailInfo1,
             masterDetailInfo2});
+            this.sqlDataSource1.ResultSchemaSerializable = resources.GetString("sqlDataSource1.ResultSchemaSerializable");
             // 
             // DetailReport
             // 
