@@ -217,6 +217,59 @@
             this.xrPictureBox4 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.xrPictureBox5 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.customerOrderOldMetalReport = new DevExpress.XtraReports.UI.DetailReportBand();
+            this.customerOrderOldMetalHeader = new DevExpress.XtraReports.UI.GroupHeaderBand();
+            this.customerOrderOldMetalDetail = new DevExpress.XtraReports.UI.DetailBand();
+            this.customerOrderOldMetalTitle = new DevExpress.XtraReports.UI.XRLabel();
+            this.customerOrderOldMetalHeaderTable = new DevExpress.XtraReports.UI.XRTable();
+            this.customerOrderOldMetalHeaderRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderOldMetalDescriptionHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalPurityHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalGrossHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalNetHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalRateHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalAmountHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalDetailTable = new DevExpress.XtraReports.UI.XRTable();
+            this.customerOrderOldMetalDetailRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderOldMetalDescription = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalPurity = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalGross = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalNet = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalRate = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalAmount = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptReport = new DevExpress.XtraReports.UI.DetailReportBand();
+            this.customerOrderReceiptHeader = new DevExpress.XtraReports.UI.GroupHeaderBand();
+            this.customerOrderReceiptDetail = new DevExpress.XtraReports.UI.DetailBand();
+            this.customerOrderReceiptTitle = new DevExpress.XtraReports.UI.XRLabel();
+            this.customerOrderReceiptHeaderTable = new DevExpress.XtraReports.UI.XRTable();
+            this.customerOrderReceiptHeaderRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderReceiptVoucherHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptDateHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptModeHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptTypeHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptAmountHeader = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptDetailTable = new DevExpress.XtraReports.UI.XRTable();
+            this.customerOrderReceiptDetailRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderReceiptVoucher = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptDate = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptMode = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptType = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptAmount = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderSettlementReport = new DevExpress.XtraReports.UI.DetailReportBand();
+            this.customerOrderSettlementDetail = new DevExpress.XtraReports.UI.DetailBand();
+            this.customerOrderSettlementTable = new DevExpress.XtraReports.UI.XRTable();
+            this.customerOrderTotalRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderTotalCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderTotalValue = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalTotalRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderOldMetalTotalCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderOldMetalTotalValue = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptTotalRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderReceiptTotalCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderReceiptTotalValue = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderBalanceRow = new DevExpress.XtraReports.UI.XRTableRow();
+            this.customerOrderBalanceCaption = new DevExpress.XtraReports.UI.XRTableCell();
+            this.customerOrderBalanceValue = new DevExpress.XtraReports.UI.XRTableCell();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -228,6 +281,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.invTotalTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NewTaxTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.txblTbl)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderOldMetalHeaderTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderOldMetalDetailTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderReceiptHeaderTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderReceiptDetailTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderSettlementTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this)).BeginInit();
             // 
             // TopMargin
@@ -1217,8 +1275,7 @@
             // DetailReport2
             // 
             this.DetailReport2.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
-            this.Detail3,
-            this.DetailReport1});
+            this.Detail3});
             this.DetailReport2.DataMember = "CUSTOMER_ORDER_HEADER";
             this.DetailReport2.DataSource = this.sqlDataSource1;
             this.DetailReport2.Level = 1;
@@ -1228,16 +1285,8 @@
             // 
             this.Detail3.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
             this.xrLabel20,
-            this.xrLabel19,
-            this.RateSumryTable,
-            this.xrLabel18,
-            this.xrLabel1,
-            this.xrLabel2,
-            this.oldExTable,
-            this.invTotalTable,
-            this.NewTaxTable,
-            this.txblTbl});
-            this.Detail3.HeightF = 205.6668F;
+            this.xrLabel19});
+            this.Detail3.HeightF = 52F;
             this.Detail3.Name = "Detail3";
             // 
             // xrLabel20
@@ -1245,7 +1294,7 @@
             this.xrLabel20.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
             new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[calculatedField1]")});
             this.xrLabel20.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel20.LocationFloat = new DevExpress.Utils.PointFloat(0.002187093F, 148.7501F);
+            this.xrLabel20.LocationFloat = new DevExpress.Utils.PointFloat(0.002187093F, 18F);
             this.xrLabel20.Multiline = true;
             this.xrLabel20.Name = "xrLabel20";
             this.xrLabel20.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -1258,7 +1307,7 @@
             // xrLabel19
             // 
             this.xrLabel19.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
-            this.xrLabel19.LocationFloat = new DevExpress.Utils.PointFloat(0.002182007F, 130.7501F);
+            this.xrLabel19.LocationFloat = new DevExpress.Utils.PointFloat(0.002182007F, 0F);
             this.xrLabel19.Multiline = true;
             this.xrLabel19.Name = "xrLabel19";
             this.xrLabel19.Padding = new DevExpress.XtraPrinting.PaddingInfo(2, 2, 0, 0, 100F);
@@ -2384,6 +2433,155 @@
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
+            // customerOrderOldMetalReport
+            // 
+            this.customerOrderOldMetalReport.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
+            this.customerOrderOldMetalHeader,
+            this.customerOrderOldMetalDetail});
+            this.customerOrderOldMetalReport.DataMember = "CUSTOMER_ORDER_OLD_METAL";
+            this.customerOrderOldMetalReport.DataSource = this.sqlDataSource1;
+            this.customerOrderOldMetalReport.Level = 1;
+            this.customerOrderOldMetalReport.Name = "customerOrderOldMetalReport";
+            this.customerOrderOldMetalHeader.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.customerOrderOldMetalTitle,
+            this.customerOrderOldMetalHeaderTable});
+            this.customerOrderOldMetalHeader.HeightF = 42F;
+            this.customerOrderOldMetalHeader.Name = "customerOrderOldMetalHeader";
+            this.customerOrderOldMetalTitle.BoundsF = new System.Drawing.RectangleF(0F, 4F, 740F, 18F);
+            this.customerOrderOldMetalTitle.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.customerOrderOldMetalTitle.Name = "customerOrderOldMetalTitle";
+            this.customerOrderOldMetalTitle.Text = "OLD METAL";
+            this.customerOrderOldMetalHeaderTable.BoundsF = new System.Drawing.RectangleF(0F, 22F, 740F, 20F);
+            this.customerOrderOldMetalHeaderTable.Borders = DevExpress.XtraPrinting.BorderSide.All;
+            this.customerOrderOldMetalHeaderTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.customerOrderOldMetalHeaderTable.Name = "customerOrderOldMetalHeaderTable";
+            this.customerOrderOldMetalHeaderTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] { this.customerOrderOldMetalHeaderRow });
+            this.customerOrderOldMetalHeaderRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.customerOrderOldMetalDescriptionHeader, this.customerOrderOldMetalPurityHeader,
+            this.customerOrderOldMetalGrossHeader, this.customerOrderOldMetalNetHeader,
+            this.customerOrderOldMetalRateHeader, this.customerOrderOldMetalAmountHeader});
+            this.customerOrderOldMetalHeaderRow.Name = "customerOrderOldMetalHeaderRow";
+            this.customerOrderOldMetalDescriptionHeader.Name = "customerOrderOldMetalDescriptionHeader"; this.customerOrderOldMetalDescriptionHeader.Text = "Description"; this.customerOrderOldMetalDescriptionHeader.Weight = 2.3D;
+            this.customerOrderOldMetalPurityHeader.Name = "customerOrderOldMetalPurityHeader"; this.customerOrderOldMetalPurityHeader.Text = "Purity"; this.customerOrderOldMetalPurityHeader.Weight = .65D;
+            this.customerOrderOldMetalGrossHeader.Name = "customerOrderOldMetalGrossHeader"; this.customerOrderOldMetalGrossHeader.Text = "Gross Wt."; this.customerOrderOldMetalGrossHeader.Weight = .75D;
+            this.customerOrderOldMetalNetHeader.Name = "customerOrderOldMetalNetHeader"; this.customerOrderOldMetalNetHeader.Text = "Net Wt."; this.customerOrderOldMetalNetHeader.Weight = .75D;
+            this.customerOrderOldMetalRateHeader.Name = "customerOrderOldMetalRateHeader"; this.customerOrderOldMetalRateHeader.Text = "Rate"; this.customerOrderOldMetalRateHeader.Weight = 1D;
+            this.customerOrderOldMetalAmountHeader.Name = "customerOrderOldMetalAmountHeader"; this.customerOrderOldMetalAmountHeader.Text = "Amount"; this.customerOrderOldMetalAmountHeader.Weight = 1.15D;
+            this.customerOrderOldMetalDetail.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] { this.customerOrderOldMetalDetailTable });
+            this.customerOrderOldMetalDetail.HeightF = 22F;
+            this.customerOrderOldMetalDetail.Name = "customerOrderOldMetalDetail";
+            this.customerOrderOldMetalDetailTable.BoundsF = new System.Drawing.RectangleF(0F, 0F, 740F, 20F);
+            this.customerOrderOldMetalDetailTable.Borders = DevExpress.XtraPrinting.BorderSide.All;
+            this.customerOrderOldMetalDetailTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.customerOrderOldMetalDetailTable.Name = "customerOrderOldMetalDetailTable";
+            this.customerOrderOldMetalDetailTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] { this.customerOrderOldMetalDetailRow });
+            this.customerOrderOldMetalDetailRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.customerOrderOldMetalDescription, this.customerOrderOldMetalPurity,
+            this.customerOrderOldMetalGross, this.customerOrderOldMetalNet,
+            this.customerOrderOldMetalRate, this.customerOrderOldMetalAmount});
+            this.customerOrderOldMetalDetailRow.Name = "customerOrderOldMetalDetailRow";
+            this.customerOrderOldMetalDescription.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[PRODUCT_CATEGORY]") }); this.customerOrderOldMetalDescription.Name = "customerOrderOldMetalDescription"; this.customerOrderOldMetalDescription.Weight = 2.3D;
+            this.customerOrderOldMetalPurity.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[PURITY]") }); this.customerOrderOldMetalPurity.Name = "customerOrderOldMetalPurity"; this.customerOrderOldMetalPurity.Weight = .65D;
+            this.customerOrderOldMetalGross.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[GROSS_WEIGHT]") }); this.customerOrderOldMetalGross.Name = "customerOrderOldMetalGross"; this.customerOrderOldMetalGross.TextFormatString = "{0:#0.000}"; this.customerOrderOldMetalGross.Weight = .75D;
+            this.customerOrderOldMetalNet.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[NET_WEIGHT]") }); this.customerOrderOldMetalNet.Name = "customerOrderOldMetalNet"; this.customerOrderOldMetalNet.TextFormatString = "{0:#0.000}"; this.customerOrderOldMetalNet.Weight = .75D;
+            this.customerOrderOldMetalRate.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[TRANSACTED_RATE]") }); this.customerOrderOldMetalRate.Name = "customerOrderOldMetalRate"; this.customerOrderOldMetalRate.TextFormatString = "{0:##,###,##0.00}"; this.customerOrderOldMetalRate.Weight = 1D;
+            this.customerOrderOldMetalAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[FINAL_PURCHASE_PRICE]") }); this.customerOrderOldMetalAmount.Name = "customerOrderOldMetalAmount"; this.customerOrderOldMetalAmount.TextFormatString = "{0:##,###,##0.00}"; this.customerOrderOldMetalAmount.Weight = 1.15D;
+            // 
+            // customerOrderReceiptReport
+            // 
+            this.customerOrderReceiptReport.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
+            this.customerOrderReceiptHeader,
+            this.customerOrderReceiptDetail});
+            this.customerOrderReceiptReport.DataMember = "CUSTOMER_ORDER_RECEIPTS";
+            this.customerOrderReceiptReport.DataSource = this.sqlDataSource1;
+            this.customerOrderReceiptReport.Level = 2;
+            this.customerOrderReceiptReport.Name = "customerOrderReceiptReport";
+            this.customerOrderReceiptHeader.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] {
+            this.customerOrderReceiptTitle,
+            this.customerOrderReceiptHeaderTable});
+            this.customerOrderReceiptHeader.HeightF = 42F;
+            this.customerOrderReceiptHeader.Name = "customerOrderReceiptHeader";
+            this.customerOrderReceiptTitle.BoundsF = new System.Drawing.RectangleF(0F, 4F, 740F, 18F);
+            this.customerOrderReceiptTitle.Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.customerOrderReceiptTitle.Name = "customerOrderReceiptTitle";
+            this.customerOrderReceiptTitle.Text = "ADVANCE / RECEIPTS";
+            this.customerOrderReceiptHeaderTable.BoundsF = new System.Drawing.RectangleF(0F, 22F, 740F, 20F);
+            this.customerOrderReceiptHeaderTable.Borders = DevExpress.XtraPrinting.BorderSide.All;
+            this.customerOrderReceiptHeaderTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.customerOrderReceiptHeaderTable.Name = "customerOrderReceiptHeaderTable";
+            this.customerOrderReceiptHeaderTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] { this.customerOrderReceiptHeaderRow });
+            this.customerOrderReceiptHeaderRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.customerOrderReceiptVoucherHeader, this.customerOrderReceiptDateHeader,
+            this.customerOrderReceiptModeHeader, this.customerOrderReceiptTypeHeader,
+            this.customerOrderReceiptAmountHeader});
+            this.customerOrderReceiptHeaderRow.Name = "customerOrderReceiptHeaderRow";
+            this.customerOrderReceiptVoucherHeader.Name = "customerOrderReceiptVoucherHeader"; this.customerOrderReceiptVoucherHeader.Text = "Voucher No."; this.customerOrderReceiptVoucherHeader.Weight = 1.2D;
+            this.customerOrderReceiptDateHeader.Name = "customerOrderReceiptDateHeader"; this.customerOrderReceiptDateHeader.Text = "Date"; this.customerOrderReceiptDateHeader.Weight = 1D;
+            this.customerOrderReceiptModeHeader.Name = "customerOrderReceiptModeHeader"; this.customerOrderReceiptModeHeader.Text = "Mode"; this.customerOrderReceiptModeHeader.Weight = 1D;
+            this.customerOrderReceiptTypeHeader.Name = "customerOrderReceiptTypeHeader"; this.customerOrderReceiptTypeHeader.Text = "Type"; this.customerOrderReceiptTypeHeader.Weight = 2D;
+            this.customerOrderReceiptAmountHeader.Name = "customerOrderReceiptAmountHeader"; this.customerOrderReceiptAmountHeader.Text = "Amount"; this.customerOrderReceiptAmountHeader.Weight = 1.2D;
+            this.customerOrderReceiptDetail.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] { this.customerOrderReceiptDetailTable });
+            this.customerOrderReceiptDetail.HeightF = 22F;
+            this.customerOrderReceiptDetail.Name = "customerOrderReceiptDetail";
+            this.customerOrderReceiptDetailTable.BoundsF = new System.Drawing.RectangleF(0F, 0F, 740F, 20F);
+            this.customerOrderReceiptDetailTable.Borders = DevExpress.XtraPrinting.BorderSide.All;
+            this.customerOrderReceiptDetailTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.customerOrderReceiptDetailTable.Name = "customerOrderReceiptDetailTable";
+            this.customerOrderReceiptDetailTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] { this.customerOrderReceiptDetailRow });
+            this.customerOrderReceiptDetailRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.customerOrderReceiptVoucher, this.customerOrderReceiptDate,
+            this.customerOrderReceiptMode, this.customerOrderReceiptType,
+            this.customerOrderReceiptAmount});
+            this.customerOrderReceiptDetailRow.Name = "customerOrderReceiptDetailRow";
+            this.customerOrderReceiptVoucher.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[VOUCHER_NBR]") }); this.customerOrderReceiptVoucher.Name = "customerOrderReceiptVoucher"; this.customerOrderReceiptVoucher.Weight = 1.2D;
+            this.customerOrderReceiptDate.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[VOUCHER_DATE]") }); this.customerOrderReceiptDate.Name = "customerOrderReceiptDate"; this.customerOrderReceiptDate.TextFormatString = "{0:dd-MMM-yyyy}"; this.customerOrderReceiptDate.Weight = 1D;
+            this.customerOrderReceiptMode.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[MODE]") }); this.customerOrderReceiptMode.Name = "customerOrderReceiptMode"; this.customerOrderReceiptMode.Weight = 1D;
+            this.customerOrderReceiptType.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[VOUCHER_TYPE]") }); this.customerOrderReceiptType.Name = "customerOrderReceiptType"; this.customerOrderReceiptType.Weight = 2D;
+            this.customerOrderReceiptAmount.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[TRANS_AMOUNT]") }); this.customerOrderReceiptAmount.Name = "customerOrderReceiptAmount"; this.customerOrderReceiptAmount.TextFormatString = "{0:##,###,##0.00}"; this.customerOrderReceiptAmount.Weight = 1.2D;
+            // 
+            // customerOrderSettlementReport
+            // 
+            this.customerOrderSettlementReport.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] { this.customerOrderSettlementDetail });
+            this.customerOrderSettlementReport.DataMember = "CUSTOMER_ORDER_SETTLEMENT";
+            this.customerOrderSettlementReport.DataSource = this.sqlDataSource1;
+            this.customerOrderSettlementReport.Level = 3;
+            this.customerOrderSettlementReport.Name = "customerOrderSettlementReport";
+            this.customerOrderSettlementDetail.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] { this.customerOrderSettlementTable });
+            this.customerOrderSettlementDetail.HeightF = 84F;
+            this.customerOrderSettlementDetail.Name = "customerOrderSettlementDetail";
+            this.customerOrderSettlementTable.BoundsF = new System.Drawing.RectangleF(460F, 4F, 280F, 80F);
+            this.customerOrderSettlementTable.Borders = DevExpress.XtraPrinting.BorderSide.All;
+            this.customerOrderSettlementTable.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F);
+            this.customerOrderSettlementTable.Name = "customerOrderSettlementTable";
+            this.customerOrderSettlementTable.Rows.AddRange(new DevExpress.XtraReports.UI.XRTableRow[] {
+            this.customerOrderTotalRow, this.customerOrderOldMetalTotalRow,
+            this.customerOrderReceiptTotalRow, this.customerOrderBalanceRow});
+            this.customerOrderTotalRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] { this.customerOrderTotalCaption, this.customerOrderTotalValue }); this.customerOrderTotalRow.Name = "customerOrderTotalRow";
+            this.customerOrderTotalCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold); this.customerOrderTotalCaption.Name = "customerOrderTotalCaption"; this.customerOrderTotalCaption.Text = "Estimated Order Total"; this.customerOrderTotalCaption.Weight = 1.7D;
+            this.customerOrderTotalValue.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[TOTAL_ORDER_AMOUNT]") }); this.customerOrderTotalValue.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold); this.customerOrderTotalValue.Name = "customerOrderTotalValue"; this.customerOrderTotalValue.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight; this.customerOrderTotalValue.TextFormatString = "{0:##,###,##0.00}"; this.customerOrderTotalValue.Weight = 1D;
+            this.customerOrderOldMetalTotalRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] { this.customerOrderOldMetalTotalCaption, this.customerOrderOldMetalTotalValue }); this.customerOrderOldMetalTotalRow.Name = "customerOrderOldMetalTotalRow";
+            this.customerOrderOldMetalTotalCaption.Name = "customerOrderOldMetalTotalCaption"; this.customerOrderOldMetalTotalCaption.Text = "Less: Old Metal"; this.customerOrderOldMetalTotalCaption.Weight = 1.7D;
+            this.customerOrderOldMetalTotalValue.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[OLD_METAL_TOTAL]") }); this.customerOrderOldMetalTotalValue.Name = "customerOrderOldMetalTotalValue"; this.customerOrderOldMetalTotalValue.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight; this.customerOrderOldMetalTotalValue.TextFormatString = "{0:##,###,##0.00}"; this.customerOrderOldMetalTotalValue.Weight = 1D;
+            this.customerOrderReceiptTotalRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] { this.customerOrderReceiptTotalCaption, this.customerOrderReceiptTotalValue }); this.customerOrderReceiptTotalRow.Name = "customerOrderReceiptTotalRow";
+            this.customerOrderReceiptTotalCaption.Name = "customerOrderReceiptTotalCaption"; this.customerOrderReceiptTotalCaption.Text = "Less: Advance / Receipts"; this.customerOrderReceiptTotalCaption.Weight = 1.7D;
+            this.customerOrderReceiptTotalValue.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] { new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ADVANCE_RECEIPT_TOTAL]") }); this.customerOrderReceiptTotalValue.Name = "customerOrderReceiptTotalValue"; this.customerOrderReceiptTotalValue.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight; this.customerOrderReceiptTotalValue.TextFormatString = "{0:##,###,##0.00}"; this.customerOrderReceiptTotalValue.Weight = 1D;
+            this.customerOrderBalanceRow.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.customerOrderBalanceCaption, this.customerOrderBalanceValue});
+            this.customerOrderBalanceRow.Name = "customerOrderBalanceRow";
+            this.customerOrderBalanceCaption.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Iif([BALANCE_AMOUNT] < 0, 'Excess Advance', 'Balance Amount')")});
+            this.customerOrderBalanceCaption.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.customerOrderBalanceCaption.Name = "customerOrderBalanceCaption";
+            this.customerOrderBalanceCaption.Weight = 1.7D;
+            this.customerOrderBalanceValue.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "Abs([BALANCE_AMOUNT])")});
+            this.customerOrderBalanceValue.Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            this.customerOrderBalanceValue.Name = "customerOrderBalanceValue";
+            this.customerOrderBalanceValue.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight;
+            this.customerOrderBalanceValue.TextFormatString = "{0:##,###,##0.00}";
+            this.customerOrderBalanceValue.Weight = 1D;
+            this.DetailReport2.Level = 4;
+            // 
             // CustomerOrderPrint
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -2391,6 +2589,9 @@
             this.BottomMargin,
             this.Detail,
             this.DetailReport,
+            this.customerOrderOldMetalReport,
+            this.customerOrderReceiptReport,
+            this.customerOrderSettlementReport,
             this.DetailReport2,
             this.ReportFooter});
             this.CalculatedFields.AddRange(new DevExpress.XtraReports.UI.CalculatedField[] {
@@ -2416,8 +2617,122 @@
             ((System.ComponentModel.ISupportInitialize)(this.invTotalTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NewTaxTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.txblTbl)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderOldMetalHeaderTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderOldMetalDetailTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderReceiptHeaderTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderReceiptDetailTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.customerOrderSettlementTable)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this)).EndInit();
 
+        }
+
+        private DevExpress.XtraReports.UI.DetailReportBand CreateCustomerOrderDetailReport(
+            string name, string dataMember, int level) => new DevExpress.XtraReports.UI.DetailReportBand {
+                Name = name,
+                DataSource = this.sqlDataSource1,
+                DataMember = dataMember,
+                Level = level
+            };
+
+        private static DevExpress.XtraReports.UI.GroupHeaderBand CreateCustomerOrderSectionHeader(
+            string name, string title, string[] captions, float[] weights,
+            out DevExpress.XtraReports.UI.XRLabel titleLabel,
+            out DevExpress.XtraReports.UI.XRTable headerTable)
+        {
+            var header = new DevExpress.XtraReports.UI.GroupHeaderBand { Name = name, HeightF = 42F };
+            titleLabel = new DevExpress.XtraReports.UI.XRLabel {
+                Name = name + "Title",
+                Text = title,
+                Font = new DevExpress.Drawing.DXFont("Segoe UI", 9F, DevExpress.Drawing.DXFontStyle.Bold),
+                BoundsF = new System.Drawing.RectangleF(0F, 4F, 740F, 18F)
+            };
+            headerTable = CreateCustomerOrderTable(name + "Table", captions, weights, true, 22F);
+            header.Controls.AddRange(new DevExpress.XtraReports.UI.XRControl[] { titleLabel, headerTable });
+            return header;
+        }
+
+        private static DevExpress.XtraReports.UI.DetailBand CreateCustomerOrderDetailRow(
+            string name, string[] expressions, float[] weights, string[] formats,
+            out DevExpress.XtraReports.UI.XRTable detailTable)
+        {
+            var detail = new DevExpress.XtraReports.UI.DetailBand { Name = name, HeightF = 22F };
+            detailTable = CreateCustomerOrderTable(name + "Table", expressions, weights, false, 0F);
+            for (var index = 0; index < expressions.Length; index++) {
+                var cell = detailTable.Rows[0].Cells[index];
+                cell.ExpressionBindings.Add(new DevExpress.XtraReports.UI.ExpressionBinding(
+                    "BeforePrint", "Text", expressions[index]));
+                cell.TextFormatString = formats[index];
+            }
+            detail.Controls.Add(detailTable);
+            return detail;
+        }
+
+        private static DevExpress.XtraReports.UI.XRTable CreateCustomerOrderTable(
+            string name, string[] values, float[] weights, bool isHeader, float top)
+        {
+            var table = new DevExpress.XtraReports.UI.XRTable {
+                Name = name,
+                BoundsF = new System.Drawing.RectangleF(0F, top, 740F, 20F),
+                Borders = DevExpress.XtraPrinting.BorderSide.All,
+                Font = new DevExpress.Drawing.DXFont("Segoe UI", 8F,
+                    isHeader ? DevExpress.Drawing.DXFontStyle.Bold : DevExpress.Drawing.DXFontStyle.Regular)
+            };
+            var row = new DevExpress.XtraReports.UI.XRTableRow { Name = name + "Row" };
+            for (var index = 0; index < values.Length; index++) {
+                row.Cells.Add(new DevExpress.XtraReports.UI.XRTableCell {
+                    Name = name + "Cell" + index,
+                    Text = isHeader ? values[index] : string.Empty,
+                    Weight = weights[index],
+                    Padding = new DevExpress.XtraPrinting.PaddingInfo(3, 3, 1, 1, 100F)
+                });
+            }
+            table.Rows.Add(row);
+            return table;
+        }
+
+        private static void AddCustomerOrderSummaryRow(
+            DevExpress.XtraReports.UI.XRTable table, string caption, string expression, bool bold)
+        {
+            var font = new DevExpress.Drawing.DXFont("Segoe UI", 8F,
+                bold ? DevExpress.Drawing.DXFontStyle.Bold : DevExpress.Drawing.DXFontStyle.Regular);
+            var row = new DevExpress.XtraReports.UI.XRTableRow { Name = table.Name + "Row" + table.Rows.Count };
+            row.Cells.Add(new DevExpress.XtraReports.UI.XRTableCell {
+                Name = row.Name + "Caption", Text = caption, Weight = 1.7D, Font = font
+            });
+            var value = new DevExpress.XtraReports.UI.XRTableCell {
+                Name = row.Name + "Value",
+                Weight = 1D,
+                Font = font,
+                TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight,
+                TextFormatString = "{0:##,###,##0.00}"
+            };
+            value.ExpressionBindings.Add(new DevExpress.XtraReports.UI.ExpressionBinding(
+                "BeforePrint", "Text", expression));
+            row.Cells.Add(value);
+            table.Rows.Add(row);
+        }
+
+        private static void AddCustomerOrderBalanceRow(DevExpress.XtraReports.UI.XRTable table)
+        {
+            var font = new DevExpress.Drawing.DXFont("Segoe UI", 8F, DevExpress.Drawing.DXFontStyle.Bold);
+            var row = new DevExpress.XtraReports.UI.XRTableRow { Name = "CustomerOrderBalanceRow" };
+            var caption = new DevExpress.XtraReports.UI.XRTableCell {
+                Name = "CustomerOrderBalanceCaption", Weight = 1.7D, Font = font
+            };
+            caption.ExpressionBindings.Add(new DevExpress.XtraReports.UI.ExpressionBinding(
+                "BeforePrint", "Text", "Iif([BALANCE_AMOUNT] < 0, 'Excess Advance', 'Balance Amount')"));
+            row.Cells.Add(caption);
+            var value = new DevExpress.XtraReports.UI.XRTableCell {
+                Name = "CustomerOrderBalanceValue",
+                Weight = 1D,
+                Font = font,
+                TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleRight,
+                TextFormatString = "{0:##,###,##0.00}"
+            };
+            value.ExpressionBindings.Add(new DevExpress.XtraReports.UI.ExpressionBinding(
+                "BeforePrint", "Text", "Abs([BALANCE_AMOUNT])"));
+            row.Cells.Add(value);
+            table.Rows.Add(row);
         }
 
         #endregion
@@ -2590,5 +2905,58 @@
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell26;
         private DevExpress.XtraReports.UI.XRLabel xrLabel22;
         private DevExpress.XtraReports.UI.XRLabel xrLabel23;
+        private DevExpress.XtraReports.UI.DetailReportBand customerOrderOldMetalReport;
+        private DevExpress.XtraReports.UI.GroupHeaderBand customerOrderOldMetalHeader;
+        private DevExpress.XtraReports.UI.DetailBand customerOrderOldMetalDetail;
+        private DevExpress.XtraReports.UI.XRLabel customerOrderOldMetalTitle;
+        private DevExpress.XtraReports.UI.XRTable customerOrderOldMetalHeaderTable;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderOldMetalHeaderRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalDescriptionHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalPurityHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalGrossHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalNetHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalRateHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalAmountHeader;
+        private DevExpress.XtraReports.UI.XRTable customerOrderOldMetalDetailTable;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderOldMetalDetailRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalDescription;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalPurity;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalGross;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalNet;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalRate;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalAmount;
+        private DevExpress.XtraReports.UI.DetailReportBand customerOrderReceiptReport;
+        private DevExpress.XtraReports.UI.GroupHeaderBand customerOrderReceiptHeader;
+        private DevExpress.XtraReports.UI.DetailBand customerOrderReceiptDetail;
+        private DevExpress.XtraReports.UI.XRLabel customerOrderReceiptTitle;
+        private DevExpress.XtraReports.UI.XRTable customerOrderReceiptHeaderTable;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderReceiptHeaderRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptVoucherHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptDateHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptModeHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptTypeHeader;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptAmountHeader;
+        private DevExpress.XtraReports.UI.XRTable customerOrderReceiptDetailTable;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderReceiptDetailRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptVoucher;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptDate;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptMode;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptType;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptAmount;
+        private DevExpress.XtraReports.UI.DetailReportBand customerOrderSettlementReport;
+        private DevExpress.XtraReports.UI.DetailBand customerOrderSettlementDetail;
+        private DevExpress.XtraReports.UI.XRTable customerOrderSettlementTable;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderTotalRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderTotalCaption;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderTotalValue;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderOldMetalTotalRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalTotalCaption;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderOldMetalTotalValue;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderReceiptTotalRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptTotalCaption;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderReceiptTotalValue;
+        private DevExpress.XtraReports.UI.XRTableRow customerOrderBalanceRow;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderBalanceCaption;
+        private DevExpress.XtraReports.UI.XRTableCell customerOrderBalanceValue;
     }
 }
