@@ -233,6 +233,9 @@
             this.xrPictureBox4 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.xrPictureBox5 = new DevExpress.XtraReports.UI.XRPictureBox();
             this.calculatedField1 = new DevExpress.XtraReports.UI.CalculatedField();
+            this.customerGSTIN = new DevExpress.XtraReports.UI.XRTableRow();
+            this.gstinLbl = new DevExpress.XtraReports.UI.XRTableCell();
+            this.xrTableCell30 = new DevExpress.XtraReports.UI.XRTableCell();
             ((System.ComponentModel.ISupportInitialize)(this.vendorTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceDatesTable)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.invoiceNumberTable)).BeginInit();
@@ -253,7 +256,7 @@
             this.xrLine2,
             this.xrPictureBox2,
             this.vendorTable});
-            this.TopMargin.HeightF = 148.0833F;
+            this.TopMargin.HeightF = 147.25F;
             this.TopMargin.Name = "TopMargin";
             this.TopMargin.SnapLinePadding = new DevExpress.XtraPrinting.PaddingInfo(10, 10, 10, 0, 100F);
             // 
@@ -420,7 +423,7 @@
             this.invoiceDatesTable,
             this.invoiceNumberTable,
             this.customerTable});
-            this.Detail.HeightF = 72.91668F;
+            this.Detail.HeightF = 90F;
             this.Detail.KeepTogether = true;
             this.Detail.KeepTogetherWithDetailReports = true;
             this.Detail.Name = "Detail";
@@ -430,7 +433,7 @@
             // 
             this.xrLine1.ForeColor = System.Drawing.Color.Gold;
             this.xrLine1.LineWidth = 2F;
-            this.xrLine1.LocationFloat = new DevExpress.Utils.PointFloat(0.0001271566F, 70.83334F);
+            this.xrLine1.LocationFloat = new DevExpress.Utils.PointFloat(0.0001271566F, 87.91666F);
             this.xrLine1.Name = "xrLine1";
             this.xrLine1.SizeF = new System.Drawing.SizeF(739.9999F, 2.083333F);
             this.xrLine1.StylePriority.UseForeColor = false;
@@ -522,8 +525,9 @@
             this.CusNameAddRow,
             this.xrTableRow4,
             this.customerContactNameRow,
-            this.customerAddressRow});
-            this.customerTable.SizeF = new System.Drawing.SizeF(337.6318F, 70.83332F);
+            this.customerAddressRow,
+            this.customerGSTIN});
+            this.customerTable.SizeF = new System.Drawing.SizeF(337.6318F, 88.54165F);
             // 
             // CusNameAddRow
             // 
@@ -616,7 +620,8 @@
             // 
             this.customerContactName.CanShrink = true;
             this.customerContactName.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
-            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ORG_CUSTOMER_ADDRESS_VIEW].[CITY]")});
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ORG_CUSTOMER_ADDRESS_VIEW].[CITY]+[ORG_CUSTOMER_ADDRESS_VIEW].[CUST_GST_CODE]+\'-" +
+                    "\'+[ORG_CUSTOMER_ADDRESS_VIEW].[STATE]")});
             this.customerContactName.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
             this.customerContactName.Name = "customerContactName";
             this.customerContactName.StylePriority.UseFont = false;
@@ -2450,6 +2455,40 @@
             this.calculatedField1.Name = "calculatedField1";
             this.calculatedField1.GetValue += new DevExpress.XtraReports.UI.GetValueEventHandler(this.CalculatedField1_GetValue);
             // 
+            // customerGSTIN
+            // 
+            this.customerGSTIN.Cells.AddRange(new DevExpress.XtraReports.UI.XRTableCell[] {
+            this.gstinLbl,
+            this.xrTableCell30});
+            this.customerGSTIN.Name = "customerGSTIN";
+            this.customerGSTIN.Weight = 1D;
+            // 
+            // gstinLbl
+            // 
+            this.gstinLbl.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Visible", "IIF([ORG_CUSTOMER_ADDRESS_VIEW].[GSTIN_NBR] IS NOT NULL, TRUE, FALSE)")});
+            this.gstinLbl.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
+            this.gstinLbl.Multiline = true;
+            this.gstinLbl.Name = "gstinLbl";
+            this.gstinLbl.StylePriority.UseFont = false;
+            this.gstinLbl.StylePriority.UseTextAlignment = false;
+            this.gstinLbl.Text = "GSTIN :";
+            this.gstinLbl.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.gstinLbl.Weight = 0.78407704591555716D;
+            // 
+            // xrTableCell30
+            // 
+            this.xrTableCell30.ExpressionBindings.AddRange(new DevExpress.XtraReports.UI.ExpressionBinding[] {
+            new DevExpress.XtraReports.UI.ExpressionBinding("BeforePrint", "Text", "[ORG_CUSTOMER_ADDRESS_VIEW].[GSTIN_NBR]")});
+            this.xrTableCell30.Font = new DevExpress.Drawing.DXFont("Arial", 8F);
+            this.xrTableCell30.Multiline = true;
+            this.xrTableCell30.Name = "xrTableCell30";
+            this.xrTableCell30.StylePriority.UseFont = false;
+            this.xrTableCell30.StylePriority.UseTextAlignment = false;
+            this.xrTableCell30.Text = "xrTableCell30";
+            this.xrTableCell30.TextAlignment = DevExpress.XtraPrinting.TextAlignment.MiddleLeft;
+            this.xrTableCell30.Weight = 2.9501685213634983D;
+            // 
             // InvPrint25
             // 
             this.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] {
@@ -2465,7 +2504,7 @@
             this.sqlDataSource1});
             this.DataSource = this.sqlDataSource1;
             this.Font = new DevExpress.Drawing.DXFont("Arial", 9.75F);
-            this.Margins = new DevExpress.Drawing.DXMargins(52F, 58F, 148.0833F, 100F);
+            this.Margins = new DevExpress.Drawing.DXMargins(52F, 58F, 147.25F, 100F);
             this.ParameterPanelLayoutItems.AddRange(new DevExpress.XtraReports.Parameters.ParameterPanelLayoutItem[] {
             new DevExpress.XtraReports.Parameters.ParameterLayoutItem(this.pInvNbr, DevExpress.XtraReports.Parameters.Orientation.Horizontal)});
             this.Parameters.AddRange(new DevExpress.XtraReports.Parameters.Parameter[] {
@@ -2656,5 +2695,8 @@
         private DevExpress.XtraReports.UI.XRTableCell xrTableCell26;
         private DevExpress.XtraReports.UI.XRLabel xrLabel22;
         private DevExpress.XtraReports.UI.XRLabel xrLabel23;
+        private DevExpress.XtraReports.UI.XRTableRow customerGSTIN;
+        private DevExpress.XtraReports.UI.XRTableCell gstinLbl;
+        private DevExpress.XtraReports.UI.XRTableCell xrTableCell30;
     }
 }
