@@ -107,6 +107,8 @@ builder.Services.AddScoped<IGstr1B2bSummaryService, Gstr1B2bSummaryService>();
 builder.Services.AddScoped<IGstr1ExportPreparationService, Gstr1ExportPreparationService>();
 builder.Services.AddScoped<IGstr1JsonExportService, Gstr1JsonExportService>();
 builder.Services.AddScoped<IGstr1BackfillService, Gstr1BackfillService>(); 
+builder.Services.AddScoped<IHistoricalInvoiceAuditService, HistoricalInvoiceAuditService>();
+builder.Services.AddScoped<ICurrentCompanyGstinProvider, CurrentCompanyGstinProvider>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 
