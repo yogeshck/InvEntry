@@ -108,6 +108,9 @@ builder.Services.AddScoped<IGstr1ExportPreparationService, Gstr1ExportPreparatio
 builder.Services.AddScoped<IGstr1JsonExportService, Gstr1JsonExportService>();
 builder.Services.AddScoped<IGstr1BackfillService, Gstr1BackfillService>(); 
 builder.Services.AddScoped<IHistoricalInvoiceAuditService, HistoricalInvoiceAuditService>();
+builder.Services.AddScoped<IHistoricalMigrationPreviewService, HistoricalMigrationPreviewService>();
+builder.Services.AddSingleton<IHistoricalMigrationPreviewTokenStore, HistoricalMigrationPreviewTokenStore>();
+builder.Services.AddScoped<IHistoricalMigrationStageService, HistoricalMigrationStageService>();
 builder.Services.AddScoped<ICurrentCompanyGstinProvider, CurrentCompanyGstinProvider>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();

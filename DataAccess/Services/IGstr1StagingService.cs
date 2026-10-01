@@ -47,4 +47,10 @@ public sealed class Gstr1StagePreparation
     public bool IsReportable { get; init; }
 
     public int LineCount { get; init; }
+
+    public string SupplyType { get; init; } = string.Empty;
+    public decimal TaxableValue { get; init; }
+    public decimal CgstAmount { get; init; }
+    public decimal SgstAmount { get; init; }
+    public decimal IgstAmount { get; init; }
 }

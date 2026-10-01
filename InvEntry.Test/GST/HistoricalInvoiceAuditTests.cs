@@ -5,6 +5,9 @@ using DataAccess.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using InvEntry.Contracts.Gst;
+using InvEntry.Gst.Core.Classification;
+using InvEntry.Gst.Core.Rules;
 
 namespace InvEntry.Test.GST;
 
@@ -50,7 +53,7 @@ public sealed class HistoricalInvoiceAuditTests
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var service = new HistoricalInvoiceAuditService(context, new StubGstinProvider());
+        var service = CreateService(context);
         var result = await service.GetAsync(Gstin, new DateTime(2026, 9, 1), new DateTime(2026, 9, 30));
 
         Assert.Multiple(() =>
@@ -90,7 +93,7 @@ public sealed class HistoricalInvoiceAuditTests
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var service = new HistoricalInvoiceAuditService(context, new StubGstinProvider());
+        var service = CreateService(context);
         var result = await service.GetAsync(Gstin, new DateTime(2026, 9, 1), new DateTime(2026, 9, 30));
         var item = result.Items.Single();
 
@@ -144,7 +147,7 @@ public sealed class HistoricalInvoiceAuditTests
         await context.SaveChangesAsync();
         context.ChangeTracker.Clear();
 
-        var service = new HistoricalInvoiceAuditService(context, new StubGstinProvider());
+        var service = CreateService(context);
         var item = (await service.GetAsync(
             Gstin, new DateTime(2026, 9, 1), new DateTime(2026, 9, 30))).Items.Single();
 
@@ -156,6 +159,84 @@ public sealed class HistoricalInvoiceAuditTests
             Assert.That(item.TaxableAmount, Is.Not.EqualTo(item.AmountPayable - item.TaxTotal),
                 "Discount and round-off prevent amount-minus-tax reconstruction.");
             Assert.That(context.ChangeTracker.Entries(), Is.Empty);
+        });
+    }
+
+    [Test]
+    public async Task Service_ReturnsReadOnlyLineGstAndClassificationDetails_ForHistoricalDraftInvoice()
+    {
+        await using var context = CreateContext();
+        context.InvoiceHeaders.Add(new InvoiceHeader
+        {
+            Gkey = 300, InvNbr = "D-LINE", InvDate = new DateTime(2026, 9, 20), Status = "DRAFT",
+            CustGkey = 10, GstLocBuyer = "29", AmountPayable = 103M, IsTaxApplicable = true
+        });
+        context.OrgCustomers.Add(new OrgCustomer
+        {
+            Gkey = 10, CustomerName = "Registered Customer", GstinNbr = "29AAAAA0000A1Z5",
+            GstStateCode = "29", CustomerType = "Business"
+        });
+        context.Products.Add(new Product { Gkey = 20, Name = "Gold Chain", Uom = "Grams", HsnCode = "7113" });
+        context.InvoiceLines.Add(new InvoiceLine
+        {
+            Gkey = 301, InvoiceHdrGkey = 300, ProductGkey = 20, ProductDesc = "Gold Chain",
+            HsnCode = "7113", ProdQty = 1, ProdGrossWeight = 10M, ProdNetWeight = 9M,
+            InvlTaxableAmount = 100M, InvlCgstPercent = 1.5M, InvlSgstPercent = 1.5M,
+            InvlCgstAmount = 1.5M, InvlSgstAmount = 1.5M, TaxAmount = 3M, IsTaxable = true
+        });
+        context.OldMetalTransactions.Add(new OldMetalTransaction
+        {
+            Gkey = 401, DocRefGkey = 300, DocRefNbr = "D-LINE", DocRefType = "Sale Invoice",
+            TransNbr = "OGP-TEST", TransDate = new DateTime(2026, 9, 20), TransType = "OG Purchase",
+            Remarks = "Legacy settlement", Metal = "GOLD", Purity = "916", Uom = "Grams",
+            GrossWeight = 0.550M, NetWeight = 0.540M, FinalPurchasePrice = 7_832M
+        });
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+
+        var item = (await CreateService(context).GetAsync(
+            Gstin, new DateTime(2026, 9, 1), new DateTime(2026, 9, 30))).Items.Single();
+        var line = item.Lines.Single();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(item.CustomerGstin, Is.EqualTo("29AAAAA0000A1Z5"));
+            Assert.That(item.SupplierStateCode, Is.EqualTo("29"));
+            Assert.That(item.IsRecipientRegistered, Is.True);
+            Assert.That(item.SupplyType, Is.EqualTo("IntraState"));
+            Assert.That(item.GstReturnCategory, Is.EqualTo("B2B"));
+            Assert.That(item.CurrentStatus, Is.EqualTo("DRAFT"));
+            Assert.That(item.InvoiceLineCount, Is.EqualTo(1));
+            Assert.That(item.Lines, Has.Count.EqualTo(1));
+            Assert.That(item.HasOldGoldTransaction, Is.True);
+            Assert.That(item.OldGoldTransactions, Has.Count.EqualTo(1));
+            Assert.That(line.LineNumber, Is.EqualTo(1));
+            Assert.That(line.HsnCode, Is.EqualTo("7113"));
+            Assert.That(line.Uom, Is.EqualTo("Grams"));
+            Assert.That(line.Uqc, Is.EqualTo("GMS"));
+            Assert.That(line.GstRate, Is.EqualTo(3M));
+            Assert.That(line.TaxAmount, Is.EqualTo(3M));
+            Assert.That(item.OldGoldTransactions[0].DocumentNumber, Is.EqualTo("OGP-TEST"));
+            Assert.That(item.OldGoldTransactions[0].TransactionType, Is.EqualTo("OG Purchase"));
+            Assert.That(item.OldGoldTransactions[0].Metal, Is.EqualTo("GOLD"));
+            Assert.That(item.OldGoldTransactions[0].Purity, Is.EqualTo("916"));
+            Assert.That(item.OldGoldTransactions[0].GrossWeight, Is.EqualTo(0.550M));
+            Assert.That(item.OldGoldTransactions[0].FinalPurchasePrice, Is.EqualTo(7_832M));
+            Assert.That(context.ChangeTracker.Entries(), Is.Empty);
+        });
+
+        using var json = JsonDocument.Parse(JsonSerializer.Serialize(
+            new HistoricalInvoiceAuditResponse { InvoiceCount = 1, Items = { item } }));
+        var serializedLines = json.RootElement.GetProperty("Items")[0].GetProperty("Lines");
+        Assert.Multiple(() =>
+        {
+            Assert.That(serializedLines.ValueKind, Is.EqualTo(JsonValueKind.Array));
+            Assert.That(serializedLines.GetArrayLength(), Is.EqualTo(1));
+            Assert.That(serializedLines[0].GetProperty("HsnCode").GetString(), Is.EqualTo("7113"));
+            var oldGold = json.RootElement.GetProperty("Items")[0].GetProperty("OldGoldTransactions")[0];
+            Assert.That(oldGold.GetProperty("DocumentNumber").GetString(), Is.EqualTo("OGP-TEST"));
+            Assert.That(oldGold.TryGetProperty("Gkey", out _), Is.False);
+            Assert.That(oldGold.TryGetProperty("InvoiceGkey", out _), Is.False);
         });
     }
 
@@ -188,6 +269,9 @@ public sealed class HistoricalInvoiceAuditTests
 
     private static TestMijmsContext CreateContext() =>
         new($"historical-audit-{Guid.NewGuid():N}");
+
+    private static HistoricalInvoiceAuditService CreateService(MijmsContext context) =>
+        new(context, new StubGstinProvider(), new GstClassificationService(new GstRuleProvider()));
 
     private static InvoiceHeader CreateInvoice(int gkey, DateTime date, string number) =>
         new()

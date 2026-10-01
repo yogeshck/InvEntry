@@ -612,7 +612,13 @@ public sealed class Gstr1StagingService
                 document.IsReportable,
 
             LineCount =
-                document.GstGstr1DocumentLines.Count
+                document.GstGstr1DocumentLines.Count,
+
+            SupplyType = document.SupplyType,
+            TaxableValue = document.TaxableValue,
+            CgstAmount = document.CgstAmount,
+            SgstAmount = document.SgstAmount,
+            IgstAmount = document.IgstAmount
         };
     }
 
