@@ -19,6 +19,9 @@ public class RepositoryBase<TEntity> :
 
     public void Add(TEntity entity)
     {
+        var efEntityType = Context.Model.FindEntityType(typeof(TEntity));
+        var primaryKey = efEntityType?.FindPrimaryKey();
+
         DbSet.Add(entity);
     }
 
@@ -29,6 +32,9 @@ public class RepositoryBase<TEntity> :
 
     public void Update(TEntity entity)
     {
+        var efEntityType = Context.Model.FindEntityType(typeof(TEntity));
+        var primaryKey = efEntityType?.FindPrimaryKey();
+
         DbSet.Update(entity);
     }
 

@@ -1,5 +1,6 @@
 ﻿using DevExpress.Xpf.Grid;
 using InvEntry.Models;
+using InvEntry.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +40,36 @@ namespace InvEntry.Views
                 e.Cancel = true; // prevents editor from opening
             }
         }
+
+        private async void Save_Click(object sender, RoutedEventArgs e)
+        {
+            // Commit the value currently being edited in the DevExpress grid.
+            DailyStockGrid.View.CommitEditing();
+
+            if (DataContext is DailyStockEntryViewModel vm)
+            {
+                await vm.SaveCommand.ExecuteAsync(null);
+            }
+        }
+
+        private void TableView_CellValueChanged(
+    object sender,
+    CellValueChangedEventArgs e)
+        {
+            if (e.Row is not DailyStockSummary row)
+                return;
+
+            row.ClosingStockQty =
+                row.OpeningStockQty.GetValueOrDefault()
+                + row.StockInQty.GetValueOrDefault()
+                - row.StockOutQty.GetValueOrDefault();
+
+            row.ClosingStockNetWeight =
+                row.OpeningStockNetWeight.GetValueOrDefault()
+                + row.StockInNetWeight.GetValueOrDefault()
+                - row.StockOutNetWeight.GetValueOrDefault();
+        }
+
 
     }
 }

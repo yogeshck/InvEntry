@@ -10,50 +10,71 @@ namespace DataAccess.Controllers
     public class DailyStockSummaryController : ControllerBase
     {
         private readonly IRepositoryBase<DailyStockSummary> _dailyStockSummary;
-        private readonly ILogger<ProductStockSummaryController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<DailyStockSummaryController> _logger;
 
-        public DailyStockSummaryController(IRepositoryBase<DailyStockSummary> dailyStockSummaryRepo,
-                                            ILogger<ProductStockSummaryController> logger)
+        public DailyStockSummaryController(
+            IRepositoryBase<DailyStockSummary> dailyStockSummaryRepo,
+            IUnitOfWork unitOfWork,
+            ILogger<DailyStockSummaryController> logger)
         {
             _dailyStockSummary = dailyStockSummaryRepo;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
-        // GET: api/<RepDailyStockSummary>
+        // GET: api/dailyStockSummary
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetAll()
         {
             _logger.LogInformation("All Product Daily Stock Summary");
+
             return Ok(_dailyStockSummary.GetAll());
         }
 
-        // GET: api/<DailyStockSummary>/24-Sep-2024/25-Sep-2024
+        // POST: api/dailyStockSummary/filter
         [HttpPost("filter")]
-        public IEnumerable<DailyStockSummary> FilterHeader([FromBody] DateSearchOption criteria)
+        public IEnumerable<DailyStockSummary> FilterHeader(
+            [FromBody] DateSearchOption criteria)
         {
-            return _dailyStockSummary.GetList(x => x.TransactionDate.HasValue && 
-                                                      x.TransactionDate.Value.Date >= criteria.From.Date &&
-                                                      x.TransactionDate.Value.Date <= criteria.To.Date)
-                                                        .OrderBy(x => x.TransactionDate)
-                                                        .OrderBy(x => x.Metal);
+            return _dailyStockSummary
+                .GetList(x =>
+                    x.TransactionDate.HasValue &&
+                    x.TransactionDate.Value.Date >= criteria.From.Date &&
+                    x.TransactionDate.Value.Date <= criteria.To.Date)
+                .OrderBy(x => x.TransactionDate)
+                .ThenBy(x => x.Metal);
         }
 
-        // POST api/<DailyStockSummary>
+        // POST: api/dailyStockSummary
         [HttpPost]
-        public IActionResult Post([FromBody] DailyStockSummary value)
+        public async Task<IActionResult> Post(
+            [FromBody] DailyStockSummary value)
         {
             _dailyStockSummary.Add(value);
-            return Ok(value);
 
+            await _unitOfWork.SaveChangesAsync();
+
+            return Ok(value);
         }
 
-        // PUT api/<DailyStockSummary>/5
-        [HttpPut("{productGkey}")]
-        public IActionResult Put(int productGkey, [FromBody] DailyStockSummary value)
+        // PUT: api/dailyStockSummary/5
+        [HttpPut("{gkey:int}")]
+        public async Task<IActionResult> Put(
+            int gkey,
+            [FromBody] DailyStockSummary value)
         {
+            if (gkey != value.Gkey)
+            {
+                return BadRequest(
+                    "Daily stock summary key does not match.");
+            }
+
             _dailyStockSummary.Update(value);
+
+            await _unitOfWork.SaveChangesAsync();
+
             return Ok(value);
         }
-
     }
 }

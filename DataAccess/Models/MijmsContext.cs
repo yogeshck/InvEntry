@@ -587,10 +587,11 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("DAILY_STOCK_SUMMARY");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("DAILY_STOCK_SUMMARY");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKey");
             entity.Property(e => e.ClosingStockGrossWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK_GROSS_WEIGHT");
@@ -601,9 +602,6 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ClosingStockStoneWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK_STONE_WEIGHT");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("GKey");
             entity.Property(e => e.Metal)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -1427,7 +1425,7 @@ public partial class MijmsContext : DbContext
         {
             entity.HasKey(e => e.Gkey);
 
-            entity.ToTable("INVOICE_HEADER");
+            entity.ToTable("INVOICE_HEADER", tb => tb.HasTrigger("TR_INVOICE_HEADER_SET_INV_DATE"));
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AdvanceAdj)

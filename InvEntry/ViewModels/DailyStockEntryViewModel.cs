@@ -222,18 +222,28 @@ namespace InvEntry.ViewModels
                             Metal = item.Metal,
                             TransactionDate = SelectedDate,
                             ProductCategory = item.ProductCategory,
-                            OpeningStockQty = item.ClosingStockQty,
+  
                             OpeningStockGrossWeight = item.ClosingStockGrossWeight,
                             OpeningStockStoneWeight = item.ClosingStockStoneWeight,
                             OpeningStockNetWeight = item.ClosingStockNetWeight,
-                            StockInGrossWeight = 0,
-                            StockInStoneWeight = 0,
-                            StockOutGrossWeight = 0,
-                            StockOutStoneWeight = 0,
-                            StockInNetWeight = 0,
-                            ClosingStockGrossWeight = 0,
-                            ClosingStockStoneWeight = 0,
-                            StockOutNetWeight = 0,
+
+                            StockInGrossWeight = 0M,
+                            StockInStoneWeight = 0M,
+                            StockInNetWeight = 0M,
+
+                            StockOutGrossWeight = 0M,
+                            StockOutStoneWeight = 0M,
+                            StockOutNetWeight = 0M,
+
+                            OpeningStockQty = item.ClosingStockQty,
+                            StockInQty = 0,
+                            StockOutQty = 0,
+                            ClosingStockQty = item.ClosingStockQty,
+
+                            ClosingStockGrossWeight = item.ClosingStockGrossWeight,
+                            ClosingStockStoneWeight = item.ClosingStockStoneWeight,
+                            ClosingStockNetWeight = item.ClosingStockNetWeight,
+
                             IsObEditable = false,
                         });
                     }
@@ -282,7 +292,7 @@ namespace InvEntry.ViewModels
             if (e.Row is DailyStockSummary row)
             {
                 // Closing = Opening + In – Out
-                row.ClosingStockQty = row.OpeningStockQty + row.StockInQty - row.StockOutQty;
+                row.ClosingStockQty = row.OpeningStockQty.GetValueOrDefault() + row.StockInQty.GetValueOrDefault() - row.StockOutQty.GetValueOrDefault();
                 row.ClosingStockNetWeight = row.OpeningStockNetWeight + row.StockInNetWeight - row.StockOutNetWeight;
             }
         }
@@ -329,14 +339,28 @@ namespace InvEntry.ViewModels
         }
 
         [RelayCommand]
-        private void Save()
+        private async Task Save()
         {
+            try
+            {
+                if (DailyStockSummaryList == null ||
+                    DailyStockSummaryList.Count == 0)
+                {
+                    StatusMessage = "There are no stock entries to save.";
+                    return;
+                }
 
-            _dailyStockSummaryService.CreateDailyStockSummary(DailyStockSummaryList.ToList());
-            //display save message
-            Reset();
-            
-            StatusMessage = "Data saved successfully.";
+                await _dailyStockSummaryService.CreateDailyStockSummary(
+                    DailyStockSummaryList.ToList());
+
+                await RefreshDailyStockSummary();
+
+                StatusMessage = "Data saved successfully.";
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Error saving data: {ex.Message}";
+            }
         }
 
     }
