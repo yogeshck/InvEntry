@@ -2303,6 +2303,22 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 }
             }
 
+            // =========================================================
+            // OFFICIAL INVOICE DATE / TIME
+            // =========================================================
+            //
+            // The Draft InvDate represents when invoice preparation began.
+            // Once all finalisation validation has succeeded, replace it
+            // with the authoritative issue timestamp.
+            //
+            // Use the same timestamp for InvDate and FinalisedOn so the
+            // printed invoice and audit finalisation time are consistent.
+            // =========================================================
+
+            var finalisedAt = DateTime.Now;
+
+            invoice.InvDate = finalisedAt;
+
 
             // =========================================================
             // GENERATE OFFICIAL INVOICE NUMBER
