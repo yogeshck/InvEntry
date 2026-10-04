@@ -59,13 +59,12 @@ namespace InvEntry.ViewModels
         private readonly IGrnService _grnService;
         private readonly IProductCategoryService _productCategoryService;
         private readonly IProductService _productService;
-        private readonly IProductTransactionService _productTransactionService;
-        private readonly IProductTransactionSummaryService _productTransactionSummaryService;
         private readonly IProductStockSummaryService _productStockSummaryService;
         private readonly IProductStockService _productStockService;
         private readonly IMessageBoxService _messageBoxService;
         private readonly IDialogService _dialogService;
         private readonly IMtblReferencesService _mtblReferencesService;
+        private readonly IProductStockMovementService _productStockMovementService;
 
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
         private bool _isSubmitting;
@@ -78,24 +77,22 @@ namespace InvEntry.ViewModels
         public GRNViewModel(IGrnService                         grnService,
                             IProductService                     productService ,
                             IProductStockSummaryService         productStockSummaryService,
-                            IProductTransactionService          productTransactionService,
-                            IProductTransactionSummaryService   productTransactionSummaryService,
                             IDialogService                      dialogService,
                             IProductCategoryService             productCategoryService,
                             IMessageBoxService                  messageBoxService ,
                             IProductStockService                productStockService,
+                            IProductStockMovementService        productStockMovementService,
                             IMtblReferencesService              mtblReferencesService)
         {
             _grnService = grnService;
             _productService = productService;
             _productStockSummaryService = productStockSummaryService;
-            _productTransactionService = productTransactionService;
-            _productTransactionSummaryService = productTransactionSummaryService;
             _dialogService = dialogService;
             _productCategoryService = productCategoryService;
             _productStockService = productStockService;
             _messageBoxService = messageBoxService;
             _mtblReferencesService = mtblReferencesService;
+            _productStockMovementService = productStockMovementService;
 
             selectedRows = new();
 
@@ -608,168 +605,6 @@ namespace InvEntry.ViewModels
             return stocks;
         }
 
-
-        private async Task CreateProductTransaction(
-            ProductStockSummary productStockSummary,
-            int grnLineSummaryGkey,
-            int suppliedQty,
-            int stockQty,
-            string? grnNumber,
-            DateTime? grnDate)
-        {
-            ProductTransaction productTransaction = new();
-
-            //Get previous record closing balance to set this record opening - if not found set opening to zero
-            var productTrans = await _productTransactionService.GetByCategory(productStockSummary.Category);
-
-            if (productTrans != null)
-            {
-                productTransaction.OpeningGrossWeight = productTrans.ClosingGrossWeight;
-                productTransaction.OpeningStoneWeight = productTrans.ClosingStoneWeight;
-                productTransaction.OpeningNetWeight = productTrans.ClosingNetWeight;
-
-            }
-            else
-            {
-                productTransaction.OpeningGrossWeight = 0;
-                productTransaction.OpeningStoneWeight = 0;
-                productTransaction.OpeningNetWeight = 0;
-            }
-
-            productTransaction.ProductSku = productStockSummary.ProductSku;
-            // A GRN can contain more than one line for the same product/category.
-            // Use the persisted line-summary key as the movement source so the API's
-            // retry protection does not collapse distinct GRN lines together.
-            productTransaction.RefGkey = grnLineSummaryGkey;
-            productTransaction.TransactionDate = DateTime.Now;
-            productTransaction.ProductCategory = productStockSummary.Category;
-
-            productTransaction.TransactionType = "Receipt";
-            productTransaction.DocumentNbr = grnNumber;
-            productTransaction.DocumentDate = grnDate;
-            productTransaction.DocumentType = "GRN";
-            productTransaction.VoucherType = "Stock Receipt";
-
-            productTransaction.ObQty = stockQty; 
-            productTransaction.TransactionQty = suppliedQty;
-            productTransaction.CbQty = stockQty + suppliedQty;
-
-            productTransaction.TransactionGrossWeight = productStockSummary.GrossWeight;
-            productTransaction.TransactionStoneWeight = productStockSummary.StoneWeight;
-            productTransaction.TransactionNetWeight = productStockSummary.NetWeight;
-
-            productTransaction.ClosingGrossWeight = productTransaction.OpeningGrossWeight + productStockSummary.GrossWeight;
-            productTransaction.ClosingStoneWeight = productTransaction.OpeningStoneWeight + productStockSummary.StoneWeight;
-            productTransaction.ClosingNetWeight = productTransaction.OpeningNetWeight + productStockSummary.NetWeight;
-
-            var persistedTransaction =
-                await _productTransactionService.CreateProductTransaction(productTransaction);
-
-            await CreateProductTransactionSummary(persistedTransaction);
-        }
-
-        private async Task CreateProductTransactionSummary(
-            ProductTransaction productTransaction)
-        {
-
-            ProductTransactionSummary productTransSumry = new();
-
-            SearchOption = new();
-            SearchOption.To = DateTime.Today;
-            SearchOption.From = DateTime.Today;
-            SearchOption.Filter1 = productTransaction.ProductCategory;
-
-            var prodTransSumry = await _productTransactionSummaryService.GetAll(SearchOption);
-
-            var matchingSummaries = prodTransSumry.ToList();
-            if (matchingSummaries.Count > 1)
-            {
-                throw new InvalidOperationException(
-                    $"More than one daily transaction summary exists for category " +
-                    $"{productTransaction.ProductCategory} on {DateTime.Today:yyyy-MM-dd}. " +
-                    "The records require reconciliation before this GRN can update the daily summary.");
-            }
-
-            productTransSumry = matchingSummaries.SingleOrDefault();
-
-            if (productTransSumry is not null)
-            {
-                // then add up with the existing total
-
-                ApplyReceiptToDailySummary(productTransSumry, productTransaction);
-
-                await _productTransactionSummaryService.UpdateProductTransactionSummary(productTransSumry);
-            }
-            else
-            {
-                //create new record for the day if not found for todays 
-                //get the last transaction of specific category to get opening balance
-                ProductTransactionSummary prodTransSumryPrevious = new();
-
-                productTransSumry = new();
-
-                var prodTransSumryPrev = await _productTransactionSummaryService
-                                                            .GetLastProductTranSumryByCategory(productTransaction.ProductCategory);
-                if (prodTransSumryPrev != null)
-                    prodTransSumryPrevious = prodTransSumryPrev;
-
-                productTransSumry.TransactionDate = DateTime.Now;
-                productTransSumry.ProductCategory = productTransaction.ProductCategory;
-                productTransSumry.ProductSku = productTransaction.ProductSku;
-
-
-                productTransSumry.StockInGrossWeight = productTransaction.TransactionGrossWeight;
-                productTransSumry.StockInStoneWeight = productTransaction.TransactionStoneWeight;
-                productTransSumry.StockInNetWeight = productTransaction.TransactionNetWeight;
-
-                productTransSumry.StockOutGrossWeight = 0;
-                productTransSumry.StockOutStoneWeight = 0;
-                productTransSumry.StockOutNetWeight = 0;
-
-                //Opening
-                productTransSumry.OpeningQty = (prodTransSumryPrevious.ClosingQty ?? 0);
-                productTransSumry.StockInQty = productTransaction.TransactionQty;
-                productTransSumry.StockOutQty = 0;
-                productTransSumry.ClosingQty = productTransSumry.OpeningQty.GetValueOrDefault()
-                                                            + productTransaction.TransactionQty.GetValueOrDefault();
-
-                productTransSumry.OpeningGrossWeight = (prodTransSumryPrevious.ClosingGrossWeight ?? 0);
-                productTransSumry.OpeningStoneWeight = (prodTransSumryPrevious.ClosingStoneWeight ?? 0);
-                productTransSumry.OpeningNetWeight = (prodTransSumryPrevious.ClosingNetWeight ?? 0);
-
-                productTransSumry.ClosingGrossWeight = (productTransSumry.OpeningGrossWeight ?? 0) + productTransaction.TransactionGrossWeight;
-                productTransSumry.ClosingStoneWeight = (productTransSumry.OpeningStoneWeight ?? 0) + productTransaction.TransactionStoneWeight;
-                productTransSumry.ClosingNetWeight = (productTransSumry.OpeningNetWeight ?? 0) + productTransaction.TransactionNetWeight;
-
-                await _productTransactionSummaryService.CreateProductTransactionSummary(productTransSumry);
-            }
-
-        }
-
-        private static void ApplyReceiptToDailySummary(
-            ProductTransactionSummary summary,
-            ProductTransaction transaction)
-        {
-            summary.StockInQty = summary.StockInQty.GetValueOrDefault()
-                + transaction.TransactionQty.GetValueOrDefault();
-            summary.ClosingQty = summary.ClosingQty.GetValueOrDefault()
-                + transaction.TransactionQty.GetValueOrDefault();
-
-            summary.StockInGrossWeight = summary.StockInGrossWeight.GetValueOrDefault()
-                + transaction.TransactionGrossWeight.GetValueOrDefault();
-            summary.StockInStoneWeight = summary.StockInStoneWeight.GetValueOrDefault()
-                + transaction.TransactionStoneWeight.GetValueOrDefault();
-            summary.StockInNetWeight = summary.StockInNetWeight.GetValueOrDefault()
-                + transaction.TransactionNetWeight.GetValueOrDefault();
-
-            summary.ClosingGrossWeight = summary.ClosingGrossWeight.GetValueOrDefault()
-                + transaction.TransactionGrossWeight.GetValueOrDefault();
-            summary.ClosingStoneWeight = summary.ClosingStoneWeight.GetValueOrDefault()
-                + transaction.TransactionStoneWeight.GetValueOrDefault();
-            summary.ClosingNetWeight = summary.ClosingNetWeight.GetValueOrDefault()
-                + transaction.TransactionNetWeight.GetValueOrDefault();
-        }
-
         private async Task<Dictionary<string, int>> ProcessStockSummary(
             IEnumerable<GrnLineSummary> grnLineSummary,
             string? grnNumber,
@@ -778,95 +613,80 @@ namespace InvEntry.ViewModels
             var summaryKeys = new Dictionary<string, int>(
                 StringComparer.OrdinalIgnoreCase);
 
-            foreach (var x in grnLineSummary)
+            foreach (var line in grnLineSummary)
             {
-                var productStockSummary =
-                    await _productStockSummaryService
-                        .GetProductStockSummaryByCategory(x.ProductCategory);
-
-                bool createProductStockSummary = productStockSummary is null;
-
-                productStockSummary ??= new();
-
-                int currentStock = productStockSummary.StockQty.GetValueOrDefault();
-
-                productStockSummary.Category = x.ProductCategory;
-                productStockSummary.ProductGkey = x.ProductGkey;
-
-                productStockSummary.GrossWeight =
-                    productStockSummary.GrossWeight.GetValueOrDefault()
-                    + x.GrossWeight.GetValueOrDefault();
-
-                productStockSummary.StoneWeight =
-                    productStockSummary.StoneWeight.GetValueOrDefault()
-                    + x.StoneWeight.GetValueOrDefault();
-
-                productStockSummary.NetWeight =
-                    productStockSummary.NetWeight.GetValueOrDefault()
-                    + x.NetWeight.GetValueOrDefault();
-
-                productStockSummary.SuppliedGrossWeight =
-                    productStockSummary.SuppliedGrossWeight.GetValueOrDefault()
-                    + x.GrossWeight.GetValueOrDefault();
-
-                productStockSummary.AdjustedWeight =
-                    productStockSummary.AdjustedWeight.GetValueOrDefault();
-
-                productStockSummary.SoldWeight =
-                    productStockSummary.SoldWeight.GetValueOrDefault();
-
-                productStockSummary.BalanceWeight =
-                    productStockSummary.BalanceWeight.GetValueOrDefault()
-                    + x.NetWeight.GetValueOrDefault();
-
-                productStockSummary.SuppliedQty =
-                    productStockSummary.SuppliedQty.GetValueOrDefault()
-                    + x.SuppliedQty.GetValueOrDefault();
-
-                productStockSummary.SoldQty =
-                    productStockSummary.SoldQty.GetValueOrDefault();
-
-                productStockSummary.StockQty =
-                    productStockSummary.StockQty.GetValueOrDefault()
-                    + x.SuppliedQty.GetValueOrDefault();
-
-                productStockSummary.AdjustedQty =
-                    productStockSummary.AdjustedQty.GetValueOrDefault();
-
-                productStockSummary.Status = "In-Stock";
-
-                if (createProductStockSummary)
-                {
-                    await _productStockSummaryService
-                        .CreateProductStockSummary(productStockSummary);
-                }
-                else
-                {
-                    await _productStockSummaryService
-                        .UpdateProductStockSummary(productStockSummary);
-                }
-
-                // Retrieve the saved record so we have its actual database GKey.
-                var savedSummary =
-                    await _productStockSummaryService
-                        .GetProductStockSummaryByCategory(x.ProductCategory);
-
-                if (savedSummary is null || savedSummary.GKey <= 0)
+                if (line.GKey <= 0)
                 {
                     throw new InvalidOperationException(
-                        $"Stock summary was not saved for category {x.ProductCategory}.");
+                        $"GRN line summary was not saved for category {line.ProductCategory}.");
                 }
 
-                summaryKeys[x.ProductCategory] = savedSummary.GKey;
+                if (!line.ProductGkey.HasValue ||
+                    line.ProductGkey.Value <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Product was not identified for category {line.ProductCategory}.");
+                }
 
-                // Preserve the existing category-level receipt transaction.
-                await CreateProductTransaction(
-                    savedSummary,
-                    x.GKey,
-                    x.SuppliedQty.GetValueOrDefault(),
-                    currentStock,
-                    grnNumber,
-                    grnDate);
+                if (string.IsNullOrWhiteSpace(line.ProductCategory))
+                {
+                    throw new InvalidOperationException(
+                        "Product category is required for stock movement.");
+                }
+
+                var request = new StockMovementRequest
+                {
+                    ProductGkey = line.ProductGkey.Value,
+                    ProductCategory = line.ProductCategory,
+
+                    Direction = StockMovementDirection.In,
+
+                    Quantity = line.SuppliedQty.GetValueOrDefault(),
+
+                    GrossWeight = line.GrossWeight.GetValueOrDefault(),
+                    StoneWeight = line.StoneWeight.GetValueOrDefault(),
+                    NetWeight = line.NetWeight.GetValueOrDefault(),
+
+                    TransactionDate = grnDate ?? DateTime.Now,
+
+                    // Header/source document
+                    RefGkey = Header?.GKey,
+
+                    // Exact GRN line = idempotency source
+                    RefLineGkey = line.GKey,
+
+                    DocumentNbr = grnNumber ?? string.Empty,
+                    DocumentType = "GRN",
+                    TransactionType = "Receipt",
+
+                    Notes = $"Material receipt {grnNumber}"
+                };
+
+                await _productStockMovementService.ApplyAsync(request);
+
+                /*
+                 * IMPORTANT:
+                 * The movement API has already updated PRODUCT_STOCK_SUMMARY.
+                 *
+                 * We fetch it again ONLY because ProductStock temporary
+                 * records require StockSummaryGkey.
+                 *
+                 * Do NOT modify/save ProductStockSummary here.
+                 */
+                var savedSummary =
+                    await _productStockSummaryService
+                        .GetProductStockSummaryByCategory(
+                            line.ProductCategory);
+
+                if (savedSummary is null ||
+                    savedSummary.GKey <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Stock summary was not found after processing category {line.ProductCategory}.");
+                }
+
+                summaryKeys[line.ProductCategory] =
+                    savedSummary.GKey;
             }
 
             return summaryKeys;

@@ -2,6 +2,7 @@ using DataAccess.Inventory.ProductStock;
 using DataAccess.Models;
 using DataAccess.Repository;
 using DataAccess.Services;
+using DataAccess.Services.StockMovement;
 using DataAccess.Workflows;
 using InvEntry.Gst.Core.Classification;
 using InvEntry.Gst.Core.Rules;
@@ -114,6 +115,7 @@ builder.Services.AddScoped<IHistoricalMigrationStageService, HistoricalMigration
 builder.Services.AddScoped<ICurrentCompanyGstinProvider, CurrentCompanyGstinProvider>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
+builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementService>();
 
 var app = builder.Build();
 
