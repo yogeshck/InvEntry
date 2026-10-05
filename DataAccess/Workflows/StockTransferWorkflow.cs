@@ -326,6 +326,11 @@ public sealed class StockTransferWorkflow
                     .PostAsync(
                         header,
                         cancellationToken);
+
+                // Post the physical old-metal stock OUT.
+                PostOldMetalStock(
+                    header);
+
             }
             else
             {
@@ -369,6 +374,95 @@ public sealed class StockTransferWorkflow
 
             throw;
         }
+    }
+
+    // ========================================================
+    // OLD METAL STOCK POSTING
+    // ========================================================
+
+    private void PostOldMetalStock(
+        StockTransferHeader header)
+    {
+        if (header.StockTransferLines is null ||
+            header.StockTransferLines.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Old Metal Transfer contains no lines to post.");
+        }
+
+        var requests =
+            header.StockTransferLines
+                .OrderBy(
+                    line =>
+                        line.LineNbr)
+                .Select(
+                    line =>
+                        new StockMovementRequest
+                        {
+                            DocumentGkey =
+                                header.Gkey,
+
+                            DocumentLineGkey =
+                                line.Gkey,
+
+                            DocumentNumber =
+                                header.TransferNbr,
+
+                            DocumentDate =
+                                header.TransferDate,
+
+                            DocumentType =
+                                "OLD_METAL_TRANSFER",
+
+                            ProductGkey =
+                                line.ProductGkey
+                                    .GetValueOrDefault(),
+
+                            ProductStockGkey =
+                                null,
+
+                            ProductSku =
+                                null,
+
+                            ProductCategory =
+                                line.ProductCategory,
+
+                            Direction =
+                                StockMovementDirection.Out,
+
+                            Purpose =
+                                StockMovementPurpose.OldMetalTransferOut,
+
+                            // Old metal inventory is weight-based.
+                            Quantity =
+                                0,
+
+                            GrossWeight =
+                                line.GrossWeight,
+
+                            StoneWeight =
+                                line.StoneWeight,
+
+                            NetWeight =
+                                line.NetWeight,
+
+                            UnitPrice =
+                                null,
+
+                            TransactionValue =
+                                null,
+
+                            Reason =
+                                "Old Metal Transfer",
+
+                            Notes =
+                                line.Notes
+                        })
+                .ToList();
+
+        _stockMovementService
+            .PostMovements(
+                requests);
     }
 
 
@@ -994,8 +1088,8 @@ public sealed class StockTransferWorkflow
             Uom =
                 requestLine.Uom.Trim(),
 
-            Qty =
-                requestLine.Qty,
+            Qty = 0,
+               // requestLine.Qty,
 
             GrossWeight =
                 requestLine.GrossWeight,
@@ -1007,10 +1101,10 @@ public sealed class StockTransferWorkflow
                 requestLine.NetWeight,
 
             TransactedRate = null,
-               // requestLine.TransactedRate,
+            // requestLine.TransactedRate,
 
             TransferValue = null,
-              //  requestLine.TransferValue,
+            //  requestLine.TransferValue,
 
             Notes =
                 NormaliseOptionalText(
