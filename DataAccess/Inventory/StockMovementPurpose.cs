@@ -16,5 +16,8 @@ public enum StockMovementPurpose
     BranchTransferIn,
 
     WorkshopIssue,
-    WorkshopReceipt
+    WorkshopReceipt,
+
+    OldMetalPurchase,
+    OldMetalTransferOut
 }

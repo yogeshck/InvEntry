@@ -25,9 +25,10 @@ public sealed class ProductStockMovementController : ControllerBase
     {
         try
         {
-            var movement = await _stockMovementService.ApplyAsync(
-                request,
-                cancellationToken);
+            var movement =
+                await _stockMovementService.ApplyAsync(
+                    request,
+                    cancellationToken);
 
             return Ok(movement);
         }

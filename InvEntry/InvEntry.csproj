@@ -111,6 +111,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Documents\Gst\" />
+    <Folder Include="Documents\Process\" />
+    <Folder Include="Documents\Technical\" />
     <Folder Include="GST\Export\" />
     <Folder Include="GST\Helper\" />
     <Folder Include="GST\Models\" />

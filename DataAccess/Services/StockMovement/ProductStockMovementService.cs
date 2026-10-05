@@ -34,10 +34,16 @@ public sealed class ProductStockMovementService
 
         try
         {
-            // -------------------------------------------------
-            // 1. Prevent the same source transaction being
-            //    applied to stock more than once.
-            // -------------------------------------------------
+            // ============================================================
+            // 1. IDEMPOTENCY
+            //
+            // Prevent the same source transaction from being applied
+            // to stock more than once.
+            //
+            // Logical source:
+            // DocumentType + RefGkey + RefLineGkey + TransactionType
+            // ============================================================
+
             var existing = await _movementRepository.GetAsync(x =>
                 x.DocumentType == request.DocumentType &&
                 x.RefGkey == request.RefGkey &&
@@ -59,26 +65,33 @@ public sealed class ProductStockMovementService
                 return existing;
             }
 
-            // -------------------------------------------------
-            // 2. Get CURRENT STOCK.
+            // ============================================================
+            // 2. READ CURRENT AUTHORITATIVE STOCK
+            //
+            // ProductStockSummary is the source of the Opening Balance.
             //
             // IMPORTANT:
-            // This is the source of the Opening Balance.
-            // We DO NOT read the previous transaction's CB.
-            // -------------------------------------------------
+            // Never derive OB from the previous ProductTransactionSummary
+            // closing balance.
+            // ============================================================
+
             var stock = await _stockRepository.GetAsync(x =>
                 x.ProductGkey == request.ProductGkey);
 
             var isNewStockSummary = stock is null;
 
+            // An OUT movement cannot be applied when the product/category
+            // has no current stock summary.
             if (isNewStockSummary &&
-                 request.Direction == StockMovementDirection.Out)
+                request.Direction == StockMovementDirection.Out)
             {
                 throw new InvalidOperationException(
-                    $"Stock does not exist for category {request.ProductCategory}. " +
+                    $"Stock does not exist for category " +
+                    $"{request.ProductCategory}. " +
                     "An outward movement cannot be recorded.");
             }
 
+            // First-ever receipt for this product/category.
             if (stock is null)
             {
                 stock = new ProductStockSummary
@@ -99,7 +112,15 @@ public sealed class ProductStockMovementService
                 };
             }
 
-            var openingQty = stock.StockQty ?? 0;
+            // ============================================================
+            // 3. CAPTURE OPENING BALANCE
+            //
+            // This is ProductStockSummary immediately BEFORE this
+            // particular transaction.
+            // ============================================================
+
+            var openingQty =
+                stock.StockQty ?? 0;
 
             var openingGross =
                 stock.GrossWeight ?? 0m;
@@ -110,9 +131,10 @@ public sealed class ProductStockMovementService
             var openingNet =
                 stock.NetWeight ?? 0m;
 
-            // -------------------------------------------------
-            // 3. Determine IN / OUT for this transaction.
-            // -------------------------------------------------
+            // ============================================================
+            // 4. DETERMINE MOVEMENT VALUES
+            // ============================================================
+
             var stockInQty =
                 request.Direction == StockMovementDirection.In
                     ? request.Quantity
@@ -153,26 +175,42 @@ public sealed class ProductStockMovementService
                     ? request.NetWeight
                     : 0m;
 
-            // -------------------------------------------------
-            // 4. Calculate stock AFTER this transaction.
+            // ============================================================
+            // 5. CALCULATE CLOSING BALANCE
             //
             // CB = OB + IN - OUT
-            // -------------------------------------------------
+            // ============================================================
+
             var closingQty =
-                openingQty + stockInQty - stockOutQty;
+                openingQty +
+                stockInQty -
+                stockOutQty;
 
             var closingGross =
-                openingGross + stockInGross - stockOutGross;
+                openingGross +
+                stockInGross -
+                stockOutGross;
 
             var closingStone =
-                openingStone + stockInStone - stockOutStone;
+                openingStone +
+                stockInStone -
+                stockOutStone;
 
             var closingNet =
-                openingNet + stockInNet - stockOutNet;
+                openingNet +
+                stockInNet -
+                stockOutNet;
 
-            // -------------------------------------------------
-            // 5. Create NEW movement ledger row.
-            // -------------------------------------------------
+            // ============================================================
+            // 6. CREATE NEW MOVEMENT LEDGER ROW
+            //
+            // IMPORTANT:
+            // Always INSERT a new ProductTransactionSummary row.
+            //
+            // Multiple rows for the same category on the same date are
+            // valid and expected.
+            // ============================================================
+
             var movement = new ProductTransactionSummary
             {
                 TransactionDate = request.TransactionDate,
@@ -210,16 +248,51 @@ public sealed class ProductStockMovementService
                 Notes = request.Notes
             };
 
-            // -------------------------------------------------
-            // 6. Update CURRENT stock using the SAME CB.
-            // -------------------------------------------------
-            stock.StockQty = closingQty;
-            stock.GrossWeight = closingGross;
-            stock.StoneWeight = closingStone;
-            stock.NetWeight = closingNet;
+            // ============================================================
+            // 7. UPDATE CURRENT AUTHORITATIVE STOCK
+            //
+            // Use exactly the same closing values that were written to
+            // ProductTransactionSummary.
+            // ============================================================
 
-            stock.BalanceWeight = closingNet;
-            stock.ModifiedOn = DateTime.Now;
+            stock.StockQty =
+                closingQty;
+
+            stock.GrossWeight =
+                closingGross;
+
+            stock.StoneWeight =
+                closingStone;
+
+            stock.NetWeight =
+                closingNet;
+
+            // For this GRN stock movement service we maintain
+            // BalanceWeight as current net weight.
+            stock.BalanceWeight =
+                closingNet;
+
+            stock.ModifiedOn =
+                DateTime.Now;
+
+            // ============================================================
+            // IMPORTANT
+            //
+            // Do NOT update:
+            //
+            // SuppliedQty
+            // SuppliedGrossWeight
+            // AdjustedQty
+            // AdjustedWeight
+            // SoldQty
+            // SoldWeight
+            //
+            // in this generic service yet.
+            //
+            // Those fields have existing business semantics and should
+            // not be changed until the consolidated stock engine has
+            // clearly defined their purpose.
+            // ============================================================
 
             if (isNewStockSummary)
             {
@@ -230,18 +303,24 @@ public sealed class ProductStockMovementService
                 _stockRepository.Update(stock);
             }
 
-            // Always INSERT a new movement.
+            // Always INSERT the movement ledger record.
             _movementRepository.Add(movement);
 
-            // Both changes are saved together.
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // ============================================================
+            // 8. SAVE STOCK + LEDGER ATOMICALLY
+            // ============================================================
 
-            await transaction.CommitAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(
+                cancellationToken);
+
+            await transaction.CommitAsync(
+                cancellationToken);
 
             _logger.LogInformation(
                 "Stock movement recorded for {Category}. " +
                 "Document {DocumentType} {DocumentNbr}. " +
-                "OB Qty {OpeningQty}, IN {StockInQty}, OUT {StockOutQty}, CB {ClosingQty}.",
+                "OB Qty {OpeningQty}, IN {StockInQty}, " +
+                "OUT {StockOutQty}, CB {ClosingQty}.",
                 request.ProductCategory,
                 request.DocumentType,
                 request.DocumentNbr,
@@ -254,7 +333,15 @@ public sealed class ProductStockMovementService
         }
         catch
         {
-            await transaction.RollbackAsync(cancellationToken);
+            // ============================================================
+            // 9. ROLLBACK EVERYTHING
+            //
+            // ProductStockSummary and ProductTransactionSummary must
+            // either both succeed or both be rolled back.
+            // ============================================================
+
+            await transaction.RollbackAsync(
+                cancellationToken);
 
             _unitOfWork.ClearChanges();
 
@@ -262,19 +349,29 @@ public sealed class ProductStockMovementService
         }
     }
 
-    private static void Validate(StockMovementRequest request)
+    private static void Validate(
+        StockMovementRequest request)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         if (request.ProductGkey <= 0)
+        {
             throw new ArgumentException(
                 "Product GKey must be greater than zero.");
+        }
 
-        if (string.IsNullOrWhiteSpace(request.ProductCategory))
+        if (string.IsNullOrWhiteSpace(
+                request.ProductCategory))
+        {
             throw new ArgumentException(
                 "Product category is required.");
+        }
 
         if (request.Quantity < 0)
+        {
             throw new ArgumentException(
                 "Movement quantity cannot be negative.");
+        }
 
         if (request.GrossWeight < 0 ||
             request.StoneWeight < 0 ||
@@ -284,12 +381,18 @@ public sealed class ProductStockMovementService
                 "Movement weights cannot be negative.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.DocumentType))
+        if (string.IsNullOrWhiteSpace(
+                request.DocumentType))
+        {
             throw new ArgumentException(
                 "Document type is required.");
+        }
 
-        if (string.IsNullOrWhiteSpace(request.TransactionType))
+        if (string.IsNullOrWhiteSpace(
+                request.TransactionType))
+        {
             throw new ArgumentException(
                 "Transaction type is required.");
+        }
     }
 }

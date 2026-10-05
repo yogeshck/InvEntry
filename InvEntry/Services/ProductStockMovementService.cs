@@ -43,7 +43,7 @@ public sealed class StockMovementRequest
 
 public interface IProductStockMovementService
 {
-    Task<ProductTransactionSummary> ApplyAsync(
+    Task ApplyAsync(
         StockMovementRequest request);
 }
 
@@ -58,12 +58,21 @@ public sealed class ProductStockMovementService
         _mijmsApiService = mijmsApiService;
     }
 
-    public async Task<ProductTransactionSummary> ApplyAsync(
+    public async Task ApplyAsync(
         StockMovementRequest request)
     {
-        return await _mijmsApiService
-            .Post<StockMovementRequest, ProductTransactionSummary>(
-                "api/product-stock-movement",
-                request);
+        ArgumentNullException.ThrowIfNull(request);
+
+        var movement =
+            await _mijmsApiService
+                .Post<StockMovementRequest, ProductTransactionSummary>(
+                    "api/product-stock-movement",
+                    request);
+
+        if (movement is null)
+        {
+            throw new InvalidOperationException(
+                "Stock movement response was not received.");
+        }
     }
 }

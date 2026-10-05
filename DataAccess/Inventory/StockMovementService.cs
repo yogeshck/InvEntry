@@ -191,12 +191,14 @@ public sealed class StockMovementService
 
                 break;
 
-
             case StockMovementDirection.In:
 
-                throw new NotSupportedException(
-                    "Stock IN will be enabled when " +
-                    "GRN/material receipt is integrated.");
+                ApplyStockIn(
+                    stockSummary,
+                    taggedStock,
+                    request);
+
+                break;
 
 
             default:
@@ -212,18 +214,14 @@ public sealed class StockMovementService
         //    ALWAYS INSERT
         // =====================================================
 
-        if (request.Purpose !=
-            StockMovementPurpose.BranchTransferOut)
-        {
-            var transactionSummary =
-                CreateProductTransactionSummary(
-                    request,
-                    summaryOpening,
-                    stockSummary);
+        var transactionSummary =
+            CreateProductTransactionSummary(
+                request,
+                summaryOpening,
+                stockSummary);
 
-            _productTransactionSummaryRepository.Add(
-                transactionSummary);
-        }
+        _productTransactionSummaryRepository.Add(
+            transactionSummary);
 
 
         // =====================================================
@@ -245,6 +243,142 @@ public sealed class StockMovementService
         }
     }
 
+    private void ApplyStockIn(
+    ProductStockSummary summary,
+    Models.ProductStock? taggedStock,
+    StockMovementRequest request)
+    {
+        // =========================================================
+        // PRODUCT SUMMARY
+        // =========================================================
+
+        summary.StockQty =
+            summary.StockQty.GetValueOrDefault()
+            + request.Quantity;
+
+        summary.GrossWeight =
+            NormaliseWeight(
+                summary.GrossWeight.GetValueOrDefault()
+                + request.GrossWeight);
+
+        summary.StoneWeight =
+            NormaliseWeight(
+                summary.StoneWeight.GetValueOrDefault()
+                + request.StoneWeight);
+
+        summary.NetWeight =
+            NormaliseWeight(
+                summary.NetWeight.GetValueOrDefault()
+                + request.NetWeight);
+
+        summary.BalanceWeight =
+            summary.NetWeight;
+
+
+        // =========================================================
+        // PURPOSE-SPECIFIC TOTALS
+        // =========================================================
+
+        switch (request.Purpose)
+        {
+            case StockMovementPurpose.PurchaseReceipt:
+            case StockMovementPurpose.MaterialReceipt:
+
+                summary.SuppliedQty =
+                    summary.SuppliedQty.GetValueOrDefault()
+                    + request.Quantity;
+
+                summary.SuppliedGrossWeight =
+                    NormaliseWeight(
+                        summary.SuppliedGrossWeight.GetValueOrDefault()
+                        + request.GrossWeight);
+
+                break;
+
+
+            case StockMovementPurpose.StockAdjustmentIncrease:
+
+                summary.AdjustedQty =
+                    summary.AdjustedQty.GetValueOrDefault()
+                    + request.Quantity;
+
+                summary.AdjustedWeight =
+                    NormaliseWeight(
+                        summary.AdjustedWeight.GetValueOrDefault()
+                        + request.GrossWeight);
+
+                break;
+
+
+            default:
+
+                // Transfer/workshop receipts affect current stock,
+                // but no legacy cumulative total is changed here.
+                break;
+        }
+
+
+        summary.Status = "In-Stock";
+
+        summary.ModifiedOn =
+            DateTime.Now;
+
+        _productStockSummaryRepository.Update(
+            summary);
+
+
+        // =========================================================
+        // TAGGED STOCK
+        // =========================================================
+        //
+        // Do NOT create/update tagged ProductStock here for GRN yet.
+        //
+        // GRN currently creates its Pending Tag ProductStock records
+        // separately after the category receipt is posted.
+        // =========================================================
+
+        if (taggedStock != null)
+        {
+            ApplyTaggedStockIn(
+                taggedStock,
+                request);
+        }
+    }
+
+    private void ApplyTaggedStockIn(
+    Models.ProductStock stock,
+    StockMovementRequest request)
+    {
+        stock.StockQty =
+            stock.StockQty.GetValueOrDefault()
+            + request.Quantity;
+
+        stock.GrossWeight =
+            NormaliseWeight(
+                stock.GrossWeight.GetValueOrDefault()
+                + request.GrossWeight);
+
+        stock.StoneWeight =
+            NormaliseWeight(
+                stock.StoneWeight.GetValueOrDefault()
+                + request.StoneWeight);
+
+        stock.NetWeight =
+            NormaliseWeight(
+                stock.NetWeight.GetValueOrDefault()
+                + request.NetWeight);
+
+        stock.BalanceWeight =
+            NormaliseWeight(
+                stock.BalanceWeight.GetValueOrDefault()
+                + request.GrossWeight);
+
+        stock.IsProductSold = false;
+        stock.Status = "In-Stock";
+        stock.ModifiedOn = DateTime.Now;
+
+        _productStockRepository.Update(stock);
+    }
 
     // =========================================================
     // VALIDATE REQUEST
@@ -607,57 +741,37 @@ public sealed class StockMovementService
         ProductStockSummary summary,
         StockMovementRequest request)
     {
-        if (request.Purpose ==
-            StockMovementPurpose.BranchTransferOut)
-        {
-            summary.GrossWeight = NormaliseWeight(
-                summary.GrossWeight.GetValueOrDefault() -
-                request.GrossWeight);
-            summary.StoneWeight = NormaliseWeight(
-                summary.StoneWeight.GetValueOrDefault() -
-                request.StoneWeight);
-            summary.NetWeight = NormaliseWeight(
-                summary.NetWeight.GetValueOrDefault() -
-                request.NetWeight);
-            summary.SoldWeight = NormaliseWeight(
-                summary.SoldWeight.GetValueOrDefault() +
-                request.NetWeight);
-            summary.BalanceWeight = NormaliseWeight(
-                summary.BalanceWeight.GetValueOrDefault() -
-                request.NetWeight);
-            summary.SoldQty = summary.SoldQty.GetValueOrDefault() + request.Quantity;
-            summary.StockQty = summary.StockQty.GetValueOrDefault() - request.Quantity;
-            summary.ModifiedOn = DateTime.Now;
-            _productStockSummaryRepository.Update(summary);
-            return;
-        }
-
-        if (request.Purpose == StockMovementPurpose.Sale)
-        {
-            summary.GrossWeight = NormaliseWeight(
-                summary.GrossWeight.GetValueOrDefault() - request.GrossWeight);
-            summary.StoneWeight = NormaliseWeight(
-                summary.StoneWeight.GetValueOrDefault() - request.StoneWeight);
-            summary.NetWeight = NormaliseWeight(
-                summary.NetWeight.GetValueOrDefault() - request.NetWeight);
-        }
+        // =========================================================
+        // AUTHORITATIVE CURRENT STOCK
+        // =========================================================
 
         summary.StockQty =
             summary.StockQty.GetValueOrDefault()
             - request.Quantity;
 
-
-        summary.BalanceWeight =
+        summary.GrossWeight =
             NormaliseWeight(
-                summary.BalanceWeight.GetValueOrDefault() -
-                (request.Purpose == StockMovementPurpose.Sale
-                    ? request.NetWeight
-                    : request.GrossWeight));
+                summary.GrossWeight.GetValueOrDefault()
+                - request.GrossWeight);
+
+        summary.StoneWeight =
+            NormaliseWeight(
+                summary.StoneWeight.GetValueOrDefault()
+                - request.StoneWeight);
+
+        summary.NetWeight =
+            NormaliseWeight(
+                summary.NetWeight.GetValueOrDefault()
+                - request.NetWeight);
+
+        // BalanceWeight mirrors current NetWeight.
+        summary.BalanceWeight =
+            summary.NetWeight;
 
 
-        // -----------------------------------------------------
-        // PURPOSE-SPECIFIC TOTALS
-        // -----------------------------------------------------
+        // =========================================================
+        // PURPOSE-SPECIFIC LEGACY TOTALS
+        // =========================================================
 
         switch (request.Purpose)
         {
@@ -668,8 +782,9 @@ public sealed class StockMovementService
                     + request.Quantity;
 
                 summary.SoldWeight =
-                    summary.SoldWeight.GetValueOrDefault()
-                    + request.NetWeight;
+                    NormaliseWeight(
+                        summary.SoldWeight.GetValueOrDefault()
+                        + request.NetWeight);
 
                 break;
 
@@ -681,40 +796,41 @@ public sealed class StockMovementService
                     - request.Quantity;
 
                 summary.AdjustedWeight =
-                    summary.AdjustedWeight.GetValueOrDefault()
-                    - request.GrossWeight;
+                    NormaliseWeight(
+                        summary.AdjustedWeight.GetValueOrDefault()
+                        - request.GrossWeight);
 
                 break;
 
 
             default:
 
-                // Other OUT purposes currently reduce only
-                // the current stock balance.
+                // Transfer, workshop issue and other OUT movements
+                // affect current stock but are not sales.
                 break;
         }
 
 
+        // =========================================================
+        // STATUS
+        // =========================================================
+
         var empty =
             IsEmpty(
                 summary.StockQty.GetValueOrDefault(),
-                summary.BalanceWeight.GetValueOrDefault());
-
+                summary.NetWeight.GetValueOrDefault());
 
         summary.Status =
             empty
                 ? "Out-of-Stock"
                 : "In-Stock";
 
-
         summary.ModifiedOn =
             DateTime.Now;
-
 
         _productStockSummaryRepository.Update(
             summary);
     }
-
 
     // =========================================================
     // APPLY TAGGED PRODUCT STOCK OUT
@@ -838,7 +954,7 @@ public sealed class StockMovementService
                 summary.StockQty.GetValueOrDefault(),
 
             GrossWeight =
-                summary.BalanceWeight.GetValueOrDefault(),
+                summary.GrossWeight.GetValueOrDefault(),
 
             StoneWeight =
                 summary.StoneWeight.GetValueOrDefault(),
@@ -1016,7 +1132,7 @@ public sealed class StockMovementService
             // -------------------------------------------------
 
             ClosingGrossWeight =
-                closing.BalanceWeight.GetValueOrDefault(),
+                closing.GrossWeight.GetValueOrDefault(),
 
             ClosingStoneWeight =
                 CalculateClosingWeight(
@@ -1185,6 +1301,12 @@ public sealed class StockMovementService
 
             StockMovementPurpose.WorkshopReceipt =>
                 "WORKSHOP_RECEIPT",
+
+            StockMovementPurpose.OldMetalPurchase => 
+                "OLD_METAL_PURCHASE",
+
+            StockMovementPurpose.OldMetalTransferOut => 
+                "OLD_METAL_TRANSFER_OUT",
 
             _ =>
                 throw new InvalidOperationException(
