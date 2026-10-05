@@ -71,18 +71,78 @@ public class ReportFactoryService : IReportFactoryService
         _appConfigName = "ReportDBCon01";
     }
 
+    /*    public XtraReport CreateInvoiceReport()
+        {
+            return new InvPrint25().AddDataSource(_appConfigName);
+    //            XrNewInvoice24().AddDataSource(_appConfigName);        // XtraInvoice();
+        }
+
+        public XtraReport CreateInvoiceReport(string pInvoiceNbr)
+        {
+            var report = CreateInvoiceReport();
+
+            report.Parameters["pInvNbr"].Value = pInvoiceNbr;
+            report.CreateDocument();
+            return report;
+        }*/
+
     public XtraReport CreateInvoiceReport()
     {
-        return new InvPrint25().AddDataSource(_appConfigName);
-//            XrNewInvoice24().AddDataSource(_appConfigName);        // XtraInvoice();
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        Serilog.Log.Information(
+            "Invoice Report: creating InvPrint25");
+
+        var report = new InvPrint25();
+
+        Serilog.Log.Information(
+            "Invoice Report: InvPrint25 constructed in {ElapsedMs} ms",
+            sw.ElapsedMilliseconds);
+
+        report.AddDataSource(_appConfigName);
+
+        Serilog.Log.Information(
+            "Invoice Report: datasource configured in {ElapsedMs} ms",
+            sw.ElapsedMilliseconds);
+
+        return report;
     }
 
     public XtraReport CreateInvoiceReport(string pInvoiceNbr)
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        Serilog.Log.Information(
+            "Invoice Report {InvoiceNumber}: START",
+            pInvoiceNbr);
+
         var report = CreateInvoiceReport();
 
+        Serilog.Log.Information(
+            "Invoice Report {InvoiceNumber}: report created in {ElapsedMs} ms",
+            pInvoiceNbr,
+            sw.ElapsedMilliseconds);
+
         report.Parameters["pInvNbr"].Value = pInvoiceNbr;
+
+        Serilog.Log.Information(
+            "Invoice Report {InvoiceNumber}: parameter assigned in {ElapsedMs} ms",
+            pInvoiceNbr,
+            sw.ElapsedMilliseconds);
+
+        var documentSw =
+            System.Diagnostics.Stopwatch.StartNew();
+
         report.CreateDocument();
+
+        documentSw.Stop();
+
+        Serilog.Log.Information(
+            "Invoice Report {InvoiceNumber}: CreateDocument took {DocumentMs} ms; total {TotalMs} ms",
+            pInvoiceNbr,
+            documentSw.ElapsedMilliseconds,
+            sw.ElapsedMilliseconds);
+
         return report;
     }
 

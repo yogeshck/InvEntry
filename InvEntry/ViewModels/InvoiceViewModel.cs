@@ -1647,42 +1647,98 @@ public partial class InvoiceViewModel : ObservableObject
                 Header.GKey,
                 settlement);
 
+        FinaliseInvoiceResponse result;
+
+        // ==========================================================
+        // 1. FINALISE INVOICE
+        // ==========================================================
         try
         {
-            var result =
+            result =
                 await _invoiceService.FinaliseAsync(request);
-
-            Header.InvNbr = result.InvNbr;
-            Header.Status = result.Status;
-
-            FinaliseInvoiceCommand.NotifyCanExecuteChanged();
-            SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
-            CancelInvoiceCommand.NotifyCanExecuteChanged();
-            CreateInvoiceCommand.NotifyCanExecuteChanged();
-            PrintInvoiceCommand.NotifyCanExecuteChanged();
-            PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
-            EditCustomerCommand.NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Unable to finalise invoice. GKey={InvoiceGkey}",
+                Header?.GKey);
 
             _messageBoxService.ShowMessage(
-                $"Invoice {result.InvNbr} has been finalised successfully.",
-                "Invoice Finalised",
+                $"Invoice could not be finalised.\n\n{ex.Message}",
+                "Invoice Finalisation",
                 MessageButton.OK,
-                MessageIcon.Information);
+                MessageIcon.Error);
+
+            return;
+        }
+
+
+        // ==========================================================
+        // 2. FINALISATION SUCCEEDED
+        // From this point onward, never report a preview problem
+        // as an invoice-finalisation problem.
+        // ==========================================================
+
+        Header.InvNbr = result.InvNbr;
+        Header.Status = result.Status;
+
+        FinaliseInvoiceCommand.NotifyCanExecuteChanged();
+        SaveDraftInvoiceCommand.NotifyCanExecuteChanged();
+        CancelInvoiceCommand.NotifyCanExecuteChanged();
+        CreateInvoiceCommand.NotifyCanExecuteChanged();
+        PrintInvoiceCommand.NotifyCanExecuteChanged();
+        PrintPreviewInvoiceCommand.NotifyCanExecuteChanged();
+        EditCustomerCommand.NotifyCanExecuteChanged();
+
+        _messageBoxService.ShowMessage(
+            $"Invoice {result.InvNbr} has been finalised successfully.",
+            "Invoice Finalised",
+            MessageButton.OK,
+            MessageIcon.Information);
+
+
+        // ==========================================================
+        // 3. PRINT PREVIEW - SEPARATE OPERATION
+        // ==========================================================
+        try
+        {
+
+            Serilog.Log.Information(
+                "Invoice preview START {InvoiceNumber}",
+                result.InvNbr);
 
             _reportDialogService.PrintPreview(result.InvNbr);
 
-            // Start next invoice after preview is closed.
-            ResetInvoice();
+            Serilog.Log.Information(
+                "Invoice preview END {InvoiceNumber}",
+                result.InvNbr);
 
         }
         catch (Exception ex)
         {
+            Serilog.Log.Error(
+                ex,
+                "Invoice {InvoiceNumber} was finalised, but print preview could not be opened.",
+                result.InvNbr);
+
             _messageBoxService.ShowMessage(
-                $"Invoice could not be finalised.\n\n{ex.Message}",
-                "Finalisation Failed",
+                $"Invoice {result.InvNbr} was finalised successfully, " +
+                $"but the print preview could not be opened.\n\n{ex.Message}",
+                "Invoice Finalised",
                 MessageButton.OK,
-                MessageIcon.Error);
+                MessageIcon.Warning);
         }
+
+
+        // ==========================================================
+        // 4. START NEXT INVOICE
+        // Preview either completed normally or could not be opened.
+        // The completed invoice must not remain editable.
+        // ==========================================================
+
+        ResetInvoice();
+    
     }
 
     private void MarkDraftAsModified()

@@ -2468,6 +2468,10 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
                 }
             }
 
+            PostInvoiceOldMetalStock(
+                invoice,
+                oldMetalTransactions);
+
             // Create settlement records after assigning the old-metal
             // document number so the adjustment retains that audit link.
             // The existing finalisation transaction still covers all writes.
@@ -2515,6 +2519,79 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
+    }
+
+    private void PostInvoiceOldMetalStock(
+    InvoiceHeader invoice,
+    IReadOnlyCollection<OldMetalTransaction> oldMetalTransactions)
+    {
+        if (oldMetalTransactions.Count == 0)
+            return;
+
+        var requests =
+            oldMetalTransactions
+                .Select(oldMetal =>
+                    new StockMovementRequest
+                    {
+                        DocumentGkey =
+                            invoice.Gkey,
+
+                        DocumentLineGkey =
+                            oldMetal.Gkey,
+
+                        DocumentNumber =
+                            oldMetal.TransNbr,
+
+                        DocumentDate =
+                            invoice.InvDate ?? DateTime.Now,
+
+                        DocumentType =
+                            "OLD_METAL_PURCHASE",
+
+                        ProductGkey =
+                            oldMetal.ProductGkey.GetValueOrDefault(),
+
+                        ProductCategory =
+                            oldMetal.ProductCategory,
+
+                        ProductSku =
+                            null,
+
+                        Direction =
+                            StockMovementDirection.In,
+
+                        Purpose =
+                            StockMovementPurpose.OldMetalPurchase,
+
+                        // Old metal is weight-based inventory.
+                        Quantity =
+                            0,
+
+                        GrossWeight =
+                            oldMetal.GrossWeight.GetValueOrDefault(),
+
+                        StoneWeight =
+                            oldMetal.StoneWeight.GetValueOrDefault(),
+
+                        NetWeight =
+                            oldMetal.NetWeight.GetValueOrDefault(),
+
+                        UnitPrice =
+                            oldMetal.TransactedRate,
+
+                        TransactionValue =
+                            oldMetal.FinalPurchasePrice,
+
+                        Reason =
+                            "Invoice Old Metal Purchase",
+
+                        Notes =
+                            $"Received against Invoice {invoice.InvNbr}"
+                    })
+                .ToList();
+
+        _stockMovementService.PostMovements(
+            requests);
     }
 
     private string GenerateOldMetalTransactionNumber(
