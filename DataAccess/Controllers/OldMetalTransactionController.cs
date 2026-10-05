@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using DataAccess.Inventory.ProductStock;
+using DataAccess.Models;
 using DataAccess.Repository;
 using InvEntry.Utils.Options;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,8 @@ namespace DataAccess.Controllers
     public class OldMetalTransactionController
         : BaseController<OldMetalTransaction>
     {
-        private readonly IRepositoryBase<VoucherType>
-            _voucherTypeRepo;
+        private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
+        private readonly IStockMovementService _stockMovementService;
 
 
         public OldMetalTransactionController(
@@ -24,6 +25,8 @@ namespace DataAccess.Controllers
 
             IRepositoryBase<VoucherType>
                 voucherTypeRepo,
+
+            IStockMovementService stockMovementService,
 
             IUnitOfWork
                 unitOfWork)
@@ -34,6 +37,9 @@ namespace DataAccess.Controllers
         {
             _voucherTypeRepo =
                 voucherTypeRepo;
+
+            _stockMovementService =
+                stockMovementService;
         }
 
 
@@ -325,9 +331,14 @@ namespace DataAccess.Controllers
                 }
             }
 
+            await using var transaction =
+                await _unitOfWork.BeginTransactionAsync();
 
             try
             {
+
+
+
                 // ----------------------------------------------------
                 // GENERATE ONLY ONE DOCUMENT NUMBER
                 // ----------------------------------------------------
@@ -395,6 +406,73 @@ namespace DataAccess.Controllers
                 await _unitOfWork
                     .SaveChangesAsync();
 
+                var movementRequests =
+                    lines.Select(line =>
+                        new StockMovementRequest
+                        {
+                            DocumentGkey =
+                                line.Gkey,
+
+                            DocumentLineGkey =
+                                line.Gkey,
+
+                            DocumentNumber =
+                                transactionNumber,
+
+                            DocumentDate =
+                                line.TransDate ?? DateTime.Now, 
+
+                            DocumentType =
+                                "OLD_METAL_PURCHASE",
+
+                            ProductGkey =
+                                line.ProductGkey.GetValueOrDefault(),
+
+                            ProductCategory =
+                                line.ProductCategory,
+
+                            ProductSku =
+                                string.Empty,
+
+                            Direction =
+                                StockMovementDirection.In,
+
+                            Purpose =
+                                StockMovementPurpose.OldMetalPurchase,
+
+                            // Old metal is weight-based consolidated stock.
+                            Quantity =
+                                0,
+
+                            GrossWeight =
+                                line.GrossWeight.GetValueOrDefault(),
+
+                            StoneWeight =
+                                line.StoneWeight.GetValueOrDefault(),
+
+                            NetWeight =
+                                line.NetWeight.GetValueOrDefault(),
+
+                            UnitPrice =
+                                line.TransactedRate,
+
+                            TransactionValue =
+                                line.FinalPurchasePrice,
+
+                            Reason =
+                                "Old Metal Purchase",
+
+                            Notes =
+                                line.Remarks
+                        })
+                    .ToList();
+
+                _stockMovementService.PostMovements(
+                        movementRequests);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await transaction.CommitAsync();
 
                 // ----------------------------------------------------
                 // RETURN TRANSACTION NUMBER
