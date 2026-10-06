@@ -129,5 +129,7 @@
     <Build Include="dbo\Stored Procedures\Update_Stock_curday_Book.sql" />
     <Build Include="dbo\Stored Procedures\usp_GetInvoiceReceiptPivot.sql" />
     <Build Include="Security\hr.sql" />
+    <Build Include="dbo\Tables\STOCK_ADJUSTMENT_HEADER.sql" />
+    <Build Include="dbo\Tables\STOCK_ADJUSTMENT_LINE.sql" />
   </ItemGroup>
 </Project>

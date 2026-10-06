@@ -2,21 +2,52 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
-             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
              xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
              xmlns:ext="clr-namespace:InvEntry.Extension"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewmodels:StockAdjustmentViewModel}"
              DataContext="{ext:DISource Type=viewmodels:StockAdjustmentViewModel}"
              d:DesignHeight="850"
-             d:DesignWidth="1000">
+             d:DesignWidth="1450"
+             Foreground="#111111">
 
     <UserControl.Resources>
-        <Style x:Key="NumberFormatWtStyleForTextEdit"
+        <!--
+            Stock Adjustment uses light surfaces.  Set an explicit dark
+            foreground locally so application/theme foreground resources
+            cannot render labels and messages in very light colours.
+        -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground"
+                    Value="#111111" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="#111111" />
+        </Style>
+
+        <Style TargetType="dxe:TextEdit">
+            <Setter Property="Foreground"
+                    Value="#111111" />
+        </Style>
+
+        <Style TargetType="dxe:ComboBoxEdit">
+            <Setter Property="Foreground"
+                    Value="#111111" />
+        </Style>
+
+        <Style TargetType="dxe:DateEdit">
+            <Setter Property="Foreground"
+                    Value="#111111" />
+        </Style>
+
+        <Style x:Key="WeightEditStyle"
                TargetType="dxe:TextEdit">
+            <Setter Property="Foreground"
+                    Value="#111111" />
             <Setter Property="MaskType"
                     Value="Numeric" />
             <Setter Property="Mask"
@@ -28,317 +59,693 @@
             <Setter Property="dxe:NumericMaskOptions.AlwaysShowDecimalSeparator"
                     Value="False" />
         </Style>
+
+        <Style x:Key="ReadOnlyWeightStyle"
+               TargetType="dxe:TextEdit"
+               BasedOn="{StaticResource WeightEditStyle}">
+            <Setter Property="IsReadOnly"
+                    Value="True" />
+            <Setter Property="Background"
+                    Value="#F5F5F5" />
+        </Style>
+
+        <Style x:Key="SkuOnlyPanelStyle"
+               TargetType="FrameworkElement">
+            <Setter Property="Visibility"
+                    Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasSourceSku}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DestinationSkuOnlyPanelStyle"
+               TargetType="FrameworkElement">
+            <Setter Property="Visibility"
+                    Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasDestinationSku}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="NormalOnlyPanelStyle"
+               TargetType="FrameworkElement">
+            <Setter Property="Visibility"
+                    Value="Visible" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsReallocationMode}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ReallocationOnlyPanelStyle"
+               TargetType="FrameworkElement">
+            <Setter Property="Visibility"
+                    Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsReallocationMode}"
+                             Value="True">
+                    <Setter Property="Visibility"
+                            Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SectionCaption"
+               TargetType="TextBlock">
+            <Setter Property="FontWeight"
+                    Value="SemiBold" />
+            <Setter Property="Foreground"
+                    Value="#111111" />
+            <Setter Property="Margin"
+                    Value="0,10,0,6" />
+        </Style>
     </UserControl.Resources>
 
-    <Grid Margin="20">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Auto"
+                  HorizontalContentAlignment="Left">
+        <Grid Margin="12"
+              Width="1050"
+              HorizontalAlignment="Left">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <Border Grid.Row="0"
-                Padding="15"
-                CornerRadius="6"
-                Background="White"
-                BorderBrush="#DDD"
-                BorderThickness="1">
-            <StackPanel>
-
-                <TextBlock Text="Product"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#2E7D32"
-                           Margin="0,0,0,10" />
-
+            <!-- HEADER -->
+            <Border Grid.Row="0"
+                    Padding="15"
+                    Background="White"
+                    BorderBrush="#DADADA"
+                    BorderThickness="1"
+                    CornerRadius="6">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="135" />
+                        <ColumnDefinition Width="155" />
+                        <ColumnDefinition Width="210" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Row 1 -->
-                    <dxe:ComboBoxEdit Grid.Row="0"
-                                      Grid.Column="0"
-                                      ItemsSource="{Binding ProductCategoryList}"
-                                      Background="White"
-                                      EditValue="{Binding SelectedCategoryId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      NullText="Choose Category" />
+                    <StackPanel Grid.Column="0"
+                                Margin="0,0,10,0">
+                        <TextBlock Text="Adjustment No"
+                                   Margin="0,0,0,5" />
+                        <dxe:TextEdit EditValue="{Binding AdjustmentNumber}"
+                                      IsReadOnly="True"
+                                      Background="#F5F5F5" />
+                    </StackPanel>
 
-                    <dxe:ComboBoxEdit x:Name="SkuComboBox"
-                                      Grid.Row="0"
-                                      Grid.Column="1"
-                                      ItemsSource="{Binding ProductSkuStrList}"
-                                      Background="White"
-                                      Margin="5,0,0,0"
-                                      EditValue="{Binding SelectedProductSku, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      NullText="Choose Product SKU" />
+                    <StackPanel Grid.Column="1"
+                                Margin="0,0,10,0">
+                        <TextBlock Text="Adjustment Date"
+                                   Margin="0,0,0,5" />
+                        <dxe:DateEdit EditValue="{Binding AdjustmentDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Mask="dd-MMM-yyyy"
+                                      MaskUseAsDisplayFormat="True" />
+                    </StackPanel>
 
-                    <dxe:TextEdit Grid.Row="0"
-                                  Grid.Column="2"
-                                  EditValue="{Binding ProductStock.GrossWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#F5F5F5"
-                                  Margin="10,0,0,0"
-                                  NullText="Gross Weight" />
+                    <StackPanel Grid.Column="2"
+                                Margin="0,0,10,0">
+                        <TextBlock Text="Reason"
+                                   Margin="0,0,0,5" />
+                        <dxe:ComboBoxEdit ItemsSource="{Binding StockAdjReasonList}"
+                                          EditValue="{Binding SelectedReasonCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          NullText="Choose Reason"
+                                          Background="White" />
+                    </StackPanel>
 
-                    <dxe:TextEdit Grid.Row="0"
-                                  Grid.Column="3"
-                                  EditValue="{Binding ProductStock.StoneWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#F5F5F5"
-                                  Margin="10,0,0,0"
-                                  NullText="Stone Weight" />
-
-                    <dxe:TextEdit Grid.Row="0"
-                                  Grid.Column="4"
-                                  EditValue="{Binding ProductStock.NetWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#F5F5F5"
-                                  Margin="10,0,0,0"
-                                  NullText="Net Weight" />
+                    <StackPanel Grid.Column="3">
+                        <TextBlock Text="Remarks"
+                                   Margin="0,0,0,5" />
+                        <dxe:TextEdit EditValue="{Binding Remarks, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      NullText="Enter adjustment remarks"
+                                      Background="White" />
+                    </StackPanel>
                 </Grid>
-            </StackPanel>
-        </Border>
-
-        <!-- ===================== CURRENT STOCK ========================= -->
-        <!-- ============================================================= 
-
-            <Border Grid.Row="1"
-                Margin="0,15,0,0"
-                Padding="15"
-                CornerRadius="6"
-                Background="White"
-                BorderBrush="#DDD"
-                BorderThickness="1">
-
-                <StackPanel>
-
-                    <TextBlock Text="Current Stock"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#2E7D32"
-                           Margin="0,0,0,10"/>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <dxe:TextEdit Grid.Column="0"
-                                  EditValue="{Binding ProductStock.GrossWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#F5F5F5"
-                                  NullText="Gross Weight"/>
-
-                        <dxe:TextEdit Grid.Column="1"
-                                  EditValue="{Binding ProductStock.StoneWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#F5F5F5"
-                                  Margin="10,0,0,0"
-                                  NullText="Stone Weight"/>
-
-                        <dxe:TextEdit Grid.Column="2"
-                                  EditValue="{Binding ProductStock.NetWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#F5F5F5"
-                                  Margin="10,0,0,0"
-                                  NullText="Net Weight"/>
-                    </Grid>
-
-                </StackPanel>
             </Border>
 
-             ============================================================= -->
-        <!-- ===================== ADJUSTMENT ============================= -->
-        <!-- ============================================================= -->
+            <!-- MODE -->
+            <Border Grid.Row="1"
+                    Margin="0,12,0,0"
+                    Padding="12"
+                    Background="White"
+                    BorderBrush="#DADADA"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left"
+                               Text="Adjustment Type"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               Foreground="#111111"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
 
-        <Border Grid.Row="2"
-                Margin="0,15,0,0"
-                Padding="15"
-                CornerRadius="6"
-                Background="White"
-                BorderBrush="#DDD"
-                BorderThickness="1">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Increase"
+                                Width="110"
+                                Height="34"
+                                Margin="0,0,8,0"
+                                Command="{Binding SelectIncreaseModeCommand}" />
+                        <Button Content="Decrease"
+                                Width="110"
+                                Height="34"
+                                Margin="0,0,8,0"
+                                Command="{Binding SelectDecreaseModeCommand}" />
+                        <Button Content="Item-to-Item Transfer"
+                                Width="170"
+                                Height="34"
+                                Command="{Binding SelectReallocationModeCommand}" />
 
-            <StackPanel>
+                        <TextBlock Margin="12,0,0,0"
+                                   VerticalAlignment="Center">
+                            <Run Text="Selected: " />
+                            <Run Text="{Binding SelectedMode}"
+                                 FontWeight="SemiBold" />
+                        </TextBlock>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
 
-                <TextBlock Text="Adjustment"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#1565C0"
-                           Margin="0,0,0,10" />
+            <!-- THREE-COLUMN WORK AREA -->
+            <Grid Grid.Row="2"
+                  Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="342" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="342" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="342" />
+                </Grid.ColumnDefinitions>
 
-                <!-- Input Fields -->
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <!-- COLUMN 1 : CURRENT / FROM -->
+                <Border Grid.Column="0"
+                        Padding="14"
+                        Background="White"
+                        BorderBrush="#DADADA"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LeftColumnTitle}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111111"
+                                   Margin="0,0,0,12" />
 
+                        <TextBlock Text="Category"
+                                   Margin="0,0,0,4" />
+                        <dxe:ComboBoxEdit ItemsSource="{Binding ProductCategoryList}"
+                                          EditValue="{Binding SelectedCategoryId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          NullText="Choose Category"
+                                          Background="White" />
 
-                    <dxe:ComboBoxEdit Grid.Row="0"
-                                      Grid.Column="0"
-                                      ItemsSource="{Binding StockAdjReasonList}"
-                                      Background="White"
-                                      EditValue="{Binding SelectedReasonCode, Mode=TwoWay, 
-                                                        UpdateSourceTrigger=PropertyChanged}"
-                                      NullText="Choose Reason" />
+                        <TextBlock Text="SKU / Stock Level"
+                                   Margin="0,10,0,4" />
+                        <dxe:ComboBoxEdit ItemsSource="{Binding ProductSkuStrList}"
+                                          EditValue="{Binding SelectedProductSku, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          NullText="Choose SKU or Consolidated Stock"
+                                          Background="White" />
 
-                    <dxe:ComboBoxEdit Grid.Row="0" Grid.Column="1"
-                                      ItemsSource="{Binding ActionList}"
-                                      Background="White"
-                                      EditValue="{Binding SelectedActionCode, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
+                        <Border Margin="0,8,0,0"
+                                Padding="7"
+                                Background="#F3F7FA"
+                                CornerRadius="4">
+                            <TextBlock Text="{Binding SourceStockLevelText}"
+                                       FontWeight="SemiBold"
+                                       Foreground="#111111" />
+                        </Border>
 
-                    <dxe:TextEdit Grid.Column="3"
-                                  EditValue="{Binding UserEntryStock.GrossWeight,
-                                                      Mode=TwoWay,
-                                                      UpdateSourceTrigger=PropertyChanged,
-                                                      Delay=200}"
-                                  Style="{StaticResource NumberFormatWtStyleForTextEdit}"
-                                  FontSize="15"
-                                  Background="#FFFDEB"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  NullText="Gross Weight Change" />
+                        <!-- Individual item is shown only when a real SKU is selected. -->
+                        <StackPanel Style="{StaticResource SkuOnlyPanelStyle}">
+                            <TextBlock Text="INDIVIDUAL ITEM"
+                                       Style="{StaticResource SectionCaption}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <dxe:TextEdit Grid.Column="0"
+                                              EditValue="{Binding ProductStock.StockQty}"
+                                              IsReadOnly="True"
+                                              Background="#F5F5F5"
+                                              NullText="Qty" />
+                                <dxe:TextEdit Grid.Column="1"
+                                              EditValue="{Binding ProductStock.GrossWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Margin="6,0,0,0"
+                                              NullText="Gross" />
+                                <dxe:TextEdit Grid.Column="2"
+                                              EditValue="{Binding ProductStock.StoneWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Margin="6,0,0,0"
+                                              NullText="Stone" />
+                                <dxe:TextEdit Grid.Column="3"
+                                              EditValue="{Binding ProductStock.NetWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Margin="6,0,0,0"
+                                              NullText="Net" />
+                            </Grid>
+                        </StackPanel>
 
-                    <dxe:TextEdit Grid.Column="4"
-                                  EditValue="{Binding UserEntryStock.StoneWeight,
-                                                      Mode=TwoWay,
-                                                      UpdateSourceTrigger=PropertyChanged,
-                                                      Delay=200}"
-                                  Style="{StaticResource NumberFormatWtStyleForTextEdit}"
-                                  FontSize="15"
-                                  Background="#FFFDEB"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Margin="10,0,0,0"
-                                  NullText="Stone Weight" />
+                        <TextBlock Text="CATEGORY / CONSOLIDATED STOCK"
+                                   Style="{StaticResource SectionCaption}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <dxe:TextEdit Grid.Column="0"
+                                          EditValue="{Binding ProductStockSummary.StockQty}"
+                                          IsReadOnly="True"
+                                          Background="#F5F5F5"
+                                          NullText="Qty" />
+                            <dxe:TextEdit Grid.Column="1"
+                                          EditValue="{Binding ProductStockSummary.GrossWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Margin="6,0,0,0"
+                                          NullText="Gross" />
+                            <dxe:TextEdit Grid.Column="2"
+                                          EditValue="{Binding ProductStockSummary.StoneWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Margin="6,0,0,0"
+                                          NullText="Stone" />
+                            <dxe:TextEdit Grid.Column="3"
+                                          EditValue="{Binding ProductStockSummary.NetWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Margin="6,0,0,0"
+                                          NullText="Net" />
+                        </Grid>
 
+                        <!-- Normal mode result for source/item is shown in column 3; in reallocation this shows source-after here for clarity. -->
+                        <StackPanel Style="{StaticResource ReallocationOnlyPanelStyle}">
+                            <TextBlock Text="FROM - AFTER TRANSFER"
+                                       Style="{StaticResource SectionCaption}" />
+                            <Grid Style="{StaticResource SkuOnlyPanelStyle}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <dxe:TextEdit Grid.Column="0"
+                                              EditValue="{Binding ModifiedProductStock.GrossWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#FFF3E0"
+                                              NullText="Gross" />
+                                <dxe:TextEdit Grid.Column="1"
+                                              EditValue="{Binding ModifiedProductStock.StoneWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#FFF3E0"
+                                              Margin="6,0,0,0"
+                                              NullText="Stone" />
+                                <dxe:TextEdit Grid.Column="2"
+                                              EditValue="{Binding ModifiedProductStock.NetWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#FFF3E0"
+                                              Margin="6,0,0,0"
+                                              NullText="Net" />
+                            </Grid>
+                            <TextBlock Text="Source category after transfer"
+                                       Margin="0,8,0,4"
+                                       Foreground="#111111" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <dxe:TextEdit Grid.Column="0"
+                                              EditValue="{Binding ModifiedProductStockSummary.GrossWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#FFF8E1"
+                                              NullText="Gross" />
+                                <dxe:TextEdit Grid.Column="1"
+                                              EditValue="{Binding ModifiedProductStockSummary.StoneWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#FFF8E1"
+                                              Margin="6,0,0,0"
+                                              NullText="Stone" />
+                                <dxe:TextEdit Grid.Column="2"
+                                              EditValue="{Binding ModifiedProductStockSummary.NetWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#FFF8E1"
+                                              Margin="6,0,0,0"
+                                              NullText="Net" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
-                </Grid>
+                <!-- COLUMN 2 : ADJUSTMENT / TRANSFER -->
+                <Border Grid.Column="2"
+                        Padding="14"
+                        Background="White"
+                        BorderBrush="#DADADA"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <StackPanel>
+                        <TextBlock Text="{Binding MiddleColumnTitle}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111111"
+                                   Margin="0,0,0,12" />
 
-            </StackPanel>
-        </Border>
+                        <TextBlock Text="Gross Weight"
+                                   Margin="0,0,0,4" />
+                        <dxe:TextEdit EditValue="{Binding AdjustmentGrossWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                                      Style="{StaticResource WeightEditStyle}"
+                                      Background="#FFFDEB"
+                                      FontSize="15"
+                                      NullText="0.000" />
 
-        <!-- ============================================================= -->
-        <!-- ===================== RESULT STOCK =========================== -->
-        <!-- ============================================================= -->
+                        <TextBlock Text="Stone Weight"
+                                   Margin="0,10,0,4" />
+                        <dxe:TextEdit EditValue="{Binding AdjustmentStoneWeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=200}"
+                                      Style="{StaticResource WeightEditStyle}"
+                                      Background="#FFFDEB"
+                                      FontSize="15"
+                                      NullText="0.000" />
 
-        <Border Grid.Row="3"
-                Margin="0,15,0,0"
-                Padding="15"
-                CornerRadius="6"
-                Background="White"
-                BorderBrush="#DDD"
-                BorderThickness="1">
+                        <TextBlock Text="Net Weight"
+                                   Margin="0,10,0,4" />
+                        <dxe:TextEdit EditValue="{Binding AdjustmentNetWeight, Mode=OneWay}"
+                                      Style="{StaticResource ReadOnlyWeightStyle}"
+                                      FontSize="15"
+                                      Background="#E8F5E9"
+                                      FontWeight="SemiBold"
+                                      NullText="0.000" />
 
-            <StackPanel>
+                        <Border Margin="0,14,0,0"
+                                Padding="10"
+                                Background="#F5F9FF"
+                                BorderBrush="#D7E7FA"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="Validation / Posting Scope"
+                                           FontWeight="SemiBold"
+                                           Foreground="#111111"
+                                           Margin="0,0,0,5" />
+                                <TextBlock Text="{Binding ValidationMessage}"
+                                           TextWrapping="Wrap"
+                                           Foreground="#111111" />
+                            </StackPanel>
+                        </Border>
 
-                <TextBlock Text="Resulting Stock"
-                           FontSize="16"
-                           FontWeight="SemiBold"
-                           Foreground="#2E7D32"
-                           Margin="0,0,0,10" />
+                        <Border Margin="0,14,0,0"
+                                Padding="10"
+                                Background="#FAFAFA"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock Text="Stock rule"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,5" />
+                                <TextBlock TextWrapping="Wrap"
+                                           Text="SKU selected: update item stock and category summary. No SKU: update category summary only. Quantity remains unchanged for weight-only adjustment/reallocation." />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <!-- COLUMN 3 : RESULT (normal) -->
+                <Border Grid.Column="4"
+                        Padding="14"
+                        Background="White"
+                        BorderBrush="#DADADA"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Style="{StaticResource NormalOnlyPanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding RightColumnTitle}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111111"
+                                   Margin="0,0,0,12" />
 
-                    <dxe:TextEdit Grid.Row="0"
-                                  Grid.Column="1"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  EditValue="{Binding ModifiedProductStock.ProductSku}"
-                                  Mask="n3"
-                                  Background="#F5F5F5" />
+                        <StackPanel Style="{StaticResource SkuOnlyPanelStyle}">
+                            <TextBlock Text="INDIVIDUAL ITEM - RESULT"
+                                       Style="{StaticResource SectionCaption}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <dxe:TextEdit Grid.Column="0"
+                                              EditValue="{Binding ModifiedProductStock.StockQty}"
+                                              IsReadOnly="True"
+                                              Background="#E8F5E9"
+                                              NullText="Qty" />
+                                <dxe:TextEdit Grid.Column="1"
+                                              EditValue="{Binding ModifiedProductStock.GrossWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#E8F5E9"
+                                              Margin="6,0,0,0"
+                                              NullText="Gross" />
+                                <dxe:TextEdit Grid.Column="2"
+                                              EditValue="{Binding ModifiedProductStock.StoneWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#E8F5E9"
+                                              Margin="6,0,0,0"
+                                              NullText="Stone" />
+                                <dxe:TextEdit Grid.Column="3"
+                                              EditValue="{Binding ModifiedProductStock.NetWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#E8F5E9"
+                                              Margin="6,0,0,0"
+                                              NullText="Net" />
+                            </Grid>
+                        </StackPanel>
 
-                    <dxe:TextEdit Grid.Column="2"
-                                  EditValue="{Binding ModifiedProductStock.GrossWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#E8F5E9"
-                                  FontWeight="SemiBold"
-                                  Margin="10,0,0,0"
-                                  NullText="Gross Weight" />
+                        <TextBlock Text="CATEGORY / CONSOLIDATED - RESULT"
+                                   Style="{StaticResource SectionCaption}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <dxe:TextEdit Grid.Column="0"
+                                          EditValue="{Binding ModifiedProductStockSummary.StockQty}"
+                                          IsReadOnly="True"
+                                          Background="#E8F5E9"
+                                          NullText="Qty" />
+                            <dxe:TextEdit Grid.Column="1"
+                                          EditValue="{Binding ModifiedProductStockSummary.GrossWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Background="#E8F5E9"
+                                          Margin="6,0,0,0"
+                                          NullText="Gross" />
+                            <dxe:TextEdit Grid.Column="2"
+                                          EditValue="{Binding ModifiedProductStockSummary.StoneWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Background="#E8F5E9"
+                                          Margin="6,0,0,0"
+                                          NullText="Stone" />
+                            <dxe:TextEdit Grid.Column="3"
+                                          EditValue="{Binding ModifiedProductStockSummary.NetWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Background="#E8F5E9"
+                                          Margin="6,0,0,0"
+                                          NullText="Net" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-                    <dxe:TextEdit Grid.Column="3"
-                                  EditValue="{Binding ModifiedProductStock.StoneWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#E8F5E9"
-                                  FontWeight="SemiBold"
-                                  Margin="10,0,0,0"
-                                  NullText="Stone Weight" />
+                <!-- COLUMN 3 : DESTINATION / RESULT (reallocation) -->
+                <Border Grid.Column="4"
+                        Padding="14"
+                        Background="White"
+                        BorderBrush="#DADADA"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Style="{StaticResource ReallocationOnlyPanelStyle}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding RightColumnTitle}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111111"
+                                   Margin="0,0,0,12" />
 
-                    <dxe:TextEdit Grid.Column="4"
-                                  EditValue="{Binding ModifiedProductStock.NetWeight}"
-                                  IsReadOnly="True"
-                                  MaskType="Numeric"
-                                  Mask="n3"
-                                  Background="#E8F5E9"
-                                  FontWeight="SemiBold"
-                                  Margin="10,0,0,0"
-                                  NullText="Net Weight" />
-                </Grid>
+                        <TextBlock Text="Category"
+                                   Margin="0,0,0,4" />
+                        <dxe:ComboBoxEdit ItemsSource="{Binding ProductCategoryList}"
+                                          EditValue="{Binding ToSelectedCategoryId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          NullText="Choose TO Category"
+                                          Background="White" />
 
-            </StackPanel>
-        </Border>
+                        <TextBlock Text="SKU / Stock Level"
+                                   Margin="0,10,0,4" />
+                        <dxe:ComboBoxEdit ItemsSource="{Binding ToProductSkuStrList}"
+                                          EditValue="{Binding ToSelectedProductSku, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          NullText="Choose SKU or Consolidated Stock"
+                                          Background="White" />
 
-        <!-- ============================================================= -->
-        <!-- ===================== ACTION BUTTONS ========================= -->
-        <!-- ============================================================= -->
+                        <Border Margin="0,8,0,0"
+                                Padding="7"
+                                Background="#F3F7FA"
+                                CornerRadius="4">
+                            <TextBlock Text="{Binding DestinationStockLevelText}"
+                                       FontWeight="SemiBold"
+                                       Foreground="#111111" />
+                        </Border>
 
-        <StackPanel Grid.Row="4"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,20,0,0">
+                        <StackPanel Style="{StaticResource DestinationSkuOnlyPanelStyle}">
+                            <TextBlock Text="TO ITEM - CURRENT"
+                                       Style="{StaticResource SectionCaption}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <dxe:TextEdit Grid.Column="0"
+                                              EditValue="{Binding ToProductStock.GrossWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              NullText="Gross" />
+                                <dxe:TextEdit Grid.Column="1"
+                                              EditValue="{Binding ToProductStock.StoneWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Margin="6,0,0,0"
+                                              NullText="Stone" />
+                                <dxe:TextEdit Grid.Column="2"
+                                              EditValue="{Binding ToProductStock.NetWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Margin="6,0,0,0"
+                                              NullText="Net" />
+                            </Grid>
 
-            <Button Content="Apply Adjustment"
-                    Width="160"
-                    Height="35"
-                    Margin="0,0,10,0"
-                    Command="{Binding ApplyAdjustmentCommand}"
-                    IsEnabled="{Binding CanApplyAdjustment}" />
+                            <TextBlock Text="TO ITEM - AFTER"
+                                       Style="{StaticResource SectionCaption}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <dxe:TextEdit Grid.Column="0"
+                                              EditValue="{Binding ToModifiedProductStock.GrossWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#E8F5E9"
+                                              NullText="Gross" />
+                                <dxe:TextEdit Grid.Column="1"
+                                              EditValue="{Binding ToModifiedProductStock.StoneWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#E8F5E9"
+                                              Margin="6,0,0,0"
+                                              NullText="Stone" />
+                                <dxe:TextEdit Grid.Column="2"
+                                              EditValue="{Binding ToModifiedProductStock.NetWeight}"
+                                              Style="{StaticResource ReadOnlyWeightStyle}"
+                                              Background="#E8F5E9"
+                                              Margin="6,0,0,0"
+                                              NullText="Net" />
+                            </Grid>
+                        </StackPanel>
 
-            <!--     <Button Content="Reprint Tag"
-                    Width="140"
-                    Height="35"
-                    Command="{Binding ReprintTagCommand}"/>   -->
+                        <TextBlock Text="TO CATEGORY - CURRENT"
+                                   Style="{StaticResource SectionCaption}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <dxe:TextEdit Grid.Column="0"
+                                          EditValue="{Binding ToProductStockSummary.GrossWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          NullText="Gross" />
+                            <dxe:TextEdit Grid.Column="1"
+                                          EditValue="{Binding ToProductStockSummary.StoneWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Margin="6,0,0,0"
+                                          NullText="Stone" />
+                            <dxe:TextEdit Grid.Column="2"
+                                          EditValue="{Binding ToProductStockSummary.NetWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Margin="6,0,0,0"
+                                          NullText="Net" />
+                        </Grid>
 
-        </StackPanel>
-    </Grid>
+                        <TextBlock Text="TO CATEGORY - AFTER"
+                                   Style="{StaticResource SectionCaption}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <dxe:TextEdit Grid.Column="0"
+                                          EditValue="{Binding ToModifiedProductStockSummary.GrossWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Background="#E8F5E9"
+                                          NullText="Gross" />
+                            <dxe:TextEdit Grid.Column="1"
+                                          EditValue="{Binding ToModifiedProductStockSummary.StoneWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Background="#E8F5E9"
+                                          Margin="6,0,0,0"
+                                          NullText="Stone" />
+                            <dxe:TextEdit Grid.Column="2"
+                                          EditValue="{Binding ToModifiedProductStockSummary.NetWeight}"
+                                          Style="{StaticResource ReadOnlyWeightStyle}"
+                                          Background="#E8F5E9"
+                                          Margin="6,0,0,0"
+                                          NullText="Net" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- ACTIONS -->
+            <Grid Grid.Row="3"
+                  Margin="0,14,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text=""
+                           Visibility="Collapsed" />
+
+                <Button Grid.Column="1"
+                        Content="Reset"
+                        Width="110"
+                        Height="38"
+                        Margin="10,0,0,0"
+                        Command="{Binding ResetSANCommand}" />
+
+                <Button Grid.Column="2"
+                        Content="Apply Adjustment"
+                        Width="160"
+                        Height="38"
+                        Margin="10,0,0,0"
+                        Command="{Binding ApplyAdjustmentCommand}"
+                        IsEnabled="{Binding CanApplyAdjustment}" />
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

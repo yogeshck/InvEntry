@@ -1,4 +1,4 @@
-﻿using DataAccess.Models;
+using DataAccess.Models;
 using DataAccess.Repository;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,15 +87,26 @@ public sealed class StockMovementService
                 $"{duplicateLine.Key.DocumentLineGkey}.");
         }
 
-        foreach (var productGroup in requests.GroupBy(x => x.ProductGkey))
+        // Validate only strict OUT movements against the opening summary.
+        //
+        // Reallocation may contain an OUT and an IN for the same ProductGkey.
+        // Combining both directions would incorrectly validate the IN as though
+        // it were also an OUT. Therefore only strict OUT requests are grouped.
+        foreach (var productGroup in requests
+                     .Where(IsStrictStockOut)
+                     .GroupBy(x => x.ProductGkey))
         {
             var first = productGroup.First();
             var summary = GetProductStockSummary(first);
             ValidateSummaryStockOut(summary, CombineRequests(productGroup));
         }
 
+        // Tagged availability is always strict for OUT movements. As above,
+        // exclude any matching IN movement from the opening-stock validation.
         foreach (var skuGroup in requests
-                     .Where(x => !string.IsNullOrWhiteSpace(x.ProductSku))
+                     .Where(x =>
+                         x.Direction == StockMovementDirection.Out &&
+                         !string.IsNullOrWhiteSpace(x.ProductSku))
                      .GroupBy(x => new
                      {
                          x.ProductGkey,
@@ -505,8 +516,7 @@ public sealed class StockMovementService
     private ProductStockSummary GetProductStockSummary(
         StockMovementRequest request)
     {
-        if (request.Purpose ==
-            StockMovementPurpose.BranchTransferOut)
+        if (RequiresSummaryUpdateLock(request))
         {
             var lockedSummary = _context.ProductStockSummaries
                 .FromSqlInterpolated($"SELECT * FROM PRODUCT_STOCK_SUMMARY WITH (UPDLOCK, HOLDLOCK) WHERE PRODUCT_GKEY = {request.ProductGkey}")
@@ -623,10 +633,9 @@ public sealed class StockMovementService
                 request);
         }
 
-        if (request.Purpose ==
-            StockMovementPurpose.BranchTransferOut)
+        if (IsStrictStockOut(request))
         {
-            ValidateBranchTransferSummaryStockOut(
+            ValidateSummaryStockOut(
                 summary,
                 request);
         }
@@ -656,7 +665,7 @@ public sealed class StockMovementService
         ProductStockSummary summary,
         StockMovementRequest request)
     {
-        if (request.Purpose != StockMovementPurpose.BranchTransferOut)
+        if (!IsStrictStockOut(request))
         {
             return;
         }
@@ -671,6 +680,34 @@ public sealed class StockMovementService
                 $"Insufficient category stock for {GetProductReference(request)}.");
         }
     }
+
+
+    private static bool IsStrictStockOut(
+        StockMovementRequest request)
+    {
+        if (request.Direction != StockMovementDirection.Out)
+        {
+            return false;
+        }
+
+        return request.Purpose is
+            StockMovementPurpose.BranchTransferOut or
+            StockMovementPurpose.StockAdjustmentDecrease or
+            StockMovementPurpose.StockReallocationOut;
+    }
+
+
+    private static bool RequiresSummaryUpdateLock(
+        StockMovementRequest request)
+    {
+        return request.Purpose is
+            StockMovementPurpose.BranchTransferOut or
+            StockMovementPurpose.StockAdjustmentIncrease or
+            StockMovementPurpose.StockAdjustmentDecrease or
+            StockMovementPurpose.StockReallocationOut or
+            StockMovementPurpose.StockReallocationIn;
+    }
+
 
     // =========================================================
     // VALIDATE TAGGED STOCK OUT
@@ -709,29 +746,29 @@ public sealed class StockMovementService
             availableWeight + WeightTolerance)
         {
             throw new InvalidOperationException(
-                $"Invoice weight exceeds tagged stock weight " +
+                $"Requested weight exceeds tagged stock weight " +
                 $"for '{request.ProductSku}'. " +
-                $"Tag weight: {availableWeight:N3}, " +
-                $"Invoice weight: {request.GrossWeight:N3}.");
+                $"Available: {availableWeight:N3}, " +
+                $"Required: {request.GrossWeight:N3}.");
         }
-    }
 
-    private static void ValidateBranchTransferSummaryStockOut(
-        ProductStockSummary summary,
-        StockMovementRequest request)
-    {
-        if (request.Quantity > summary.StockQty.GetValueOrDefault() ||
-            request.GrossWeight > summary.GrossWeight.GetValueOrDefault() + WeightTolerance ||
-            request.StoneWeight > summary.StoneWeight.GetValueOrDefault() + WeightTolerance ||
-            request.NetWeight > summary.NetWeight.GetValueOrDefault() + WeightTolerance ||
-            request.NetWeight > summary.BalanceWeight.GetValueOrDefault() + WeightTolerance)
+        if (request.Purpose is
+            StockMovementPurpose.StockAdjustmentDecrease or
+            StockMovementPurpose.StockReallocationOut)
         {
-            throw new InvalidOperationException(
-                $"Insufficient product summary stock for branch transfer " +
-                $"of {GetProductReference(request)}.");
+            if (request.GrossWeight >
+                    stock.GrossWeight.GetValueOrDefault() + WeightTolerance ||
+                request.StoneWeight >
+                    stock.StoneWeight.GetValueOrDefault() + WeightTolerance ||
+                request.NetWeight >
+                    stock.NetWeight.GetValueOrDefault() + WeightTolerance)
+            {
+                throw new InvalidOperationException(
+                    $"Insufficient tagged item weight for " +
+                    $"'{request.ProductSku}'.");
+            }
         }
     }
-
 
     // =========================================================
     // APPLY PRODUCT SUMMARY STOCK OUT
@@ -840,6 +877,55 @@ public sealed class StockMovementService
         Models.ProductStock stock,
         StockMovementRequest request)
     {
+        // Stock Adjustment / Reallocation weight movements are different
+        // from a sale. The tagged item remains an inventory item and its
+        // actual recorded weights must change.
+        if (request.Purpose is
+            StockMovementPurpose.StockAdjustmentDecrease or
+            StockMovementPurpose.StockReallocationOut)
+        {
+            stock.StockQty =
+                stock.StockQty.GetValueOrDefault()
+                - request.Quantity;
+
+            stock.GrossWeight =
+                NormaliseWeight(
+                    stock.GrossWeight.GetValueOrDefault()
+                    - request.GrossWeight);
+
+            stock.StoneWeight =
+                NormaliseWeight(
+                    stock.StoneWeight.GetValueOrDefault()
+                    - request.StoneWeight);
+
+            stock.NetWeight =
+                NormaliseWeight(
+                    stock.NetWeight.GetValueOrDefault()
+                    - request.NetWeight);
+
+            // ProductStock.BalanceWeight is treated by the existing generic
+            // stock engine as the remaining tagged gross weight.
+            stock.BalanceWeight =
+                NormaliseWeight(
+                    stock.BalanceWeight.GetValueOrDefault()
+                    - request.GrossWeight);
+
+            var adjustmentEmpty =
+                IsEmpty(
+                    stock.StockQty.GetValueOrDefault(),
+                    stock.BalanceWeight.GetValueOrDefault());
+
+            stock.IsProductSold = false;
+            stock.Status =
+                adjustmentEmpty
+                    ? "Out-of-Stock"
+                    : "In-Stock";
+            stock.ModifiedOn = DateTime.Now;
+
+            _productStockRepository.Update(stock);
+            return;
+        }
+
         if (request.Purpose ==
             StockMovementPurpose.BranchTransferOut)
         {
@@ -1283,6 +1369,12 @@ public sealed class StockMovementService
 
             StockMovementPurpose.StockAdjustmentDecrease =>
                 "STOCK_ADJUSTMENT_OUT",
+
+            StockMovementPurpose.StockReallocationOut =>
+                "STOCK_REALLOCATION_OUT",
+
+            StockMovementPurpose.StockReallocationIn =>
+                "STOCK_REALLOCATION_IN",
 
             StockMovementPurpose.MaterialIssue =>
                 "MATERIAL_ISSUE",

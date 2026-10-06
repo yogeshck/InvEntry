@@ -113,6 +113,7 @@ builder.Services.AddScoped<IHistoricalMigrationPreviewService, HistoricalMigrati
 builder.Services.AddSingleton<IHistoricalMigrationPreviewTokenStore, HistoricalMigrationPreviewTokenStore>();
 builder.Services.AddScoped<IHistoricalMigrationStageService, HistoricalMigrationStageService>();
 builder.Services.AddScoped<ICurrentCompanyGstinProvider, CurrentCompanyGstinProvider>();
+builder.Services.AddScoped<IStockAdjustmentWorkflow, StockAdjustmentWorkflow>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementService>();

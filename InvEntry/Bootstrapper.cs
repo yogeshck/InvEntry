@@ -145,6 +145,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IInvoiceArReceiptService, InvoiceArReceiptService>()
                  .AddSingleton<IInvoiceService, InvoiceService>()
                  .AddSingleton<IStockTransferService, StockTransferService>()
+                 .AddSingleton<IStockAdjustmentService, StockAdjustmentService>()
                  .AddSingleton<IOldMetalStockService, OldMetalStockService>()
                  .AddSingleton<ILedgerService, LedgerService>()
                  .AddSingleton<ICustomerLookupService, CustomerLookupService>()

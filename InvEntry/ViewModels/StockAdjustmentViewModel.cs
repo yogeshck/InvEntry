@@ -1,448 +1,1227 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DevExpress.Charts.Designer.Native;
-using DevExpress.Data.Browsing;
-using DevExpress.DataAccess.Sql;
 using DevExpress.Mvvm;
 using InvEntry.Helpers;
+using InvEntry.Contracts.StockAdjustments;
 using InvEntry.Models;
 using InvEntry.Services;
-using InvEntry.Tally;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Printing;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace InvEntry.ViewModels;
+
 public partial class StockAdjustmentViewModel : ObservableObject
 {
-    private ProductStock ProductSkuStock;
+    public const string ConsolidatedStockOption = "Consolidated Stock (No SKU)";
+
     private readonly IProductStockService _productStockService;
+    private readonly IProductStockSummaryService _productStockSummaryService;
+    private readonly IProductService _productService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IProductCategoryService _productCategoryService;
-    private readonly IProductTransactionService _productTransactionService;
-
-    [ObservableProperty]
-    private ObservableCollection<string> _stockAdjReasonList;
-
+    private readonly IStockAdjustmentService _stockAdjustmentService;
     private readonly ReferenceLoader _referenceLoader;
 
-    [ObservableProperty]
-    private ObservableCollection<MtblReference> mtblReferencesList;
+    [ObservableProperty] private ObservableCollection<string> _stockAdjReasonList = new();
+    [ObservableProperty] private ObservableCollection<MtblReference> _mtblReferencesList = new();
+    [ObservableProperty] private ObservableCollection<string> _productCategoryList = new();
+    [ObservableProperty] private ObservableCollection<string> _productSkuStrList = new();
+    [ObservableProperty] private ObservableCollection<string> _toProductSkuStrList = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string> _productCategoryList;
+    // Source/current stock. ProductStock is populated only when an actual SKU is selected.
+    [ObservableProperty] private ProductStock _productStock = new();
+    [ObservableProperty] private ProductStock _modifiedProductStock = new();
+    [ObservableProperty] private ProductStockSummary _productStockSummary = new();
+    [ObservableProperty] private ProductStockSummary _modifiedProductStockSummary = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string> _productSkuStrList;
+    // Destination stock used by reallocation.
+    [ObservableProperty] private ProductStock _toProductStock = new();
+    [ObservableProperty] private ProductStock _toModifiedProductStock = new();
+    [ObservableProperty] private ProductStockSummary _toProductStockSummary = new();
+    [ObservableProperty] private ProductStockSummary _toModifiedProductStockSummary = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string> _actionList;
+    // UI-only movement values used by the preview.
+    [ObservableProperty] private ProductStock _userEntryStock = new();
 
-    [ObservableProperty]
-    private ProductStock _productStock;
+    [ObservableProperty] private string? _selectedCategoryId;
+    [ObservableProperty] private string? _selectedProductSku;
+    [ObservableProperty] private string? _toSelectedCategoryId;
+    [ObservableProperty] private string? _toSelectedProductSku;
+    [ObservableProperty] private string? _selectedReasonCode;
+    [ObservableProperty] private StockAdjustmentMode _selectedMode = StockAdjustmentMode.Increase;
 
-    [ObservableProperty]
-    private ProductStock _userEntryStock;
+    [ObservableProperty] private string _adjustmentNumber = "NEW";
+    [ObservableProperty] private DateTime _adjustmentDate = DateTime.Today;
+    [ObservableProperty] private string? _remarks;
+    [ObservableProperty] private decimal? _adjustmentGrossWeight;
+    [ObservableProperty] private decimal? _adjustmentStoneWeight;
 
-    [ObservableProperty]
-    private ProductStock _modifiedProductStock;
+    public decimal AdjustmentNetWeight =>
+        AdjustmentGrossWeight.GetValueOrDefault() -
+        AdjustmentStoneWeight.GetValueOrDefault();
 
-    [ObservableProperty]
-    private string selectedCategoryId;
+    public bool IsIncreaseMode => SelectedMode == StockAdjustmentMode.Increase;
+    public bool IsDecreaseMode => SelectedMode == StockAdjustmentMode.Decrease;
+    public bool IsReallocationMode => SelectedMode == StockAdjustmentMode.Reallocation;
 
-    [ObservableProperty]
-    private string selectedProductSku;
+    public bool HasSourceSku =>
+        !string.IsNullOrWhiteSpace(SelectedProductSku) &&
+        !IsConsolidatedSelection(SelectedProductSku);
 
-    [ObservableProperty]
-    private string _selectedReasonCode;
+    public bool IsSourceConsolidated =>
+        IsConsolidatedSelection(SelectedProductSku);
 
-    [ObservableProperty]
-    private string _selectedActionCode;
+    public bool HasDestinationSku =>
+        !string.IsNullOrWhiteSpace(ToSelectedProductSku) &&
+        !IsConsolidatedSelection(ToSelectedProductSku);
 
-    [ObservableProperty]
-    private bool isAddSelected = true;
+    public bool IsDestinationConsolidated =>
+        IsConsolidatedSelection(ToSelectedProductSku);
 
-    [ObservableProperty]
-    private bool isReduceSelected;
+    public string SourceStockLevelText =>
+        HasSourceSku ? "INDIVIDUAL SKU + CATEGORY SUMMARY" : "CONSOLIDATED / SUMMARY STOCK";
+
+    public string DestinationStockLevelText =>
+        HasDestinationSku ? "INDIVIDUAL SKU + CATEGORY SUMMARY" : "CONSOLIDATED / SUMMARY STOCK";
+
+    public string MiddleColumnTitle =>
+        IsReallocationMode ? "2. MATERIAL TRANSFER" : "2. ADJUSTMENT";
+
+    public string LeftColumnTitle =>
+        IsReallocationMode ? "1. FROM / CURRENT" : "1. CURRENT STOCK";
+
+    public string RightColumnTitle =>
+        IsReallocationMode ? "3. TO / RESULT" : "3. RESULTING STOCK";
+
+    public bool IsReallocationPreviewValid => TryValidateReallocationPreview(out _);
+
+    public string ValidationMessage
+    {
+        get
+        {
+            if (IsReallocationMode)
+            {
+                return TryValidateReallocationPreview(out var message)
+                    ? "Transfer preview is valid. OUT and IN will be posted together."
+                    : message;
+            }
+
+            if (string.IsNullOrWhiteSpace(SelectedCategoryId))
+                return "Select a product category.";
+
+            if (ProductStockSummary.GKey <= 0)
+                return "Current category stock summary is not available.";
+
+            if (HasSourceSku && string.IsNullOrWhiteSpace(ProductStock.ProductSku))
+                return "The selected SKU stock could not be loaded.";
+
+            if (!TryValidateWeights(out var weightMessage))
+                return weightMessage;
+
+            if (SelectedMode == StockAdjustmentMode.Decrease &&
+                !CanSourceSupplyAdjustment(out var sourceMessage))
+                return sourceMessage;
+
+            if (IsSourceConsolidated)
+                return "Consolidated adjustment is ready to post.";
+
+            return "SKU adjustment preview is ready.";
+        }
+    }
 
     public StockAdjustmentViewModel(
-                            IProductStockService productStockService,
-                            IProductCategoryService productCategoryService,
-                            IMtblReferencesService mtblReferencesService,
-                            IMessageBoxService messageBoxService,
-                            IProductTransactionService productTransactionService,
-                            ReferenceLoader referenceLoader)
+        IProductStockService productStockService,
+        IProductStockSummaryService productStockSummaryService,
+        IProductService productService,
+        IProductCategoryService productCategoryService,
+        IMtblReferencesService mtblReferencesService,
+        IMessageBoxService messageBoxService,
+        IStockAdjustmentService stockAdjustmentService,
+        ReferenceLoader referenceLoader)
     {
         _productStockService = productStockService;
+        _productStockSummaryService = productStockSummaryService;
+        _productService = productService;
         _productCategoryService = productCategoryService;
         _messageBoxService = messageBoxService;
         _mtblReferencesService = mtblReferencesService;
-        _productTransactionService = productTransactionService;
-
+        _stockAdjustmentService = stockAdjustmentService;
         _referenceLoader = referenceLoader;
 
-        _ = LoadReferencesAsync();
-
-        PopulateProductCategoryList();
-        _ = PopulateProductSkuList();
-
-        SetActionList();
         SetBase();
-
+        _ = LoadReferencesAsync();
+        PopulateProductCategoryList();
     }
 
     private void SetBase()
     {
         ProductStock = new ProductStock();
-        UserEntryStock = new ProductStock();
         ModifiedProductStock = new ProductStock();
+        ProductStockSummary = new ProductStockSummary();
+        ModifiedProductStockSummary = new ProductStockSummary();
 
+        ToProductStock = new ProductStock();
+        ToModifiedProductStock = new ProductStock();
+        ToProductStockSummary = new ProductStockSummary();
+        ToModifiedProductStockSummary = new ProductStockSummary();
+
+        UserEntryStock = new ProductStock();
     }
 
-    private void SetActionList()
+    partial void OnSelectedModeChanged(StockAdjustmentMode value)
     {
-        ActionList = ["ADD", "Reduce"];
+        OnPropertyChanged(nameof(IsIncreaseMode));
+        OnPropertyChanged(nameof(IsDecreaseMode));
+        OnPropertyChanged(nameof(IsReallocationMode));
+        OnPropertyChanged(nameof(MiddleColumnTitle));
+        OnPropertyChanged(nameof(LeftColumnTitle));
+        OnPropertyChanged(nameof(RightColumnTitle));
+        Recalculate();
+        NotifyUiState();
     }
-    partial void OnIsAddSelectedChanged(bool value)
+
+    partial void OnSelectedReasonCodeChanged(string? value) => NotifyUiState();
+    partial void OnRemarksChanged(string? value) => NotifyUiState();
+
+    partial void OnAdjustmentGrossWeightChanged(decimal? value)
     {
-        if (value)
-            IsReduceSelected = false;
-
-
+        UserEntryStock.GrossWeight = value;
+        UserEntryStock.NetWeight = AdjustmentNetWeight;
+        OnPropertyChanged(nameof(AdjustmentNetWeight));
         Recalculate();
     }
 
-/*    partial void OnIsAddSelectedChanged(bool value)
+    partial void OnAdjustmentStoneWeightChanged(decimal? value)
     {
-        if (value)
-            IsReduceSelected = false;
-
-
+        UserEntryStock.StoneWeight = value;
+        UserEntryStock.NetWeight = AdjustmentNetWeight;
+        OnPropertyChanged(nameof(AdjustmentNetWeight));
         Recalculate();
-    }*/
-
-    partial void OnSelectedActionCodeChanged(string value)
-    {
-        if (value == "ADD")
-        { IsAddSelected = true; }
-        else
-        { IsAddSelected = false; }
-
-            Recalculate();
     }
+
+    [RelayCommand] private void SelectIncreaseMode() => SelectedMode = StockAdjustmentMode.Increase;
+    [RelayCommand] private void SelectDecreaseMode() => SelectedMode = StockAdjustmentMode.Decrease;
+    [RelayCommand] private void SelectReallocationMode() => SelectedMode = StockAdjustmentMode.Reallocation;
 
     private async void PopulateProductCategoryList()
     {
         var list = await _productCategoryService.GetProductCategoryList();
-        ProductCategoryList = new(list
-                                .Select(x => x.Name));
+        ProductCategoryList = new ObservableCollection<string>(list.Select(x => x.Name));
     }
 
-    private async Task PopulateProductSkuList(string category = "RING")
+    private async Task LoadSourceSelectionAsync(string productId)
     {
-        var skuList = await _productStockService.GetCategoryList(category);
-        ProductSkuStrList = new(skuList
-                               .Select(x => x.ProductSku));
-    }
-
-    partial void OnSelectedCategoryIdChanged(string value)
-    {
-        _ = PopulateProductSkuList(value);
-    }
-
-    partial void OnSelectedProductSkuChanged(string value)
-    {
-
-        _ = LoadStockAsync(selectedProductSku);
-
-    }
-
-    private bool Validate()
-    {
-        if (SelectedReasonCode is null)
+        try
         {
-            MessageBox.Show("Please select reason to continue....");
-            return false;
+            var product = await _productService.GetProduct(productId);
+
+            // Ignore a stale async result if the operator changed selection meanwhile.
+            if (!string.Equals(
+                    SelectedCategoryId,
+                    productId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (product is null || product.GKey <= 0)
+            {
+                ProductSkuStrList = new ObservableCollection<string>();
+                ProductStockSummary = new ProductStockSummary();
+                ModifiedProductStockSummary = new ProductStockSummary();
+                Recalculate();
+                return;
+            }
+
+            var summary =
+                await _productStockSummaryService
+                    .GetByProductGkey(product.GKey);
+
+            if (!string.Equals(
+                    SelectedCategoryId,
+                    productId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            ProductStockSummary =
+                summary is null
+                    ? new ProductStockSummary
+                    {
+                        ProductGkey = product.GKey,
+                        Category = product.Category
+                    }
+                    : CopySummaryForPreview(summary);
+
+            ModifiedProductStockSummary =
+                CopySummaryForPreview(ProductStockSummary);
+
+            var stockCategory =
+                !string.IsNullOrWhiteSpace(product.Category)
+                    ? product.Category
+                    : ProductStockSummary.Category;
+
+            await PopulateProductSkuListByStockCategory(
+                stockCategory,
+                isDestination: false,
+                expectedProductId: productId);
+
+            Recalculate();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Unable to load source stock selection for Product ID {ProductId}",
+                productId);
+
+            if (string.Equals(
+                    SelectedCategoryId,
+                    productId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                ProductSkuStrList = new ObservableCollection<string>();
+                ProductStockSummary = new ProductStockSummary();
+                ModifiedProductStockSummary = new ProductStockSummary();
+                Recalculate();
+            }
+        }
+    }
+
+    private async Task LoadDestinationSelectionAsync(string productId)
+    {
+        try
+        {
+            var product = await _productService.GetProduct(productId);
+
+            if (!string.Equals(
+                    ToSelectedCategoryId,
+                    productId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (product is null || product.GKey <= 0)
+            {
+                ToProductSkuStrList = new ObservableCollection<string>();
+                ToProductStockSummary = new ProductStockSummary();
+                ToModifiedProductStockSummary = new ProductStockSummary();
+                Recalculate();
+                return;
+            }
+
+            var summary =
+                await _productStockSummaryService
+                    .GetByProductGkey(product.GKey);
+
+            if (!string.Equals(
+                    ToSelectedCategoryId,
+                    productId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            ToProductStockSummary =
+                summary is null
+                    ? new ProductStockSummary
+                    {
+                        ProductGkey = product.GKey,
+                        Category = product.Category
+                    }
+                    : CopySummaryForPreview(summary);
+
+            ToModifiedProductStockSummary =
+                CopySummaryForPreview(ToProductStockSummary);
+
+            var stockCategory =
+                !string.IsNullOrWhiteSpace(product.Category)
+                    ? product.Category
+                    : ToProductStockSummary.Category;
+
+            await PopulateProductSkuListByStockCategory(
+                stockCategory,
+                isDestination: true,
+                expectedProductId: productId);
+
+            Recalculate();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Unable to load destination stock selection for Product ID {ProductId}",
+                productId);
+
+            if (string.Equals(
+                    ToSelectedCategoryId,
+                    productId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                ToProductSkuStrList = new ObservableCollection<string>();
+                ToProductStockSummary = new ProductStockSummary();
+                ToModifiedProductStockSummary = new ProductStockSummary();
+                Recalculate();
+            }
+        }
+    }
+
+    private async Task PopulateProductSkuListByStockCategory(
+        string? stockCategory,
+        bool isDestination,
+        string expectedProductId)
+    {
+        var values = new System.Collections.Generic.List<string>
+        {
+            ConsolidatedStockOption
+        };
+
+        if (!string.IsNullOrWhiteSpace(stockCategory))
+        {
+            var skuList =
+                await _productStockService
+                    .GetCategoryList(stockCategory);
+
+            values.AddRange(
+                skuList
+                    .Where(x => !string.IsNullOrWhiteSpace(x.ProductSku))
+                    .Select(x => x.ProductSku!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => x));
         }
 
-        //need to work out - stone modification
-        //if stone weight already available before change - allow stone to reduce only
-        //stone weight can be modified to additon only  
-        //if (ProductStock.StoneWeight > 0 && ProductStock.StoneWeight < ProductStock.GrossWeight )
-        //    { }
-        // Assume: oldStoneWeight = existing value
-        //         newStoneWeight = user input
+        if (isDestination)
+        {
+            if (string.Equals(
+                    ToSelectedCategoryId,
+                    expectedProductId,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                ToProductSkuStrList =
+                    new ObservableCollection<string>(values);
+            }
+        }
+        else if (string.Equals(
+                     SelectedCategoryId,
+                     expectedProductId,
+                     StringComparison.OrdinalIgnoreCase))
+        {
+            ProductSkuStrList =
+                new ObservableCollection<string>(values);
+        }
+    }
 
-        return true;
+    partial void OnSelectedCategoryIdChanged(string? value)
+    {
+        SelectedProductSku = null;
+        ProductStock = new ProductStock();
+        ModifiedProductStock = new ProductStock();
+        ProductStockSummary = new ProductStockSummary();
+        ModifiedProductStockSummary = new ProductStockSummary();
+
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            _ = LoadSourceSelectionAsync(value);
+        }
+        else
+        {
+            ProductSkuStrList = new ObservableCollection<string>();
+        }
+
+        NotifySourceSelectionChanged();
+        Recalculate();
+    }
+
+    partial void OnSelectedProductSkuChanged(string? value)
+    {
+        if (HasSourceSku)
+        {
+            _ = LoadStockAsync(value!);
+        }
+        else
+        {
+            ProductStock = new ProductStock();
+            ModifiedProductStock = new ProductStock();
+            Recalculate();
+        }
+
+        NotifySourceSelectionChanged();
+    }
+
+    partial void OnToSelectedCategoryIdChanged(string? value)
+    {
+        ToSelectedProductSku = null;
+        ToProductStock = new ProductStock();
+        ToModifiedProductStock = new ProductStock();
+        ToProductStockSummary = new ProductStockSummary();
+        ToModifiedProductStockSummary = new ProductStockSummary();
+
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            _ = LoadDestinationSelectionAsync(value);
+        }
+        else
+        {
+            ToProductSkuStrList = new ObservableCollection<string>();
+        }
+
+        NotifyDestinationSelectionChanged();
+        Recalculate();
+    }
+
+    partial void OnToSelectedProductSkuChanged(string? value)
+    {
+        if (HasDestinationSku)
+        {
+            _ = LoadToStockAsync(value!);
+        }
+        else
+        {
+            ToProductStock = new ProductStock();
+            ToModifiedProductStock = new ProductStock();
+            Recalculate();
+        }
+
+        NotifyDestinationSelectionChanged();
     }
 
     private async Task LoadStockAsync(string productSku)
     {
-        var prdSku = await _productStockService.GetProductStock(productSku);
-
-        // Always create fresh objects so bindings update correctly
-        ProductStock = new ProductStock
-        {
-            GrossWeight = prdSku.GrossWeight,
-            StoneWeight = prdSku.StoneWeight,
-            NetWeight = prdSku.NetWeight,
-            ProductSku = prdSku.ProductSku,
-            Category = prdSku.Category
-        };
-
-        ModifiedProductStock = new ProductStock
-        {
-            GrossWeight = prdSku.GrossWeight,
-            StoneWeight = prdSku.StoneWeight,
-            NetWeight = prdSku.NetWeight,
-            ProductSku = prdSku.ProductSku,
-            Category = prdSku.Category
-        };
-
-        // UserEntryStock stays as a fresh object from SetBase()
+        var stock = await _productStockService.GetProductStock(productSku);
+        ProductStock = CopyStockForPreview(stock);
+        ModifiedProductStock = CopyStockForPreview(stock);
         Recalculate();
     }
 
+    private async Task LoadToStockAsync(string productSku)
+    {
+        var stock = await _productStockService.GetProductStock(productSku);
+        ToProductStock = CopyStockForPreview(stock);
+        ToModifiedProductStock = CopyStockForPreview(stock);
+        Recalculate();
+    }
 
+    private static ProductStock CopyStockForPreview(ProductStock source)
+    {
+        return new ProductStock
+        {
+            GKey = source.GKey,
+            StockSummaryGkey = source.StockSummaryGkey,
+            ProductGkey = source.ProductGkey,
+            ProductSku = source.ProductSku,
+            Category = source.Category,
+            StockQty = source.StockQty,
+            GrossWeight = source.GrossWeight,
+            StoneWeight = source.StoneWeight,
+            NetWeight = source.NetWeight,
+            BalanceWeight = source.NetWeight,
+            Status = source.Status
+        };
+    }
 
+    private static ProductStockSummary CopySummaryForPreview(ProductStockSummary source)
+    {
+        return new ProductStockSummary
+        {
+            GKey = source.GKey,
+            Category = source.Category,
+            ProductGkey = source.ProductGkey,
+            ProductSku = source.ProductSku,
+            StockQty = source.StockQty,
+            GrossWeight = source.GrossWeight,
+            StoneWeight = source.StoneWeight,
+            NetWeight = source.NetWeight,
+            BalanceWeight = source.NetWeight,
+            Status = source.Status
+        };
+    }
 
     private async Task LoadReferencesAsync()
     {
         StockAdjReasonList = await _referenceLoader.LoadValuesAsync("STOCK_ADJUSTMENTS");
     }
 
-    private void ReprintTag_Click(object sender, RoutedEventArgs e)
-    {
-        MessageBox.Show("Tag reprinted successfully.");
-    }
-
-    /*   private async Task<string> FetchReasonDesc()
-       {
-           var notes = "";
-
-           if (SelectedReasonCode is not null)
-           {
-               notes = await _referenceLoader.GetValueAsync("STOCK_ADJUSTMENT", SelectedReasonCode);
-
-           }
-           return notes;
-       }
-   */
     private void Recalculate()
     {
-        if (ProductStock is null || UserEntryStock is null || ProductStock.GrossWeight == 0
-                    || SelectedProductSku is null)
+        UserEntryStock.GrossWeight = AdjustmentGrossWeight;
+        UserEntryStock.StoneWeight = AdjustmentStoneWeight;
+        UserEntryStock.NetWeight = AdjustmentNetWeight;
+
+        if (IsReallocationMode)
+            RecalculateReallocation();
+        else
+            RecalculateNormalAdjustment();
+
+        NotifyUiState();
+    }
+
+    private void RecalculateNormalAdjustment()
+    {
+        ModifiedProductStockSummary = CopySummaryForPreview(ProductStockSummary);
+        ModifiedProductStock = HasSourceSku
+            ? CopyStockForPreview(ProductStock)
+            : new ProductStock();
+
+        if (string.IsNullOrWhiteSpace(SelectedCategoryId))
             return;
 
-        decimal grossInput = (decimal)UserEntryStock.GrossWeight.GetValueOrDefault();
-        decimal stoneInput = (decimal)UserEntryStock.StoneWeight.GetValueOrDefault();
+        var sign = SelectedMode == StockAdjustmentMode.Increase ? 1M : -1M;
+        var gross = AdjustmentGrossWeight.GetValueOrDefault();
+        var stone = AdjustmentStoneWeight.GetValueOrDefault();
+        var net = AdjustmentNetWeight;
 
-        decimal modifiedGross;
-        decimal modifiedStone;
-        decimal modifiedNet;
+        ApplyWeightDelta(ModifiedProductStockSummary, sign, gross, stone, net);
 
-/*        if (ProductStock.StoneWeight > 0)
+        if (HasSourceSku)
+            ApplyWeightDelta(ModifiedProductStock, sign, gross, stone, net);
+    }
+
+    private void RecalculateReallocation()
+    {
+        ModifiedProductStock = HasSourceSku
+            ? CopyStockForPreview(ProductStock)
+            : new ProductStock();
+        ToModifiedProductStock = HasDestinationSku
+            ? CopyStockForPreview(ToProductStock)
+            : new ProductStock();
+
+        ModifiedProductStockSummary = CopySummaryForPreview(ProductStockSummary);
+        ToModifiedProductStockSummary = CopySummaryForPreview(ToProductStockSummary);
+
+        if (string.IsNullOrWhiteSpace(SelectedCategoryId) ||
+            string.IsNullOrWhiteSpace(ToSelectedCategoryId))
+            return;
+
+        var gross = AdjustmentGrossWeight.GetValueOrDefault();
+        var stone = AdjustmentStoneWeight.GetValueOrDefault();
+        var net = AdjustmentNetWeight;
+
+        if (string.Equals(SelectedCategoryId, ToSelectedCategoryId, StringComparison.OrdinalIgnoreCase))
         {
-            // Stone weight already exists → allow both reduction and addition
-            if (ModifiedProductStock.StoneWeight >= 0)
-            {
-                // ✅ valid change (increase or decrease)
-                // Example: update stone weight
-               // stoneWeight = newStoneWeight;
-            }
-            else
-            {
-                // ❌ invalid: negative input not allowed
-            }
+            // Same category: summary OUT and IN cancel each other. Individual SKU
+            // balances still change when a tagged item is selected on either side.
+            ModifiedProductStockSummary = CopySummaryForPreview(ProductStockSummary);
+            ToModifiedProductStockSummary = CopySummaryForPreview(ProductStockSummary);
         }
         else
         {
-            // No stone weight yet → only addition allowed
-            if (newStoneWeight > 0)
-            {
-                // ✅ valid addition
-                stoneWeight = newStoneWeight;
-            }
-            else
-            {
-                // ❌ invalid: cannot reduce when no stone exists
-            }
-        }*/
-
-        if (IsAddSelected)
-        {
-            //validation needs to be done
-/*            if (ProductStock.StoneWeight > 0)
-            {
-                // Stone weight already exists → allow both reduction and addition
-                if (ModifiedProductStock.StoneWeight >= 0)
-                {
-                }
-            }
-            else
-            {
-                // ❌ invalid: negative input not allowed
-                MessageBox.Show("Negative Value not allowed....");
-                return;
-            }
-*/
-            modifiedGross = (decimal)(ProductStock.GrossWeight + grossInput);
-            modifiedStone = (decimal)ProductStock.StoneWeight + stoneInput;
-        }
-        else
-        {
-            modifiedGross = (decimal)ProductStock.GrossWeight - grossInput;
-            modifiedStone = (decimal)ProductStock.StoneWeight - stoneInput;
+            ApplyWeightDelta(ModifiedProductStockSummary, -1M, gross, stone, net);
+            ApplyWeightDelta(ToModifiedProductStockSummary, +1M, gross, stone, net);
         }
 
-        modifiedNet = modifiedGross - modifiedStone;
+        if (HasSourceSku)
+            ApplyWeightDelta(ModifiedProductStock, -1M, gross, stone, net);
 
-        ModifiedProductStock.GrossWeight = modifiedGross;
-        ModifiedProductStock.StoneWeight = modifiedStone;
-        ModifiedProductStock.NetWeight = modifiedNet;
-        ModifiedProductStock.AdjustedWeight = UserEntryStock.GrossWeight;
-        ModifiedProductStock.BalanceWeight = modifiedGross;
+        if (HasDestinationSku)
+            ApplyWeightDelta(ToModifiedProductStock, +1M, gross, stone, net);
+    }
 
-        OnPropertyChanged(nameof(CanApplyAdjustment));
+    private static void ApplyWeightDelta(
+        ProductStockSummary stock,
+        decimal sign,
+        decimal gross,
+        decimal stone,
+        decimal net)
+    {
+        stock.GrossWeight = stock.GrossWeight.GetValueOrDefault() + (sign * gross);
+        stock.StoneWeight = stock.StoneWeight.GetValueOrDefault() + (sign * stone);
+        stock.NetWeight = stock.NetWeight.GetValueOrDefault() + (sign * net);
+        stock.BalanceWeight = stock.NetWeight;
+    }
+
+    private static void ApplyWeightDelta(
+        ProductStock stock,
+        decimal sign,
+        decimal gross,
+        decimal stone,
+        decimal net)
+    {
+        stock.GrossWeight = stock.GrossWeight.GetValueOrDefault() + (sign * gross);
+        stock.StoneWeight = stock.StoneWeight.GetValueOrDefault() + (sign * stone);
+        stock.NetWeight = stock.NetWeight.GetValueOrDefault() + (sign * net);
+        stock.BalanceWeight = stock.NetWeight;
+    }
+
+    private bool TryValidateWeights(out string message)
+    {
+        var gross = AdjustmentGrossWeight.GetValueOrDefault();
+        var stone = AdjustmentStoneWeight.GetValueOrDefault();
+        var net = AdjustmentNetWeight;
+
+        if (gross <= 0)
+        {
+            message = IsReallocationMode
+                ? "Enter a transfer gross weight greater than zero."
+                : "Enter an adjustment gross weight greater than zero.";
+            return false;
+        }
+
+        if (stone < 0 || stone > gross)
+        {
+            message = "Stone weight must be between zero and gross weight.";
+            return false;
+        }
+
+        if (net <= 0)
+        {
+            message = "Net weight must be greater than zero.";
+            return false;
+        }
+
+        message = string.Empty;
+        return true;
+    }
+
+    private bool CanSourceSupplyAdjustment(out string message)
+    {
+        var gross = AdjustmentGrossWeight.GetValueOrDefault();
+        var stone = AdjustmentStoneWeight.GetValueOrDefault();
+        var net = AdjustmentNetWeight;
+
+        if (ProductStockSummary.GKey <= 0)
+        {
+            message = "Current category stock summary is not available.";
+            return false;
+        }
+
+        if (gross > ProductStockSummary.GrossWeight.GetValueOrDefault() ||
+            stone > ProductStockSummary.StoneWeight.GetValueOrDefault() ||
+            net > ProductStockSummary.NetWeight.GetValueOrDefault())
+        {
+            message = "The requested weight is greater than the available category stock summary.";
+            return false;
+        }
+
+        if (HasSourceSku &&
+            (gross > ProductStock.GrossWeight.GetValueOrDefault() ||
+             stone > ProductStock.StoneWeight.GetValueOrDefault() ||
+             net > ProductStock.NetWeight.GetValueOrDefault()))
+        {
+            message = "The requested weight is greater than the available SKU stock.";
+            return false;
+        }
+
+        message = string.Empty;
+        return true;
+    }
+
+    private bool TryValidateReallocationPreview(out string message)
+    {
+        if (!IsReallocationMode)
+        {
+            message = string.Empty;
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(SelectedCategoryId))
+        {
+            message = "Select the FROM category.";
+            return false;
+        }
+
+        if (ProductStockSummary.GKey <= 0)
+        {
+            message = "The FROM category stock summary is not available.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(SelectedProductSku))
+        {
+            message = "Choose either a FROM SKU or Consolidated Stock (No SKU).";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(ToSelectedCategoryId))
+        {
+            message = "Select the TO category.";
+            return false;
+        }
+
+        if (ToProductStockSummary.GKey <= 0)
+        {
+            message = "The TO category stock summary is not available.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(ToSelectedProductSku))
+        {
+            message = "Choose either a TO SKU or Consolidated Stock (No SKU).";
+            return false;
+        }
+
+        if (HasSourceSku &&
+            (ProductStock.GKey <= 0 ||
+             ProductStock.ProductGkey.GetValueOrDefault() <= 0))
+        {
+            message = "The selected FROM SKU stock could not be loaded.";
+            return false;
+        }
+
+        if (HasDestinationSku &&
+            (ToProductStock.GKey <= 0 ||
+             ToProductStock.ProductGkey.GetValueOrDefault() <= 0))
+        {
+            message = "The selected TO SKU stock could not be loaded.";
+            return false;
+        }
+
+        if (IsSourceConsolidated &&
+            ProductStockSummary.ProductGkey.GetValueOrDefault() <= 0)
+        {
+            message = "The FROM consolidated stock does not contain a valid product reference.";
+            return false;
+        }
+
+        if (IsDestinationConsolidated &&
+            ToProductStockSummary.ProductGkey.GetValueOrDefault() <= 0)
+        {
+            message = "The TO consolidated stock does not contain a valid product reference.";
+            return false;
+        }
+
+        if (HasSourceSku && HasDestinationSku &&
+            string.Equals(SelectedProductSku, ToSelectedProductSku, StringComparison.OrdinalIgnoreCase))
+        {
+            message = "FROM item and TO item must be different.";
+            return false;
+        }
+
+        if (IsSourceConsolidated && IsDestinationConsolidated &&
+            string.Equals(SelectedCategoryId, ToSelectedCategoryId, StringComparison.OrdinalIgnoreCase))
+        {
+            message = "FROM and TO cannot both be the same consolidated category.";
+            return false;
+        }
+
+        if (!TryValidateWeights(out message))
+            return false;
+
+        if (!CanSourceSupplyAdjustment(out message))
+            return false;
+
+        if (HasSourceSku &&
+            ModifiedProductStock.StoneWeight.GetValueOrDefault() >
+            ModifiedProductStock.GrossWeight.GetValueOrDefault())
+        {
+            message = "The resulting FROM item stone weight cannot exceed gross weight.";
+            return false;
+        }
+
+        if (HasDestinationSku &&
+            ToModifiedProductStock.StoneWeight.GetValueOrDefault() >
+            ToModifiedProductStock.GrossWeight.GetValueOrDefault())
+        {
+            message = "The resulting TO item stone weight cannot exceed gross weight.";
+            return false;
+        }
+
+        message = string.Empty;
+        return true;
+    }
+
+    private bool Validate()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedReasonCode))
+        {
+            ShowInfo("Please select an adjustment reason to continue.");
+            return false;
+        }
+
+        if (string.Equals(
+                SelectedReasonCode,
+                "OTHER",
+                StringComparison.OrdinalIgnoreCase) &&
+            string.IsNullOrWhiteSpace(Remarks))
+        {
+            ShowInfo("Please enter remarks when the adjustment reason is Other.");
+            return false;
+        }
+
+        if (IsReallocationMode)
+        {
+            if (!TryValidateReallocationPreview(out var message))
+            {
+                ShowInfo(message);
+                return false;
+            }
+
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(SelectedCategoryId))
+        {
+            ShowInfo("Please select a product category to continue.");
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(SelectedProductSku))
+        {
+            ShowInfo("Please choose an SKU or Consolidated Stock (No SKU).");
+            return false;
+        }
+
+        if (ProductStockSummary.GKey <= 0)
+        {
+            ShowInfo("Current category stock summary is not available.");
+            return false;
+        }
+
+        if (HasSourceSku &&
+            (ProductStock.GKey <= 0 ||
+             ProductStock.ProductGkey.GetValueOrDefault() <= 0))
+        {
+            ShowInfo("The selected SKU stock could not be loaded.");
+            return false;
+        }
+
+        if (IsSourceConsolidated &&
+            ProductStockSummary.ProductGkey.GetValueOrDefault() <= 0)
+        {
+            ShowInfo("The selected category stock does not contain a valid product reference.");
+            return false;
+        }
+
+        if (!TryValidateWeights(out var weightMessage))
+        {
+            ShowInfo(weightMessage);
+            return false;
+        }
+
+        if (SelectedMode == StockAdjustmentMode.Decrease &&
+            !CanSourceSupplyAdjustment(out var sourceMessage))
+        {
+            ShowInfo(sourceMessage);
+            return false;
+        }
+
+        return true;
     }
 
     public bool CanApplyAdjustment
     {
         get
         {
-            if (SelectedProductSku == null)
+            if (string.IsNullOrWhiteSpace(SelectedReasonCode))
                 return false;
 
-            if (UserEntryStock == null || UserEntryStock.GrossWeight <= 0)
+            if (string.Equals(
+                    SelectedReasonCode,
+                    "OTHER",
+                    StringComparison.OrdinalIgnoreCase) &&
+                string.IsNullOrWhiteSpace(Remarks))
                 return false;
 
-            if (IsReduceSelected && ProductStock != null &&
-                UserEntryStock.GrossWeight > ProductStock.GrossWeight)
+            if (IsReallocationMode)
+                return TryValidateReallocationPreview(out _);
+
+            if (string.IsNullOrWhiteSpace(SelectedCategoryId) ||
+                string.IsNullOrWhiteSpace(SelectedProductSku) ||
+                ProductStockSummary.GKey <= 0)
                 return false;
 
-            if (ModifiedProductStock == null)
+            if (!HasSourceSku && !IsSourceConsolidated)
                 return false;
 
-            if (ModifiedProductStock.StoneWeight > ModifiedProductStock.GrossWeight)
+            if (HasSourceSku &&
+                (ProductStock.GKey <= 0 ||
+                 ProductStock.ProductGkey.GetValueOrDefault() <= 0))
+                return false;
+
+            if (IsSourceConsolidated &&
+                ProductStockSummary.ProductGkey.GetValueOrDefault() <= 0)
+                return false;
+
+            if (!TryValidateWeights(out _))
+                return false;
+
+            if (SelectedMode == StockAdjustmentMode.Decrease &&
+                !CanSourceSupplyAdjustment(out _))
                 return false;
 
             return true;
         }
-
     }
-
 
     [RelayCommand]
     private async Task ApplyAdjustment()
     {
-
-        if (!Validate())
+        if (!Validate() || !CanApplyAdjustment)
             return;
 
-        if (!CanApplyAdjustment)
-            return;
+        try
+        {
+            var request = BuildCreateRequest();
 
-        // we need to create product transaction record
-        // how about summary - if category changes summary has to be updated ??? to be study the reason
+            var result =
+                await _stockAdjustmentService.CreateAsync(request);
 
-        await _productStockService.UpdateProductStock(ModifiedProductStock);
+            AdjustmentNumber = result.AdjustmentNbr;
 
-        await CreateProductTransaction(ModifiedProductStock);
+            _messageBoxService.ShowMessage(
+                $"Stock adjustment {result.AdjustmentNbr} was posted successfully.",
+                "Stock Adjustment",
+                MessageButton.OK,
+                MessageIcon.Information);
 
-        _messageBoxService.ShowMessage("Stock " + ModifiedProductStock.ProductSku + " has been adjusted", "Stock Adjusted",
-                                    MessageButton.OK, MessageIcon.Exclamation);
+            ResetSAN();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(
+                ex,
+                "Unable to post stock adjustment. Mode: {Mode}, Category: {Category}, SKU: {Sku}",
+                SelectedMode,
+                SelectedCategoryId,
+                SelectedProductSku);
 
-        // Reload stock from DB
-        //will review await LoadStockAsync(adjustment.ProductSku);
-        ResetSAN();
+            _messageBoxService.ShowMessage(
+                "Unable to complete the stock adjustment. " +
+                "Please review the selected stock and try again.\n\n" +
+                ex.Message,
+                "Stock Adjustment",
+                MessageButton.OK,
+                MessageIcon.Warning);
+        }
+    }
 
+    private CreateStockAdjustmentRequest BuildCreateRequest()
+    {
+        var request = new CreateStockAdjustmentRequest
+        {
+            AdjustmentDate = AdjustmentDate,
+            AdjustmentType = SelectedMode switch
+            {
+                StockAdjustmentMode.Increase =>
+                    StockAdjustmentTypes.Increase,
+
+                StockAdjustmentMode.Decrease =>
+                    StockAdjustmentTypes.Decrease,
+
+                StockAdjustmentMode.Reallocation =>
+                    StockAdjustmentTypes.Reallocation,
+
+                _ => throw new InvalidOperationException(
+                    $"Unsupported stock adjustment mode: {SelectedMode}.")
+            },
+            ReasonCode = SelectedReasonCode!.Trim(),
+            Remarks = string.IsNullOrWhiteSpace(Remarks)
+                ? null
+                : Remarks.Trim()
+        };
+
+        if (IsReallocationMode)
+        {
+            request.Lines.Add(
+                BuildSourceLine(
+                    lineNbr: 1,
+                    direction: StockAdjustmentDirections.Out,
+                    pairNbr: 1));
+
+            request.Lines.Add(
+                BuildDestinationLine(
+                    lineNbr: 2,
+                    direction: StockAdjustmentDirections.In,
+                    pairNbr: 1));
+
+            return request;
+        }
+
+        request.Lines.Add(
+            BuildSourceLine(
+                lineNbr: 1,
+                direction:
+                    IsIncreaseMode
+                        ? StockAdjustmentDirections.In
+                        : StockAdjustmentDirections.Out,
+                pairNbr: null));
+
+        return request;
+    }
+
+    private CreateStockAdjustmentLineRequest BuildSourceLine(
+        int lineNbr,
+        string direction,
+        int? pairNbr)
+    {
+        var productGkey =
+            HasSourceSku
+                ? ProductStock.ProductGkey.GetValueOrDefault()
+                : ProductStockSummary.ProductGkey.GetValueOrDefault();
+
+        if (productGkey <= 0)
+        {
+            throw new InvalidOperationException(
+                "The selected source stock does not contain a valid product reference.");
+        }
+
+        return new CreateStockAdjustmentLineRequest
+        {
+            LineNbr = lineNbr,
+            Direction = direction,
+            StockLevel =
+                HasSourceSku
+                    ? StockAdjustmentStockLevels.Sku
+                    : StockAdjustmentStockLevels.Consolidated,
+            MovementKind = StockAdjustmentMovementKinds.Weight,
+            ProductGkey = productGkey,
+            ProductStockGkey =
+                HasSourceSku
+                    ? ProductStock.GKey
+                    : null,
+            ProductSku =
+                HasSourceSku
+                    ? ProductStock.ProductSku
+                    : null,
+            ProductCategory = GetSourceStockCategory(),
+            Qty = 0,
+            GrossWeight = AdjustmentGrossWeight.GetValueOrDefault(),
+            StoneWeight = AdjustmentStoneWeight.GetValueOrDefault(),
+            NetWeight = AdjustmentNetWeight,
+            PairNbr = pairNbr,
+            Notes = Remarks
+        };
+    }
+
+    private CreateStockAdjustmentLineRequest BuildDestinationLine(
+        int lineNbr,
+        string direction,
+        int? pairNbr)
+    {
+        var productGkey =
+            HasDestinationSku
+                ? ToProductStock.ProductGkey.GetValueOrDefault()
+                : ToProductStockSummary.ProductGkey.GetValueOrDefault();
+
+        if (productGkey <= 0)
+        {
+            throw new InvalidOperationException(
+                "The selected destination stock does not contain a valid product reference.");
+        }
+
+        return new CreateStockAdjustmentLineRequest
+        {
+            LineNbr = lineNbr,
+            Direction = direction,
+            StockLevel =
+                HasDestinationSku
+                    ? StockAdjustmentStockLevels.Sku
+                    : StockAdjustmentStockLevels.Consolidated,
+            MovementKind = StockAdjustmentMovementKinds.Weight,
+            ProductGkey = productGkey,
+            ProductStockGkey =
+                HasDestinationSku
+                    ? ToProductStock.GKey
+                    : null,
+            ProductSku =
+                HasDestinationSku
+                    ? ToProductStock.ProductSku
+                    : null,
+            ProductCategory = GetDestinationStockCategory(),
+            Qty = 0,
+            GrossWeight = AdjustmentGrossWeight.GetValueOrDefault(),
+            StoneWeight = AdjustmentStoneWeight.GetValueOrDefault(),
+            NetWeight = AdjustmentNetWeight,
+            PairNbr = pairNbr,
+            Notes = Remarks
+        };
+    }
+
+    private string GetSourceStockCategory()
+    {
+        var category =
+            HasSourceSku
+                ? ProductStock.Category
+                : ProductStockSummary.Category;
+
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            throw new InvalidOperationException(
+                "The selected source stock does not contain a stock category.");
+        }
+
+        return category;
+    }
+
+    private string GetDestinationStockCategory()
+    {
+        var category =
+            HasDestinationSku
+                ? ToProductStock.Category
+                : ToProductStockSummary.Category;
+
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            throw new InvalidOperationException(
+                "The selected destination stock does not contain a stock category.");
+        }
+
+        return category;
     }
 
     [RelayCommand]
     private void ResetSAN()
     {
-        // Reinitialize base objects for the next adjustment
         SetBase();
-
-        // Clear selection state
         SelectedCategoryId = null;
         SelectedProductSku = null;
+        ToSelectedCategoryId = null;
+        ToSelectedProductSku = null;
         SelectedReasonCode = null;
-        IsAddSelected = true;
-        IsReduceSelected = false;
-
+        Remarks = null;
+        AdjustmentGrossWeight = null;
+        AdjustmentStoneWeight = null;
+        AdjustmentDate = DateTime.Today;
+        AdjustmentNumber = "NEW";
+        SelectedMode = StockAdjustmentMode.Increase;
+        ProductSkuStrList = new ObservableCollection<string>();
+        ToProductSkuStrList = new ObservableCollection<string>();
+        NotifyUiState();
     }
-
 
     [RelayCommand]
     private void ReprintTag()
     {
-        // Call tag service
+        // Tag reprint remains outside the Stock Adjustment work.
     }
 
-    private async Task CreateProductTransaction(ProductStock prdStock)
+    private void ShowInfo(string message)
     {
-        ProductTransaction productTrans = new();
-
-        productTrans.OpeningGrossWeight = prdStock.GrossWeight.GetValueOrDefault();
-        productTrans.OpeningStoneWeight = prdStock.StoneWeight.GetValueOrDefault();
-        productTrans.OpeningNetWeight = prdStock.NetWeight.GetValueOrDefault();
-
-        productTrans.ObQty = prdStock.StockQty.GetValueOrDefault();
-
-        productTrans.ProductSku = prdStock.ProductSku;
-        //productTrans.RefGkey = line.GKey;
-        productTrans.TransactionDate = DateTime.Now;
-        productTrans.ProductCategory = prdStock.Category;
-
-        productTrans.TransactionType = "Adjustment";
-        productTrans.DocumentNbr = "SAN";  //doc to be generated 
-        //productTrans.DocumentDate = DateTime.Now;
-        productTrans.DocumentType = "SAN";
-        productTrans.VoucherType = "SAN";
-
-        productTrans.Notes = SelectedReasonCode;
-
-        productTrans.TransactionQty = prdStock.StockQty.GetValueOrDefault();
-        productTrans.CbQty = prdStock.StockQty.GetValueOrDefault();
-
-        productTrans.TransactionGrossWeight = UserEntryStock.GrossWeight.GetValueOrDefault();
-        productTrans.TransactionStoneWeight = UserEntryStock.StoneWeight.GetValueOrDefault();
-        productTrans.TransactionNetWeight = UserEntryStock.NetWeight.GetValueOrDefault();
-
-        productTrans.CreatedOn = DateTime.Now;
-
-        /*            productTrans.ClosingGrossWeight = productSumryStk.GrossWeight.GetValueOrDefault()
-                                                                    - line.ProdGrossWeight.GetValueOrDefault();
-                    productTrans.ClosingStoneWeight = productSumryStk.StoneWeight.GetValueOrDefault()
-                                                                    - line.ProdStoneWeight.GetValueOrDefault();
-                    productTrans.ClosingNetWeight = productSumryStk.NetWeight.GetValueOrDefault()
-                                                                    - line.ProdNetWeight.GetValueOrDefault();*/
-
-        await _productTransactionService.CreateProductTransaction(productTrans);
-
-
+        _messageBoxService.ShowMessage(
+            message,
+            "Stock Adjustment",
+            MessageButton.OK,
+            MessageIcon.Information);
     }
+
+    private void NotifySourceSelectionChanged()
+    {
+        OnPropertyChanged(nameof(HasSourceSku));
+        OnPropertyChanged(nameof(IsSourceConsolidated));
+        OnPropertyChanged(nameof(SourceStockLevelText));
+        NotifyUiState();
+    }
+
+    private void NotifyDestinationSelectionChanged()
+    {
+        OnPropertyChanged(nameof(HasDestinationSku));
+        OnPropertyChanged(nameof(IsDestinationConsolidated));
+        OnPropertyChanged(nameof(DestinationStockLevelText));
+        NotifyUiState();
+    }
+
+    private void NotifyUiState()
+    {
+        OnPropertyChanged(nameof(CanApplyAdjustment));
+        OnPropertyChanged(nameof(IsReallocationPreviewValid));
+        OnPropertyChanged(nameof(ValidationMessage));
+        OnPropertyChanged(nameof(AdjustmentNetWeight));
+    }
+
+    private static bool IsConsolidatedSelection(string? value) =>
+        string.Equals(value, ConsolidatedStockOption, StringComparison.Ordinal);
 }
-
-/*
-- Transfer – reducing weight to add into another item
-- Damage – item partially damaged, weight reduced
-- Loss – weight lost during handling/storage
-- Polish – reduction due to polishing or finishing
-- Repair – adjustment made during repair process
-- Error – correction of a previous entry mistake
-- Sample – weight reduced for customer sample/testing
-- Return – adjustment due to customer return/exchange
-- Scrap – unusable portion removed as scrap
-- StoneOut – stone removed, reducing gross weight
-*/
-
-
-
