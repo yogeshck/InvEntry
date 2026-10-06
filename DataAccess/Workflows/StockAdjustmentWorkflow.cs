@@ -30,17 +30,20 @@ public sealed class StockAdjustmentWorkflow
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStockMovementService _stockMovementService;
     private readonly IVoucherNumberService _voucherNumberService;
+    private readonly IAuditIdentityProvider _auditIdentityProvider;
 
     public StockAdjustmentWorkflow(
         MijmsContext context,
         IUnitOfWork unitOfWork,
         IStockMovementService stockMovementService,
-        IVoucherNumberService voucherNumberService)
+        IVoucherNumberService voucherNumberService,
+        IAuditIdentityProvider auditIdentityProvider)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _stockMovementService = stockMovementService ?? throw new ArgumentNullException(nameof(stockMovementService));
         _voucherNumberService = voucherNumberService ?? throw new ArgumentNullException(nameof(voucherNumberService));
+        _auditIdentityProvider = auditIdentityProvider ?? throw new ArgumentNullException(nameof(auditIdentityProvider));
     }
 
     public async Task<StockAdjustmentResponse> CreateAsync(
@@ -52,6 +55,7 @@ public sealed class StockAdjustmentWorkflow
 
         NormaliseRequest(request);
         ValidateHeader(request);
+        var auditIdentity = GetAuditIdentity();
 
         // Number generation, document persistence and all stock movements are
         // committed as one unit. A posting error rolls back the document too.
@@ -93,6 +97,7 @@ public sealed class StockAdjustmentWorkflow
                 TotalGrossWeight = totals.Gross,
                 TotalStoneWeight = totals.Stone,
                 TotalNetWeight = totals.Net,
+                CreatedBy = auditIdentity,
                 CreatedOn = now
             };
 
@@ -142,6 +147,7 @@ public sealed class StockAdjustmentWorkflow
 
             header.Status = StockAdjustmentStatuses.Posted;
             header.FinalisedOn = DateTime.Now;
+            header.ModifiedBy = auditIdentity;
             header.ModifiedOn = header.FinalisedOn;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -155,6 +161,27 @@ public sealed class StockAdjustmentWorkflow
             _unitOfWork.ClearChanges();
             throw;
         }
+    }
+
+    private string GetAuditIdentity()
+    {
+        var identity = _auditIdentityProvider.GetCurrentIdentity();
+
+        if (string.IsNullOrWhiteSpace(identity))
+        {
+            throw new InvalidOperationException(
+                "The audit identity provider returned an empty identity.");
+        }
+
+        identity = identity.Trim();
+
+        if (identity.Length > 50)
+        {
+            throw new InvalidOperationException(
+                "The audit identity provider returned an identity longer than 50 characters.");
+        }
+
+        return identity;
     }
 
     public async Task<StockAdjustmentResponse?> GetDetailAsync(
@@ -276,9 +303,30 @@ public sealed class StockAdjustmentWorkflow
                 "Adjustment reason is required.");
         }
 
+        if (!StockAdjustmentReasonCodes.IsValidForAdjustmentType(
+                request.AdjustmentType,
+                request.ReasonCode))
+        {
+            var adjustmentTypeName =
+                request.AdjustmentType switch
+                {
+                    StockAdjustmentTypes.Increase => "Increase",
+                    StockAdjustmentTypes.Decrease => "Decrease",
+                    StockAdjustmentTypes.Reallocation => "Reallocation",
+                    _ => request.AdjustmentType
+                };
+            var article =
+                request.AdjustmentType == StockAdjustmentTypes.Increase
+                    ? "an"
+                    : "a";
+
+            throw new InvalidOperationException(
+                $"The selected reason is not valid for {article} {adjustmentTypeName} stock adjustment.");
+        }
+
         if (string.Equals(
                 request.ReasonCode,
-                "OTHER",
+                StockAdjustmentReasonCodes.Other,
                 StringComparison.OrdinalIgnoreCase) &&
             string.IsNullOrWhiteSpace(request.Remarks))
         {

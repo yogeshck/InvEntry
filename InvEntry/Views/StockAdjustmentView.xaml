@@ -134,10 +134,10 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Auto"
-                  HorizontalContentAlignment="Left">
+                  HorizontalContentAlignment="Center">
         <Grid Margin="12"
               Width="1050"
-              HorizontalAlignment="Left">
+              HorizontalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -183,6 +183,8 @@
                         <TextBlock Text="Reason"
                                    Margin="0,0,0,5" />
                         <dxe:ComboBoxEdit ItemsSource="{Binding StockAdjReasonList}"
+                                          DisplayMember="RefValue"
+                                          ValueMember="RefCode"
                                           EditValue="{Binding SelectedReasonCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           NullText="Choose Reason"
                                           Background="White" />
@@ -226,7 +228,7 @@
                                 Height="34"
                                 Margin="0,0,8,0"
                                 Command="{Binding SelectDecreaseModeCommand}" />
-                        <Button Content="Item-to-Item Transfer"
+                        <Button Content="Material Reallocation"
                                 Width="170"
                                 Height="34"
                                 Command="{Binding SelectReallocationModeCommand}" />
@@ -356,7 +358,7 @@
 
                         <!-- Normal mode result for source/item is shown in column 3; in reallocation this shows source-after here for clarity. -->
                         <StackPanel Style="{StaticResource ReallocationOnlyPanelStyle}">
-                            <TextBlock Text="FROM - AFTER TRANSFER"
+                            <TextBlock Text="FROM - AFTER REALLOCATION"
                                        Style="{StaticResource SectionCaption}" />
                             <Grid Style="{StaticResource SkuOnlyPanelStyle}">
                                 <Grid.ColumnDefinitions>
@@ -382,7 +384,7 @@
                                               Margin="6,0,0,0"
                                               NullText="Net" />
                             </Grid>
-                            <TextBlock Text="Source category after transfer"
+                            <TextBlock Text="Source category after reallocation"
                                        Margin="0,8,0,4"
                                        Foreground="#111111" />
                             <Grid>

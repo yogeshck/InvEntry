@@ -91,6 +91,7 @@ builder.Services.AddScoped(
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IStockMovementService, StockMovementService>();
 builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
+builder.Services.AddScoped<IAuditIdentityProvider, AuditIdentityProvider>();
 builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
 builder.Services.AddScoped<IEstimateWorkflow, EstimateWorkflow>();

@@ -6,6 +6,7 @@ using InvEntry.Contracts.StockAdjustments;
 using InvEntry.Models;
 using InvEntry.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,7 +26,9 @@ public partial class StockAdjustmentViewModel : ObservableObject
     private readonly IStockAdjustmentService _stockAdjustmentService;
     private readonly ReferenceLoader _referenceLoader;
 
-    [ObservableProperty] private ObservableCollection<string> _stockAdjReasonList = new();
+    private List<MtblReference> _allStockAdjustmentReasons = new();
+
+    [ObservableProperty] private ObservableCollection<MtblReference> _stockAdjReasonList = new();
     [ObservableProperty] private ObservableCollection<MtblReference> _mtblReferencesList = new();
     [ObservableProperty] private ObservableCollection<string> _productCategoryList = new();
     [ObservableProperty] private ObservableCollection<string> _productSkuStrList = new();
@@ -82,13 +85,21 @@ public partial class StockAdjustmentViewModel : ObservableObject
         IsConsolidatedSelection(ToSelectedProductSku);
 
     public string SourceStockLevelText =>
-        HasSourceSku ? "INDIVIDUAL SKU + CATEGORY SUMMARY" : "CONSOLIDATED / SUMMARY STOCK";
+        string.IsNullOrWhiteSpace(SelectedProductSku)
+            ? "SELECT STOCK LEVEL"
+            : HasSourceSku
+                ? "SKU / TAGGED STOCK"
+                : "CONSOLIDATED / SUMMARY STOCK";
 
     public string DestinationStockLevelText =>
-        HasDestinationSku ? "INDIVIDUAL SKU + CATEGORY SUMMARY" : "CONSOLIDATED / SUMMARY STOCK";
+        string.IsNullOrWhiteSpace(ToSelectedProductSku)
+            ? "SELECT STOCK LEVEL"
+            : HasDestinationSku
+                ? "SKU / TAGGED STOCK"
+                : "CONSOLIDATED / SUMMARY STOCK";
 
     public string MiddleColumnTitle =>
-        IsReallocationMode ? "2. MATERIAL TRANSFER" : "2. ADJUSTMENT";
+        IsReallocationMode ? "2. MATERIAL REALLOCATION" : "2. ADJUSTMENT";
 
     public string LeftColumnTitle =>
         IsReallocationMode ? "1. FROM / CURRENT" : "1. CURRENT STOCK";
@@ -105,7 +116,7 @@ public partial class StockAdjustmentViewModel : ObservableObject
             if (IsReallocationMode)
             {
                 return TryValidateReallocationPreview(out var message)
-                    ? "Transfer preview is valid. OUT and IN will be posted together."
+                    ? "Reallocation preview is valid. OUT and IN will be posted together."
                     : message;
             }
 
@@ -173,6 +184,8 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
     partial void OnSelectedModeChanged(StockAdjustmentMode value)
     {
+        SelectedReasonCode = null;
+        FilterStockAdjustmentReasons();
         OnPropertyChanged(nameof(IsIncreaseMode));
         OnPropertyChanged(nameof(IsDecreaseMode));
         OnPropertyChanged(nameof(IsReallocationMode));
@@ -543,7 +556,30 @@ public partial class StockAdjustmentViewModel : ObservableObject
 
     private async Task LoadReferencesAsync()
     {
-        StockAdjReasonList = await _referenceLoader.LoadValuesAsync("STOCK_ADJUSTMENTS");
+        var references = await _referenceLoader.LoadAsync("STOCK_ADJUSTMENTS");
+        _allStockAdjustmentReasons = references
+            .Where(x => x.IsActive)
+            .ToList();
+        FilterStockAdjustmentReasons();
+    }
+
+    private void FilterStockAdjustmentReasons()
+    {
+        var module = SelectedMode switch
+        {
+            StockAdjustmentMode.Increase => StockAdjustmentTypes.Increase,
+            StockAdjustmentMode.Decrease => StockAdjustmentTypes.Decrease,
+            StockAdjustmentMode.Reallocation => StockAdjustmentTypes.Reallocation,
+            _ => string.Empty
+        };
+
+        StockAdjReasonList = new ObservableCollection<MtblReference>(
+            _allStockAdjustmentReasons
+                .Where(x =>
+                    string.Equals(x.Module, module, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(x.Module, "ALL", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(x => x.SortSeq)
+                .ThenBy(x => x.RefValue));
     }
 
     private void Recalculate()
@@ -656,7 +692,7 @@ public partial class StockAdjustmentViewModel : ObservableObject
         if (gross <= 0)
         {
             message = IsReallocationMode
-                ? "Enter a transfer gross weight greater than zero."
+                ? "Enter a reallocation gross weight greater than zero."
                 : "Enter an adjustment gross weight greater than zero.";
             return false;
         }
