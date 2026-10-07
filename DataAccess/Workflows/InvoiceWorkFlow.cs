@@ -16,6 +16,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
     private readonly IRepositoryBase<Voucher> _voucherRepository;
     private readonly IRepositoryBase<OrgCustomer> _customerRepository;
+    private readonly FinanceSyncService _financeSyncService;
 
     //private readonly IRepositoryBase<ProductStock> _productStockRepository;
     //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
@@ -39,7 +40,8 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IRepositoryBase<OrgCustomer> customerRepository,
         IStockMovementService stockMovementService,
         IGstr1StagingService gstr1StagingService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        FinanceSyncService financeSyncService)
     {
         _invoiceRepository =
             invoiceRepository;
@@ -70,6 +72,8 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
         _unitOfWork =
             unitOfWork;
+
+        _financeSyncService = financeSyncService;
     }
 
 
@@ -1783,6 +1787,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        FinaliseInvoiceResponse response;
         var invoiceGkey = request.InvoiceGkey;
 
         await using var transaction =
@@ -2495,16 +2500,14 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
 
-
             await transaction.CommitAsync(
                 cancellationToken);
-
 
             // =========================================================
             // RESPONSE
             // =========================================================
 
-            return new FinaliseInvoiceResponse
+            response =  new FinaliseInvoiceResponse
             {
                 Gkey = invoice.Gkey,
                 InvNbr = invoice.InvNbr ?? string.Empty,
@@ -2519,6 +2522,34 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
+
+        // =========================================================
+        // FINANCE OUTBOX - AFTER INVOICE TRANSACTION
+        // =========================================================
+
+        try
+        {
+            await _financeSyncService.QueueFinanceSyncAsync(
+                response.Gkey,
+                orgGkey: 1,
+                locationGkey: 1,
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Finance integration must never turn a successfully
+            // finalised invoice into an apparent finalisation error.
+            //
+            // Reconciliation will recover any missing outbox event.
+        }
+
+
+        // =========================================================
+        // RESPONSE
+        // =========================================================
+
+        return response;
+
     }
 
     private void PostInvoiceOldMetalStock(

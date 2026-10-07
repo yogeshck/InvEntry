@@ -130,8 +130,10 @@ builder.Services.AddScoped<IStockAdjustmentWorkflow, StockAdjustmentWorkflow>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementService>();
+
 builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
 builder.Services.AddScoped<FinanceSyncService>();
+builder.Services.AddHostedService<FinanceSyncBackgroundService>();
 
 var app = builder.Build();
 
