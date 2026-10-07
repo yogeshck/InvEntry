@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
+using DataAccess.Services;
 using DataAccess.Workflows;
 using InvEntry.Contracts.Invoices;
 using InvEntry.Utils.Options;
@@ -14,15 +15,18 @@ public class InvoiceController : ControllerBase
     private readonly IRepositoryBase<InvoiceHeader> _invoiceHeaderRepository;
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
     private readonly IInvoiceWorkflow _invoiceWorkflow;
+    private readonly FinanceSyncService _financeSyncService;
 
     public InvoiceController(
         IRepositoryBase<InvoiceHeader> invoiceHeaderRepository,
         IRepositoryBase<VoucherType> voucherTypeRepo,
+            FinanceSyncService financeSyncService,
         IInvoiceWorkflow invoiceWorkflow)
     {
         _invoiceHeaderRepository = invoiceHeaderRepository;
         _voucherTypeRepo = voucherTypeRepo;
         _invoiceWorkflow = invoiceWorkflow;
+        _financeSyncService = financeSyncService;
     }
 
     // =========================================================
@@ -652,6 +656,39 @@ public class InvoiceController : ControllerBase
         _invoiceHeaderRepository.Remove(
             invoice);
     }
+
+    [HttpPost("finance-sync/test-queue/{invoiceGkey:int}")]
+    public async Task<IActionResult> TestQueueFinanceSync(
+    int invoiceGkey,
+    CancellationToken cancellationToken)
+    {
+        await _financeSyncService.QueueFinanceSyncAsync(
+            invoiceGkey,
+            1,
+            1,
+            cancellationToken);
+
+        return Ok(new
+        {
+            invoiceGkey,
+            queued = true
+        });
+    }
+
+    [HttpPost("finance-sync/test-send-pending")]
+    public async Task<IActionResult> TestSendPending(
+    CancellationToken cancellationToken)
+    {
+        var sentCount =
+            await _financeSyncService.SendPendingAsync(
+                cancellationToken);
+
+        return Ok(new
+        {
+            sentCount
+        });
+    }
+
 
     // =========================================================
     // POST: api/invoice/{invoiceGkey}/cancel

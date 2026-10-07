@@ -88,6 +88,18 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(
         typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 
+builder.Services.AddHttpClient(
+    "FinanceTracker",
+    client =>
+    {
+        client.BaseAddress = new Uri(
+            builder.Configuration["FinanceTracker:BaseUrl"]
+            ?? throw new InvalidOperationException(
+                "FinanceTracker BaseUrl is not configured."));
+
+        client.Timeout = TimeSpan.FromSeconds(10);
+    });
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IStockMovementService, StockMovementService>();
 builder.Services.AddScoped<IVoucherNumberService, VoucherNumberService>();
@@ -118,6 +130,8 @@ builder.Services.AddScoped<IStockAdjustmentWorkflow, StockAdjustmentWorkflow>();
 builder.Services.AddScoped<IStockTransferWorkflow, StockTransferWorkflow>();
 builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPostingService>();
 builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementService>();
+builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
+builder.Services.AddScoped<FinanceSyncService>();
 
 var app = builder.Build();
 

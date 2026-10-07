@@ -65,5 +65,7 @@ public partial class ProductStock
 
     public int? GrnLineSummaryGkey { get; set; }
 
+    public virtual ICollection<StockAdjustmentLine> StockAdjustmentLines { get; set; } = new List<StockAdjustmentLine>();
+
     public virtual ICollection<StockTransferLine> StockTransferLines { get; set; } = new List<StockTransferLine>();
 }

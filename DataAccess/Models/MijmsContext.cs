@@ -33,6 +33,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<EstimateLine> EstimateLines { get; set; }
 
+    public virtual DbSet<FinanceSyncOutbox> FinanceSyncOutboxes { get; set; }
+
     public virtual DbSet<GrnHeader> GrnHeaders { get; set; }
 
     public virtual DbSet<GrnLine> GrnLines { get; set; }
@@ -591,11 +593,10 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
         {
-            entity.HasKey(e => e.Gkey);
+            entity
+                .HasNoKey()
+                .ToTable("DAILY_STOCK_SUMMARY");
 
-            entity.ToTable("DAILY_STOCK_SUMMARY");
-
-            entity.Property(e => e.Gkey).HasColumnName("GKey");
             entity.Property(e => e.ClosingStockGrossWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK_GROSS_WEIGHT");
@@ -606,6 +607,9 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ClosingStockStoneWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK_STONE_WEIGHT");
+            entity.Property(e => e.Gkey)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("GKey");
             entity.Property(e => e.Metal)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -923,6 +927,52 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.VaPercent)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("VA_PERCENT");
+        });
+
+        modelBuilder.Entity<FinanceSyncOutbox>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("FINANCE_SYNC_OUTBOX");
+
+            entity.HasIndex(e => new { e.Status, e.CreatedOn }, "IX_FINANCE_SYNC_OUTBOX_PENDING");
+
+            entity.HasIndex(e => e.SourceEventId, "UX_FINANCE_SYNC_OUTBOX_SOURCE_EVENT").IsUnique();
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.CreatedOn)
+                .HasDefaultValueSql("(sysdatetime())")
+                .HasColumnName("CREATED_ON");
+            entity.Property(e => e.DocumentDate).HasColumnName("DOCUMENT_DATE");
+            entity.Property(e => e.DocumentNo)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("DOCUMENT_NO");
+            entity.Property(e => e.EventType)
+                .HasMaxLength(40)
+                .IsUnicode(false)
+                .HasColumnName("EVENT_TYPE");
+            entity.Property(e => e.LastAttemptOn).HasColumnName("LAST_ATTEMPT_ON");
+            entity.Property(e => e.LastError)
+                .HasMaxLength(1000)
+                .HasColumnName("LAST_ERROR");
+            entity.Property(e => e.Payload).HasColumnName("PAYLOAD");
+            entity.Property(e => e.RetryCount).HasColumnName("RETRY_COUNT");
+            entity.Property(e => e.SentOn).HasColumnName("SENT_ON");
+            entity.Property(e => e.SourceEventId)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("SOURCE_EVENT_ID");
+            entity.Property(e => e.SourceGkey).HasColumnName("SOURCE_GKEY");
+            entity.Property(e => e.SourceType)
+                .HasMaxLength(40)
+                .IsUnicode(false)
+                .HasColumnName("SOURCE_TYPE");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("PENDING")
+                .HasColumnName("STATUS");
         });
 
         modelBuilder.Entity<GrnHeader>(entity =>
@@ -1353,6 +1403,8 @@ public partial class MijmsContext : DbContext
 
             entity.ToTable("INVOICE_AR_RECEIPTS");
 
+            entity.HasIndex(e => e.InvoiceNbr, "IX_INVOICE_AR_RECEIPTS_INVOICE_NBR");
+
             entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.AdjustedAmount)
                 .HasColumnType("decimal(18, 2)")
@@ -1429,7 +1481,9 @@ public partial class MijmsContext : DbContext
         {
             entity.HasKey(e => e.Gkey);
 
-            entity.ToTable("INVOICE_HEADER", tb => tb.HasTrigger("TR_INVOICE_HEADER_SET_INV_DATE"));
+            entity.ToTable("INVOICE_HEADER");
+
+            entity.HasIndex(e => e.InvNbr, "IX_INVOICE_HEADER_INV_NBR");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AdvanceAdj)
@@ -1591,6 +1645,8 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey);
 
             entity.ToTable("INVOICE_LINE");
+
+            entity.HasIndex(e => new { e.InvoiceId, e.Metal }, "IX_INVOICE_LINE_INVOICE_ID_METAL");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.CreatedBy)
@@ -1913,6 +1969,8 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("PK_old_metal_transaction");
 
             entity.ToTable("OLD_METAL_TRANSACTION");
+
+            entity.HasIndex(e => e.DocRefGkey, "IX_OLD_METAL_TRANSACTION_DOC_REF_GKEY");
 
             entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.CustGkey).HasColumnName("cust_gkey");
@@ -3327,7 +3385,7 @@ public partial class MijmsContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_STOCK_ADJUSTMENT_LINE_HEADER");
 
-            entity.HasOne(d => d.ProductStockGkeyNavigation).WithMany()
+            entity.HasOne(d => d.ProductStockGkeyNavigation).WithMany(p => p.StockAdjustmentLines)
                 .HasForeignKey(d => d.ProductStockGkey)
                 .HasConstraintName("FK_STOCK_ADJUSTMENT_LINE_PRODUCT_STOCK");
         });
@@ -3493,6 +3551,8 @@ public partial class MijmsContext : DbContext
             entity.HasKey(e => e.Gkey).HasName("PK_fin_day_book");
 
             entity.ToTable("VOUCHER");
+
+            entity.HasIndex(e => new { e.RefDocGkey, e.VoucherType, e.TransAmount }, "IX_VOUCHER_REF_DOC_GKEY_TYPE_AMOUNT");
 
             entity.Property(e => e.Gkey).HasColumnName("gkey");
             entity.Property(e => e.CbAmount)
