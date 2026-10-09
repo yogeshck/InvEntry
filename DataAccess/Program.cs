@@ -133,7 +133,11 @@ builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementServ
 
 builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
 builder.Services.AddScoped<FinanceSyncService>();
-builder.Services.AddHostedService<FinanceSyncBackgroundService>();
+
+if (builder.Configuration.GetValue<bool>("FinanceTracker:Enabled"))
+{
+    builder.Services.AddHostedService<FinanceSyncBackgroundService>();
+}
 
 var app = builder.Build();
 
