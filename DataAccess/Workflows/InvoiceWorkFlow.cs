@@ -3,6 +3,7 @@ using DataAccess.Models;
 using DataAccess.Repository;
 using DataAccess.Services;
 using InvEntry.Contracts.Invoices;
+using Microsoft.Extensions.Options;
 
 namespace DataAccess.Workflows;
 
@@ -17,6 +18,8 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IRepositoryBase<Voucher> _voucherRepository;
     private readonly IRepositoryBase<OrgCustomer> _customerRepository;
     private readonly FinanceSyncService _financeSyncService;
+    private readonly FinanceSyncOptions _financeSyncOptions;
+    private readonly ILogger<InvoiceWorkflow> _logger;
 
     //private readonly IRepositoryBase<ProductStock> _productStockRepository;
     //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
@@ -41,7 +44,9 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IStockMovementService stockMovementService,
         IGstr1StagingService gstr1StagingService,
         IUnitOfWork unitOfWork,
-        FinanceSyncService financeSyncService)
+        FinanceSyncService financeSyncService,
+        IOptions<FinanceSyncOptions>? financeSyncOptions = null,
+        ILogger<InvoiceWorkflow>? logger = null)
     {
         _invoiceRepository =
             invoiceRepository;
@@ -74,6 +79,10 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             unitOfWork;
 
         _financeSyncService = financeSyncService;
+        _financeSyncOptions = financeSyncOptions?.Value ??
+            new FinanceSyncOptions { Enabled = true, OrgGkey = 1, LocationGkey = 1 };
+        _logger = logger ??
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<InvoiceWorkflow>.Instance;
     }
 
 
@@ -2500,6 +2509,34 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             await _unitOfWork.SaveChangesAsync(
                 cancellationToken);
 
+            // The save assigns settlement voucher identities. The outbox is
+            // then built and saved through the same scoped DbContext while
+            // the finalisation transaction is still active.
+            if (_financeSyncOptions.Enabled)
+            {
+                try
+                {
+                    await _financeSyncService.QueueFinanceSyncAsync(
+                        invoice.Gkey,
+                        _financeSyncOptions.OrgGkey,
+                        _financeSyncOptions.LocationGkey,
+                        cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Required finance outbox creation failed for invoice {InvoiceGkey} ({InvoiceNumber}); finalisation will roll back.",
+                        invoice.Gkey, invoice.InvNbr);
+                    throw new FinanceSyncQueueException(
+                        "The required financial synchronization record could not be created.",
+                        ex);
+                }
+            }
+
             await transaction.CommitAsync(
                 cancellationToken);
 
@@ -2522,27 +2559,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
             throw;
         }
-
-        // =========================================================
-        // FINANCE OUTBOX - AFTER INVOICE TRANSACTION
-        // =========================================================
-
-        try
-        {
-            await _financeSyncService.QueueFinanceSyncAsync(
-                response.Gkey,
-                orgGkey: 1,
-                locationGkey: 1,
-                cancellationToken);
-        }
-        catch (Exception)
-        {
-            // Finance integration must never turn a successfully
-            // finalised invoice into an apparent finalisation error.
-            //
-            // Reconciliation will recover any missing outbox event.
-        }
-
 
         // =========================================================
         // RESPONSE

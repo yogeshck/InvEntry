@@ -128,8 +128,14 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+    {
+        // Program.cs supplies the production provider and connection string.
+        // Do not register a second provider when tests or tools explicitly
+        // configure this context.
+        if (!optionsBuilder.IsConfigured)
+            optionsBuilder.UseSqlServer(
+                "Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -956,6 +962,12 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.LastError)
                 .HasMaxLength(1000)
                 .HasColumnName("LAST_ERROR");
+            entity.Property(e => e.ClaimToken)
+                .HasMaxLength(64)
+                .IsUnicode(false)
+                .HasColumnName("CLAIM_TOKEN");
+            entity.Property(e => e.ClaimExpiresOn)
+                .HasColumnName("CLAIM_EXPIRES_ON");
             entity.Property(e => e.Payload).HasColumnName("PAYLOAD");
             entity.Property(e => e.RetryCount).HasColumnName("RETRY_COUNT");
             entity.Property(e => e.SentOn).HasColumnName("SENT_ON");

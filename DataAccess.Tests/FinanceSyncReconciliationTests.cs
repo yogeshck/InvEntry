@@ -1,0 +1,224 @@
+using DataAccess.Models;
+using DataAccess.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using NUnit.Framework;
+using System.Net;
+using System.Text;
+
+namespace DataAccess.Tests;
+
+public sealed class FinanceSyncReconciliationTests
+{
+    [Test]
+    public async Task D01274_cash_receipt_maps_to_expected_movement()
+    {
+        await using var context = CreateContext();
+        SeedD01274(context);
+        await context.SaveChangesAsync();
+
+        var payload = await new FinanceInvoicePayloadBuilder(context)
+            .BuildAsync(29944, 1, 1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(payload.SourceEventId, Is.EqualTo("INVOICE-29944-FINAL"));
+            Assert.That(payload.Movements, Has.Count.EqualTo(1));
+            Assert.That(payload.Movements[0].Direction, Is.EqualTo("IN"));
+            Assert.That(payload.Movements[0].PaymentGroup, Is.EqualTo("CASH"));
+            Assert.That(payload.Movements[0].Amount, Is.EqualTo(50000m));
+            Assert.That(payload.Movements[0].SourceReference, Is.EqualTo("20766"));
+        });
+    }
+
+    [Test]
+    public async Task Dry_run_reports_missing_event_without_inserting_it()
+    {
+        await using var context = CreateContext();
+        SeedD01274(context);
+        await context.SaveChangesAsync();
+        var service = CreateReconciliation(context, HttpStatusCode.NotFound);
+
+        var report = await service.DryRunAsync(
+            new(new DateOnly(2026, 10, 11), new DateOnly(2026, 10, 11)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(report.DryRun, Is.True);
+            Assert.That(report.Items, Has.Count.EqualTo(1));
+            Assert.That(report.Items[0].ExpectedEventId,
+                Is.EqualTo("INVOICE-29944-FINAL"));
+            Assert.That(report.Items[0].RecommendedAction,
+                Is.EqualTo("ELIGIBLE_FOR_APPROVED_RECOVERY"));
+            Assert.That(context.FinanceSyncOutboxes.Count(), Is.Zero);
+        });
+    }
+
+    [Test]
+    public async Task Dry_run_marks_remote_unavailable_as_review_uncertain()
+    {
+        await using var context = CreateContext();
+        SeedD01274(context);
+        await context.SaveChangesAsync();
+        var service = CreateReconciliation(context,
+            HttpStatusCode.ServiceUnavailable);
+
+        var report = await service.DryRunAsync(
+            new(new DateOnly(2026, 10, 11), new DateOnly(2026, 10, 11)));
+
+        Assert.That(report.Items.Single().RecommendedAction,
+            Is.EqualTo("REVIEW_UNCERTAIN"));
+        Assert.That(context.FinanceSyncOutboxes.Count(), Is.Zero);
+    }
+
+    [Test]
+    public async Task Approved_recovery_of_unposted_event_creates_one_pending_row()
+    {
+        await using var context = CreateContext();
+        SeedD01274(context);
+        await context.SaveChangesAsync();
+        var service = CreateReconciliation(context, HttpStatusCode.NotFound);
+
+        var result = await service.RecoverAsync(new(29944, Approved: true));
+        var second = await service.RecoverAsync(new(29944, Approved: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Result, Is.EqualTo("CREATED_PENDING_NO_POST"));
+            Assert.That(second.Result, Is.EqualTo("ALREADY_EXISTS_NO_CHANGE"));
+            Assert.That(context.FinanceSyncOutboxes.Count(), Is.EqualTo(1));
+            Assert.That(context.FinanceSyncOutboxes.Single().Status,
+                Is.EqualTo(FinanceSyncService.Pending));
+        });
+    }
+
+    [Test]
+    public async Task Approved_recovery_of_posted_event_restores_sent_without_post()
+    {
+        await using var context = CreateContext();
+        SeedD01274(context);
+        await context.SaveChangesAsync();
+        var methods = new List<HttpMethod>();
+        var service = CreateReconciliation(context, HttpStatusCode.OK, methods);
+
+        var result = await service.RecoverAsync(new(29944, Approved: true));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Result, Is.EqualTo("RESTORED_SENT_WITHOUT_POST"));
+            Assert.That(context.FinanceSyncOutboxes.Single().Status,
+                Is.EqualTo(FinanceSyncService.Sent));
+            Assert.That(methods, Is.EqualTo(new[] { HttpMethod.Get }));
+        });
+    }
+
+    [Test]
+    public void Recovery_requires_explicit_approval()
+    {
+        using var context = CreateContext();
+        var service = CreateReconciliation(context, HttpStatusCode.NotFound);
+        Assert.ThrowsAsync<ArgumentException>(() =>
+            service.RecoverAsync(new(29944, Approved: false)));
+    }
+
+    [Test]
+    public void Startup_check_reports_missing_schema_objects()
+    {
+        var services = new ServiceCollection();
+        services.AddScoped<IFinanceSyncSchemaReadinessChecker>(_ =>
+            new MissingSchemaChecker("column dbo.FINANCE_SYNC_OUTBOX.CLAIM_TOKEN"));
+        using var provider = services.BuildServiceProvider();
+        var hosted = new FinanceSyncSchemaReadinessService(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(new FinanceSyncOptions
+            {
+                Enabled = true, OrgGkey = 1, LocationGkey = 1
+            }),
+            NullLogger<FinanceSyncSchemaReadinessService>.Instance);
+
+        var error = Assert.ThrowsAsync<InvalidOperationException>(() =>
+            hosted.StartAsync(CancellationToken.None));
+        Assert.That(error!.Message, Does.Contain("CLAIM_TOKEN"));
+    }
+
+    private static FinanceSyncReconciliationService CreateReconciliation(
+        MijmsContext context,
+        HttpStatusCode status,
+        List<HttpMethod>? methods = null)
+    {
+        var client = new HttpClient(new Handler((request, _) =>
+        {
+            methods?.Add(request.Method);
+            var response = new HttpResponseMessage(status);
+            if (status == HttpStatusCode.OK)
+                response.Content = new StringContent("{\"posted\":true}",
+                    Encoding.UTF8, "application/json");
+            return Task.FromResult(response);
+        })) { BaseAddress = new Uri("https://finance.test") };
+        var builder = new FinanceInvoicePayloadBuilder(context);
+        var sync = new FinanceSyncService(context, builder,
+            new Factory(client));
+        return new FinanceSyncReconciliationService(context, builder, sync,
+            Options.Create(new FinanceSyncOptions
+            {
+                Enabled = true, OrgGkey = 1, LocationGkey = 1
+            }));
+    }
+
+    private static MijmsContext CreateContext()
+    {
+        var options = new DbContextOptionsBuilder<MijmsContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .ConfigureWarnings(x => x.Ignore(
+                InMemoryEventId.TransactionIgnoredWarning))
+            .Options;
+        return new MijmsContext(options);
+    }
+
+    private static void SeedD01274(MijmsContext context)
+    {
+        context.InvoiceHeaders.Add(new InvoiceHeader
+        {
+            Gkey = 29944,
+            InvNbr = "D-01274",
+            InvDate = new DateTime(2026, 10, 11, 20, 20, 52),
+            Status = "FINAL",
+            AmountPayable = 50000m,
+            RecdAmount = 50000m
+        });
+        context.Vouchers.Add(new Voucher
+        {
+            Gkey = 20766,
+            RefDocGkey = 29944,
+            TransType = "Receipt",
+            Mode = "Cash",
+            TransAmount = 50000m,
+            TransDesc = "Invoice Receipt / Cash"
+        });
+    }
+
+    private sealed class MissingSchemaChecker(params string[] missing)
+        : IFinanceSyncSchemaReadinessChecker
+    {
+        public Task<IReadOnlyList<string>> FindMissingObjectsAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<string>>(missing);
+    }
+
+    private sealed class Factory(HttpClient client) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => client;
+    }
+
+    private sealed class Handler(
+        Func<HttpRequestMessage, CancellationToken,
+            Task<HttpResponseMessage>> send) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken) =>
+            send(request, cancellationToken);
+    }
+}

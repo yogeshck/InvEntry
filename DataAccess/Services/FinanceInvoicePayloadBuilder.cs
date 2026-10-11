@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using DataAccess.Models.FinanceIntegration;
+using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Services;
@@ -27,9 +28,8 @@ public sealed class FinanceInvoicePayloadBuilder
             ?? throw new InvalidOperationException(
                 $"Invoice {invoiceGkey} was not found.");
 
-        if (!string.Equals(
-                invoice.Status?.Trim(),
-                "FINAL",
+        if (!InvoiceStatus.IsFinal(invoice.Status?.Trim()) &&
+            !string.Equals(invoice.Status?.Trim(), "FINALISED",
                 StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
@@ -75,6 +75,14 @@ public sealed class FinanceInvoicePayloadBuilder
             if (movement != null)
                 payload.Movements.Add(movement);
         }
+
+        if (payload.Movements.Any(x => x.Amount <= 0))
+            throw new InvalidOperationException(
+                $"Invoice {invoice.InvNbr} contains an eligible settlement voucher with a non-positive amount.");
+
+        if (payload.Movements.Any(x => string.IsNullOrWhiteSpace(x.SourceReference)))
+            throw new InvalidOperationException(
+                $"Invoice {invoice.InvNbr} contains an eligible settlement voucher without a source reference.");
 
         return payload;
     }

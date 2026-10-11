@@ -627,6 +627,13 @@ public class InvoiceController : ControllerBase
         {
             return BadRequest(new { message = ex.Message });
         }
+        catch (FinanceSyncQueueException)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                message = "Invoice finalisation was not completed because financial synchronization is temporarily unavailable. Resolve the server configuration before trying again."
+            });
+        }
     }
 
     // =========================================================

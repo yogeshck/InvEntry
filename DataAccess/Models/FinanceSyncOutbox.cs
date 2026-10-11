@@ -32,4 +32,8 @@ public partial class FinanceSyncOutbox
     public DateTime? SentOn { get; set; }
 
     public string? LastError { get; set; }
+
+    public string? ClaimToken { get; set; }
+
+    public DateTime? ClaimExpiresOn { get; set; }
 }

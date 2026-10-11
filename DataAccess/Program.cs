@@ -88,14 +88,35 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped(
         typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 
+var financeTrackerEnabled =
+    builder.Configuration.GetValue<bool>("FinanceTracker:Enabled");
+builder.Services.Configure<FinanceSyncOptions>(
+    builder.Configuration.GetSection(FinanceSyncOptions.SectionName));
+if (financeTrackerEnabled && string.IsNullOrWhiteSpace(
+        builder.Configuration["FinanceTracker:ApiKey"]))
+    throw new InvalidOperationException(
+        "FinanceTracker service authentication is required when synchronization is enabled.");
+
 builder.Services.AddHttpClient(
     "FinanceTracker",
     client =>
     {
-        client.BaseAddress = new Uri(
+        var baseAddress = new Uri(
             builder.Configuration["FinanceTracker:BaseUrl"]
             ?? throw new InvalidOperationException(
                 "FinanceTracker BaseUrl is not configured."));
+        var apiKey = builder.Configuration["FinanceTracker:ApiKey"];
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException(
+                "FinanceTracker service authentication is not configured.");
+        if (!builder.Environment.IsDevelopment() &&
+            baseAddress.Scheme != Uri.UriSchemeHttps)
+            throw new InvalidOperationException(
+                "FinanceTracker service communication must use HTTPS outside development.");
+
+        client.BaseAddress = baseAddress;
+        client.DefaultRequestHeaders.Add(
+            "X-FinanceTracker-Integration-Key", apiKey);
 
         client.Timeout = TimeSpan.FromSeconds(10);
     });
@@ -133,9 +154,15 @@ builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementServ
 
 builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
 builder.Services.AddScoped<FinanceSyncService>();
+builder.Services.AddScoped<FinanceSyncReconciliationService>();
+builder.Services.AddScoped<IFinanceSyncSchemaReadinessChecker,
+    FinanceSyncSchemaReadinessChecker>();
 
-if (builder.Configuration.GetValue<bool>("FinanceTracker:Enabled"))
+if (financeTrackerEnabled)
 {
+    // Registered first so schema compatibility is verified before the
+    // dispatcher starts and before Kestrel accepts invoice finalisations.
+    builder.Services.AddHostedService<FinanceSyncSchemaReadinessService>();
     builder.Services.AddHostedService<FinanceSyncBackgroundService>();
 }
 
