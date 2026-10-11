@@ -7,6 +7,8 @@ using DataAccess.Workflows;
 using InvEntry.Gst.Core.Classification;
 using InvEntry.Gst.Core.Rules;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
+using DataAccess.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -57,7 +59,9 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
-});
+})
+.AddScheme<AuthenticationSchemeOptions, ManagementServiceAuthenticationHandler>(
+    ManagementServiceAuthenticationDefaults.Scheme, _ => { });
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -96,6 +100,10 @@ if (financeTrackerEnabled && string.IsNullOrWhiteSpace(
         builder.Configuration["FinanceTracker:ApiKey"]))
     throw new InvalidOperationException(
         "FinanceTracker service authentication is required when synchronization is enabled.");
+if (financeTrackerEnabled && string.IsNullOrWhiteSpace(builder.Configuration[
+        ManagementServiceAuthenticationDefaults.ConfigurationKey]))
+    throw new InvalidOperationException(
+        "InvEntry management service authentication is required when synchronization is enabled.");
 
 builder.Services.AddHttpClient(
     "FinanceTracker",
@@ -155,6 +163,8 @@ builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementServ
 builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
 builder.Services.AddScoped<FinanceSyncService>();
 builder.Services.AddScoped<FinanceSyncReconciliationService>();
+builder.Services.AddScoped<FinanceSyncManagementService>();
+builder.Services.AddSingleton<FinanceSyncDispatchJobQueue>();
 builder.Services.AddScoped<IFinanceSyncSchemaReadinessChecker,
     FinanceSyncSchemaReadinessChecker>();
 
@@ -164,6 +174,7 @@ if (financeTrackerEnabled)
     // dispatcher starts and before Kestrel accepts invoice finalisations.
     builder.Services.AddHostedService<FinanceSyncSchemaReadinessService>();
     builder.Services.AddHostedService<FinanceSyncBackgroundService>();
+    builder.Services.AddHostedService<FinanceSyncManualDispatchWorker>();
 }
 
 var app = builder.Build();

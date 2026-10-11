@@ -1,4 +1,5 @@
 using DataAccess.Models;
+using DataAccess.Models.FinanceIntegration;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text;
@@ -108,10 +109,30 @@ public sealed class FinanceSyncService
         CancellationToken cancellationToken = default)
     {
         var claimedItems = await ClaimBatchAsync(cancellationToken);
+        return await DispatchBatchAsync(claimedItems, null, cancellationToken);
+    }
+
+    public async Task<FinanceDispatchBatchResult> DispatchSelectedAsync(
+        IReadOnlyCollection<long> ids,
+        Func<FinanceDispatchProgress, Task>? progress,
+        CancellationToken cancellationToken = default)
+    {
+        var claimedItems = await ClaimIdsAsync(ids, cancellationToken);
+        var sent = await DispatchBatchAsync(claimedItems, progress, cancellationToken);
+        return new(ids.Count, claimedItems.Count, sent,
+            claimedItems.Count - sent);
+    }
+
+    private async Task<int> DispatchBatchAsync(
+        IReadOnlyCollection<FinanceSyncOutbox> claimedItems,
+        Func<FinanceDispatchProgress, Task>? progress,
+        CancellationToken cancellationToken)
+    {
         if (claimedItems.Count == 0) return 0;
 
         var client = _httpClientFactory.CreateClient("FinanceTracker");
         var sentCount = 0;
+        var completed = 0;
 
         foreach (var item in claimedItems)
         {
@@ -125,10 +146,38 @@ public sealed class FinanceSyncService
                 item.ClaimToken = null;
                 item.ClaimExpiresOn = null;
                 await _context.SaveChangesAsync(cancellationToken);
+                completed++;
+                if (progress != null)
+                    await progress(new FinanceDispatchProgress(completed,
+                        sentCount, claimedItems.Count - completed,
+                        item.Gkey, item.Status));
             }
         }
 
         return sentCount;
+    }
+
+    private async Task<List<FinanceSyncOutbox>> ClaimIdsAsync(
+        IReadOnlyCollection<long> requestedIds,
+        CancellationToken cancellationToken)
+    {
+        var ids = requestedIds.Distinct().Take(100).ToList();
+        var now = DateTime.UtcNow;
+        var claimToken = Guid.NewGuid().ToString("N");
+        foreach (var gkey in ids)
+        {
+            await _context.FinanceSyncOutboxes
+                .Where(x => x.Gkey == gkey &&
+                    (x.Status == Pending || x.Status == RetryableError || x.Status == Uncertain) &&
+                    (x.ClaimExpiresOn == null || x.ClaimExpiresOn < now))
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.ClaimToken, claimToken)
+                    .SetProperty(x => x.ClaimExpiresOn, now.Add(ClaimLease)),
+                    cancellationToken);
+        }
+        return await _context.FinanceSyncOutboxes
+            .Where(x => x.ClaimToken == claimToken)
+            .OrderBy(x => x.CreatedOn).ToListAsync(cancellationToken);
     }
 
     private async Task<List<FinanceSyncOutbox>> ClaimBatchAsync(
@@ -179,6 +228,15 @@ public sealed class FinanceSyncService
 
         try
         {
+            var storedPayload = JsonSerializer.Deserialize<FinanceDocumentPayload>(
+                item.Payload,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (storedPayload?.Movements == null || storedPayload.Movements.Count == 0)
+            {
+                item.Status = BusinessError;
+                item.LastError = "The stored financial event contains no eligible financial movements.";
+                return false;
+            }
             if (item.Status == Uncertain)
             {
                 var reconciliation = await ReconcileAsync(
@@ -336,3 +394,8 @@ public enum FinanceRemoteEventState
     NotPosted,
     Unavailable
 }
+
+public sealed record FinanceDispatchProgress(int Completed, int Sent,
+    int Remaining, long EventId, string EventStatus);
+public sealed record FinanceDispatchBatchResult(int Requested, int Claimed,
+    int Sent, int NotSent);

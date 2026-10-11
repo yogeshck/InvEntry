@@ -107,7 +107,7 @@ public sealed class FinanceSyncServiceTests
         EventType = "FINANCIAL_DOCUMENT",
         SourceType = "INVOICE",
         SourceEventId = "INVOICE-7-FINAL",
-        Payload = "{\"orgGkey\":1,\"sourceSystem\":\"INVENTRY\",\"sourceEventId\":\"INVOICE-7-FINAL\"}",
+        Payload = "{\"orgGkey\":1,\"sourceSystem\":\"INVENTRY\",\"sourceEventId\":\"INVOICE-7-FINAL\",\"movements\":[{\"direction\":\"IN\",\"paymentGroup\":\"CASH\",\"amount\":1}]}",
         Status = status,
         CreatedOn = DateTime.Now
     };
