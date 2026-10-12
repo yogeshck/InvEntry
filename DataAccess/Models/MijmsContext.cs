@@ -35,6 +35,8 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<FinanceSyncOutbox> FinanceSyncOutboxes { get; set; }
 
+    public virtual DbSet<FinanceClosingFence> FinanceClosingFences { get; set; }
+
     public virtual DbSet<GrnHeader> GrnHeaders { get; set; }
 
     public virtual DbSet<GrnLine> GrnLines { get; set; }
@@ -139,6 +141,24 @@ public partial class MijmsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<FinanceClosingFence>(entity =>
+        {
+            entity.ToTable("FINANCE_CLOSING_FENCE");
+            entity.HasKey(x => x.Gkey);
+            entity.HasIndex(x => new { x.OrgGkey, x.LocationGkey, x.BusinessDate })
+                .IsUnique().HasDatabaseName("UX_FINANCE_CLOSING_FENCE_SCOPE_DATE");
+            entity.HasIndex(x => x.ReservationId).IsUnique()
+                .HasDatabaseName("UX_FINANCE_CLOSING_FENCE_RESERVATION");
+            entity.Property(x => x.Gkey).HasColumnName("GKEY");
+            entity.Property(x => x.OrgGkey).HasColumnName("ORG_GKEY");
+            entity.Property(x => x.LocationGkey).HasColumnName("LOCATION_GKEY");
+            entity.Property(x => x.BusinessDate).HasColumnName("BUSINESS_DATE");
+            entity.Property(x => x.ReservationId).HasColumnName("RESERVATION_ID");
+            entity.Property(x => x.Status).HasColumnName("STATUS").HasMaxLength(20).IsUnicode(false);
+            entity.Property(x => x.CreatedOnUtc).HasColumnName("CREATED_ON_UTC");
+            entity.Property(x => x.ModifiedOnUtc).HasColumnName("MODIFIED_ON_UTC");
+        });
+
         modelBuilder.Entity<CustomerOrder>(entity =>
         {
             entity.HasKey(e => e.Gkey);

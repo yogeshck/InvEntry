@@ -74,6 +74,21 @@ public sealed class FinanceSyncSchemaReadinessChecker
                     missing.Add($"index dbo.FINANCE_SYNC_OUTBOX.{index}");
             }
 
+            if (!await ExistsAsync(connection,
+                    "SELECT CASE WHEN OBJECT_ID('dbo.FINANCE_CLOSING_FENCE', 'U') IS NULL THEN 0 ELSE 1 END",
+                    cancellationToken))
+                missing.Add("table dbo.FINANCE_CLOSING_FENCE");
+            else
+            {
+                foreach (var column in new[] { "GKEY", "ORG_GKEY", "LOCATION_GKEY",
+                             "BUSINESS_DATE", "RESERVATION_ID", "STATUS",
+                             "CREATED_ON_UTC", "MODIFIED_ON_UTC" })
+                    if (!await ExistsAsync(connection,
+                            $"SELECT CASE WHEN COL_LENGTH('dbo.FINANCE_CLOSING_FENCE', '{column}') IS NULL THEN 0 ELSE 1 END",
+                            cancellationToken))
+                        missing.Add($"column dbo.FINANCE_CLOSING_FENCE.{column}");
+            }
+
             return missing;
         }
         finally

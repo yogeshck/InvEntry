@@ -310,16 +310,27 @@ public sealed class GrnEntryValidationTests
             return Task.FromResult(transaction);
         }
 
+        var stockMovement = Proxy<IProductStockMovementService>((method, args) =>
+        {
+            if (method.Name == nameof(IProductStockMovementService.ApplyAsync))
+            {
+                var request = (StockMovementRequest)args![0]!;
+                productTransactionCreates++;
+                productTransactionSourceKeys.Add(request.RefLineGkey);
+                return Task.CompletedTask;
+            }
+            return DefaultReturn(method.ReturnType);
+        });
+
         var viewModel = new GRNViewModel(
             grn,
             Proxy<IProductService>(),
             stockSummary,
-            productTransaction,
-            transactionSummary,
             null!,
             categories,
             messages,
             productStock,
+            stockMovement,
             references);
 
         return new Fixture(

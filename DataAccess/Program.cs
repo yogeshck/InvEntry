@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication;
 using DataAccess.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,7 +89,30 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<MijmsContext>(
         ctx => ctx.UseSqlServer(connectionString));
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    const string bearerScheme = "Bearer";
+    options.AddSecurityDefinition(bearerScheme, new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter the JWT issued by /api/auth/login."
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecurityScheme
+        {
+            Reference = new OpenApiReference
+            {
+                Type = ReferenceType.SecurityScheme,
+                Id = bearerScheme
+            }
+        }] = Array.Empty<string>()
+    });
+});
 builder.Services.AddScoped(
         typeof(IRepositoryBase<>), typeof(RepositoryBase<>));
 
@@ -164,6 +188,8 @@ builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
 builder.Services.AddScoped<FinanceSyncService>();
 builder.Services.AddScoped<FinanceSyncReconciliationService>();
 builder.Services.AddScoped<FinanceSyncManagementService>();
+builder.Services.AddScoped<FinanceClosingEligibilityService>();
+builder.Services.AddScoped<FinanceClosingFenceService>();
 builder.Services.AddSingleton<FinanceSyncDispatchJobQueue>();
 builder.Services.AddScoped<IFinanceSyncSchemaReadinessChecker,
     FinanceSyncSchemaReadinessChecker>();

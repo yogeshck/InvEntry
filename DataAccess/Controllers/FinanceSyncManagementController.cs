@@ -11,12 +11,78 @@ namespace DataAccess.Controllers;
 public sealed class FinanceSyncManagementController : ControllerBase
 {
     private readonly FinanceSyncManagementService _service;
+    private readonly FinanceClosingEligibilityService _closingEligibility;
+    private readonly FinanceClosingFenceService _closingFence;
     private readonly FinanceSyncDispatchJobQueue _jobs;
     private readonly ILogger<FinanceSyncManagementController> _logger;
     public FinanceSyncManagementController(FinanceSyncManagementService service,
+        FinanceClosingEligibilityService closingEligibility,
+        FinanceClosingFenceService closingFence,
         FinanceSyncDispatchJobQueue jobs,
         ILogger<FinanceSyncManagementController> logger) =>
-        (_service, _jobs, _logger) = (service, jobs, logger);
+        (_service, _closingEligibility, _closingFence, _jobs, _logger) =
+            (service, closingEligibility, closingFence, jobs, logger);
+
+    [HttpGet("closing-eligibility")]
+    public async Task<IActionResult> ClosingEligibility([FromQuery] int orgGkey,
+        [FromQuery] int locationGkey, [FromQuery] DateOnly businessDate,
+        CancellationToken token)
+    {
+        if (!ScopeMatches(orgGkey, locationGkey)) return Forbid();
+        try
+        {
+            return Ok(await _closingEligibility.EvaluateAsync(
+                orgGkey, locationGkey, businessDate, token));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("closing-reservations")]
+    public async Task<IActionResult> ReserveClosing(
+        [FromBody] FinanceClosingReservationRequest request, CancellationToken token)
+    {
+        if (!ScopeMatches(request.OrgGkey, request.LocationGkey)) return Forbid();
+        if (request.ReservationId == Guid.Empty)
+            return BadRequest(new { message = "A reservation identifier is required." });
+        try { return Ok(await _closingFence.ReserveAsync(request, token)); }
+        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+    }
+
+    [HttpPost("closing-reservations/{reservationId:guid}/confirm")]
+    public Task<IActionResult> ConfirmClosing(Guid reservationId, [FromQuery] int orgGkey,
+        [FromQuery] int locationGkey, CancellationToken token) => ScopeMatches(orgGkey, locationGkey)
+        ? Transition(reservationId, _closingFence.ConfirmAsync, token)
+        : Task.FromResult<IActionResult>(Forbid());
+
+    [HttpPost("closing-reservations/{reservationId:guid}/cancel")]
+    public Task<IActionResult> CancelClosing(Guid reservationId, [FromQuery] int orgGkey,
+        [FromQuery] int locationGkey, CancellationToken token) => ScopeMatches(orgGkey, locationGkey)
+        ? Transition(reservationId, _closingFence.CancelAsync, token)
+        : Task.FromResult<IActionResult>(Forbid());
+
+    [HttpPost("closing-reservations/{reservationId:guid}/uncertain")]
+    public Task<IActionResult> MarkClosingUncertain(Guid reservationId, [FromQuery] int orgGkey,
+        [FromQuery] int locationGkey, CancellationToken token) => ScopeMatches(orgGkey, locationGkey)
+        ? Transition(reservationId, _closingFence.MarkUncertainAsync, token)
+        : Task.FromResult<IActionResult>(Forbid());
+
+    [HttpPost("closing-reservations/{reservationId:guid}/cancel-verified-open")]
+    public Task<IActionResult> CancelClosingAfterVerifiedOpen(Guid reservationId,
+        [FromQuery] int orgGkey, [FromQuery] int locationGkey, CancellationToken token) =>
+        ScopeMatches(orgGkey, locationGkey)
+        ? Transition(reservationId, _closingFence.CancelAfterVerifiedOpenAsync, token)
+        : Task.FromResult<IActionResult>(Forbid());
+
+    private async Task<IActionResult> Transition(Guid id,
+        Func<Guid, CancellationToken, Task> action, CancellationToken token)
+    {
+        try { await action(id, token); return Ok(new { reservationId = id }); }
+        catch (KeyNotFoundException) { return NotFound(); }
+        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+    }
 
     [HttpGet("events")]
     public async Task<IActionResult> Events([FromQuery] DateOnly? fromDate,
