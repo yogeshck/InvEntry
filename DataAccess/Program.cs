@@ -188,6 +188,10 @@ builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
 builder.Services.AddScoped<FinanceSyncService>();
 builder.Services.AddScoped<FinanceSyncReconciliationService>();
 builder.Services.AddScoped<FinanceSyncManagementService>();
+builder.Services.AddScoped<IFinanceClosingFinancialEvidenceReader,
+    FinanceClosingFinancialEvidenceReader>();
+builder.Services.AddScoped<IFinanceClosingCashBalanceVerifier,
+    FinanceClosingCashBalanceVerifier>();
 builder.Services.AddScoped<FinanceClosingEligibilityService>();
 builder.Services.AddScoped<FinanceClosingFenceService>();
 builder.Services.AddSingleton<FinanceSyncDispatchJobQueue>();

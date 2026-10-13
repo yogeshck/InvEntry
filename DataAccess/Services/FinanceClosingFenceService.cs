@@ -2,6 +2,7 @@ using DataAccess.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Data.Common;
 
 namespace DataAccess.Services;
 
@@ -18,10 +19,13 @@ public sealed class FinanceClosingFenceService
     public const string Cancelled = "CANCELLED";
     private readonly MijmsContext _context;
     private readonly FinanceClosingEligibilityService _eligibility;
+    private readonly IFinanceClosingCashBalanceVerifier _cashBalanceVerifier;
 
     public FinanceClosingFenceService(MijmsContext context,
-        FinanceClosingEligibilityService eligibility) =>
-        (_context, _eligibility) = (context, eligibility);
+        FinanceClosingEligibilityService eligibility,
+        IFinanceClosingCashBalanceVerifier cashBalanceVerifier) =>
+        (_context, _eligibility, _cashBalanceVerifier) =
+            (context, eligibility, cashBalanceVerifier);
 
     public async Task<FinanceClosingReservationResult> ReserveAsync(
         FinanceClosingReservationRequest request, CancellationToken token)
@@ -41,6 +45,13 @@ public sealed class FinanceClosingFenceService
                 request.LocationGkey, request.BusinessDate, token);
             await transaction.CommitAsync(token);
             return new(existing.ReservationId, existing.Status, repeatedEligibility);
+        }
+        if (existing != null && existing.Status is Uncertain or Confirmed)
+        {
+            var recoverableEligibility = await _eligibility.EvaluateAsync(request.OrgGkey,
+                request.LocationGkey, request.BusinessDate, token);
+            await transaction.CommitAsync(token);
+            return new(existing.ReservationId, existing.Status, recoverableEligibility);
         }
         if (existing != null && existing.Status is Reserved or Uncertain or Confirmed)
             throw new InvalidOperationException(existing.Status == Confirmed
@@ -83,9 +94,55 @@ public sealed class FinanceClosingFenceService
         TransitionAsync(id, Uncertain, allowFromCancelled: false, token);
     public Task CancelAsync(Guid id, CancellationToken token) =>
         TransitionAsync(id, Cancelled, allowFromCancelled: true, token);
-    public Task CancelAfterVerifiedOpenAsync(Guid id, CancellationToken token) =>
-        TransitionAsync(id, Cancelled, allowFromCancelled: true, token,
-            allowFromUncertain: true);
+    public async Task CancelAfterVerifiedOpenAsync(Guid id, int orgGkey,
+        int locationGkey, CancellationToken token)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync(
+            IsolationLevel.Serializable, token);
+        var coordinates = await _context.FinanceClosingFences.AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ReservationId == id, token)
+            ?? throw new KeyNotFoundException("Closing reservation was not found.");
+        if (coordinates.OrgGkey != orgGkey || coordinates.LocationGkey != locationGkey)
+            throw new InvalidOperationException(
+                "The closing reservation does not match the requested organization and location.");
+
+        await AcquireDateLockAsync(orgGkey, locationGkey,
+            coordinates.BusinessDate, token);
+        var row = await _context.FinanceClosingFences.SingleOrDefaultAsync(x =>
+            x.OrgGkey == orgGkey && x.LocationGkey == locationGkey &&
+            x.BusinessDate == coordinates.BusinessDate, token)
+            ?? throw new InvalidOperationException("The closing reservation changed during recovery.");
+        EnsureRecoverable(row, id);
+
+        FinanceClosingCashBalanceState balanceState;
+        try
+        {
+            balanceState = await _cashBalanceVerifier.VerifyAsync(orgGkey,
+                locationGkey, row.BusinessDate, token);
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            throw new InvalidOperationException(
+                "FinanceTracker cash-balance verification is unavailable.", ex);
+        }
+
+        if (balanceState != FinanceClosingCashBalanceState.Open)
+            throw new InvalidOperationException(balanceState switch
+            {
+                FinanceClosingCashBalanceState.Missing =>
+                    "FinanceTracker has no cash balance for the selected business date.",
+                FinanceClosingCashBalanceState.ClosedOrFinalised =>
+                    "FinanceTracker reports the selected business date as closed or finalised.",
+                _ => "FinanceTracker cash-balance verification is ambiguous."
+            });
+
+        await _context.Entry(row).ReloadAsync(token);
+        EnsureRecoverable(row, id);
+        row.Status = Cancelled;
+        row.ModifiedOnUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync(token);
+        await transaction.CommitAsync(token);
+    }
 
     public async Task EnsurePostingAllowedAsync(int org, int location,
         DateOnly date, CancellationToken token)
@@ -129,6 +186,16 @@ public sealed class FinanceClosingFenceService
         row.ModifiedOnUtc = DateTime.UtcNow;
         await _context.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
+    }
+
+    private static void EnsureRecoverable(FinanceClosingFence row, Guid id)
+    {
+        if (row.ReservationId != id)
+            throw new InvalidOperationException(
+                "The closing reservation changed during recovery.");
+        if (row.Status is not (Uncertain or Confirmed))
+            throw new InvalidOperationException(
+                "The closing reservation is no longer recoverable.");
     }
 
     private async Task AcquireDateLockAsync(int org, int location, DateOnly date,

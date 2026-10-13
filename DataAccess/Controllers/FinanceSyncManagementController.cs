@@ -73,7 +73,9 @@ public sealed class FinanceSyncManagementController : ControllerBase
     public Task<IActionResult> CancelClosingAfterVerifiedOpen(Guid reservationId,
         [FromQuery] int orgGkey, [FromQuery] int locationGkey, CancellationToken token) =>
         ScopeMatches(orgGkey, locationGkey)
-        ? Transition(reservationId, _closingFence.CancelAfterVerifiedOpenAsync, token)
+        ? Transition(reservationId,
+            (id, cancellationToken) => _closingFence.CancelAfterVerifiedOpenAsync(
+                id, orgGkey, locationGkey, cancellationToken), token)
         : Task.FromResult<IActionResult>(Forbid());
 
     private async Task<IActionResult> Transition(Guid id,

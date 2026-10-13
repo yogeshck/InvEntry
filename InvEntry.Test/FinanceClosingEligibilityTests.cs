@@ -121,6 +121,121 @@ public sealed class FinanceClosingEligibilityTests
     }
 
     [Test]
+    public async Task Eight_manual_invoice_movements_clear_when_all_are_verified()
+    {
+        await using var db = Context();
+        for (var id = 1; id <= 8; id++)
+            AddInvoice(db, id, Day, cash: true);
+        db.Vouchers.Add(new Voucher { Gkey = 100, RefDocGkey = 1,
+            TransType = "Journal", VoucherType = "OM Purchase",
+            Mode = "OM Purchase", TransAmount = 8500m });
+        await db.SaveChangesAsync();
+        var evidence = Enumerable.Range(1, 8).ToDictionary(x => x,
+            _ => FinanceClosingEvidenceDecision.Verified);
+
+        var result = await Service(db, evidence: evidence)
+            .EvaluateAsync(1, 1, Day);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Decision, Is.EqualTo("CLEAR"));
+            Assert.That(result.RequiredCount, Is.EqualTo(8));
+            Assert.That(result.SynchronizedCount, Is.EqualTo(8));
+            Assert.That(result.MissingOutboxCount, Is.Zero);
+        });
+    }
+
+    [Test]
+    public void Unique_posted_document_is_verified()
+    {
+        var requirement = Requirement();
+
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            requirement, [new(20, "POSTED")], []);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Verified));
+    }
+
+    [Test]
+    public void Exact_unique_manual_movement_is_verified()
+    {
+        var requirement = Requirement();
+
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            requirement, [], [Manual(1, 100m)]);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Verified));
+    }
+
+    [Test]
+    public void Duplicate_manual_movement_is_ambiguous()
+    {
+        var requirement = Requirement();
+
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            requirement, [], [Manual(1, 100m), Manual(2, 100m)]);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Ambiguous));
+    }
+
+    [Test]
+    public void Missing_manual_movement_is_missing()
+    {
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            Requirement(), [], []);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Missing));
+    }
+
+    [Test]
+    public void Incorrect_manual_amount_is_mismatched()
+    {
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            Requirement(), [], [Manual(1, 99m)]);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Mismatched));
+    }
+
+    [TestCase("OUT", "CASH", "POSTED", 0)]
+    [TestCase("IN", "UPI", "POSTED", 0)]
+    [TestCase("IN", "CASH", "CANCELLED", 0)]
+    [TestCase("IN", "CASH", "POSTED", 1)]
+    public void Incorrect_manual_attributes_are_mismatched(string direction,
+        string mode, string status, int dayOffset)
+    {
+        var row = Manual(1, 100m) with
+        {
+            Direction = direction,
+            PaymentMode = mode,
+            Status = status,
+            TransactionDate = Day.AddDays(dayOffset)
+        };
+
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            Requirement(), [], [row]);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Mismatched));
+    }
+
+    [Test]
+    public void Nonposted_document_is_mismatched()
+    {
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            Requirement(), [new(20, "CANCELLED")], []);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Mismatched));
+    }
+
+    [Test]
+    public void Posted_document_and_manual_movement_are_ambiguous()
+    {
+        var result = FinanceClosingFinancialEvidenceReader.EvaluateInvoice(
+            Requirement(), [new(20, "POSTED")], [Manual(1, 100m)]);
+
+        Assert.That(result, Is.EqualTo(FinanceClosingEvidenceDecision.Ambiguous));
+    }
+
+    [Test]
     public async Task Other_bank_or_unmapped_receipts_remain_indeterminate()
     {
         await using var db = Context();
@@ -156,7 +271,7 @@ public sealed class FinanceClosingEligibilityTests
         var management = new FinanceSyncManagementService(db,
             Options.Create(new FinanceSyncOptions { OrgGkey = 1, LocationGkey = 1 }));
         var eligibility = Service(db);
-        var fence = new FinanceClosingFenceService(db, eligibility);
+        var fence = Fence(db, eligibility);
         var controller = new FinanceSyncManagementController(management, eligibility, fence,
             new FinanceSyncDispatchJobQueue(),
             NullLogger<FinanceSyncManagementController>.Instance);
@@ -171,7 +286,7 @@ public sealed class FinanceClosingEligibilityTests
     {
         await using var db = Context();
         var eligibility = Service(db);
-        var fence = new FinanceClosingFenceService(db, eligibility);
+        var fence = Fence(db, eligibility);
         var id = Guid.NewGuid();
         var request = new FinanceClosingReservationRequest(id, 1, 1, Day);
 
@@ -191,16 +306,151 @@ public sealed class FinanceClosingEligibilityTests
     public async Task Uncertain_fence_requires_verified_open_recovery()
     {
         await using var db = Context();
-        var fence = new FinanceClosingFenceService(db, Service(db));
+        var fence = Fence(db);
         var id = Guid.NewGuid();
         await fence.ReserveAsync(new(id, 1, 1, Day), default);
         await fence.MarkUncertainAsync(id, default);
 
         Assert.ThrowsAsync<InvalidOperationException>(() => fence.CancelAsync(id, default));
-        await fence.CancelAfterVerifiedOpenAsync(id, default);
+        await fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default);
 
         Assert.That((await db.FinanceClosingFences.SingleAsync()).Status,
             Is.EqualTo(FinanceClosingFenceService.Cancelled));
+    }
+
+    [Test]
+    public async Task Confirmed_fence_is_cancelled_only_after_verified_open_balance()
+    {
+        await using var db = Context();
+        var fence = Fence(db);
+        var id = Guid.NewGuid();
+        await fence.ReserveAsync(new(id, 1, 1, Day), default);
+        await fence.ConfirmAsync(id, default);
+        var before = (await db.FinanceClosingFences.SingleAsync()).ModifiedOnUtc;
+
+        await fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default);
+
+        var row = await db.FinanceClosingFences.SingleAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(row.Status, Is.EqualTo(FinanceClosingFenceService.Cancelled));
+            Assert.That(row.ReservationId, Is.EqualTo(id));
+            Assert.That(row.ModifiedOnUtc, Is.GreaterThanOrEqualTo(before));
+        });
+    }
+
+    [TestCase(FinanceClosingFenceService.Confirmed)]
+    [TestCase(FinanceClosingFenceService.Uncertain)]
+    public async Task Recoverable_fence_returns_its_existing_reservation_id(
+        string recoverableStatus)
+    {
+        await using var db = Context();
+        var fence = Fence(db);
+        var existingId = Guid.NewGuid();
+        await fence.ReserveAsync(new(existingId, 1, 1, Day), default);
+        if (recoverableStatus == FinanceClosingFenceService.Confirmed)
+            await fence.ConfirmAsync(existingId, default);
+        else
+            await fence.MarkUncertainAsync(existingId, default);
+
+        var result = await fence.ReserveAsync(
+            new(Guid.NewGuid(), 1, 1, Day), default);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.ReservationId, Is.EqualTo(existingId));
+            Assert.That(result.FenceStatus, Is.EqualTo(recoverableStatus));
+            Assert.That(result.Eligibility.Decision, Is.EqualTo("CLEAR"));
+        });
+        Assert.That((await db.FinanceClosingFences.SingleAsync()).Status,
+            Is.EqualTo(recoverableStatus));
+    }
+
+    [TestCase(FinanceClosingCashBalanceState.Missing)]
+    [TestCase(FinanceClosingCashBalanceState.ClosedOrFinalised)]
+    [TestCase(FinanceClosingCashBalanceState.Ambiguous)]
+    public async Task Confirmed_fence_recovery_rejects_non_open_balance(
+        FinanceClosingCashBalanceState state)
+    {
+        await using var db = Context();
+        var fence = Fence(db, verifier: new FakeCashBalanceVerifier(state));
+        var id = Guid.NewGuid();
+        await fence.ReserveAsync(new(id, 1, 1, Day), default);
+        await fence.ConfirmAsync(id, default);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default));
+        Assert.That((await db.FinanceClosingFences.SingleAsync()).Status,
+            Is.EqualTo(FinanceClosingFenceService.Confirmed));
+    }
+
+    [Test]
+    public async Task Confirmed_fence_recovery_rejects_unavailable_verification()
+    {
+        await using var db = Context();
+        var verifier = new FakeCashBalanceVerifier(exception:
+            new InvalidOperationException("unavailable"));
+        var fence = Fence(db, verifier: verifier);
+        var id = Guid.NewGuid();
+        await fence.ReserveAsync(new(id, 1, 1, Day), default);
+        await fence.ConfirmAsync(id, default);
+
+        var error = Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default));
+        Assert.That(error!.Message, Does.Contain("unavailable"));
+        Assert.That((await db.FinanceClosingFences.SingleAsync()).Status,
+            Is.EqualTo(FinanceClosingFenceService.Confirmed));
+    }
+
+    [Test]
+    public async Task Confirmed_fence_recovery_rejects_scope_or_reservation_mismatch()
+    {
+        await using var db = Context();
+        var fence = Fence(db);
+        var id = Guid.NewGuid();
+        await fence.ReserveAsync(new(id, 1, 1, Day), default);
+        await fence.ConfirmAsync(id, default);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(id, 1, 2, default));
+        Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(Guid.NewGuid(), 1, 1, default));
+    }
+
+    [Test]
+    public async Task Recovery_rejects_active_or_already_cancelled_fence()
+    {
+        await using var db = Context();
+        var fence = Fence(db);
+        var id = Guid.NewGuid();
+        await fence.ReserveAsync(new(id, 1, 1, Day), default);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default));
+        await fence.CancelAsync(id, default);
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default));
+    }
+
+    [Test]
+    public async Task Recovery_rechecks_fence_state_after_balance_verification()
+    {
+        await using var db = Context();
+        var id = Guid.NewGuid();
+        var verifier = new FakeCashBalanceVerifier(onVerify: async () =>
+        {
+            var row = await db.FinanceClosingFences.SingleAsync();
+            row.Status = FinanceClosingFenceService.Reserved;
+            await db.SaveChangesAsync();
+        });
+        var fence = Fence(db, verifier: verifier);
+        await fence.ReserveAsync(new(id, 1, 1, Day), default);
+        await fence.ConfirmAsync(id, default);
+
+        Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fence.CancelAfterVerifiedOpenAsync(id, 1, 1, default));
+        Assert.That((await db.FinanceClosingFences.SingleAsync()).Status,
+            Is.EqualTo(FinanceClosingFenceService.Reserved));
     }
 
     private static MijmsContext Context() => new(new DbContextOptionsBuilder<MijmsContext>()
@@ -208,12 +458,20 @@ public sealed class FinanceClosingEligibilityTests
         .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)).Options);
 
     private static FinanceClosingEligibilityService Service(MijmsContext db,
-        bool scopeVerified = true) => new(db, Options.Create(new FinanceSyncOptions
+        bool scopeVerified = true,
+        IReadOnlyDictionary<int, FinanceClosingEvidenceDecision>? evidence = null) =>
+        new(db, Options.Create(new FinanceSyncOptions
         {
             Enabled = true, OrgGkey = 1, LocationGkey = 1,
             ClosingEligibilityScopeVerified = scopeVerified,
             ClosingEligibilityCoverageStartDate = Day.AddDays(-30)
-        }));
+        }), new FakeFinancialEvidenceReader(evidence));
+
+    private static FinanceClosingFenceService Fence(MijmsContext db,
+        FinanceClosingEligibilityService? eligibility = null,
+        IFinanceClosingCashBalanceVerifier? verifier = null) =>
+        new(db, eligibility ?? Service(db),
+            verifier ?? new FakeCashBalanceVerifier());
 
     private static void AddInvoice(MijmsContext db, int id, DateOnly date, bool cash)
     {
@@ -232,4 +490,37 @@ public sealed class FinanceClosingEligibilityTests
             DocumentDate = Day.ToDateTime(TimeOnly.MinValue), Payload = "{}",
             Status = status, CreatedOn = DateTime.UtcNow
         });
+
+    private static FinanceClosingInvoiceRequirement Requirement() => new(
+        1, "I1", Day, "INVOICE-1-FINAL",
+        [new FinanceClosingMovement("IN", "CASH", 100m)]);
+
+    private static FinanceClosingManualEvidence Manual(long id, decimal amount) =>
+        new(id, Day, null, "I1", "POSTED", "IN", "CASH", amount);
+
+    private sealed class FakeFinancialEvidenceReader(
+        IReadOnlyDictionary<int, FinanceClosingEvidenceDecision>? evidence = null)
+        : IFinanceClosingFinancialEvidenceReader
+    {
+        public Task<IReadOnlyDictionary<int, FinanceClosingEvidenceDecision>> ReadAsync(
+            int orgGkey, int locationGkey,
+            IReadOnlyList<FinanceClosingInvoiceRequirement> requirements,
+            CancellationToken cancellationToken) => Task.FromResult(
+                evidence ?? new Dictionary<int, FinanceClosingEvidenceDecision>());
+    }
+
+    private sealed class FakeCashBalanceVerifier(
+        FinanceClosingCashBalanceState state = FinanceClosingCashBalanceState.Open,
+        Exception? exception = null, Func<Task>? onVerify = null)
+        : IFinanceClosingCashBalanceVerifier
+    {
+        public async Task<FinanceClosingCashBalanceState> VerifyAsync(int orgGkey,
+            int locationGkey, DateOnly businessDate,
+            CancellationToken cancellationToken)
+        {
+            if (exception != null) throw exception;
+            if (onVerify != null) await onVerify();
+            return state;
+        }
+    }
 }
