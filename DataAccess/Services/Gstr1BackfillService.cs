@@ -95,14 +95,14 @@ public sealed class Gstr1BackfillService
             };
 
         // =========================================================
-        // FIND FINAL INVOICES
+        // FIND FINALISED INVOICES
         // =========================================================
 
         var invoices =
             _invoiceRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.InvDate.HasValue &&
                         x.InvDate.Value.Date >= fromDate &&
                         x.InvDate.Value.Date <= toDate)

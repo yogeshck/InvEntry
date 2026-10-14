@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Models;
@@ -1663,7 +1664,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .HasDefaultValue("DRAFT")
+                .HasDefaultValue(InvoiceStatus.Draft)
                 .HasColumnName("STATUS");
             entity.Property(e => e.TaxType)
                 .HasMaxLength(50)

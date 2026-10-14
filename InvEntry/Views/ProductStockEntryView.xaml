@@ -111,12 +111,12 @@
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="FROM" Style="{StaticResource Caption}"/>
-                                <dxe:DateEdit EditValue="{Binding SearchOption.From, Mode=TwoWay}"
+                                <dxe:DateEdit EditValue="{Binding SearchOption.From, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               DisplayFormatString="dd-MMM-yyyy" Height="32"/>
                             </StackPanel>
                             <StackPanel Grid.Column="4">
                                 <TextBlock Text="TO" Style="{StaticResource Caption}"/>
-                                <dxe:DateEdit EditValue="{Binding SearchOption.To, Mode=TwoWay}" MaxValue="{Binding Today}"
+                                <dxe:DateEdit EditValue="{Binding SearchOption.To, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MaxValue="{Binding Today}"
                                               DisplayFormatString="dd-MMM-yyyy" Height="32"/>
                             </StackPanel>
                             <dx:SimpleButton Grid.Column="6" Content="Refresh GRN" Command="{Binding RefreshGRNCommand}"

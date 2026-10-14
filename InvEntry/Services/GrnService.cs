@@ -17,7 +17,10 @@ namespace InvEntry.Services
 
         Task UpdateHeader(GrnHeader grnHdr);
 
-        Task<IEnumerable<GrnHeader>> GetBySupplier(string supplier);
+        Task<IEnumerable<GrnHeader>> GetBySupplier(
+            string supplier,
+            DateTime fromDate,
+            DateTime toDate);
 
         Task<IEnumerable<GrnHeader>> GetAll(DateSearchOption options);
 
@@ -85,9 +88,17 @@ namespace InvEntry.Services
 
         }
 
-        public async Task<IEnumerable<GrnHeader>> GetBySupplier(string supplier)
+        public async Task<IEnumerable<GrnHeader>> GetBySupplier(
+            string supplier,
+            DateTime fromDate,
+            DateTime toDate)
         {
-            return await _mijmsApiService.GetEnumerable<GrnHeader>($"api/grn/supplierId/{supplier}");
+            string supplierId = Uri.EscapeDataString(supplier);
+            string from = fromDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            string to = toDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+            return await _mijmsApiService.GetEnumerable<GrnHeader>(
+                $"api/grn/supplierId/{supplierId}?fromDate={from}&toDate={to}");
         }
 
         public async Task<IEnumerable<GrnLine>> GetByLineSumryGkey(int lineSumryGkey)

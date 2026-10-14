@@ -28,12 +28,10 @@ public sealed class FinanceInvoicePayloadBuilder
             ?? throw new InvalidOperationException(
                 $"Invoice {invoiceGkey} was not found.");
 
-        if (!InvoiceStatus.IsFinal(invoice.Status?.Trim()) &&
-            !string.Equals(invoice.Status?.Trim(), "FINALISED",
-                StringComparison.OrdinalIgnoreCase))
+        if (!InvoiceStatus.IsFinalised(invoice.Status?.Trim()))
         {
             throw new InvalidOperationException(
-                $"Invoice {invoice.InvNbr} is not FINAL.");
+                $"Invoice {invoice.InvNbr} is not FINALISED.");
         }
 
         var vouchers = await _context.Vouchers

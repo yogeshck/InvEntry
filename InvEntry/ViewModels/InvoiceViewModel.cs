@@ -780,7 +780,7 @@ public partial class InvoiceViewModel : ObservableObject
         return Buyer is not null &&
                Buyer.GKey > 0 &&
                Header is not null &&
-               !InvoiceStatus.IsFinal(Header.Status) &&
+               !InvoiceStatus.IsFinalised(Header.Status) &&
                !InvoiceStatus.IsCancelled(Header.Status);
     }
 
@@ -1860,7 +1860,7 @@ public partial class InvoiceViewModel : ObservableObject
         if (Header is null)
             return false;
 
-        return !InvoiceStatus.IsFinal(Header.Status) &&
+        return !InvoiceStatus.IsFinalised(Header.Status) &&
                !InvoiceStatus.IsCancelled(Header.Status);
     }
 
@@ -2438,7 +2438,7 @@ public partial class InvoiceViewModel : ObservableObject
             return false;
 
         return !_isPreparingInvoiceDocument &&
-               InvoiceStatus.IsFinal(Header.Status) &&
+               InvoiceStatus.IsFinalised(Header.Status) &&
                !string.IsNullOrWhiteSpace(Header.InvNbr);
     }
 

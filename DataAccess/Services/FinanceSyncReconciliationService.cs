@@ -1,4 +1,5 @@
 using DataAccess.Models;
+using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Data;
@@ -72,7 +73,7 @@ public sealed class FinanceSyncReconciliationService
         var through = request.ToDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
         var invoices = await _context.InvoiceHeaders.AsNoTracking()
             .Where(x => x.InvDate >= from && x.InvDate < through &&
-                (x.Status == "FINAL" || x.Status == "FINALISED"))
+                x.Status == InvoiceStatus.Finalised)
             .OrderBy(x => x.InvDate).ThenBy(x => x.Gkey)
             .Select(x => new
             {

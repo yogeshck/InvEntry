@@ -47,7 +47,7 @@ public class InvoiceController : ControllerBase
     //
     // Normal Invoice List.
     // IMPORTANT:
-    // Only FINAL invoices are returned.
+    // Only FINALISED invoices are returned.
     //
     // DRAFT invoices have their own list endpoint.
     // CANCELLED invoices are not included in the normal list.
@@ -60,7 +60,7 @@ public class InvoiceController : ControllerBase
         return _invoiceHeaderRepository
             .GetList(
                 x =>
-                    x.Status == InvoiceStatus.Final &&
+                    x.Status == InvoiceStatus.Finalised &&
                     x.InvDate.HasValue &&
                     x.InvDate.Value.Date >= criteria.From.Date &&
                     x.InvDate.Value.Date <= criteria.To.Date)
@@ -162,7 +162,7 @@ public class InvoiceController : ControllerBase
     // Existing customer invoice lookup.
     //
     // IMPORTANT:
-    // Only FINAL invoices should participate here.
+    // Only FINALISED invoices should participate here.
     // Drafts are handled separately.
     // =========================================================
 
@@ -186,7 +186,7 @@ public class InvoiceController : ControllerBase
             return _invoiceHeaderRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.InvDate.HasValue &&
                         x.InvDate.Value.Date >= criteria.From.Date &&
                         x.InvDate.Value.Date <= criteria.To.Date &&
@@ -204,7 +204,7 @@ public class InvoiceController : ControllerBase
             return _invoiceHeaderRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.CustMobile == criteria.Filter1)
                 .OrderBy(x => x.InvDate)
                 .ThenBy(x => x.Gkey);
@@ -222,7 +222,7 @@ public class InvoiceController : ControllerBase
             return _invoiceHeaderRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.InvDate.HasValue &&
                         x.InvDate.Value.Date >= criteria.From.Date &&
                         x.InvDate.Value.Date <= criteria.To.Date)
@@ -236,7 +236,7 @@ public class InvoiceController : ControllerBase
 
         return _invoiceHeaderRepository
             .GetList(
-                x => x.Status == InvoiceStatus.Final)
+                x => x.Status == InvoiceStatus.Finalised)
             .OrderBy(x => x.InvDate)
             .ThenBy(x => x.Gkey);
     }
@@ -247,7 +247,7 @@ public class InvoiceController : ControllerBase
     // Outstanding receivables.
     //
     // CRITICAL:
-    // Only FINAL invoices are receivables.
+    // Only FINALISED invoices are receivables.
     //
     // DRAFT invoices MUST NOT participate in accounting /
     // outstanding calculations.
@@ -273,7 +273,7 @@ public class InvoiceController : ControllerBase
             return _invoiceHeaderRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.InvDate.HasValue &&
                         x.InvDate.Value.Date >= criteria.From.Date &&
                         x.InvDate.Value.Date <= criteria.To.Date &&
@@ -292,7 +292,7 @@ public class InvoiceController : ControllerBase
             return _invoiceHeaderRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.InvDate.HasValue &&
                         x.InvDate.Value.Date >= criteria.From.Date &&
                         x.InvDate.Value.Date <= criteria.To.Date &&
@@ -310,7 +310,7 @@ public class InvoiceController : ControllerBase
             return _invoiceHeaderRepository
                 .GetList(
                     x =>
-                        x.Status == InvoiceStatus.Final &&
+                        x.Status == InvoiceStatus.Finalised &&
                         x.CustMobile == criteria.Filter1 &&
                         x.InvBalance > 0)
                 .OrderBy(x => x.InvDate)
@@ -324,7 +324,7 @@ public class InvoiceController : ControllerBase
         return _invoiceHeaderRepository
             .GetList(
                 x =>
-                    x.Status == InvoiceStatus.Final &&
+                    x.Status == InvoiceStatus.Finalised &&
                     x.InvBalance > 0)
             .OrderBy(x => x.InvDate)
             .ThenBy(x => x.Gkey);
@@ -481,7 +481,7 @@ public class InvoiceController : ControllerBase
     // LEGACY ONLY.
     //
     // WARNING:
-    // This generates a FINAL-style Invoice Number immediately.
+    // This generates a permanent invoice number immediately.
     //
     // Keep temporarily because old WPF code may still call it.
     //
@@ -704,7 +704,7 @@ public class InvoiceController : ControllerBase
     //
     // IMPORTANT:
     //      DRAFT      -> CANCELLED
-    //      FINAL      -> rejected by workflow
+    //      FINALISED  -> rejected by workflow
     //      CANCELLED  -> handled idempotently by workflow
     //
     // This does NOT:

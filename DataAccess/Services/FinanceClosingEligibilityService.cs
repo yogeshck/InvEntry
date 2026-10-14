@@ -70,7 +70,7 @@ public sealed class FinanceClosingEligibilityService
         var through = businessDate.AddDays(1).ToDateTime(TimeOnly.MinValue);
         var invoices = await _context.InvoiceHeaders.AsNoTracking()
             .Where(x => x.InvDate >= from && x.InvDate < through &&
-                (x.Status == InvoiceStatus.Final || x.Status == "FINALISED"))
+                x.Status == InvoiceStatus.Finalised)
             .OrderBy(x => x.Gkey)
             .Take(MaximumDocuments + 1)
             .Select(x => new { x.Gkey, x.InvNbr, x.InvDate })

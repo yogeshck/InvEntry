@@ -49,9 +49,32 @@ namespace DataAccess.Controllers
 
         // GET api/<GrnController>/5
         [HttpGet("supplierId/{supplierId}")]
-        public async Task<IActionResult> GetBySupplierId(string supplierId)
+        public IActionResult GetBySupplierId(
+            string supplierId,
+            [FromQuery] DateTime fromDate,
+            [FromQuery] DateTime toDate)
         {
-            return Ok(_grnHeaderRepository.GetList(x => x.SupplierId == supplierId && x.Status == "Open"));
+            if (string.IsNullOrWhiteSpace(supplierId))
+                return BadRequest("A supplier must be selected.");
+
+            if (fromDate == default || toDate == default)
+                return BadRequest("Valid From and To dates are required.");
+
+            if (fromDate.Date > toDate.Date)
+                return BadRequest("From Date cannot be later than To Date.");
+
+            if (toDate.Date > DateTime.Today)
+                return BadRequest("To Date cannot be later than today.");
+
+            DateTime startDate = fromDate.Date;
+            DateTime endExclusive = toDate.Date.AddDays(1);
+
+            return Ok(_grnHeaderRepository.GetList(x =>
+                x.SupplierId == supplierId &&
+                x.Status == "Open" &&
+                x.GrnDate.HasValue &&
+                x.GrnDate.Value >= startDate &&
+                x.GrnDate.Value < endExclusive));
         }
 
 

@@ -6,7 +6,7 @@ public sealed class FinaliseInvoiceResponse
 
     public string InvNbr { get; set; } = string.Empty;
 
-    public string Status { get; set; } = InvoiceStatus.Final;
+    public string Status { get; set; } = InvoiceStatus.Finalised;
 
     public DateTime? FinalisedOn { get; set; }
 }

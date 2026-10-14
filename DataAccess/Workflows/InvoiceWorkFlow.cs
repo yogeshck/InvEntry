@@ -505,7 +505,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
 
         // =========================================================
-        // FINAL HEADER RECEIPT / BALANCE
+        // FINALISED HEADER RECEIPT / BALANCE
         // =========================================================
 
         var totalCashReceived =
@@ -1096,7 +1096,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         }
 
         /*
-         * FINAL and CANCELLED documents are immutable through
+         * FINALISED and CANCELLED documents are immutable through
          * SaveDraft.
          */
         if (!InvoiceStatus.IsDraft(
@@ -1827,7 +1827,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             // IDEMPOTENCY
             // =========================================================
 
-            if (InvoiceStatus.IsFinal(invoice.Status))
+            if (InvoiceStatus.IsFinalised(invoice.Status))
             {
                 return new FinaliseInvoiceResponse
                 {
@@ -2386,11 +2386,11 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
 
 
             // =========================================================
-            // FINAL STATUS
+            // FINALISED STATUS
             // =========================================================
 
             invoice.Status =
-                InvoiceStatus.Final;
+                InvoiceStatus.Finalised;
 
             invoice.FinalisedOn =
                 DateTime.Now;

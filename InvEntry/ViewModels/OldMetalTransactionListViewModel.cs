@@ -59,7 +59,8 @@ public class OldMetalTransactionListViewModel
     protected override void PrintItem(
         OldMetalTransaction item)
     {
-        if (item.TransType == "OG Purchase")
+
+        if (item.TransType is "OG Purchase" or "OM Purchase" or "OS Purchase")
         {
             if (string.IsNullOrWhiteSpace(item.TransNbr))
                 return;

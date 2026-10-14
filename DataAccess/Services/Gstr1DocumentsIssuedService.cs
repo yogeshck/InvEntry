@@ -56,7 +56,7 @@ public sealed class Gstr1DocumentsIssuedService : IGstr1DocumentsIssuedService
             .ToListAsync(cancellationToken);
 
         var rows = invoices
-            .Where(x => InvoiceStatus.IsFinal(x.Status) || InvoiceStatus.IsCancelled(x.Status))
+            .Where(x => InvoiceStatus.IsFinalised(x.Status) || InvoiceStatus.IsCancelled(x.Status))
             .Select(x =>
             {
                 var parsed = ParseNumber(x.Number);

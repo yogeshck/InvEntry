@@ -77,7 +77,10 @@ namespace InvEntry.Services.Mock
             return await Task.FromResult(headerList);
         }
 
-        public async Task<IEnumerable<GrnHeader>> GetBySupplier(string supplier)
+        public async Task<IEnumerable<GrnHeader>> GetBySupplier(
+            string supplier,
+            DateTime fromDate,
+            DateTime toDate)
         {
             List<GrnHeader> headerList = new();
 

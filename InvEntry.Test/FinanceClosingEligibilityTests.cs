@@ -1,6 +1,7 @@
 using DataAccess.Models;
 using DataAccess.Services;
 using DataAccess.Controllers;
+using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
@@ -476,7 +477,7 @@ public sealed class FinanceClosingEligibilityTests
     private static void AddInvoice(MijmsContext db, int id, DateOnly date, bool cash)
     {
         db.InvoiceHeaders.Add(new InvoiceHeader { Gkey = id, InvNbr = $"I{id}",
-            InvDate = date.ToDateTime(TimeOnly.MinValue), Status = "FINAL", AmountPayable = 100 });
+            InvDate = date.ToDateTime(TimeOnly.MinValue), Status = InvoiceStatus.Finalised, AmountPayable = 100 });
         if (cash)
             db.Vouchers.Add(new Voucher { Gkey = id, RefDocGkey = id,
                 TransType = "Receipt", Mode = "Cash", TransAmount = 100 });

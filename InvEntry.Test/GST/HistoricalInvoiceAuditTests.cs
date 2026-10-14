@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using InvEntry.Contracts.Gst;
+using InvEntry.Contracts.Invoices;
 using InvEntry.Gst.Core.Classification;
 using InvEntry.Gst.Core.Rules;
 
@@ -79,7 +80,7 @@ public sealed class HistoricalInvoiceAuditTests
             Gkey = 100,
             InvNbr = "D-TAX",
             InvDate = new DateTime(2026, 9, 15),
-            Status = "FINAL",
+            Status = InvoiceStatus.Finalised,
             CustGkey = 10,
             GstLocBuyer = "29",
             AmountPayable = 53_000M,

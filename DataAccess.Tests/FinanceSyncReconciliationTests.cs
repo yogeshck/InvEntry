@@ -1,5 +1,6 @@
 using DataAccess.Models;
 using DataAccess.Services;
+using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -185,7 +186,7 @@ public sealed class FinanceSyncReconciliationTests
             Gkey = 29944,
             InvNbr = "D-01274",
             InvDate = new DateTime(2026, 10, 11, 20, 20, 52),
-            Status = "FINAL",
+            Status = InvoiceStatus.Finalised,
             AmountPayable = 50000m,
             RecdAmount = 50000m
         });

@@ -249,7 +249,7 @@ public sealed class InvoiceViewModelLifecycleTests
         viewModel.Header = new InvoiceHeader
         {
             GKey = 42,
-            Status = InvoiceStatus.Final,
+            Status = InvoiceStatus.Finalised,
             InvNbr = "B-0042"
         };
 

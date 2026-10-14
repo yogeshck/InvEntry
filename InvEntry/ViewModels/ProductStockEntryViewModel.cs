@@ -173,6 +173,12 @@ namespace InvEntry.ViewModels
             _labelPreviewRenderer = labelPreviewRenderer;
 
             _lineGrnLookup = new();
+            SearchOption = new DateSearchOption
+            {
+                From = new DateTime(Today.Year, Today.Month, 1),
+                To = Today
+            };
+            GrnHdrList = new();
 
             SetThisCompany();
 
@@ -219,7 +225,13 @@ namespace InvEntry.ViewModels
         private async void PopulateOpenGRN()
         {
             //bring all 'Open' status grn headers
-            var grnHdrList = await _grnService.GetBySupplier(SupplierID);
+            if (string.IsNullOrWhiteSpace(SupplierID))
+                return;
+
+            var grnHdrList = await _grnService.GetBySupplier(
+                SupplierID,
+                SearchOption.From,
+                SearchOption.To);
         }
 
 
@@ -782,10 +794,52 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task RefreshGRN()
         {
+            if (string.IsNullOrWhiteSpace(SupplierID))
+            {
+                _messageBoxService.ShowMessage(
+                    "Please select a supplier.",
+                    "Refresh GRN",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+                return;
+            }
 
-            var grnResult = await _grnService.GetBySupplier(SupplierID);
-            if (grnResult is not null)
-                GrnHdrList = new(grnResult);
+            if (SearchOption.From == default || SearchOption.To == default)
+            {
+                _messageBoxService.ShowMessage(
+                    "Please select valid From and To dates.",
+                    "Refresh GRN",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+                return;
+            }
+
+            if (SearchOption.From.Date > SearchOption.To.Date)
+            {
+                _messageBoxService.ShowMessage(
+                    "From Date cannot be later than To Date.",
+                    "Refresh GRN",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+                return;
+            }
+
+            if (SearchOption.To.Date > Today.Date)
+            {
+                _messageBoxService.ShowMessage(
+                    "To Date cannot be later than today.",
+                    "Refresh GRN",
+                    MessageButton.OK,
+                    MessageIcon.Warning);
+                return;
+            }
+
+            var grnResult = await _grnService.GetBySupplier(
+                SupplierID,
+                SearchOption.From,
+                SearchOption.To);
+
+            GrnHdrList = new(grnResult ?? Enumerable.Empty<GrnHeader>());
         }
 
         [RelayCommand]
