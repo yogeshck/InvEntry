@@ -1,8 +1,6 @@
 using DataAccess.Models;
 using DataAccess.Models.FinanceIntegration;
 using Microsoft.EntityFrameworkCore;
-using System.Net;
-using System.Text;
 using System.Text.Json;
 
 namespace DataAccess.Services;
@@ -18,22 +16,26 @@ public sealed class FinanceSyncService
     private static readonly TimeSpan ClaimLease = TimeSpan.FromMinutes(2);
     private readonly MijmsContext _context;
     private readonly FinanceInvoicePayloadBuilder _payloadBuilder;
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IFinanceDocumentPoster _poster;
+    private readonly IFinanceDocumentStatusReader _statusReader;
 
     public FinanceSyncService(
         MijmsContext context,
         FinanceInvoicePayloadBuilder payloadBuilder,
-        IHttpClientFactory httpClientFactory)
+        IFinanceDocumentPoster poster,
+        IFinanceDocumentStatusReader statusReader)
     {
         _context = context;
         _payloadBuilder = payloadBuilder;
-        _httpClientFactory = httpClientFactory;
+        _poster = poster;
+        _statusReader = statusReader;
     }
 
     public async Task<FinanceQueueResult> QueueFinanceSyncAsync(
         int invoiceGkey,
         int orgGkey,
         int locationGkey,
+        bool requiresSuspense,
         CancellationToken cancellationToken = default)
     {
         var sourceEventId = $"INVOICE-{invoiceGkey}-FINAL";
@@ -42,7 +44,7 @@ public sealed class FinanceSyncService
         if (alreadyQueued) return FinanceQueueResult.AlreadyQueued;
 
         var payload = await _payloadBuilder.BuildAsync(
-            invoiceGkey, orgGkey, locationGkey, cancellationToken);
+            invoiceGkey, orgGkey, locationGkey, requiresSuspense, cancellationToken);
         // Only settlement voucher types explicitly mapped by the payload
         // builder create a FinanceTracker event. Credit-only and unsupported
         // non-cash settlements must not be converted into invented movements.
@@ -73,37 +75,9 @@ public sealed class FinanceSyncService
     public async Task<FinanceRemoteEventState> GetRemoteEventStateAsync(
         int orgGkey,
         string sourceEventId,
-        CancellationToken cancellationToken = default)
-    {
-        var client = _httpClientFactory.CreateClient("FinanceTracker");
-        var uri = "/api/integrations/financial-document/status" +
-                  $"?orgGkey={orgGkey}" +
-                  "&sourceSystem=INVENTRY" +
-                  $"&sourceEventId={Uri.EscapeDataString(sourceEventId)}";
-        try
-        {
-            using var response = await client.GetAsync(uri, cancellationToken);
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return FinanceRemoteEventState.NotPosted;
-            if (!response.IsSuccessStatusCode)
-                return FinanceRemoteEventState.Unavailable;
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var status = JsonSerializer.Deserialize<FinanceEventStatus>(json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            return status?.Posted == true
-                ? FinanceRemoteEventState.Posted
-                : FinanceRemoteEventState.NotPosted;
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return FinanceRemoteEventState.Unavailable;
-        }
-        catch (HttpRequestException)
-        {
-            return FinanceRemoteEventState.Unavailable;
-        }
-    }
+        CancellationToken cancellationToken = default) =>
+        await _statusReader.GetStatusAsync(
+            orgGkey, "INVENTRY", sourceEventId, cancellationToken);
 
     public async Task<int> SendPendingAsync(
         CancellationToken cancellationToken = default)
@@ -130,7 +104,6 @@ public sealed class FinanceSyncService
     {
         if (claimedItems.Count == 0) return 0;
 
-        var client = _httpClientFactory.CreateClient("FinanceTracker");
         var sentCount = 0;
         var completed = 0;
 
@@ -138,7 +111,7 @@ public sealed class FinanceSyncService
         {
             try
             {
-                if (await DispatchClaimedAsync(item, client, cancellationToken))
+                if (await DispatchClaimedAsync(item, cancellationToken))
                     sentCount++;
             }
             finally
@@ -193,8 +166,8 @@ public sealed class FinanceSyncService
                 (x.ClaimExpiresOn == null || x.ClaimExpiresOn < now))
             .OrderBy(x => x.CreatedOn)
             .Select(x => x.Gkey)
-            // Ten requests fit inside the two-minute lease even when every
-            // FinanceTracker call reaches the configured ten-second timeout.
+            // Ten rows per cycle keeps each claim lease comfortably inside
+            // its two-minute window even in the worst case.
             .Take(10)
             .ToListAsync(cancellationToken);
 
@@ -219,7 +192,6 @@ public sealed class FinanceSyncService
 
     internal async Task<bool> DispatchClaimedAsync(
         FinanceSyncOutbox item,
-        HttpClient client,
         CancellationToken cancellationToken)
     {
         var wasUncertain = item.Status == Uncertain;
@@ -240,7 +212,7 @@ public sealed class FinanceSyncService
             if (item.Status == Uncertain)
             {
                 var reconciliation = await ReconcileAsync(
-                    item, client, cancellationToken);
+                    storedPayload, item, cancellationToken);
                 if (reconciliation == ReconciliationResult.Posted)
                 {
                     MarkSent(item);
@@ -250,38 +222,21 @@ public sealed class FinanceSyncService
                     return false;
             }
 
-            using var content = new StringContent(
-                item.Payload, Encoding.UTF8, "application/json");
-            using var response = await client.PostAsync(
-                "/api/integrations/financial-document", content,
-                cancellationToken);
-
-            if (response.IsSuccessStatusCode)
+            var result = await _poster.PostAsync(storedPayload, cancellationToken);
+            switch (result.Outcome)
             {
-                MarkSent(item);
-                return true;
+                case FinancePostingOutcome.Posted:
+                    MarkSent(item);
+                    return true;
+                case FinancePostingOutcome.BusinessRejected:
+                    item.Status = BusinessError;
+                    item.LastError = Truncate(result.ErrorMessage, 800);
+                    return false;
+                default:
+                    item.Status = RetryableError;
+                    item.LastError = Truncate(result.ErrorMessage, 800);
+                    return false;
             }
-
-            var responseBody = await response.Content.ReadAsStringAsync(
-                cancellationToken);
-            item.Status = ClassifyHttpFailure(response.StatusCode);
-            item.LastError = $"HTTP {(int)response.StatusCode}: " +
-                             Truncate(responseBody, 800);
-            return false;
-        }
-        catch (OperationCanceledException)
-            when (!cancellationToken.IsCancellationRequested)
-        {
-            item.Status = Uncertain;
-            item.LastError = "FinanceTracker request timed out; posting outcome is uncertain.";
-            return false;
-        }
-        catch (HttpRequestException ex)
-        {
-            item.Status = Uncertain;
-            item.LastError = "FinanceTracker response was not received; posting outcome is uncertain. " +
-                             Truncate(ex.Message, 700);
-            return false;
         }
         catch (Exception ex)
         {
@@ -292,59 +247,18 @@ public sealed class FinanceSyncService
     }
 
     private async Task<ReconciliationResult> ReconcileAsync(
+        FinanceDocumentPayload payload,
         FinanceSyncOutbox item,
-        HttpClient client,
         CancellationToken cancellationToken)
     {
-        FinanceEventIdentity identity;
-        try
+        var state = await _statusReader.GetStatusAsync(payload.OrgGkey,
+            payload.SourceSystem, payload.SourceEventId, cancellationToken);
+        return state switch
         {
-            identity = JsonSerializer.Deserialize<FinanceEventIdentity>(
-                item.Payload,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-                ?? throw new JsonException("The outbox payload is empty.");
-        }
-        catch (JsonException ex)
-        {
-            item.Status = BusinessError;
-            item.LastError = "The stored finance payload is invalid: " +
-                             Truncate(ex.Message, 700);
-            return ReconciliationResult.Unavailable;
-        }
-
-        var uri = "/api/integrations/financial-document/status" +
-                  $"?orgGkey={identity.OrgGkey}" +
-                  $"&sourceSystem={Uri.EscapeDataString(identity.SourceSystem)}" +
-                  $"&sourceEventId={Uri.EscapeDataString(identity.SourceEventId)}";
-        using var response = await client.GetAsync(uri, cancellationToken);
-        if (response.StatusCode == HttpStatusCode.NotFound)
-            return ReconciliationResult.NotPosted;
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            item.LastError = "Unable to verify uncertain posting outcome. " +
-                             $"HTTP {(int)response.StatusCode}: " +
-                             Truncate(body, 700);
-            return ReconciliationResult.Unavailable;
-        }
-
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        var status = JsonSerializer.Deserialize<FinanceEventStatus>(json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        return status?.Posted == true
-            ? ReconciliationResult.Posted
-            : ReconciliationResult.NotPosted;
-    }
-
-    internal static string ClassifyHttpFailure(HttpStatusCode statusCode)
-    {
-        if (statusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict ||
-            (int)statusCode == 422)
-            return BusinessError;
-        if (statusCode == HttpStatusCode.RequestTimeout)
-            return Uncertain;
-        return RetryableError;
+            FinanceRemoteEventState.Posted => ReconciliationResult.Posted,
+            FinanceRemoteEventState.NotPosted => ReconciliationResult.NotPosted,
+            _ => ReconciliationResult.Unavailable
+        };
     }
 
     private static void MarkSent(FinanceSyncOutbox item)
@@ -359,18 +273,6 @@ public sealed class FinanceSyncService
         if (string.IsNullOrWhiteSpace(value)) return string.Empty;
         value = value.Trim();
         return value.Length <= maxLength ? value : value[..maxLength];
-    }
-
-    private sealed class FinanceEventIdentity
-    {
-        public int OrgGkey { get; set; }
-        public string SourceSystem { get; set; } = string.Empty;
-        public string SourceEventId { get; set; } = string.Empty;
-    }
-
-    private sealed class FinanceEventStatus
-    {
-        public bool Posted { get; set; }
     }
 
     private enum ReconciliationResult

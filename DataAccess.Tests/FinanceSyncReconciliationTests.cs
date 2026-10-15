@@ -7,8 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using System.Net;
-using System.Text;
 
 namespace DataAccess.Tests;
 
@@ -41,7 +39,7 @@ public sealed class FinanceSyncReconciliationTests
         await using var context = CreateContext();
         SeedD01274(context);
         await context.SaveChangesAsync();
-        var service = CreateReconciliation(context, HttpStatusCode.NotFound);
+        var service = CreateReconciliation(context, FinanceRemoteEventState.NotPosted);
 
         var report = await service.DryRunAsync(
             new(new DateOnly(2026, 10, 11), new DateOnly(2026, 10, 11)));
@@ -64,8 +62,7 @@ public sealed class FinanceSyncReconciliationTests
         await using var context = CreateContext();
         SeedD01274(context);
         await context.SaveChangesAsync();
-        var service = CreateReconciliation(context,
-            HttpStatusCode.ServiceUnavailable);
+        var service = CreateReconciliation(context, FinanceRemoteEventState.Unavailable);
 
         var report = await service.DryRunAsync(
             new(new DateOnly(2026, 10, 11), new DateOnly(2026, 10, 11)));
@@ -81,7 +78,7 @@ public sealed class FinanceSyncReconciliationTests
         await using var context = CreateContext();
         SeedD01274(context);
         await context.SaveChangesAsync();
-        var service = CreateReconciliation(context, HttpStatusCode.NotFound);
+        var service = CreateReconciliation(context, FinanceRemoteEventState.NotPosted);
 
         var result = await service.RecoverAsync(new(29944, Approved: true));
         var second = await service.RecoverAsync(new(29944, Approved: true));
@@ -102,8 +99,8 @@ public sealed class FinanceSyncReconciliationTests
         await using var context = CreateContext();
         SeedD01274(context);
         await context.SaveChangesAsync();
-        var methods = new List<HttpMethod>();
-        var service = CreateReconciliation(context, HttpStatusCode.OK, methods);
+        var poster = new FakePoster();
+        var service = CreateReconciliation(context, FinanceRemoteEventState.Posted, poster);
 
         var result = await service.RecoverAsync(new(29944, Approved: true));
 
@@ -112,7 +109,8 @@ public sealed class FinanceSyncReconciliationTests
             Assert.That(result.Result, Is.EqualTo("RESTORED_SENT_WITHOUT_POST"));
             Assert.That(context.FinanceSyncOutboxes.Single().Status,
                 Is.EqualTo(FinanceSyncService.Sent));
-            Assert.That(methods, Is.EqualTo(new[] { HttpMethod.Get }));
+            Assert.That(poster.CallCount, Is.EqualTo(0),
+                "Restoring a known-posted event must not post it again.");
         });
     }
 
@@ -120,7 +118,7 @@ public sealed class FinanceSyncReconciliationTests
     public void Recovery_requires_explicit_approval()
     {
         using var context = CreateContext();
-        var service = CreateReconciliation(context, HttpStatusCode.NotFound);
+        var service = CreateReconciliation(context, FinanceRemoteEventState.NotPosted);
         Assert.ThrowsAsync<ArgumentException>(() =>
             service.RecoverAsync(new(29944, Approved: false)));
     }
@@ -147,21 +145,13 @@ public sealed class FinanceSyncReconciliationTests
 
     private static FinanceSyncReconciliationService CreateReconciliation(
         MijmsContext context,
-        HttpStatusCode status,
-        List<HttpMethod>? methods = null)
+        FinanceRemoteEventState remoteState,
+        FakePoster? poster = null)
     {
-        var client = new HttpClient(new Handler((request, _) =>
-        {
-            methods?.Add(request.Method);
-            var response = new HttpResponseMessage(status);
-            if (status == HttpStatusCode.OK)
-                response.Content = new StringContent("{\"posted\":true}",
-                    Encoding.UTF8, "application/json");
-            return Task.FromResult(response);
-        })) { BaseAddress = new Uri("https://finance.test") };
         var builder = new FinanceInvoicePayloadBuilder(context);
         var sync = new FinanceSyncService(context, builder,
-            new Factory(client));
+            poster ?? new FakePoster(),
+            new FakeStatusReader(remoteState));
         return new FinanceSyncReconciliationService(context, builder, sync,
             Options.Create(new FinanceSyncOptions
             {
@@ -209,17 +199,24 @@ public sealed class FinanceSyncReconciliationTests
             Task.FromResult<IReadOnlyList<string>>(missing);
     }
 
-    private sealed class Factory(HttpClient client) : IHttpClientFactory
+    private sealed class FakePoster : IFinanceDocumentPoster
     {
-        public HttpClient CreateClient(string name) => client;
+        public int CallCount { get; private set; }
+
+        public Task<FinancePostingResult> PostAsync(
+            FinanceDocumentPayload payload, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            return Task.FromResult(
+                new FinancePostingResult(FinancePostingOutcome.Posted, null));
+        }
     }
 
-    private sealed class Handler(
-        Func<HttpRequestMessage, CancellationToken,
-            Task<HttpResponseMessage>> send) : HttpMessageHandler
+    private sealed class FakeStatusReader(FinanceRemoteEventState state)
+        : IFinanceDocumentStatusReader
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken) =>
-            send(request, cancellationToken);
+        public Task<FinanceRemoteEventState> GetStatusAsync(int orgGkey,
+            string sourceSystem, string sourceEventId,
+            CancellationToken cancellationToken) => Task.FromResult(state);
     }
 }

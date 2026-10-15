@@ -1,47 +1,29 @@
 using DataAccess.Models;
+using DataAccess.Models.FinanceIntegration;
 using DataAccess.Services;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using System.Net;
-using System.Text;
 
 namespace DataAccess.Tests;
 
 public sealed class FinanceSyncServiceTests
 {
-    [TestCase(HttpStatusCode.BadRequest)]
-    [TestCase(HttpStatusCode.Conflict)]
-    public void Permanent_validation_failures_are_business_errors(
-        HttpStatusCode statusCode)
-    {
-        Assert.That(FinanceSyncService.ClassifyHttpFailure(statusCode),
-            Is.EqualTo(FinanceSyncService.BusinessError));
-    }
-
     [Test]
-    public async Task Timeout_marks_posting_outcome_uncertain()
+    public async Task Unavailable_posting_outcome_is_retryable()
     {
         await using var context = CreateContext();
-        var service = CreateService(context);
+        var poster = new FakePoster(FinancePostingOutcome.Unavailable,
+            "FinanceTracker posting is temporarily unavailable.");
+        var service = CreateService(context, poster);
         var item = CreateItem(FinanceSyncService.Pending);
-        using var client = new HttpClient(new Handler(async (_, token) =>
-        {
-            await Task.Delay(Timeout.InfiniteTimeSpan, token);
-            return new HttpResponseMessage(HttpStatusCode.OK);
-        }))
-        {
-            BaseAddress = new Uri("https://finance.test"),
-            Timeout = TimeSpan.FromMilliseconds(25)
-        };
 
-        var sent = await service.DispatchClaimedAsync(
-            item, client, CancellationToken.None);
+        var sent = await service.DispatchClaimedAsync(item, CancellationToken.None);
 
         Assert.Multiple(() =>
         {
             Assert.That(sent, Is.False);
-            Assert.That(item.Status, Is.EqualTo(FinanceSyncService.Uncertain));
-            Assert.That(item.LastError, Does.Contain("outcome is uncertain"));
+            Assert.That(item.Status, Is.EqualTo(FinanceSyncService.RetryableError));
+            Assert.That(item.LastError, Does.Contain("temporarily unavailable"));
         });
     }
 
@@ -49,45 +31,34 @@ public sealed class FinanceSyncServiceTests
     public async Task Uncertain_event_already_posted_is_reconciled_without_posting_again()
     {
         await using var context = CreateContext();
-        var service = CreateService(context);
+        var poster = new FakePoster(FinancePostingOutcome.Posted, null);
+        var statusReader = new FakeStatusReader(FinanceRemoteEventState.Posted);
+        var service = CreateService(context, poster, statusReader);
         var item = CreateItem(FinanceSyncService.Uncertain);
-        var methods = new List<HttpMethod>();
-        using var client = new HttpClient(new Handler((request, _) =>
-        {
-            methods.Add(request.Method);
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(
-                    "{\"posted\":true,\"documentGkey\":91}",
-                    Encoding.UTF8, "application/json")
-            });
-        })) { BaseAddress = new Uri("https://finance.test") };
 
-        var sent = await service.DispatchClaimedAsync(
-            item, client, CancellationToken.None);
+        var sent = await service.DispatchClaimedAsync(item, CancellationToken.None);
 
         Assert.Multiple(() =>
         {
             Assert.That(sent, Is.True);
             Assert.That(item.Status, Is.EqualTo(FinanceSyncService.Sent));
-            Assert.That(methods, Is.EqualTo(new[] { HttpMethod.Get }));
+            Assert.That(poster.CallCount, Is.EqualTo(0),
+                "An event already confirmed posted must not be posted again.");
         });
     }
 
     [Test]
-    public async Task Server_failure_is_retryable()
+    public async Task Business_rejection_is_not_retried()
     {
         await using var context = CreateContext();
-        var service = CreateService(context);
+        var poster = new FakePoster(FinancePostingOutcome.BusinessRejected,
+            "The business date is closed.");
+        var service = CreateService(context, poster);
         var item = CreateItem(FinanceSyncService.Pending);
-        using var client = new HttpClient(new Handler((_, _) =>
-            Task.FromResult(new HttpResponseMessage(
-                HttpStatusCode.ServiceUnavailable))))
-        { BaseAddress = new Uri("https://finance.test") };
 
-        await service.DispatchClaimedAsync(item, client, CancellationToken.None);
+        await service.DispatchClaimedAsync(item, CancellationToken.None);
 
-        Assert.That(item.Status, Is.EqualTo(FinanceSyncService.RetryableError));
+        Assert.That(item.Status, Is.EqualTo(FinanceSyncService.BusinessError));
     }
 
     private static MijmsContext CreateContext()
@@ -98,9 +69,12 @@ public sealed class FinanceSyncServiceTests
         return new MijmsContext(options);
     }
 
-    private static FinanceSyncService CreateService(MijmsContext context) =>
+    private static FinanceSyncService CreateService(MijmsContext context,
+        IFinanceDocumentPoster? poster = null,
+        IFinanceDocumentStatusReader? statusReader = null) =>
         new(context, new FinanceInvoicePayloadBuilder(context),
-            new Factory(new HttpClient()));
+            poster ?? new FakePoster(FinancePostingOutcome.Posted, null),
+            statusReader ?? new FakeStatusReader(FinanceRemoteEventState.NotPosted));
 
     private static FinanceSyncOutbox CreateItem(string status) => new()
     {
@@ -112,17 +86,24 @@ public sealed class FinanceSyncServiceTests
         CreatedOn = DateTime.Now
     };
 
-    private sealed class Factory(HttpClient client) : IHttpClientFactory
+    private sealed class FakePoster(
+        FinancePostingOutcome outcome, string? error) : IFinanceDocumentPoster
     {
-        public HttpClient CreateClient(string name) => client;
+        public int CallCount { get; private set; }
+
+        public Task<FinancePostingResult> PostAsync(
+            FinanceDocumentPayload payload, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            return Task.FromResult(new FinancePostingResult(outcome, error));
+        }
     }
 
-    private sealed class Handler(
-        Func<HttpRequestMessage, CancellationToken,
-            Task<HttpResponseMessage>> send) : HttpMessageHandler
+    private sealed class FakeStatusReader(FinanceRemoteEventState state)
+        : IFinanceDocumentStatusReader
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken) =>
-            send(request, cancellationToken);
+        public Task<FinanceRemoteEventState> GetStatusAsync(int orgGkey,
+            string sourceSystem, string sourceEventId,
+            CancellationToken cancellationToken) => Task.FromResult(state);
     }
 }
