@@ -20,7 +20,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly FinanceSyncService? _financeSyncService;
     private readonly FinanceSyncOptions _financeSyncOptions;
     private readonly ILogger<InvoiceWorkflow> _logger;
-    private readonly FinanceClosingFenceService? _financeClosingFence;
 
     //private readonly IRepositoryBase<ProductStock> _productStockRepository;
     //private readonly IRepositoryBase<ProductStockSummary> _productStockSummaryRepository;
@@ -47,8 +46,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IUnitOfWork unitOfWork,
         FinanceSyncService? financeSyncService = null,
         IOptions<FinanceSyncOptions>? financeSyncOptions = null,
-        ILogger<InvoiceWorkflow>? logger = null,
-        FinanceClosingFenceService? financeClosingFence = null)
+        ILogger<InvoiceWorkflow>? logger = null)
     {
         _invoiceRepository =
             invoiceRepository;
@@ -85,7 +83,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             new FinanceSyncOptions { Enabled = financeSyncService != null, OrgGkey = 1, LocationGkey = 1 };
         _logger = logger ??
             Microsoft.Extensions.Logging.Abstractions.NullLogger<InvoiceWorkflow>.Instance;
-        _financeClosingFence = financeClosingFence;
     }
 
 
@@ -2333,15 +2330,6 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             // =========================================================
 
             var finalisedAt = DateTime.Now;
-
-            if (_financeSyncOptions.Enabled && _financeClosingFence != null)
-            {
-                await _financeClosingFence.EnsurePostingAllowedAsync(
-                    _financeSyncOptions.OrgGkey,
-                    _financeSyncOptions.LocationGkey,
-                    DateOnly.FromDateTime(finalisedAt),
-                    cancellationToken);
-            }
 
             invoice.InvDate = finalisedAt;
 

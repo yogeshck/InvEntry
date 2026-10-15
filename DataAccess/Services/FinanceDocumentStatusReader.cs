@@ -9,8 +9,7 @@ namespace DataAccess.Services;
 /// <summary>
 /// Reads whether a financial document has already been posted to
 /// FinanceTracker. Replaces the previous HTTP status endpoint with a direct
-/// read of the same FIN_DOCUMENT table already used by
-/// <see cref="FinanceClosingFinancialEvidenceReader"/>, since both databases
+/// read of the FIN_DOCUMENT table, since both databases
 /// share the same SQL Server instance.
 /// </summary>
 public interface IFinanceDocumentStatusReader

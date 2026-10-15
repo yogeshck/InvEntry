@@ -24,23 +24,17 @@ public interface IFinanceDocumentPoster
 }
 
 /// <summary>
-/// Posts an InvEntry financial document into FinanceTracker by calling the
-/// existing <c>FinanceTracker.dbo.usp_SyncInvEntryInvoice</c> stored
-/// procedure once per invoice, inside the caller's ambient transaction.
-/// This replaces the previous HTTP integration entirely: no base URL, API
-/// key, or network timeout handling is required because both databases
-/// live on the same SQL Server instance.
+/// Posts an InvEntry invoice into FinanceTracker by calling
+/// <c>FinanceTracker.dbo.usp_SyncInvEntryInvoice</c> once per invoice, inside
+/// the caller's ambient transaction. Both databases live on the same SQL
+/// Server instance, so no HTTP client, base URL or API key is involved.
 /// </summary>
 /// <remarks>
-/// Unlike an earlier per-movement design, <c>usp_SyncInvEntryInvoice</c>
-/// re-derives the invoice's vouchers directly from
-/// <c>mijms.dbo.INVOICE_HEADER</c>/<c>VOUCHER</c> and performs its own
-/// idempotency check, application locking, mapping validation and closed
-/// period guard, inserting the <c>FIN_DOCUMENT</c> row and every eligible
-/// <c>FIN_TRANSACTION</c> row in a single call. It must therefore be
-/// invoked exactly once per document, not once per movement - calling it
-/// per movement would make it re-derive and attempt to re-insert the
-/// invoice's full movement set on every call.
+/// The procedure derives the invoice's vouchers from <c>mijms</c> itself and
+/// decides suspense: a day closed in FinanceTracker, or a manual entry that
+/// already references the invoice, is recorded with <c>IS_SUSPENSE = 1</c>
+/// instead of failing. It therefore never blocks invoice finalisation, and
+/// this poster passes only the invoice identity.
 /// </remarks>
 internal sealed class FinanceDocumentPoster(MijmsContext context)
     : IFinanceDocumentPoster
@@ -64,14 +58,6 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
 
         try
         {
-
-        }
-        catch (Exception)
-        {
-
-            throw;
-        }
-        {
             await using var command = connection.CreateCommand();
             command.CommandType = CommandType.StoredProcedure;
             command.CommandText = "FinanceTracker.dbo.usp_SyncInvEntryInvoice";
@@ -79,14 +65,9 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
 
             Add(command, "@InvoiceNumber", invoiceNumber);
             Add(command, "@PreviewOnly", false);
-            Add(command, "@OrgGkey", payload.OrgGkey);  
+            Add(command, "@OrgGkey", payload.OrgGkey);
             Add(command, "@LocationGkey", payload.LocationGkey);
-            Add(command, "@PostAsSuspense", payload.RequiresSuspense);
 
-            // usp_SyncInvEntryInvoice re-derives and classifies the
-            // invoice's vouchers itself and performs its own idempotency
-            // check, so it is called exactly once per document, not once
-            // per movement.
             await using var reader =
                 await command.ExecuteReaderAsync(cancellationToken);
 
@@ -99,27 +80,19 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
             }
 
             // SYNCED and ALREADY_SYNCED are both successful outcomes: the
-            // latter means a previous attempt already completed the
-            // posting (e.g. after a crash between claim and dispatch), and
-            // the invoice must still be marked SENT in the outbox so it is
-            // not retried indefinitely.
+            // latter means an earlier attempt already completed the posting
+            // (e.g. after a crash between claim and dispatch).
             return result is "SYNCED" or "ALREADY_SYNCED"
                 ? new(FinancePostingOutcome.Posted, null)
                 : new(FinancePostingOutcome.Unavailable,
                     $"Unexpected result from usp_SyncInvEntryInvoice: {result ?? "<none>"}.");
         }
-
+        finally
+        {
+            if (closeConnection)
+                await connection.CloseAsync();
+        }
     }
-
-    // usp_SyncInvEntryInvoice raises errors in the custom 51000-51999
-    // range (THROW 51001.. for invoice-not-found, invalid amount, missing
-    // mappings, closed period, etc.) to signal a permanent business
-    // validation failure. Any other failure - a deadlock, a timeout, a
-    // connectivity blip - is treated as transient and retried.
-    private static bool IsBusinessRejection(DbException ex) =>
-        ex is Microsoft.Data.SqlClient.SqlException sqlEx &&
-        sqlEx.Errors.Cast<Microsoft.Data.SqlClient.SqlError>()
-            .Any(e => e.Number is >= 51000 and < 52000);
 
     private void SetCurrentTransaction(DbCommand command)
     {

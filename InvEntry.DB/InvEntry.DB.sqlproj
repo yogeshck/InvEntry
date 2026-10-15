@@ -131,6 +131,5 @@
     <Build Include="Security\hr.sql" />
     <Build Include="dbo\Tables\STOCK_ADJUSTMENT_HEADER.sql" />
     <Build Include="dbo\Tables\STOCK_ADJUSTMENT_LINE.sql" />
-    <Build Include="usp_SyncInvEntryInvoice.sql" />
   </ItemGroup>
 </Project>

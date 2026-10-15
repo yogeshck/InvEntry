@@ -1,4 +1,5 @@
 using DataAccess.Models;
+using DataAccess.Models.FinanceIntegration;
 using DataAccess.Services;
 using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;

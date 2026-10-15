@@ -35,7 +35,6 @@ public sealed class FinanceSyncService
         int invoiceGkey,
         int orgGkey,
         int locationGkey,
-        bool requiresSuspense,
         CancellationToken cancellationToken = default)
     {
         var sourceEventId = $"INVOICE-{invoiceGkey}-FINAL";
@@ -44,7 +43,7 @@ public sealed class FinanceSyncService
         if (alreadyQueued) return FinanceQueueResult.AlreadyQueued;
 
         var payload = await _payloadBuilder.BuildAsync(
-            invoiceGkey, orgGkey, locationGkey, requiresSuspense, cancellationToken);
+            invoiceGkey, orgGkey, locationGkey, cancellationToken);
         // Only settlement voucher types explicitly mapped by the payload
         // builder create a FinanceTracker event. Credit-only and unsupported
         // non-cash settlements must not be converted into invented movements.
