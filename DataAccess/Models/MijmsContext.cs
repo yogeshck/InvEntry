@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using InvEntry.Contracts.Invoices;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Models;
@@ -34,9 +33,9 @@ public partial class MijmsContext : DbContext
 
     public virtual DbSet<EstimateLine> EstimateLines { get; set; }
 
-    public virtual DbSet<FinanceSyncOutbox> FinanceSyncOutboxes { get; set; }
-
     public virtual DbSet<FinanceClosingFence> FinanceClosingFences { get; set; }
+
+    public virtual DbSet<FinanceSyncOutbox> FinanceSyncOutboxes { get; set; }
 
     public virtual DbSet<GrnHeader> GrnHeaders { get; set; }
 
@@ -131,35 +130,11 @@ public partial class MijmsContext : DbContext
     public virtual DbSet<VoucherType> VoucherTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        // Program.cs supplies the production provider and connection string.
-        // Do not register a second provider when tests or tools explicitly
-        // configure this context.
-        if (!optionsBuilder.IsConfigured)
-            optionsBuilder.UseSqlServer(
-                "Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=.\\SQLEXPRESS;Initial Catalog=mijms;TrustServerCertificate=True;Trusted_Connection=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FinanceClosingFence>(entity =>
-        {
-            entity.ToTable("FINANCE_CLOSING_FENCE");
-            entity.HasKey(x => x.Gkey);
-            entity.HasIndex(x => new { x.OrgGkey, x.LocationGkey, x.BusinessDate })
-                .IsUnique().HasDatabaseName("UX_FINANCE_CLOSING_FENCE_SCOPE_DATE");
-            entity.HasIndex(x => x.ReservationId).IsUnique()
-                .HasDatabaseName("UX_FINANCE_CLOSING_FENCE_RESERVATION");
-            entity.Property(x => x.Gkey).HasColumnName("GKEY");
-            entity.Property(x => x.OrgGkey).HasColumnName("ORG_GKEY");
-            entity.Property(x => x.LocationGkey).HasColumnName("LOCATION_GKEY");
-            entity.Property(x => x.BusinessDate).HasColumnName("BUSINESS_DATE");
-            entity.Property(x => x.ReservationId).HasColumnName("RESERVATION_ID");
-            entity.Property(x => x.Status).HasColumnName("STATUS").HasMaxLength(20).IsUnicode(false);
-            entity.Property(x => x.CreatedOnUtc).HasColumnName("CREATED_ON_UTC");
-            entity.Property(x => x.ModifiedOnUtc).HasColumnName("MODIFIED_ON_UTC");
-        });
-
         modelBuilder.Entity<CustomerOrder>(entity =>
         {
             entity.HasKey(e => e.Gkey);
@@ -620,10 +595,11 @@ public partial class MijmsContext : DbContext
 
         modelBuilder.Entity<DailyStockSummary>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("DAILY_STOCK_SUMMARY");
+            entity.HasKey(e => e.Gkey);
 
+            entity.ToTable("DAILY_STOCK_SUMMARY");
+
+            entity.Property(e => e.Gkey).HasColumnName("GKey");
             entity.Property(e => e.ClosingStockGrossWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK_GROSS_WEIGHT");
@@ -634,9 +610,6 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.ClosingStockStoneWeight)
                 .HasColumnType("decimal(18, 3)")
                 .HasColumnName("CLOSING_STOCK_STONE_WEIGHT");
-            entity.Property(e => e.Gkey)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("GKey");
             entity.Property(e => e.Metal)
                 .HasMaxLength(50)
                 .IsUnicode(false)
@@ -956,17 +929,47 @@ public partial class MijmsContext : DbContext
                 .HasColumnName("VA_PERCENT");
         });
 
+        modelBuilder.Entity<FinanceClosingFence>(entity =>
+        {
+            entity.HasKey(e => e.Gkey);
+
+            entity.ToTable("FINANCE_CLOSING_FENCE");
+
+            entity.HasIndex(e => e.ReservationId, "UX_FINANCE_CLOSING_FENCE_RESERVATION").IsUnique();
+
+            entity.HasIndex(e => new { e.OrgGkey, e.LocationGkey, e.BusinessDate }, "UX_FINANCE_CLOSING_FENCE_SCOPE_DATE").IsUnique();
+
+            entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.BusinessDate).HasColumnName("BUSINESS_DATE");
+            entity.Property(e => e.CreatedOnUtc).HasColumnName("CREATED_ON_UTC");
+            entity.Property(e => e.LocationGkey).HasColumnName("LOCATION_GKEY");
+            entity.Property(e => e.ModifiedOnUtc).HasColumnName("MODIFIED_ON_UTC");
+            entity.Property(e => e.OrgGkey).HasColumnName("ORG_GKEY");
+            entity.Property(e => e.ReservationId).HasColumnName("RESERVATION_ID");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("STATUS");
+        });
+
         modelBuilder.Entity<FinanceSyncOutbox>(entity =>
         {
             entity.HasKey(e => e.Gkey);
 
             entity.ToTable("FINANCE_SYNC_OUTBOX");
 
+            entity.HasIndex(e => new { e.Status, e.ClaimExpiresOn, e.CreatedOn }, "IX_FINANCE_SYNC_OUTBOX_DISPATCH_CLAIM");
+
             entity.HasIndex(e => new { e.Status, e.CreatedOn }, "IX_FINANCE_SYNC_OUTBOX_PENDING");
 
             entity.HasIndex(e => e.SourceEventId, "UX_FINANCE_SYNC_OUTBOX_SOURCE_EVENT").IsUnique();
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
+            entity.Property(e => e.ClaimExpiresOn).HasColumnName("CLAIM_EXPIRES_ON");
+            entity.Property(e => e.ClaimToken)
+                .HasMaxLength(64)
+                .IsUnicode(false)
+                .HasColumnName("CLAIM_TOKEN");
             entity.Property(e => e.CreatedOn)
                 .HasDefaultValueSql("(sysdatetime())")
                 .HasColumnName("CREATED_ON");
@@ -983,12 +986,6 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.LastError)
                 .HasMaxLength(1000)
                 .HasColumnName("LAST_ERROR");
-            entity.Property(e => e.ClaimToken)
-                .HasMaxLength(64)
-                .IsUnicode(false)
-                .HasColumnName("CLAIM_TOKEN");
-            entity.Property(e => e.ClaimExpiresOn)
-                .HasColumnName("CLAIM_EXPIRES_ON");
             entity.Property(e => e.Payload).HasColumnName("PAYLOAD");
             entity.Property(e => e.RetryCount).HasColumnName("RETRY_COUNT");
             entity.Property(e => e.SentOn).HasColumnName("SENT_ON");
@@ -1664,7 +1661,7 @@ public partial class MijmsContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .HasDefaultValue(InvoiceStatus.Draft)
+                .HasDefaultValue("DRAFT")
                 .HasColumnName("STATUS");
             entity.Property(e => e.TaxType)
                 .HasMaxLength(50)

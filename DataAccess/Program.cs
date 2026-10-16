@@ -120,38 +120,15 @@ var financeTrackerEnabled =
     builder.Configuration.GetValue<bool>("FinanceTracker:Enabled");
 builder.Services.Configure<FinanceSyncOptions>(
     builder.Configuration.GetSection(FinanceSyncOptions.SectionName));
-if (financeTrackerEnabled && string.IsNullOrWhiteSpace(
-        builder.Configuration["FinanceTracker:ApiKey"]))
-    throw new InvalidOperationException(
-        "FinanceTracker service authentication is required when synchronization is enabled.");
 if (financeTrackerEnabled && string.IsNullOrWhiteSpace(builder.Configuration[
         ManagementServiceAuthenticationDefaults.ConfigurationKey]))
     throw new InvalidOperationException(
         "InvEntry management service authentication is required when synchronization is enabled.");
 
-builder.Services.AddHttpClient(
-    "FinanceTracker",
-    client =>
-    {
-        var baseAddress = new Uri(
-            builder.Configuration["FinanceTracker:BaseUrl"]
-            ?? throw new InvalidOperationException(
-                "FinanceTracker BaseUrl is not configured."));
-        var apiKey = builder.Configuration["FinanceTracker:ApiKey"];
-        if (string.IsNullOrWhiteSpace(apiKey))
-            throw new InvalidOperationException(
-                "FinanceTracker service authentication is not configured.");
-        if (!builder.Environment.IsDevelopment() &&
-            baseAddress.Scheme != Uri.UriSchemeHttps)
-            throw new InvalidOperationException(
-                "FinanceTracker service communication must use HTTPS outside development.");
-
-        client.BaseAddress = baseAddress;
-        client.DefaultRequestHeaders.Add(
-            "X-FinanceTracker-Integration-Key", apiKey);
-
-        client.Timeout = TimeSpan.FromSeconds(10);
-    });
+// FinanceTracker posting now happens through
+// FinanceTracker.dbo.usp_Post_Financial_Movement on the same SQL Server
+// instance (see FinanceDocumentPoster / FinanceDocumentStatusReader). No
+// HttpClient, base URL, or API key is required any longer.
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IStockMovementService, StockMovementService>();
@@ -185,15 +162,11 @@ builder.Services.AddScoped<IOldMetalTransferPostingService, OldMetalTransferPost
 builder.Services.AddScoped<IProductStockMovementService,ProductStockMovementService>();
 
 builder.Services.AddScoped<FinanceInvoicePayloadBuilder>();
+builder.Services.AddScoped<IFinanceDocumentPoster, FinanceDocumentPoster>();
+builder.Services.AddScoped<IFinanceDocumentStatusReader, FinanceDocumentStatusReader>();
 builder.Services.AddScoped<FinanceSyncService>();
 builder.Services.AddScoped<FinanceSyncReconciliationService>();
 builder.Services.AddScoped<FinanceSyncManagementService>();
-builder.Services.AddScoped<IFinanceClosingFinancialEvidenceReader,
-    FinanceClosingFinancialEvidenceReader>();
-builder.Services.AddScoped<IFinanceClosingCashBalanceVerifier,
-    FinanceClosingCashBalanceVerifier>();
-builder.Services.AddScoped<FinanceClosingEligibilityService>();
-builder.Services.AddScoped<FinanceClosingFenceService>();
 builder.Services.AddSingleton<FinanceSyncDispatchJobQueue>();
 builder.Services.AddScoped<IFinanceSyncSchemaReadinessChecker,
     FinanceSyncSchemaReadinessChecker>();

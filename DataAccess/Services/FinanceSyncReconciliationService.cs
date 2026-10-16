@@ -104,14 +104,6 @@ public sealed class FinanceSyncReconciliationService
                 var payload = await _payloadBuilder.BuildAsync(invoice.Gkey,
                     _options.OrgGkey, _options.LocationGkey, cancellationToken);
                 var movementAmount = payload.Movements.Sum(x => x.Amount);
-                if (payload.Movements.Count == 0)
-                {
-                    items.Add(Item(invoice.Gkey, invoice.InvNbr, invoice.InvDate,
-                        invoice.AmountPayable, eventId, "MISSING", "NOT_APPLICABLE",
-                        "NO_EVENT_REQUIRED", 0, 0));
-                    continue;
-                }
-
                 var remote = await _syncService.GetRemoteEventStateAsync(
                     _options.OrgGkey, eventId, cancellationToken);
                 items.Add(Item(invoice.Gkey, invoice.InvNbr, invoice.InvDate,
@@ -166,12 +158,6 @@ public sealed class FinanceSyncReconciliationService
 
             var payload = await _payloadBuilder.BuildAsync(request.InvoiceGkey,
                 _options.OrgGkey, _options.LocationGkey, cancellationToken);
-            if (payload.Movements.Count == 0)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new(request.InvoiceGkey, eventId,
-                    "NO_EVENT_REQUIRED", "NONE");
-            }
 
             var status = remote == FinanceRemoteEventState.Posted
                 ? FinanceSyncService.Sent
