@@ -1,6 +1,7 @@
 using DataAccess.Models;
 using DataAccess.Models.FinanceIntegration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
 using System.Data.Common;
@@ -87,12 +88,48 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
                 : new(FinancePostingOutcome.Unavailable,
                     $"Unexpected result from usp_SyncInvEntryInvoice: {result ?? "<none>"}.");
         }
+        catch (DbException ex)
+        {
+            // The posting rolled back, so the error is written afterwards, on its
+            // own, to be visible in FinanceTracker's invoice posting log.
+            await RecordFailureAsync(invoiceNumber, payload.OrgGkey,
+                payload.LocationGkey, ex is SqlException sqlError ? sqlError.Number : null,
+                ex.Message, cancellationToken);
+            throw;
+        }
         finally
         {
             if (closeConnection)
                 await connection.CloseAsync();
         }
     }
+
+    private async Task RecordFailureAsync(string invoiceNumber, int orgGkey,
+        int locationGkey, int? errorNumber, string message,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var connection = context.Database.GetDbConnection();
+            await using var command = connection.CreateCommand();
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandText = "FinanceTracker.dbo.usp_SyncInvEntryRecordFailure";
+            Add(command, "@InvoiceNumber", invoiceNumber);
+            Add(command, "@OrgGkey", orgGkey);
+            Add(command, "@LocationGkey", locationGkey);
+            Add(command, "@ErrorNumber", (object?)errorNumber ?? DBNull.Value);
+            Add(command, "@ErrorMessage", Truncate(message, 1000));
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            // The original posting error is what the caller needs; a failure to
+            // record it must not replace that error.
+        }
+    }
+
+    private static string Truncate(string value, int maxLength) =>
+        value.Length <= maxLength ? value : value[..maxLength];
 
     private void SetCurrentTransaction(DbCommand command)
     {

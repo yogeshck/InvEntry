@@ -44,11 +44,9 @@ public sealed class FinanceSyncService
 
         var payload = await _payloadBuilder.BuildAsync(
             invoiceGkey, orgGkey, locationGkey, cancellationToken);
-        // Only settlement voucher types explicitly mapped by the payload
-        // builder create a FinanceTracker event. Credit-only and unsupported
-        // non-cash settlements must not be converted into invented movements.
-        if (payload.Movements.Count == 0)
-            return FinanceQueueResult.NotRequired;
+        // Every finalised invoice gets an event, so it appears on the
+        // Synchronization page. An invoice with nothing postable is stored and
+        // marked BUSINESS_ERROR at dispatch, with the reason, for rectification.
         var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -205,7 +203,7 @@ public sealed class FinanceSyncService
             if (storedPayload?.Movements == null || storedPayload.Movements.Count == 0)
             {
                 item.Status = BusinessError;
-                item.LastError = "The stored financial event contains no eligible financial movements.";
+                item.LastError = "No receipt, refund, credit or old-metal voucher that FinanceTracker can post was found on this invoice. Review its vouchers in InvEntry.";
                 return false;
             }
             if (item.Status == Uncertain)

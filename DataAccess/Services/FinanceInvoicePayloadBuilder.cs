@@ -140,9 +140,71 @@ public sealed class FinanceInvoicePayloadBuilder
             };
         }
 
-        // Deliberately ignore unmapped voucher types.
+        // NON-CASH RECEIPTS. These must match the modes FinanceTracker
+        // accepts, otherwise the receipt is skipped on the FinanceTracker side.
+        if (EqualsIgnoreCase(transType, "Receipt") &&
+            IsNonCashReceiptMode(mode))
+        {
+            return new FinanceMovementPayload
+            {
+                Direction = "IN",
+                PaymentGroup = "NON_CASH",
+                Amount = voucher.TransAmount
+                                ?? throw new InvalidOperationException(
+                                    $"Voucher {voucher.Gkey} has no transaction amount."),
+                Description = voucher.TransDesc,
+                SourceReference = voucher.Gkey.ToString()
+            };
+        }
+
+        // NON-CASH REFUND
+        if (EqualsIgnoreCase(transType, "Payment") &&
+            EqualsIgnoreCase(voucherType, "Refund") &&
+            IsNonCashReceiptMode(mode))
+        {
+            return new FinanceMovementPayload
+            {
+                Direction = "OUT",
+                PaymentGroup = "NON_CASH",
+                Amount = voucher.TransAmount
+                                ?? throw new InvalidOperationException(
+                                    $"Voucher {voucher.Gkey} has no transaction amount."),
+                Description = voucher.TransDesc,
+                SourceReference = voucher.Gkey.ToString()
+            };
+        }
+
+        // CREDIT SALE: the receivable left on the invoice (Journal/Credit).
+        // It is a sale, not cash, and FinanceTracker posts it as CREDIT_SALE.
+        if (EqualsIgnoreCase(transType, "Journal") &&
+            EqualsIgnoreCase(voucherType, "Credit"))
+        {
+            return new FinanceMovementPayload
+            {
+                Direction = "IN",
+                PaymentGroup = "CREDIT",
+                Amount = voucher.TransAmount
+                                ?? throw new InvalidOperationException(
+                                    $"Voucher {voucher.Gkey} has no transaction amount."),
+                Description = voucher.TransDesc,
+                SourceReference = voucher.Gkey.ToString()
+            };
+        }
+
+        // Unmapped voucher types are left out of the payload. An invoice whose
+        // vouchers are all unmapped still gets an event, which shows as an
+        // error on the Synchronization page rather than disappearing.
         return null;
     }
+
+    private static readonly string[] NonCashReceiptModes =
+    [
+        "UPI", "Bank Scanner", "Bank", "Bank Transfer", "Card", "Credit Card",
+        "Debit Card", "Cheque", "GPAY", "PhonePe"
+    ];
+
+    private static bool IsNonCashReceiptMode(string? mode) =>
+        NonCashReceiptModes.Any(x => EqualsIgnoreCase(mode, x));
 
     private static bool EqualsIgnoreCase(
         string? value,

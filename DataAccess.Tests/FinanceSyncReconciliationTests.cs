@@ -160,6 +160,85 @@ public sealed class FinanceSyncReconciliationTests
             }));
     }
 
+    [Test]
+    public async Task Non_cash_and_credit_vouchers_map_to_payload_movements()
+    {
+        await using var context = CreateContext();
+        SeedInvoice(context, 29990, "D-01299", 180000m);
+        AddVoucher(context, 1, 29990, "Receipt", "Bank Scanner", 60000m);
+        AddVoucher(context, 2, 29990, "Receipt", "GPAY", 20000m);
+        AddVoucher(context, 3, 29990, "Receipt", "Credit Card", 30000m);
+        AddVoucher(context, 4, 29990, "Journal", "Credit", 70000m);
+        await context.SaveChangesAsync();
+
+        var payload = await new FinanceInvoicePayloadBuilder(context)
+            .BuildAsync(29990, 1, 1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(payload.Movements, Has.Count.EqualTo(4));
+            Assert.That(payload.Movements.Where(x => x.PaymentGroup == "NON_CASH").Sum(x => x.Amount),
+                Is.EqualTo(110000m));
+            Assert.That(payload.Movements.Single(x => x.PaymentGroup == "CREDIT").Amount,
+                Is.EqualTo(70000m));
+        });
+    }
+
+    [Test]
+    public async Task Invoice_with_only_unmapped_vouchers_is_queued_and_shown_as_business_error()
+    {
+        await using var context = CreateContext();
+        SeedInvoice(context, 29991, "D-01300", 5000m);
+        AddVoucher(context, 5, 29991, "Receipt", "Discount", 5000m);
+        await context.SaveChangesAsync();
+        var poster = new FakePoster();
+        var service = new FinanceSyncService(context,
+            new FinanceInvoicePayloadBuilder(context), poster,
+            new FakeStatusReader(FinanceRemoteEventState.NotPosted));
+
+        var queued = await service.QueueFinanceSyncAsync(29991, 1, 1);
+        var row = await context.FinanceSyncOutboxes.SingleAsync();
+        var sent = await service.DispatchClaimedAsync(row, CancellationToken.None);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(queued, Is.EqualTo(FinanceQueueResult.Queued));
+            Assert.That(sent, Is.False);
+            Assert.That(row.Status, Is.EqualTo(FinanceSyncService.BusinessError));
+            Assert.That(row.LastError, Does.Contain("Review its vouchers in InvEntry"));
+            Assert.That(poster.CallCount, Is.Zero);
+        });
+    }
+
+    private static void SeedInvoice(MijmsContext context, int gkey, string number, decimal amount)
+    {
+        context.InvoiceHeaders.Add(new InvoiceHeader
+        {
+            Gkey = gkey,
+            InvNbr = number,
+            InvDate = new DateTime(2026, 10, 16, 10, 0, 0),
+            Status = InvoiceStatus.Finalised,
+            AmountPayable = amount,
+            RecdAmount = 0m
+        });
+    }
+
+    private static void AddVoucher(MijmsContext context, int gkey, int invoiceGkey,
+        string transType, string modeOrType, decimal amount)
+    {
+        var isJournal = transType == "Journal";
+        context.Vouchers.Add(new Voucher
+        {
+            Gkey = 30000 + gkey,
+            RefDocGkey = invoiceGkey,
+            TransType = transType,
+            VoucherType = isJournal ? modeOrType : null,
+            Mode = isJournal ? "Credit" : modeOrType,
+            TransAmount = amount,
+            TransDesc = "test"
+        });
+    }
+
     private static MijmsContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<MijmsContext>()
