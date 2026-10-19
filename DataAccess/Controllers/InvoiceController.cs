@@ -664,39 +664,6 @@ public class InvoiceController : ControllerBase
             invoice);
     }
 
-    [HttpPost("finance-sync/test-queue/{invoiceGkey:int}")]
-    public async Task<IActionResult> TestQueueFinanceSync(
-    int invoiceGkey,
-    CancellationToken cancellationToken)
-    {
-        await _financeSyncService.QueueFinanceSyncAsync(
-            invoiceGkey,
-            1,
-            1,
-            cancellationToken);
-
-        return Ok(new
-        {
-            invoiceGkey,
-            queued = true
-        });
-    }
-
-    [HttpPost("finance-sync/test-send-pending")]
-    public async Task<IActionResult> TestSendPending(
-    CancellationToken cancellationToken)
-    {
-        var sentCount =
-            await _financeSyncService.SendPendingAsync(
-                cancellationToken);
-
-        return Ok(new
-        {
-            sentCount
-        });
-    }
-
-
     // =========================================================
     // POST: api/invoice/{invoiceGkey}/cancel
     //

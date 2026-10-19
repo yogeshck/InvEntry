@@ -1697,18 +1697,24 @@ public partial class InvoiceViewModel : ObservableObject
             MessageButton.OK,
             MessageIcon.Information);
 
-
         // ==========================================================
         // 3. PRINT PREVIEW - SEPARATE OPERATION
         // ==========================================================
         try
         {
 
+            Messenger.Default.Send(MessageType.WaitIndicator, WaitIndicatorVM.ShowIndicator("Print Invoice..."));
+
             Serilog.Log.Information(
                 "Invoice preview START {InvoiceNumber}",
                 result.InvNbr);
 
+            var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... preparing print document.... .");
+            SplashScreenManager.CreateWaitIndicator(waitVM).Show();
+
             _reportDialogService.PrintPreview(result.InvNbr);
+
+            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
 
             Serilog.Log.Information(
                 "Invoice preview END {InvoiceNumber}",
