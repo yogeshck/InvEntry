@@ -436,6 +436,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             return;
         }
 
+        if (!ValidateReceiptUniqueness()) return;
         ReceiptRequiringCompletion = null;
 
         var line =
@@ -455,10 +456,108 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             return;
 
         Receipts.Remove(line);
+        if (ReferenceEquals(SelectedReceipt, line)) SelectedReceipt = null;
+        ReceiptRequiringCompletion = null;
 
         Recalculate();
     }
 
+
+    // Quick payment buttons use the same receipt collection and validation rules.
+    [ObservableProperty]
+    private InvoiceSettlementLine? selectedReceipt;
+
+    [RelayCommand]
+    private void AddQuickPayment(string? requestedMode)
+    {
+        if (!IsReceivable) return;
+        var mode = ResolvePaymentMode(requestedMode);
+        if (mode is null)
+        {
+            ValidationMessage = $"Payment mode '{requestedMode}' is not available in the payment modes master.";
+            return;
+        }
+
+        if (IsCashMode(mode))
+        {
+            var existingCash = Receipts.FirstOrDefault(x => IsCashMode(x.PaymentMode));
+            if (existingCash is not null)
+            {
+                SelectedReceipt = existingCash;
+                ValidationMessage = "Cash payment is already listed. Please edit its amount instead of adding another Cash row.";
+                return;
+            }
+        }
+
+        // Require previous lines to be completed before adding another.
+        if (!TryValidateLinesForAddition(Receipts, "receipt", out var incomplete))
+        {
+            ReceiptRequiringCompletion = incomplete;
+            SelectedReceipt = incomplete;
+            return;
+        }
+
+        var line = new InvoiceSettlementLine { PaymentMode = mode };
+        Receipts.Add(line);
+        SelectedReceipt = line;
+        ReceiptRequiringCompletion = line;
+        ValidationMessage = "Enter the payment amount" + (IsCashMode(mode) ? "." : " and transaction/reference number.");
+    }
+
+    private string? ResolvePaymentMode(string? requestedMode)
+    {
+        if (string.IsNullOrWhiteSpace(requestedMode)) return null;
+        // Use actual master values; don't persist invented aliases.
+        string[] aliases = requestedMode.Trim().ToUpperInvariant() switch
+        {
+            "CASH" => new[] { "Cash" },
+            "UPI" => new[] { "UPI", "UPI QR", "GPAY", "GPay" },
+            "CARD" => new[] { "Card", "Credit Card", "Debit Card" },
+            "BANK" => new[] { "Bank Transfer", "Bank", "NEFT", "RTGS", "IMPS" },
+            _ => new[] { requestedMode.Trim() }
+        };
+        return aliases.Select(a => PaymentModes.FirstOrDefault(m =>
+                   string.Equals(m.Trim(), a, StringComparison.OrdinalIgnoreCase)))
+                      .FirstOrDefault(m => m is not null);
+    }
+
+    private static bool IsCashMode(string? mode) =>
+        string.Equals(mode?.Trim(), "Cash", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsExternalPaymentMode(string? mode) =>
+        !string.IsNullOrWhiteSpace(mode) && !IsCashMode(mode) && !IsAdjustmentMode(mode);
+
+    private static string? PaymentReference(InvoiceSettlementLine line) =>
+        !string.IsNullOrWhiteSpace(line.TransactionId)
+            ? line.TransactionId.Trim()
+            : line.OtherReference?.Trim();
+
+    private bool ValidateReceiptUniqueness()
+    {
+        if (Receipts.Count(x => IsCashMode(x.PaymentMode)) > 1)
+        {
+            ValidationMessage = "Only one Cash payment row is allowed.";
+            return false;
+        }
+
+        foreach (var line in Receipts.Where(x => IsExternalPaymentMode(x.PaymentMode)))
+        {
+            var reference = PaymentReference(line);
+            if (string.IsNullOrWhiteSpace(reference))
+            {
+                ValidationMessage = $"Enter a transaction/UTR or reference number for {line.PaymentMode}.";
+                return false;
+            }
+            if (Receipts.Any(other => !ReferenceEquals(other, line) &&
+                IsExternalPaymentMode(other.PaymentMode) &&
+                string.Equals(PaymentReference(other), reference, StringComparison.OrdinalIgnoreCase)))
+            {
+                ValidationMessage = $"Reference '{reference}' is already used by another payment row.";
+                return false;
+            }
+        }
+        return true;
+    }
 
     // =========================================================
     // REFUND COMMANDS
@@ -487,6 +586,9 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     }
 
 
+    [ObservableProperty]
+    private InvoiceSettlementLine? selectedRefund;
+
     [RelayCommand]
     private void RemoveRefund(
         InvoiceSettlementLine? refund)
@@ -495,6 +597,8 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             return;
 
         Refunds.Remove(refund);
+        if (ReferenceEquals(SelectedRefund, refund)) SelectedRefund = null;
+        RefundRequiringCompletion = null;
 
         Recalculate();
     }
@@ -680,7 +784,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         if (CreditAmount < 0M)
             return false;
 
-        return true;
+        return ValidateReceiptUniqueness();
     }
 
     private bool TryValidateLinesForAddition(
@@ -721,6 +825,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         }
 
         ReceiptRequiringCompletion = null;
+        if (!ValidateReceiptUniqueness()) return false;
 
         if (!TryValidateLinesForAddition(
                 Refunds,
@@ -1015,6 +1120,7 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             nameof(IsSettlementComplete));
 
         ValidateSettlement();
+        if (IsReceivable) ValidateReceiptUniqueness();
 
         OnPropertyChanged(
             nameof(CanFinalise));
