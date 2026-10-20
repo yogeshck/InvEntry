@@ -115,6 +115,25 @@
                                           IsTextEditable="False">
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
+                    <!-- Recurring Deposit: type the RD number (Enter / Tab) to fill the
+                         customer, scheme and amount due; or enter the mobile number. -->
+                    <dxlc:LayoutItem Label="RD No"
+                                     FontSize="14"
+                                     Margin="5"
+                                     Height="42"
+                                     Visibility="{Binding SchemeFieldVisibility}">
+                        <dxe:TextEdit EditValue="{Binding RdNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      EditValuePostMode="Immediate"
+                                      CharacterCasing="Upper"
+                                      NullText="e.g. MJ-RD26-002, then Enter">
+                            <dxmvvm:Interaction.Behaviors>
+                                <dxmvvm:KeyToCommand KeyGesture="Enter"
+                                                     Command="{Binding FindRdCommand}" />
+                                <dxmvvm:EventToCommand EventName="LostKeyboardFocus"
+                                                       Command="{Binding FindRdCommand}" />
+                            </dxmvvm:Interaction.Behaviors>
+                        </dxe:TextEdit>
+                    </dxlc:LayoutItem>
                     <dxlc:LayoutItem Label="Mobile #"
                                      FontSize="14"
                                      Margin="5"

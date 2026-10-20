@@ -25,6 +25,14 @@ public interface ISchemeEnrollmentService
         int customerGkey,
         bool includeClosed,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The enrollment whose account number is the given RD number (e.g. MJ-RD26-002
+    /// or RD-000012), ignoring case and surrounding spaces; null when there is none.
+    /// </summary>
+    Task<SchemeEnrollmentDto?> FindByAccountNumberAsync(
+        string accountNbr,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class SchemeEnrollmentService : ISchemeEnrollmentService
@@ -189,6 +197,25 @@ public sealed class SchemeEnrollmentService : ISchemeEnrollmentService
         }
 
         return await LoadAsync(query, cancellationToken);
+    }
+
+    public async Task<SchemeEnrollmentDto?> FindByAccountNumberAsync(
+        string accountNbr,
+        CancellationToken cancellationToken = default)
+    {
+        var number = accountNbr?.Trim();
+
+        if (string.IsNullOrEmpty(number))
+            return null;
+
+        // Staff may type "mj-rd26-002"; account numbers are unique, so compare without case.
+        var upper = number.ToUpperInvariant();
+
+        var list = await LoadAsync(
+            _context.SchemeEnrollments.Where(x => x.AdvanceAccount.AccountNbr.ToUpper() == upper),
+            cancellationToken);
+
+        return list.FirstOrDefault();
     }
 
     /// <summary>

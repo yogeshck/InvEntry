@@ -228,6 +228,28 @@ public sealed class SchemeServiceTests
         });
     }
 
+    [Test]
+    public async Task Scheme_is_found_by_its_rd_number_in_any_case()
+    {
+        var plan = await _plans.SavePlanAsync(AmountPlan("GOLD11"));
+        var first = await _enrollments.EnrollAsync(Enroll(plan.Gkey, 1000M));
+        var second = await _enrollments.EnrollAsync(Enroll(plan.Gkey, 3000M));
+
+        var found = await _enrollments.FindByAccountNumberAsync($"  {second.AccountNbr.ToLowerInvariant()} ");
+        var unknown = await _enrollments.FindByAccountNumberAsync(first.AccountNbr + "X");
+        var blank = await _enrollments.FindByAccountNumberAsync(" ");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(found!.EnrollmentGkey, Is.EqualTo(second.EnrollmentGkey));
+            Assert.That(found.CustomerGkey, Is.EqualTo(CustomerGkey));
+            Assert.That(found.CustomerMobile, Is.EqualTo("9000000002"));
+            Assert.That(found.NextInstallment!.AmountOutstanding, Is.EqualTo(3000M));
+            Assert.That(unknown, Is.Null);
+            Assert.That(blank, Is.Null);
+        });
+    }
+
     // =========================================================
     // INSTALLMENT RECEIPTS
     // =========================================================

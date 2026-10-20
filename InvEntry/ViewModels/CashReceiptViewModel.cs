@@ -217,6 +217,15 @@ public partial class CashReceiptViewModel : ObservableObject
     {
         if (args.NewValue is not string customerPhoneNumber) return;
 
+        // The mobile number was filled in from an RD number lookup, which has
+        // already loaded the customer and the scheme.
+        if (_mobileFilledFromRd is not null &&
+            string.Equals(_mobileFilledFromRd, customerPhoneNumber.Trim(), StringComparison.Ordinal))
+        {
+            _mobileFilledFromRd = null;
+            return;
+        }
+
         if (TransactionType == "Credit Receipt")
             creditReceipt = true;
 
@@ -249,15 +258,7 @@ public partial class CashReceiptViewModel : ObservableObject
         }
         else
         {
-            var gstCode = Payer.Address is null ? Company.GstCode : Payer.Address.GstStateCode;
-
-            if (Payer.Address is null)
-            {
-                Payer.Address = new();
-                Payer.Address.GstStateCode = Company.GstCode;
-            }
-
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            PrepareLoadedCustomer();
 
             //Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
@@ -266,6 +267,136 @@ public partial class CashReceiptViewModel : ObservableObject
         if (creditReceipt)
             await FetchOutStandingAsync(customerPhoneNumber);
 
+        await LoadCustomerSchemesAsync();
+    }
+
+    private void PrepareLoadedCustomer()
+    {
+        var gstCode = Payer.Address is null ? Company.GstCode : Payer.Address.GstStateCode;
+
+        if (Payer.Address is null)
+        {
+            Payer.Address = new();
+            Payer.Address.GstStateCode = Company.GstCode;
+        }
+
+        CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+    }
+
+    // =========================================================
+    // RD NUMBER
+    // =========================================================
+
+    /// <summary>
+    /// RD number typed by the cashier (e.g. MJ-RD26-002). On Enter or leaving the
+    /// field the scheme is looked up and its customer and amount due filled in.
+    /// </summary>
+    [ObservableProperty]
+    private string? _rdNumber;
+
+    // Scheme to select once the customer's schemes are loaded.
+    private int? _rdAccountToSelect;
+
+    // Mobile number set by the RD lookup, so FetchCustomer does not load it again.
+    private string? _mobileFilledFromRd;
+
+    [RelayCommand]
+    private async Task FindRdAsync()
+    {
+        var number = RdNumber?.Trim();
+
+        if (string.IsNullOrEmpty(number))
+            return;
+
+        if (SelectedScheme is not null &&
+            string.Equals(SelectedScheme.AccountNbr, number, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        SchemeEnrollmentDto? scheme;
+
+        try
+        {
+            scheme = await _schemeService.FindByAccountNumber(number);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "The RD could not be looked up." + Environment.NewLine + ApiErrorMessage.From(ex),
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Warning);
+            return;
+        }
+
+        if (scheme is null)
+        {
+            _messageBoxService.ShowMessage($"No RD scheme has the number {number}.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        if (scheme.Status != "ACTIVE")
+        {
+            _messageBoxService.ShowMessage($"RD {scheme.AccountNbr} is {scheme.Status}; it cannot take payments.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        if (scheme.NextInstallment is null)
+        {
+            _messageBoxService.ShowMessage($"All installments of RD {scheme.AccountNbr} are already paid.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Information);
+            return;
+        }
+
+        // A customer is already on the voucher: the RD must be theirs.
+        if (Payer is not null && Payer.GKey > 0)
+        {
+            if (Payer.GKey != scheme.CustomerGkey)
+            {
+                _messageBoxService.ShowMessage(
+                    $"RD {scheme.AccountNbr} belongs to {scheme.CustomerName} ({scheme.CustomerMobile}), " +
+                    $"not to {Payer.CustomerName}. Check the RD number, or reset the voucher to take this customer's payment.",
+                    "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+                return;
+            }
+
+            _rdAccountToSelect = scheme.AdvanceAccountGkey;
+            await LoadCustomerSchemesAsync();
+            return;
+        }
+
+        // No customer yet: take the customer from the RD.
+        Customer? customer;
+
+        try
+        {
+            customer = await _customerService.GetCustomerByGkey(scheme.CustomerGkey);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "The RD's customer could not be loaded." + Environment.NewLine + ApiErrorMessage.From(ex),
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Warning);
+            return;
+        }
+
+        if (customer is null)
+        {
+            _messageBoxService.ShowMessage($"The customer of RD {scheme.AccountNbr} was not found.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        Payer = customer;
+        PrepareLoadedCustomer();
+        createCustomer = false;
+        CustomerReadOnly = false;
+
+        _mobileFilledFromRd = customer.MobileNbr?.Trim();
+        CustomerPhoneNumber = customer.MobileNbr;
+
+        _rdAccountToSelect = scheme.AdvanceAccountGkey;
         await LoadCustomerSchemesAsync();
     }
 
@@ -301,18 +432,28 @@ public partial class CashReceiptViewModel : ObservableObject
 
         if (CustomerSchemes.Count == 0)
         {
+            _rdAccountToSelect = null;
             _messageBoxService.ShowMessage(
                 "This customer has no active RD scheme. Enroll the customer in a scheme first (Finance > Scheme Enrollment).",
                 "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
             return;
         }
 
-        if (CustomerSchemes.Count == 1)
+        if (_rdAccountToSelect is int accountGkey)
+        {
+            _rdAccountToSelect = null;
+            SelectedScheme = CustomerSchemes.FirstOrDefault(x => x.AdvanceAccountGkey == accountGkey);
+        }
+
+        if (SelectedScheme is null && CustomerSchemes.Count == 1)
             SelectedScheme = CustomerSchemes[0];
     }
 
     partial void OnSelectedSchemeChanged(SchemeEnrollmentDto? value)
     {
+        // Keep the RD No field showing the chosen scheme.
+        RdNumber = value?.AccountNbr;
+
         // Suggest what is due on the next installment; the cashier can change it.
         if (value?.NextInstallment is { } next && Voucher is not null)
         {
@@ -388,6 +529,9 @@ public partial class CashReceiptViewModel : ObservableObject
         _pendingAdvanceReceipt = null;
         CustomerSchemes = new();
         SelectedScheme = null;
+        RdNumber = null;
+        _rdAccountToSelect = null;
+        _mobileFilledFromRd = null;
     }
 
     partial void OnTransactionTypeChanged(string value)

@@ -51,6 +51,20 @@ public class SchemeEnrollmentController : ControllerBase
         return enrollment is null ? NotFound() : Ok(enrollment);
     }
 
+    // GET: api/schemeenrollment/by-account?accountNbr=MJ-RD26-002
+    // Returns a list with the enrollment, or an empty list when the RD number is unknown.
+    [HttpGet("by-account")]
+    public async Task<ActionResult<IEnumerable<SchemeEnrollmentDto>>> FindByAccountNumber(
+        [FromQuery] string accountNbr,
+        CancellationToken cancellationToken)
+    {
+        var enrollment = await _schemeEnrollmentService.FindByAccountNumberAsync(accountNbr, cancellationToken);
+
+        return Ok(enrollment is null
+            ? Array.Empty<SchemeEnrollmentDto>()
+            : new[] { enrollment });
+    }
+
     // GET: api/schemeenrollment/customer/15000?includeClosed=false
     [HttpGet("customer/{customerGkey:int}")]
     public async Task<ActionResult<IEnumerable<SchemeEnrollmentDto>>> GetForCustomer(

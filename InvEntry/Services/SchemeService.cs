@@ -1,5 +1,6 @@
 using InvEntry.Contracts.Schemes;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace InvEntry.Services;
@@ -24,6 +25,9 @@ public interface ISchemeService
 
     /// <summary>Checks (Apply = false) or imports the shop's RD register.</summary>
     Task<SchemeImportResult> Import(SchemeImportRequest request);
+
+    /// <summary>The scheme with this RD number (e.g. MJ-RD26-002), or null when unknown.</summary>
+    Task<SchemeEnrollmentDto?> FindByAccountNumber(string accountNbr);
 }
 
 public class SchemeService : ISchemeService
@@ -68,5 +72,13 @@ public class SchemeService : ISchemeService
     public Task<SchemeImportResult> Import(SchemeImportRequest request)
     {
         return _mijmsApiService.Post<SchemeImportRequest, SchemeImportResult>("api/SchemeImport", request);
+    }
+
+    public async Task<SchemeEnrollmentDto?> FindByAccountNumber(string accountNbr)
+    {
+        var found = await _mijmsApiService.GetResponse<List<SchemeEnrollmentDto>>(
+            $"api/SchemeEnrollment/by-account?accountNbr={System.Uri.EscapeDataString(accountNbr.Trim())}");
+
+        return found.FirstOrDefault();
     }
 }
