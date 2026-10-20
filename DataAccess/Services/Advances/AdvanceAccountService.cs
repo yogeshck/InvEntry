@@ -276,20 +276,11 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
         // advance account and RD money to their scheme account.
         var accountType = isRd ? AccountTypeScheme : AccountTypeOpen;
 
-        var candidates = await _context.CustomerAdvanceAccounts
-            .AsNoTracking()
-            .Where(x => x.CustGkey == request.CustomerGkey &&
-                        x.AccountType == accountType &&
-                        x.Status == StatusActive)
-            .ToListAsync(cancellationToken);
+        var existing = await FindSingleActiveAccountAsync(
+            request.CustomerGkey, accountType, cancellationToken);
 
-        if (candidates.Count == 1)
-            return candidates[0];
-
-        if (candidates.Count > 1)
-            throw new AdvanceAccountBusinessException(
-                $"The customer has {candidates.Count} active {accountType} accounts. " +
-                "Select the account to credit.");
+        if (existing is not null)
+            return existing;
 
         // First receipt of this kind for the customer: open an account. The number
         // needs the identity, so a temporary unique number is replaced after insert.
@@ -306,7 +297,23 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
         };
 
         _context.CustomerAdvanceAccounts.Add(created);
-        await _context.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException) when (accountType == AccountTypeOpen)
+        {
+            // UX_CUSTOMER_ADVANCE_ACCOUNT_OPEN: a concurrent first receipt for
+            // this customer opened the OPEN account first. Only the failed
+            // statement is rolled back, so the transaction can credit theirs.
+            _context.Entry(created).State = EntityState.Detached;
+
+            return await FindSingleActiveAccountAsync(
+                       request.CustomerGkey, accountType, cancellationToken)
+                   ?? throw new AdvanceAccountBusinessException(
+                       "The customer's advance account could not be opened. Try again.");
+        }
 
         created.AccountNbr = $"{(isRd ? "RD" : "ADV")}-{created.Gkey:D6}";
         await _context.SaveChangesAsync(cancellationToken);
@@ -314,6 +321,27 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
         // Detach so the conditional UPDATE below is the only balance writer.
         _context.Entry(created).State = EntityState.Detached;
         return created;
+    }
+
+    private async Task<CustomerAdvanceAccount?> FindSingleActiveAccountAsync(
+        int customerGkey,
+        string accountType,
+        CancellationToken cancellationToken)
+    {
+        var candidates = await _context.CustomerAdvanceAccounts
+            .AsNoTracking()
+            .Where(x => x.CustGkey == customerGkey &&
+                        x.AccountType == accountType &&
+                        x.Status == StatusActive)
+            .Take(2)
+            .ToListAsync(cancellationToken);
+
+        if (candidates.Count > 1)
+            throw new AdvanceAccountBusinessException(
+                $"The customer has more than one active {accountType} account. " +
+                "Select the account to credit.");
+
+        return candidates.SingleOrDefault();
     }
 
     private async Task<int> NextDailySequenceAsync(

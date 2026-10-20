@@ -95,6 +95,9 @@ public partial class MijmsContext
 
             entity.HasIndex(e => new { e.TenantGkey, e.AccountNbr }, "UQ_CUSTOMER_ADVANCE_ACCOUNT_NBR").IsUnique();
             entity.HasIndex(e => new { e.CustGkey, e.Status }, "IX_CUSTOMER_ADVANCE_ACCOUNT_CUSTOMER");
+            entity.HasIndex(e => e.CustGkey, "UX_CUSTOMER_ADVANCE_ACCOUNT_OPEN")
+                .IsUnique()
+                .HasFilter("[ACCOUNT_TYPE] = 'OPEN' AND [STATUS] = 'ACTIVE'");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.TenantGkey).HasColumnName("TENANT_GKEY");

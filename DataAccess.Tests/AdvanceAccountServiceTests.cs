@@ -6,6 +6,8 @@ using InvEntry.Contracts.Advances;
 using InvEntry.Contracts.Invoices;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
 using NUnit.Framework;
 
 namespace DataAccess.Tests;
@@ -167,6 +169,93 @@ public sealed class AdvanceAccountServiceTests
             Assert.That(account.TotalReceivedAmount, Is.EqualTo(1000M));
             Assert.That(voucherType.LastUsedNumber, Is.EqualTo(1));
         });
+    }
+
+    [Test]
+    public async Task Concurrent_first_receipt_credits_the_open_account_the_other_request_created()
+    {
+        var interceptor = new CompetingOpenAccountInterceptor(
+            () => CreateContext(), CustomerGkey, _advanceLedgerGkey);
+
+        using var context = CreateContext(interceptor);
+        var response = await CreateService(context)
+            .CreateReceiptAsync(Receipt(AdvanceReceiptType.AdvanceReceipt, 5000M));
+
+        var account = await _context.CustomerAdvanceAccounts.AsNoTracking().SingleAsync();
+        var ledger = await _context.AdvanceLedgers.AsNoTracking().SingleAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(interceptor.CompetingAccountGkey, Is.Not.Null);
+            Assert.That(account.Gkey, Is.EqualTo(interceptor.CompetingAccountGkey));
+            Assert.That(response.AdvanceAccountGkey, Is.EqualTo(account.Gkey));
+            Assert.That(account.BalanceAmount, Is.EqualTo(5000M));
+            Assert.That(ledger.AdvanceAccountGkey, Is.EqualTo(account.Gkey));
+            Assert.That(_context.Vouchers.Count(), Is.EqualTo(1));
+        });
+    }
+
+    [Test]
+    public async Task Second_active_open_account_for_a_customer_is_rejected()
+    {
+        await AddAccountAsync("OPEN", 0M);
+
+        Assert.ThrowsAsync<DbUpdateException>(() => AddAccountAsync("OPEN", 0M));
+        _context.ChangeTracker.Clear();
+
+        // Closed OPEN accounts and other customers are not affected.
+        await AddAccountAsync("OPEN", 0M, status: "CLOSED");
+        await AddAccountAsync("OPEN", 0M, customerGkey: OtherCustomerGkey);
+    }
+
+    // =========================================================
+    // VOUCHER NUMBERING
+    // =========================================================
+
+    [Test]
+    public async Task Voucher_numbers_are_unique_across_contexts_and_a_stale_tracked_type_is_not_written_back()
+    {
+        // Loaded and tracked before numbering, as a workflow might.
+        var tracked = await _context.VoucherTypes
+            .SingleAsync(x => x.DocumentType == AdvanceReceiptType.AdvanceReceipt);
+
+        var numbers = new VoucherNumberService(_context);
+        var first = await numbers.GetNextNumberAsync(AdvanceReceiptType.AdvanceReceipt);
+        var second = await numbers.GetNextNumberAsync(AdvanceReceiptType.AdvanceReceipt);
+
+        using var otherContext = CreateContext();
+        var third = await new VoucherNumberService(otherContext)
+            .GetNextNumberAsync(AdvanceReceiptType.AdvanceReceipt);
+
+        // An unrelated save of the stale context must not reset the counter.
+        await _context.SaveChangesAsync();
+
+        var stored = await otherContext.VoucherTypes.AsNoTracking()
+            .SingleAsync(x => x.DocumentType == AdvanceReceiptType.AdvanceReceipt);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(new[] { first, second, third },
+                Is.EqualTo(new[] { "AR-0008", "AR-0009", "AR-0010" }));
+            Assert.That(tracked.LastUsedNumber, Is.EqualTo(9));
+            Assert.That(stored.LastUsedNumber, Is.EqualTo(10));
+        });
+    }
+
+    [Test]
+    public async Task Voucher_number_taken_in_a_rolled_back_transaction_is_reused()
+    {
+        var numbers = new VoucherNumberService(_context);
+
+        await using (var transaction = await _context.Database.BeginTransactionAsync())
+        {
+            Assert.That(await numbers.GetNextNumberAsync(AdvanceReceiptType.AdvanceReceipt),
+                Is.EqualTo("AR-0008"));
+            await transaction.RollbackAsync();
+        }
+
+        Assert.That(await numbers.GetNextNumberAsync(AdvanceReceiptType.AdvanceReceipt),
+            Is.EqualTo("AR-0008"));
     }
 
     [Test]
@@ -348,7 +437,8 @@ public sealed class AdvanceAccountServiceTests
     {
         var advance = await AddAccountAsync("OPEN", 2500M);
         var rd = await AddAccountAsync("SCHEME", 6000M);
-        await AddAccountAsync("OPEN", 0M);
+        // Zero balance: not offered. (Only one active OPEN account per customer.)
+        await AddAccountAsync("SCHEME", 0M);
         await AddAccountAsync("OPEN", 900M, status: "CLOSED");
         await AddAccountAsync("OPEN", 700M, customerGkey: OtherCustomerGkey);
 
@@ -366,15 +456,64 @@ public sealed class AdvanceAccountServiceTests
     // HELPERS
     // =========================================================
 
-    private MijmsContext CreateContext() =>
+    private MijmsContext CreateContext(params IInterceptor[] interceptors) =>
         new SqliteMijmsContext(new DbContextOptionsBuilder<MijmsContext>()
             .UseSqlite(_connection)
+            .AddInterceptors(interceptors)
             .Options);
 
     private static AdvanceAccountService CreateService(MijmsContext context) =>
         new(context,
-            new VoucherNumberService(new RepositoryBase<VoucherType>(context)),
+            new VoucherNumberService(context),
             new AuditIdentityProvider());
+
+    /// <summary>
+    /// Simulates a concurrent first receipt: just before this context inserts
+    /// the customer's OPEN account, another context opens one in the same
+    /// database transaction, so the insert hits UX_CUSTOMER_ADVANCE_ACCOUNT_OPEN.
+    /// </summary>
+    private sealed class CompetingOpenAccountInterceptor(
+        Func<MijmsContext> createContext,
+        int customerGkey,
+        int ledgerGkey) : SaveChangesInterceptor
+    {
+        public int? CompetingAccountGkey { get; private set; }
+
+        public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
+            DbContextEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default)
+        {
+            var context = eventData.Context!;
+
+            if (CompetingAccountGkey is null &&
+                context.ChangeTracker.Entries<CustomerAdvanceAccount>()
+                    .Any(x => x.State == EntityState.Added))
+            {
+                using var other = createContext();
+                other.Database.UseTransaction(
+                    context.Database.CurrentTransaction!.GetDbTransaction());
+
+                var competing = new CustomerAdvanceAccount
+                {
+                    AccountNbr = "ADV-OTHER",
+                    AccountType = "OPEN",
+                    CustGkey = customerGkey,
+                    MtblLedgersGkey = ledgerGkey,
+                    Status = "ACTIVE",
+                    OpenedOn = DateOnly.FromDateTime(DateTime.Today),
+                    CreatedBy = "OTHER",
+                    CreatedOn = DateTime.Now
+                };
+
+                other.CustomerAdvanceAccounts.Add(competing);
+                await other.SaveChangesAsync(cancellationToken);
+                CompetingAccountGkey = competing.Gkey;
+            }
+
+            return result;
+        }
+    }
 
     private static AdvanceReceiptRequest Receipt(string type, decimal amount) => new()
     {

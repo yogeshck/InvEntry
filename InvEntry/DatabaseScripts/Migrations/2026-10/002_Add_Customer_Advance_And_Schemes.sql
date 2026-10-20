@@ -208,6 +208,18 @@ BEGIN
 END;
 GO
 
+IF NOT EXISTS (SELECT 1 FROM sys.indexes
+               WHERE name = 'UX_CUSTOMER_ADVANCE_ACCOUNT_OPEN'
+                 AND object_id = OBJECT_ID('dbo.CUSTOMER_ADVANCE_ACCOUNT'))
+BEGIN
+    -- One active OPEN advance account per customer; receipts without an
+    -- explicit account are credited to it.
+    CREATE UNIQUE NONCLUSTERED INDEX UX_CUSTOMER_ADVANCE_ACCOUNT_OPEN
+        ON dbo.CUSTOMER_ADVANCE_ACCOUNT (CUST_GKEY)
+        WHERE ACCOUNT_TYPE = 'OPEN' AND STATUS = 'ACTIVE';
+END;
+GO
+
 
 /* =========================================================
    SCHEME_ENROLLMENT
@@ -503,4 +515,43 @@ LEFT JOIN (
 ) L ON L.ADVANCE_ACCOUNT_GKEY = A.GKEY
 WHERE A.BALANCE_AMOUNT <> ISNULL(L.LEDGER_AMOUNT, 0)
    OR A.BALANCE_WEIGHT <> ISNULL(L.LEDGER_WEIGHT, 0);
+GO
+
+
+/* =========================================================
+   VOUCHER_TYPES: Recurring Deposit
+   RD receipt vouchers are numbered from the 'Recurring Deposit'
+   document type. An unused 'RD' row (RD- prefix, nothing numbered)
+   is renamed so there is only one RD- series; otherwise a new row
+   is added with the same settings as 'Advance Receipt'.
+   ========================================================= */
+
+IF NOT EXISTS (SELECT 1 FROM dbo.VOUCHER_TYPES WHERE DOCUMENT_TYPE = 'Recurring Deposit')
+BEGIN
+    IF EXISTS (SELECT 1 FROM dbo.VOUCHER_TYPES
+               WHERE DOCUMENT_TYPE = 'RD' AND ISNULL(LAST_USED_NUMBER, 0) = 0)
+       AND NOT EXISTS (SELECT 1 FROM dbo.VOUCHER WHERE voucher_type = 'RD')
+    BEGIN
+        UPDATE dbo.VOUCHER_TYPES
+        SET DOCUMENT_TYPE = 'Recurring Deposit',
+            IS_ACTIVE     = 1
+        WHERE DOCUMENT_TYPE = 'RD';
+    END
+    ELSE
+    BEGIN
+        -- GKEY is not an identity column.
+        INSERT dbo.VOUCHER_TYPES (
+            GKEY, DOCUMENT_TYPE, ABBREVIATION, MTBL_VOUCHER_TYPE_GKEY, LAST_USED_NUMBER,
+            IS_TAXABLE, DOC_NBR_METHOD, DOC_NBR_LENGTH, DOC_NBR_PREFILL, DOC_NBR_PREFIX,
+            IS_ACTIVE, USED_FOR)
+        SELECT
+            (SELECT ISNULL(MAX(GKEY), 0) + 1 FROM dbo.VOUCHER_TYPES WITH (UPDLOCK, HOLDLOCK)),
+            'Recurring Deposit', 'Rct RD', ISNULL(A.MTBL_VOUCHER_TYPE_GKEY, 7), 0,
+            0, ISNULL(A.DOC_NBR_METHOD, 'AUTO'), ISNULL(A.DOC_NBR_LENGTH, 5), ISNULL(A.DOC_NBR_PREFILL, '0'),
+            CASE WHEN EXISTS (SELECT 1 FROM dbo.VOUCHER_TYPES WHERE DOC_NBR_PREFIX = 'RD-') THEN 'RDP-' ELSE 'RD-' END,
+            1, 'Accounting'
+        FROM (SELECT 1 AS X) D
+        LEFT JOIN dbo.VOUCHER_TYPES A ON A.DOCUMENT_TYPE = 'Advance Receipt';
+    END;
+END;
 GO
