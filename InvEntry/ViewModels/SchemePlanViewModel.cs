@@ -174,8 +174,17 @@ public partial class SchemePlanViewModel : ObservableObject
         {
             var saved = await _schemeService.SavePlan(Editor);
 
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var availability = saved.Status != SchemePlanStatus.Active
+                ? $"It is {saved.Status}: set Status to ACTIVE to make it available in Scheme Enrollment."
+                : saved.ValidFrom > today
+                    ? $"It is available for enrollment from {saved.ValidFrom:dd-MM-yyyy}."
+                    : saved.ValidTo is DateOnly validTo && validTo < today
+                        ? $"Its valid-to date {validTo:dd-MM-yyyy} has passed, so it is not offered for enrollment."
+                        : "It is available in Scheme Enrollment.";
+
             _messageBoxService.ShowMessage(
-                $"Plan {saved.PlanCode} saved ({saved.Status}).",
+                $"Plan {saved.PlanCode} saved.{Environment.NewLine}{availability}",
                 "Scheme plan", MessageButton.OK, MessageIcon.Information);
 
             await LoadAsync();

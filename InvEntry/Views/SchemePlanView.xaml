@@ -23,6 +23,8 @@
     <dxmvvm:Interaction.Behaviors>
         <dxmvvm:KeyToCommand KeyGesture="CTRL+S"
                              Command="{Binding SaveCommand}" />
+        <dxmvvm:EventToCommand EventName="Loaded"
+                               Command="{Binding LoadCommand}" />
     </dxmvvm:Interaction.Behaviors>
 
     <Grid>

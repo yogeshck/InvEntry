@@ -135,6 +135,16 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
 
     public string PlanSummary => SelectedPlan is null ? string.Empty : Describe(SelectedPlan);
 
+    /// <summary>Only ACTIVE plans within their valid dates take enrollments.</summary>
+    public string PlanPlaceholder => Plans.Count == 0
+        ? "No active plan. Set a plan's status to ACTIVE in Scheme Plans."
+        : "Select an active plan";
+
+    partial void OnPlansChanged(ObservableCollection<SchemePlanDto> value)
+    {
+        OnPropertyChanged(nameof(PlanPlaceholder));
+    }
+
     partial void OnSelectedPlanChanged(SchemePlanDto? value)
     {
         if (value is not null &&

@@ -16,6 +16,13 @@
              mc:Ignorable="d"
              d:DesignHeight="700"
              d:DesignWidth="1300">
+    <!-- The view model is a singleton: reload the plans every time the page is
+         opened, so plans activated in Scheme Plans appear here. -->
+    <dxmvvm:Interaction.Behaviors>
+        <dxmvvm:EventToCommand EventName="Loaded"
+                               Command="{Binding LoadPlansCommand}" />
+    </dxmvvm:Interaction.Behaviors>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -74,7 +81,7 @@
                                               DisplayMember="PlanName"
                                               IsTextEditable="False"
                                               ImmediatePopup="True"
-                                              NullText="Select an active plan" />
+                                              NullText="{Binding PlanPlaceholder}" />
                         </dxlc:LayoutItem>
                         <TextBlock Text="{Binding PlanSummary}"
                                    TextWrapping="Wrap"
