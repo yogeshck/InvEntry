@@ -3,9 +3,9 @@
     File: 002_Add_Customer_Advance_And_Schemes.sql
     Purpose:
         Customer advances and jewellery savings schemes (RD), kept per customer
-        account with an append-only ledger. Replaces the client-side balance in
-        LEDGERS_HEADER, which is not reduced when an advance or RD is adjusted
-        on an invoice.
+        account with an append-only ledger. Replaces LEDGERS_HEADER /
+        LEDGERS_TRANSACTIONS for advances and RD; existing data there is test
+        data and is not migrated.
 
         SCHEME_PLAN                    scheme definition: amount or weight based, tenure, refund rules
         SCHEME_BENEFIT_RULE            benefits of a plan (installment waiver, % bonus, making-charge waiver, bonus grams)
@@ -25,8 +25,9 @@
         CUSTOMER_ADVANCE_ACCOUNT.BALANCE_* is updated in the same transaction as each
         ledger insert, with a conditional UPDATE (BALANCE_AMOUNT >= @Amount).
 
-    Opening balances from LEDGERS_HEADER are migrated separately by
-    003_Migrate_Ledger_Opening_Balances.sql (preview first).
+    Balances still open in the shop's own records (RD registers, pending
+    advances) are loaded later as OPENING ledger rows on accounts with
+    IS_OPENING_BALANCE = 1.
 
     QUOTED_IDENTIFIER: the filtered unique indexes require QUOTED_IDENTIFIER ON for
     every session that writes to these tables. EF Core / SqlClient and SSMS use ON;
@@ -162,7 +163,6 @@ BEGIN
         TOTAL_RECEIVED_AMOUNT       DECIMAL (18, 2) NOT NULL CONSTRAINT DF_CUSTOMER_ADVANCE_ACCOUNT_RCV_AMT DEFAULT (0),
         TOTAL_RECEIVED_WEIGHT       DECIMAL (18, 3) NOT NULL CONSTRAINT DF_CUSTOMER_ADVANCE_ACCOUNT_RCV_WT DEFAULT (0),
         IS_OPENING_BALANCE          BIT             NOT NULL CONSTRAINT DF_CUSTOMER_ADVANCE_ACCOUNT_OPENING DEFAULT (0),
-        LEGACY_LEDGERS_HEADER_GKEY  INT             NULL,
         REMARKS                     VARCHAR (250)   NULL,
         CREATED_BY                  VARCHAR (50)    NOT NULL,
         CREATED_ON                  DATETIME2 (7)   NOT NULL CONSTRAINT DF_CUSTOMER_ADVANCE_ACCOUNT_CREATED_ON DEFAULT (SYSDATETIME()),
@@ -195,16 +195,6 @@ BEGIN
     CREATE NONCLUSTERED INDEX IX_CUSTOMER_ADVANCE_ACCOUNT_CUSTOMER
         ON dbo.CUSTOMER_ADVANCE_ACCOUNT (CUST_GKEY, STATUS)
         INCLUDE (ACCOUNT_NBR, ACCOUNT_TYPE, BALANCE_AMOUNT, BALANCE_WEIGHT);
-END;
-GO
-
-IF NOT EXISTS (SELECT 1 FROM sys.indexes
-               WHERE name = 'UX_CUSTOMER_ADVANCE_ACCOUNT_LEGACY'
-                 AND object_id = OBJECT_ID('dbo.CUSTOMER_ADVANCE_ACCOUNT'))
-BEGIN
-    CREATE UNIQUE NONCLUSTERED INDEX UX_CUSTOMER_ADVANCE_ACCOUNT_LEGACY
-        ON dbo.CUSTOMER_ADVANCE_ACCOUNT (LEGACY_LEDGERS_HEADER_GKEY)
-        WHERE LEGACY_LEDGERS_HEADER_GKEY IS NOT NULL;
 END;
 GO
 
