@@ -24,6 +24,7 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
     private readonly ISchemeService _schemeService;
     private readonly IAdvanceAccountService _advanceAccountService;
     private readonly IMessageBoxService _messageBoxService;
+    private readonly IAdvanceReceiptPrinter _receiptPrinter;
 
     // Kept until the server confirms, so a retry after a failure reuses the
     // same ClientRequestId and cannot enroll or record a payment twice.
@@ -34,12 +35,14 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
         ICustomerService customerService,
         ISchemeService schemeService,
         IAdvanceAccountService advanceAccountService,
-        IMessageBoxService messageBoxService)
+        IMessageBoxService messageBoxService,
+        IAdvanceReceiptPrinter receiptPrinter)
     {
         _customerService = customerService;
         _schemeService = schemeService;
         _advanceAccountService = advanceAccountService;
         _messageBoxService = messageBoxService;
+        _receiptPrinter = receiptPrinter;
 
         _ = LoadPlansAsync();
     }
@@ -326,7 +329,13 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
             if (result.InstallmentsPaid is int paid)
                 message += $"{Environment.NewLine}Installments paid: {paid} of {SelectedScheme.TenureMonths}.";
 
-            _messageBoxService.ShowMessage(message, "Installment received", MessageButton.OK, MessageIcon.Information);
+            message += $"{Environment.NewLine}{Environment.NewLine}Print the receipt now?";
+
+            if (_messageBoxService.ShowMessage(message, "Installment received", MessageButton.YesNo, MessageIcon.Question)
+                == MessageResult.Yes)
+            {
+                await _receiptPrinter.PreviewAsync(result.VoucherGkey, isReprint: result.IsReplay);
+            }
         }
         catch (Exception ex)
         {

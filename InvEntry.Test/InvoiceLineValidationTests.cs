@@ -465,6 +465,10 @@ public sealed class InvoiceLineValidationTests
             InvEntry.Contracts.Advances.AdvanceReceiptRequest request,
             CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
+        public Task<InvEntry.Contracts.Advances.AdvanceReceiptPrintDto?> GetReceiptPrintAsync(
+            int voucherGkey,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
         public Task<IReadOnlyList<InvEntry.Contracts.Advances.AdvanceAccountSummary>> GetAvailableAccountsAsync(
             int customerGkey,
             CancellationToken cancellationToken = default) => throw new NotSupportedException();

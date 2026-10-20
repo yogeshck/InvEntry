@@ -384,8 +384,97 @@ public sealed class SchemeServiceTests
     }
 
     // =========================================================
+    // RECEIPT PRINT
+    // =========================================================
+
+    [Test]
+    public async Task Receipt_print_shows_the_installments_as_they_stood_after_that_receipt()
+    {
+        var plan = await _plans.SavePlanAsync(AmountPlan("GOLD11"));
+        var enrollment = await _enrollments.EnrollAsync(Enroll(plan.Gkey, 1000M));
+
+        var first = await _receipts.CreateReceiptAsync(RdReceipt(enrollment.AdvanceAccountGkey, 2500M));
+        var second = await _receipts.CreateReceiptAsync(RdReceipt(enrollment.AdvanceAccountGkey, 500M));
+
+        // The first receipt is printed again after the second one was taken.
+        var reprint = (await _receipts.GetReceiptPrintAsync(first.VoucherGkey))!;
+        var latest = (await _receipts.GetReceiptPrintAsync(second.VoucherGkey))!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(reprint.IsScheme, Is.True);
+            Assert.That(reprint.CustomerName, Is.EqualTo("Meena"));
+            Assert.That(reprint.PlanCode, Is.EqualTo("GOLD11"));
+            Assert.That(reprint.Amount, Is.EqualTo(2500M));
+            Assert.That(reprint.InstallmentsCovered, Is.EqualTo("1, 2, 3 (part)"));
+            Assert.That(reprint.InstallmentsPaid, Is.EqualTo(2));
+            Assert.That(reprint.BalanceAfter, Is.EqualTo(2500M));
+            Assert.That(reprint.TotalReceivedToDate, Is.EqualTo(2500M));
+            Assert.That(reprint.NextDueAmount, Is.EqualTo(500M));
+            Assert.That(reprint.NextDueDate, Is.EqualTo(enrollment.Installments[2].DueDate));
+
+            Assert.That(latest.InstallmentsCovered, Is.EqualTo("3"));
+            Assert.That(latest.InstallmentsPaid, Is.EqualTo(3));
+            Assert.That(latest.BalanceAfter, Is.EqualTo(3000M));
+            Assert.That(latest.NextDueAmount, Is.EqualTo(1000M));
+            Assert.That(latest.NextDueDate, Is.EqualTo(enrollment.Installments[3].DueDate));
+            Assert.That(latest.MaturityDate, Is.EqualTo(enrollment.MaturityDate));
+            Assert.That(latest.NomineeName, Is.EqualTo("Arun"));
+        });
+    }
+
+    [Test]
+    public async Task Weight_receipt_print_shows_grams_and_rate()
+    {
+        var plan = await _plans.SavePlanAsync(WeightPlan("SWARNA"));
+        var enrollment = await _enrollments.EnrollAsync(Enroll(plan.Gkey, 1000M));
+        var receipt = await _receipts.CreateReceiptAsync(RdReceipt(enrollment.AdvanceAccountGkey, 15000M));
+
+        var print = (await _receipts.GetReceiptPrintAsync(receipt.VoucherGkey))!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(print.Weight, Is.EqualTo(2.000M));
+            Assert.That(print.MetalRate, Is.EqualTo(GoldRate));
+            Assert.That(print.Metal, Is.EqualTo("GOLD"));
+            Assert.That(print.Purity, Is.EqualTo("916"));
+            Assert.That(print.WeightBalanceAfter, Is.EqualTo(2.000M));
+        });
+    }
+
+    [Test]
+    public async Task Advance_receipt_print_shows_the_balance_and_other_vouchers_are_not_printed()
+    {
+        var first = await _receipts.CreateReceiptAsync(AdvanceReceipt(4000M));
+        var second = await _receipts.CreateReceiptAsync(AdvanceReceipt(1000M));
+
+        var print = (await _receipts.GetReceiptPrintAsync(first.VoucherGkey))!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(print.IsScheme, Is.False);
+            Assert.That(print.ReceiptType, Is.EqualTo(AdvanceReceiptType.AdvanceReceipt));
+            Assert.That(print.VoucherNbr, Is.EqualTo("AR-0001"));
+            Assert.That(print.BalanceAfter, Is.EqualTo(4000M));
+            Assert.That(print.AccountType, Is.EqualTo("OPEN"));
+            Assert.That(second.BalanceAmount, Is.EqualTo(5000M));
+        });
+
+        Assert.That(await _receipts.GetReceiptPrintAsync(999999), Is.Null);
+    }
+
+    // =========================================================
     // HELPERS
     // =========================================================
+
+    private static AdvanceReceiptRequest AdvanceReceipt(decimal amount) => new()
+    {
+        ClientRequestId = Guid.NewGuid(),
+        CustomerGkey = CustomerGkey,
+        ReceiptType = AdvanceReceiptType.AdvanceReceipt,
+        Amount = amount,
+        Mode = "Cash"
+    };
 
     private MijmsContext CreateContext() =>
         new AdvanceAccountServiceTests.SqliteMijmsContext(new DbContextOptionsBuilder<MijmsContext>()

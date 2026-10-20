@@ -20,12 +20,17 @@ public class VoucherListViewModel
     private readonly IDialogService
         _reportDialogService;
 
+    private readonly IAdvanceReceiptPrinter
+        _receiptPrinter;
+
 
     public VoucherListViewModel(
         IVoucherDbViewService voucherDbViewService,
 
         [FromKeyedServices("ReportDialogService")]
-        IDialogService reportDialogService)
+        IDialogService reportDialogService,
+
+        IAdvanceReceiptPrinter receiptPrinter)
 
         : base(VoucherListDefinition.Create())
     {
@@ -34,6 +39,9 @@ public class VoucherListViewModel
 
         _reportDialogService =
             reportDialogService;
+
+        _receiptPrinter =
+            receiptPrinter;
     }
 
 
@@ -67,6 +75,19 @@ public class VoucherListViewModel
     protected override void PrintItem(
         VoucherDbView item)
     {
+        // Advance and RD installment receipts reprint on their own layout,
+        // with balances and installments as they stood at the time.
+        if (_receiptPrinter.Handles(
+                item.TransType,
+                item.VoucherType))
+        {
+            _ = _receiptPrinter.PreviewAsync(
+                item.GKey,
+                isReprint: true);
+
+            return;
+        }
+
         _reportDialogService
             .PrintPreviewVoucher(item.GKey);
     }

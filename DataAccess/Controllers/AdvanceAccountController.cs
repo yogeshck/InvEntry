@@ -53,6 +53,25 @@ public class AdvanceAccountController : ControllerBase
     }
 
     // =========================================================
+    // GET: api/advanceaccount/receipt/{voucherGkey}/print
+    //
+    // Data for printing / reprinting an advance or RD installment
+    // receipt, with balances as they stood right after it.
+    // =========================================================
+
+    [HttpGet("receipt/{voucherGkey:int}/print")]
+    public async Task<ActionResult<AdvanceReceiptPrintDto>> GetReceiptPrint(
+        int voucherGkey,
+        CancellationToken cancellationToken)
+    {
+        var print = await _advanceAccountService.GetReceiptPrintAsync(voucherGkey, cancellationToken);
+
+        return print is null
+            ? NotFound(new { message = $"Voucher {voucherGkey} is not an advance / RD receipt." })
+            : Ok(print);
+    }
+
+    // =========================================================
     // GET: api/advanceaccount/customer/{customerGkey}/available
     //
     // Active advance / RD accounts with a balance, for the billing

@@ -17,6 +17,15 @@ public interface IAdvanceAccountService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Print data of an advance / RD receipt voucher, with balances and
+    /// installments as they stood right after it. Null when the voucher is not
+    /// an advance / RD receipt.
+    /// </summary>
+    Task<AdvanceReceiptPrintDto?> GetReceiptPrintAsync(
+        int voucherGkey,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Active accounts of the customer with a balance, for the billing settlement screen.
     /// </summary>
     Task<IReadOnlyList<AdvanceAccountSummary>> GetAvailableAccountsAsync(

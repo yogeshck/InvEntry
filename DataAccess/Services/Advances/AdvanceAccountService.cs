@@ -530,6 +530,130 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
     }
 
     // =========================================================
+    // RECEIPT PRINT
+    // =========================================================
+
+    public async Task<AdvanceReceiptPrintDto?> GetReceiptPrintAsync(
+        int voucherGkey,
+        CancellationToken cancellationToken = default)
+    {
+        var receipt = await _context.AdvanceLedgers
+            .AsNoTracking()
+            .Where(x => x.VoucherGkey == voucherGkey && x.EntryType == AdvanceLedgerEntryType.Receipt)
+            .Select(x => new { Ledger = x, x.AdvanceAccount })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (receipt is null)
+            return null;
+
+        var ledger = receipt.Ledger;
+        var account = receipt.AdvanceAccount;
+
+        var voucher = await _context.Vouchers
+            .AsNoTracking()
+            .FirstAsync(x => x.Gkey == voucherGkey, cancellationToken);
+
+        var customer = await _context.OrgCustomers
+            .AsNoTracking()
+            .Where(x => x.Gkey == account.CustGkey)
+            .Select(x => new { x.CustomerName, x.MobileNbr })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // Everything on the account up to and including this receipt.
+        var upToReceipt = _context.AdvanceLedgers
+            .AsNoTracking()
+            .Where(x => x.AdvanceAccountGkey == account.Gkey && x.Gkey <= ledger.Gkey);
+
+        var balanceAfter = await upToReceipt.SumAsync(x => x.Amount, cancellationToken);
+        var weightAfter = await upToReceipt.SumAsync(x => x.Weight, cancellationToken);
+        var receivedToDate = await upToReceipt
+            .Where(x => x.EntryType == AdvanceLedgerEntryType.Receipt || x.EntryType == AdvanceLedgerEntryType.Opening)
+            .SumAsync(x => x.Amount, cancellationToken);
+
+        var print = new AdvanceReceiptPrintDto
+        {
+            VoucherGkey = voucher.Gkey,
+            VoucherNbr = voucher.VoucherNbr ?? string.Empty,
+            VoucherDate = voucher.VoucherDate,
+            ReceiptType = voucher.VoucherType ?? string.Empty,
+            Mode = voucher.Mode,
+            Amount = ledger.Amount,
+            Notes = voucher.TransDesc,
+            CustomerName = customer?.CustomerName,
+            CustomerMobile = customer?.MobileNbr,
+            AccountNbr = account.AccountNbr,
+            AccountType = account.AccountType,
+            BalanceAfter = balanceAfter,
+            TotalReceivedToDate = receivedToDate,
+            Weight = ledger.Weight,
+            MetalRate = ledger.MetalRate,
+            Metal = account.Metal,
+            Purity = account.Purity,
+            WeightBalanceAfter = weightAfter,
+            IsReversed = await _context.AdvanceLedgers
+                .AnyAsync(x => x.ReversesLedgerGkey == ledger.Gkey, cancellationToken)
+        };
+
+        if (account.CustomerOrderGkey is int orderGkey)
+        {
+            print.CustomerOrderNbr = await _context.CustomerOrders
+                .AsNoTracking()
+                .Where(x => x.Gkey == orderGkey)
+                .Select(x => x.OrderNbr)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        var enrollment = await _context.SchemeEnrollments
+            .AsNoTracking()
+            .Include(x => x.Installments)
+            .FirstOrDefaultAsync(x => x.AdvanceAccountGkey == account.Gkey, cancellationToken);
+
+        if (enrollment is null)
+            return print;
+
+        var terms = SchemeTerms.ReadSnapshot(enrollment.TermsSnapshot);
+
+        // Installment payments up to this receipt, and this receipt's own share.
+        var allocations = await _context.SchemeInstallmentAllocations
+            .AsNoTracking()
+            .Where(x => x.SchemeInstallment.SchemeEnrollmentGkey == enrollment.Gkey &&
+                        x.AdvanceLedgerGkey <= ledger.Gkey)
+            .Select(x => new { x.AdvanceLedgerGkey, x.SchemeInstallmentGkey, x.Amount })
+            .ToListAsync(cancellationToken);
+
+        var paidAfter = allocations
+            .GroupBy(x => x.SchemeInstallmentGkey)
+            .ToDictionary(x => x.Key, x => x.Sum(a => a.Amount));
+
+        var schedule = enrollment.Installments.OrderBy(x => x.SeqNbr).ToList();
+
+        bool IsPaid(SchemeInstallment installment) =>
+            installment.Status == SchemeTerms.InstallmentWaived ||
+            paidAfter.GetValueOrDefault(installment.Gkey) >= installment.AmountDue;
+
+        var covered = schedule
+            .Where(i => allocations.Any(a => a.AdvanceLedgerGkey == ledger.Gkey && a.SchemeInstallmentGkey == i.Gkey))
+            .Select(i => IsPaid(i) ? i.SeqNbr.ToString() : $"{i.SeqNbr} (part)")
+            .ToList();
+
+        var next = schedule.FirstOrDefault(i => !IsPaid(i));
+
+        print.IsScheme = true;
+        print.PlanCode = terms.PlanCode;
+        print.PlanName = terms.PlanName;
+        print.InstallmentAmount = enrollment.InstallmentAmount;
+        print.TenureMonths = terms.TenureMonths;
+        print.InstallmentsCovered = covered.Count == 0 ? null : string.Join(", ", covered);
+        print.InstallmentsPaid = schedule.Count(i => i.Status != SchemeTerms.InstallmentWaived && IsPaid(i));
+        print.NextDueDate = next?.DueDate;
+        print.NextDueAmount = next is null ? null : next.AmountDue - paidAfter.GetValueOrDefault(next.Gkey);
+        print.MaturityDate = enrollment.MaturityDate;
+        print.NomineeName = enrollment.NomineeName;
+
+        return print;
+    }
+
+    // =========================================================
     // AVAILABLE ACCOUNTS
     // =========================================================
 

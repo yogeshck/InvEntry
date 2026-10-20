@@ -30,6 +30,14 @@ namespace InvEntry.Extension
             reportDialogService.ShowDialog(null, "Invoice Preview", $"{nameof(ReportDialogView)}", dialogVM);
         }
 
+        public static void PrintPreviewReceipt(this IDialogService reportDialogService, XtraReport report)
+        {
+            var dialogVM = DISource.Resolve<ReportDialogViewModel>();
+            dialogVM.Report = report;
+
+            reportDialogService.ShowDialog(null, "Receipt Preview", $"{nameof(ReportDialogView)}", dialogVM);
+        }
+
         public static void PrintPreviewCustomerOrder(
             this IDialogService reportDialogService,
             XtraReport report)

@@ -115,6 +115,7 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IAdvanceAccountService _advanceAccountService;
     private readonly ISchemeService _schemeService;
+    private readonly IAdvanceReceiptPrinter _receiptPrinter;
 
     public CashReceiptViewModel(ICustomerService customerService,
                 IOrgThisCompanyViewService orgThisCompanyViewService,
@@ -125,7 +126,8 @@ public partial class CashReceiptViewModel : ObservableObject
                 IInvoiceService invoiceService,
                 IInvoiceArReceiptService invoiceArReceiptService,
                 IAdvanceAccountService advanceAccountService,
-                ISchemeService schemeService
+                ISchemeService schemeService,
+                IAdvanceReceiptPrinter receiptPrinter
                 )
     {
 
@@ -139,6 +141,7 @@ public partial class CashReceiptViewModel : ObservableObject
         _voucherService = voucherService;
         _advanceAccountService = advanceAccountService;
         _schemeService = schemeService;
+        _receiptPrinter = receiptPrinter;
         _invoiceService = invoiceService;
         _invoiceArReceiptService = invoiceArReceiptService;
 
@@ -515,7 +518,13 @@ public partial class CashReceiptViewModel : ObservableObject
             if (result.InstallmentsPaid is int paid && SelectedScheme is not null)
                 message += $"{Environment.NewLine}Installments paid: {paid} of {SelectedScheme.TenureMonths}.";
 
-            _messageBoxService.ShowMessage(message, "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
+            message += $"{Environment.NewLine}{Environment.NewLine}Print the receipt now?";
+
+            if (_messageBoxService.ShowMessage(message, "Voucher Created", MessageButton.YesNo, MessageIcon.Question)
+                == MessageResult.Yes)
+            {
+                await _receiptPrinter.PreviewAsync(result.VoucherGkey, isReprint: result.IsReplay);
+            }
 
             return true;
         }

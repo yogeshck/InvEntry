@@ -18,6 +18,9 @@ public interface IAdvanceAccountService
 
     /// <summary>Active advance / RD accounts with a balance, for invoice settlement.</summary>
     Task<IReadOnlyList<AdvanceAccountSummary>> GetAvailableAccounts(int customerGkey);
+
+    /// <summary>Receipt print data, as it stood right after the receipt.</summary>
+    Task<AdvanceReceiptPrintDto> GetReceiptPrint(int voucherGkey);
 }
 
 public class AdvanceAccountService : IAdvanceAccountService
@@ -39,5 +42,11 @@ public class AdvanceAccountService : IAdvanceAccountService
     {
         return await _mijmsApiService.GetResponse<List<AdvanceAccountSummary>>(
             $"api/AdvanceAccount/customer/{customerGkey}/available");
+    }
+
+    public Task<AdvanceReceiptPrintDto> GetReceiptPrint(int voucherGkey)
+    {
+        return _mijmsApiService.GetResponse<AdvanceReceiptPrintDto>(
+            $"api/AdvanceAccount/receipt/{voucherGkey}/print");
     }
 }
