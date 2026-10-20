@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using InvEntry.Models.Settlements;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -169,6 +170,122 @@ public partial class InvoiceSettlementViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<string> PaymentModes { get; }
         = new();
+
+
+    // =========================================================
+    // ADVANCE / RD ACCOUNTS
+    // =========================================================
+
+    /// <summary>
+    /// The customer's active advance / RD accounts with a balance.
+    /// An "Advance Adj" / "RD Adj" line must name one of them.
+    /// </summary>
+    public ObservableCollection<AdvanceAccountOption> AdvanceAccounts { get; }
+        = new();
+
+    public void LoadAdvanceAccounts(
+        IEnumerable<AdvanceAccountOption> accounts)
+    {
+        AdvanceAccounts.Clear();
+
+        foreach (var account in accounts)
+        {
+            AdvanceAccounts.Add(account);
+        }
+
+        foreach (var line in Receipts)
+        {
+            ApplyAccountOptions(line);
+        }
+
+        Recalculate();
+    }
+
+    private IReadOnlyList<AdvanceAccountOption> AccountsForMode(
+        string? mode)
+    {
+        if (!IsAdjustmentMode(mode))
+            return Array.Empty<AdvanceAccountOption>();
+
+        return AdvanceAccounts
+            .Where(x => string.Equals(
+                x.SettlementMode,
+                mode?.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Offers the accounts matching the line's mode. A single matching
+    /// account is selected automatically; a selection that no longer
+    /// matches the mode is cleared.
+    /// </summary>
+    private void ApplyAccountOptions(
+        InvoiceSettlementLine line)
+    {
+        var options = AccountsForMode(line.PaymentMode);
+
+        line.AccountOptions = options;
+
+        if (line.AdvanceAccountGkey is int selected &&
+            options.Any(x => x.AdvanceAccountGkey == selected))
+        {
+            return;
+        }
+
+        line.AdvanceAccountGkey =
+            options.Count == 1
+                ? options[0].AdvanceAccountGkey
+                : null;
+    }
+
+    /// <summary>
+    /// First problem with the Advance Adj / RD Adj lines, or null:
+    /// no balance of that kind, no account selected, or more used than
+    /// the account holds.
+    /// </summary>
+    private string? AdvanceAccountProblem()
+    {
+        var adjustmentLines = Receipts
+            .Where(x => IsAdjustmentMode(x.PaymentMode))
+            .ToList();
+
+        foreach (var line in adjustmentLines)
+        {
+            if (AccountsForMode(line.PaymentMode).Count == 0)
+            {
+                return IsRdAdjustmentMode(line.PaymentMode)
+                    ? "This customer has no RD balance to adjust."
+                    : "This customer has no advance balance to adjust.";
+            }
+
+            if (line.AdvanceAccountGkey is null)
+            {
+                return $"Select the account for the {line.PaymentMode?.Trim()} line.";
+            }
+        }
+
+        foreach (var group in adjustmentLines
+                     .Where(x => x.AdvanceAccountGkey is not null)
+                     .GroupBy(x => x.AdvanceAccountGkey!.Value))
+        {
+            var account = AdvanceAccounts
+                .FirstOrDefault(x => x.AdvanceAccountGkey == group.Key);
+
+            if (account is null)
+                return "The selected advance / RD account is not available for this customer.";
+
+            var used = group.Sum(x => x.Amount);
+
+            if (used > account.BalanceAmount + BalanceTolerance)
+            {
+                return $"Only ₹{account.BalanceAmount:N2} is available in " +
+                       $"{account.AccountNbr}; ₹{used:N2} is entered.";
+            }
+        }
+
+        return null;
+    }
 
 
     // =========================================================
@@ -714,6 +831,8 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         foreach (InvoiceSettlementLine line
                  in e.NewItems)
         {
+            ApplyAccountOptions(line);
+
             line.PropertyChanged +=
                 SettlementLine_PropertyChanged;
         }
@@ -739,6 +858,12 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         object? sender,
         PropertyChangedEventArgs e)
     {
+        if (sender is InvoiceSettlementLine line &&
+            e.PropertyName == nameof(InvoiceSettlementLine.PaymentMode))
+        {
+            ApplyAccountOptions(line);
+        }
+
         Recalculate();
     }
 
@@ -784,6 +909,9 @@ public partial class InvoiceSettlementViewModel : ObservableObject
         if (CreditAmount < 0M)
             return false;
 
+        if (AdvanceAccountProblem() is not null)
+            return false;
+
         return ValidateReceiptUniqueness();
     }
 
@@ -826,6 +954,15 @@ public partial class InvoiceSettlementViewModel : ObservableObject
 
         ReceiptRequiringCompletion = null;
         if (!ValidateReceiptUniqueness()) return false;
+
+        var advanceAccountProblem = AdvanceAccountProblem();
+        if (advanceAccountProblem is not null)
+        {
+            ReceiptRequiringCompletion = Receipts.FirstOrDefault(x =>
+                IsAdjustmentMode(x.PaymentMode) && x.AdvanceAccountGkey is null);
+            ValidationMessage = advanceAccountProblem;
+            return false;
+        }
 
         if (!TryValidateLinesForAddition(
                 Refunds,
@@ -943,6 +1080,18 @@ public partial class InvoiceSettlementViewModel : ObservableObject
             {
                 ValidationMessage =
                     "Credit amount cannot be negative.";
+
+                return;
+            }
+
+
+            var advanceAccountProblem =
+                AdvanceAccountProblem();
+
+            if (advanceAccountProblem is not null)
+            {
+                ValidationMessage =
+                    advanceAccountProblem;
 
                 return;
             }

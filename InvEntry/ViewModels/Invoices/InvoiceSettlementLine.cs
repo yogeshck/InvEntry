@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
+using System.Collections.Generic;
 
 namespace InvEntry.Models.Settlements;
 
@@ -16,6 +17,21 @@ public partial class InvoiceSettlementLine : ObservableObject
     /// </summary>
     [ObservableProperty]
     private decimal amount;
+
+    /// <summary>
+    /// Customer advance / RD account used by an "Advance Adj" or "RD Adj"
+    /// line (from api/AdvanceAccount/customer/{gkey}/available).
+    /// </summary>
+    [ObservableProperty]
+    private int? advanceAccountGkey;
+
+    /// <summary>
+    /// Accounts the line can use: the customer's accounts whose settlement
+    /// mode matches PaymentMode. Empty for every other payment mode.
+    /// </summary>
+    [ObservableProperty]
+    private IReadOnlyList<AdvanceAccountOption> accountOptions =
+        Array.Empty<AdvanceAccountOption>();
 
     /// <summary>
     /// Electronic transaction identifier.

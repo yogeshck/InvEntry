@@ -121,6 +121,15 @@
     <Build Include="dbo\Views\ORG_CUSTOMER_ADDRESS_VIEW.sql" />
     <Build Include="dbo\Views\VOUCHER_DB_VIEW.sql" />
     <Build Include="dbo\Views\DailySalesInvoiceReceiptDBView.sql" />
+    <Build Include="dbo\Tables\SCHEME_PLAN.sql" />
+    <Build Include="dbo\Tables\SCHEME_BENEFIT_RULE.sql" />
+    <Build Include="dbo\Tables\CUSTOMER_ADVANCE_ACCOUNT.sql" />
+    <Build Include="dbo\Tables\SCHEME_ENROLLMENT.sql" />
+    <Build Include="dbo\Tables\SCHEME_INSTALLMENT.sql" />
+    <Build Include="dbo\Tables\ADVANCE_LEDGER.sql" />
+    <Build Include="dbo\Tables\SCHEME_INSTALLMENT_ALLOCATION.sql" />
+    <Build Include="dbo\Tables\ADVANCE_CLOSURE.sql" />
+    <Build Include="dbo\Views\CUSTOMER_ADVANCE_BALANCE_CHECK_VIEW.sql" />
     <Build Include="Security\NT AUTHORITY_SYSTEM.sql" />
     <Build Include="Security\NT AUTHORITY_SYSTEM_1.sql" />
     <Build Include="Security\RoleMemberships.sql" />

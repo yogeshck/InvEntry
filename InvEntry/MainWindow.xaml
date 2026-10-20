@@ -509,7 +509,7 @@
 
             <!-- =================================================
                  FINANCE
-                 ================================================= 
+                 ================================================= -->
 
             <dxwui:HamburgerSubMenu
                 Content="Finance"
@@ -547,6 +547,50 @@
 
                     <dxwui:HamburgerSubMenuNavigationButton
                         NavigationTargetType=
+                            "{x:Type page:SchemeEnrollmentPage}"
+
+                        Content="Scheme Enrollment"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
+                            "{x:Type page:RdDuesPage}"
+
+                        Content="RD Dues / Collections"
+
+                        Tag="{dx:DXImage 'SvgImages/Business Objects/BO_List.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
+                            "{x:Type page:SchemePlanPage}"
+
+                        Content="Scheme Plans"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_CashVoucher.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
+                            "{x:Type page:SchemeImportPage}"
+
+                        Content="Import RD Register"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
                             "{x:Type views:VoucherListView}"
 
                         Content="Voucher List"
@@ -561,7 +605,7 @@
 
             </dxwui:HamburgerSubMenu>
 
-            -->
+            
 
             <!-- =================================================
                  INVENTORY

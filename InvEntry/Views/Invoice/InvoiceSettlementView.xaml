@@ -402,6 +402,25 @@
 
                     </dxg:GridColumn>
 
+                    <!-- Only Advance Adj / RD Adj lines list accounts:
+                         the line's AccountOptions holds the customer's
+                         accounts that match its payment mode. -->
+                    <dxg:GridColumn FieldName="AdvanceAccountGkey"
+                                    Header="Advance / RD Account"
+                                    Width="260">
+                        <dxg:GridColumn.CellTemplate>
+                            <DataTemplate>
+                                <dxe:ComboBoxEdit x:Name="PART_Editor"
+                                                  ItemsSource="{Binding RowData.Row.AccountOptions}"
+                                                  DisplayMember="DisplayText"
+                                                  ValueMember="AdvanceAccountGkey"
+                                                  IsTextEditable="False"
+                                                  ImmediatePopup="True"
+                                                  NullText="Select account" />
+                            </DataTemplate>
+                        </dxg:GridColumn.CellTemplate>
+                    </dxg:GridColumn>
+
                     <dxg:GridColumn FieldName="Amount"
                                     Header="Amount"
                                     Width="160">

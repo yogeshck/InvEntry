@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using DataAccess.Inventory.ProductStock;
 using DataAccess.Models;
 using DataAccess.Repository;
+using DataAccess.Services.Advances;
 using DataAccess.Workflows;
 using InvEntry.Contracts.Invoices;
 using InvEntry.Models.Extensions;
@@ -238,6 +239,64 @@ public sealed class InvoiceLineValidationTests
     }
 
     [Test]
+    public void Finalisation_WithShortAdvanceBalance_FailsBeforeNumberingOrPosting()
+    {
+        var advances = new FakeAdvanceAccountService { FailValidation = true };
+        var fixture = WorkflowFixture.Create(10M, advanceAccounts: advances);
+
+        Assert.ThrowsAsync<AdvanceAccountBusinessException>(async () =>
+            await fixture.Workflow.FinaliseAsync(AdvanceAdjRequest(advanceAccountGkey: 77)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(advances.ValidatedLines.Single().AdvanceAccountGkey, Is.EqualTo(77));
+            Assert.That(advances.AppliedCount, Is.Zero);
+            Assert.That(fixture.UnitOfWork.SaveCount, Is.Zero);
+            Assert.That(fixture.UnitOfWork.Transaction.CommitCount, Is.Zero);
+            Assert.That(fixture.UnitOfWork.Transaction.RollbackCount, Is.EqualTo(1));
+            Assert.That(fixture.StockMovement.PostCount, Is.Zero);
+            Assert.That(fixture.Invoice.InvNbr, Is.Null);
+            Assert.That(fixture.Invoice.Status, Is.EqualTo(InvoiceStatus.Draft));
+        });
+    }
+
+    [Test]
+    public void Finalisation_WhenAdvanceDebitFails_RollsBackWithoutSaving()
+    {
+        // Validation passed, but another invoice used the balance before the
+        // conditional UPDATE: the invoice save must not commit.
+        var advances = new FakeAdvanceAccountService { FailApply = true };
+        var fixture = WorkflowFixture.Create(10M, advanceAccounts: advances);
+
+        Assert.ThrowsAsync<AdvanceAccountBusinessException>(async () =>
+            await fixture.Workflow.FinaliseAsync(AdvanceAdjRequest(advanceAccountGkey: 77)));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(advances.AppliedCount, Is.EqualTo(1));
+            Assert.That(advances.AppliedInvoice!.InvNbr, Is.EqualTo("B0001"));
+            Assert.That(fixture.UnitOfWork.SaveCount, Is.Zero);
+            Assert.That(fixture.UnitOfWork.Transaction.CommitCount, Is.Zero);
+            Assert.That(fixture.UnitOfWork.Transaction.RollbackCount, Is.EqualTo(1));
+        });
+    }
+
+    private static FinaliseInvoiceRequest AdvanceAdjRequest(int? advanceAccountGkey) => new()
+    {
+        InvoiceGkey = 10,
+        Receipts =
+        [
+            new InvoiceSettlementSaveModel
+            {
+                SettlementType = InvoiceSettlementType.Receipt,
+                PaymentMode = "Advance Adj",
+                Amount = 100M,
+                AdvanceAccountGkey = advanceAccountGkey
+            }
+        ]
+    };
+
+    [Test]
     public void NewInvoiceLine_DefaultsVaValuesToZero()
     {
         var line = new InvEntry.Models.InvoiceLine();
@@ -320,7 +379,8 @@ public sealed class InvoiceLineValidationTests
         public static WorkflowFixture Create(
             decimal? grossWeight,
             bool includeCustomer = true,
-            bool customerDeleted = false)
+            bool customerDeleted = false,
+            DataAccess.Services.Advances.IAdvanceAccountService? advanceAccounts = null)
         {
             var invoice = new InvoiceHeader
             {
@@ -346,7 +406,15 @@ public sealed class InvoiceLineValidationTests
             var lines = new FakeRepository<DataAccess.Models.InvoiceLine>(line);
             var receipts = new FakeRepository<InvoiceArReceipt>();
             var oldMetal = new FakeRepository<OldMetalTransaction>();
-            var voucherTypes = new FakeRepository<VoucherType>();
+            var voucherTypes = new FakeRepository<VoucherType>(new VoucherType
+            {
+                Gkey = 1,
+                DocumentType = "Sale Invoice",
+                DocNbrPrefix = "B",
+                DocNbrLength = 4,
+                LastUsedNumber = 0,
+                IsActive = true
+            });
             var vouchers = new FakeRepository<Voucher>();
             var customers = includeCustomer
                 ? new FakeRepository<OrgCustomer>(new OrgCustomer
@@ -361,7 +429,8 @@ public sealed class InvoiceLineValidationTests
             var unitOfWork = new FakeUnitOfWork();
             var workflow = new InvoiceWorkflow(
                 headers, lines, receipts, oldMetal, voucherTypes, vouchers, customers,
-                stock, null!, unitOfWork);
+                stock, null!, unitOfWork,
+                advanceAccountService: advanceAccounts);
 
             return new()
             {
@@ -383,6 +452,52 @@ public sealed class InvoiceLineValidationTests
             PostCount += requests.Count();
     }
 
+    private sealed class FakeAdvanceAccountService
+        : DataAccess.Services.Advances.IAdvanceAccountService
+    {
+        public bool FailValidation { get; init; }
+        public bool FailApply { get; init; }
+        public List<InvoiceSettlementSaveModel> ValidatedLines { get; } = [];
+        public int AppliedCount { get; private set; }
+        public InvoiceHeader? AppliedInvoice { get; private set; }
+
+        public Task<InvEntry.Contracts.Advances.AdvanceReceiptResponse> CreateReceiptAsync(
+            InvEntry.Contracts.Advances.AdvanceReceiptRequest request,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public Task<InvEntry.Contracts.Advances.AdvanceReceiptPrintDto?> GetReceiptPrintAsync(
+            int voucherGkey,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public Task<IReadOnlyList<InvEntry.Contracts.Advances.AdvanceAccountSummary>> GetAvailableAccountsAsync(
+            int customerGkey,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public Task ValidateInvoiceAdjustmentsAsync(
+            int? customerGkey,
+            IEnumerable<InvoiceSettlementSaveModel> adjustmentLines,
+            CancellationToken cancellationToken = default)
+        {
+            ValidatedLines.AddRange(adjustmentLines);
+            return FailValidation
+                ? Task.FromException(new AdvanceAccountBusinessException("Insufficient balance"))
+                : Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<AdvanceLedger>> ApplyInvoiceAdjustmentsAsync(
+            InvoiceHeader invoice,
+            IEnumerable<InvoiceSettlementSaveModel> adjustmentLines,
+            CancellationToken cancellationToken = default)
+        {
+            AppliedCount++;
+            AppliedInvoice = invoice;
+            return FailApply
+                ? Task.FromException<IReadOnlyList<AdvanceLedger>>(
+                    new AdvanceAccountBusinessException("Insufficient balance"))
+                : Task.FromResult<IReadOnlyList<AdvanceLedger>>([]);
+        }
+    }
+
     private sealed class FakeUnitOfWork : IUnitOfWork
     {
         public int BeginCount { get; private set; }
@@ -400,9 +515,11 @@ public sealed class InvoiceLineValidationTests
     {
         public Guid TransactionId { get; } = Guid.NewGuid();
         public int RollbackCount { get; private set; }
+        public int CommitCount { get; private set; }
         public bool SupportsSavepoints => false;
-        public void Commit() { }
-        public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public void Commit() => CommitCount++;
+        public Task CommitAsync(CancellationToken cancellationToken = default)
+        { CommitCount++; return Task.CompletedTask; }
         public void Rollback() => RollbackCount++;
         public Task RollbackAsync(CancellationToken cancellationToken = default)
         { RollbackCount++; return Task.CompletedTask; }

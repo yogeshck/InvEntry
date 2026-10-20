@@ -2,7 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Editors;
+using InvEntry.Contracts.Advances;
+using InvEntry.Contracts.Schemes;
 using InvEntry.Extension;
+using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
@@ -46,9 +49,6 @@ public partial class CashReceiptViewModel : ObservableObject
     private OrgThisCompanyView _company;
 
     [ObservableProperty]
-    private LedgersHeader _ledgerHdr;
-
-    [ObservableProperty]
     private MtblLedger _mtblLedger;
 
     [ObservableProperty]
@@ -86,10 +86,24 @@ public partial class CashReceiptViewModel : ObservableObject
     [ObservableProperty]
     private Visibility invoiceFieldVisibility = Visibility.Collapsed;
 
+    // Recurring Deposit receipts pay one of the customer's enrolled schemes.
+    [ObservableProperty]
+    private ObservableCollection<SchemeEnrollmentDto> _customerSchemes = new();
+
+    [ObservableProperty]
+    private SchemeEnrollmentDto? _selectedScheme;
+
+    [ObservableProperty]
+    private Visibility schemeFieldVisibility = Visibility.Collapsed;
+
     //private ObservableCollection<KeyValuePair<int,string>> fromLedgerList;
 
     private bool createCustomer = false;
     private bool creditReceipt = false;
+
+    // Kept until the server confirms the receipt, so a retry after a failure
+    // reuses the same ClientRequestId and cannot record the money twice.
+    private AdvanceReceiptRequest? _pendingAdvanceReceipt;
         
     private readonly ICustomerService _customerService;
     private readonly IMessageBoxService _messageBoxService;
@@ -98,18 +112,22 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IVoucherService _voucherService;
     private readonly IInvoiceService _invoiceService;
-    private readonly ILedgerService _ledgerService;
     private readonly IMtblLedgersService _mtblLedgersService;
+    private readonly IAdvanceAccountService _advanceAccountService;
+    private readonly ISchemeService _schemeService;
+    private readonly IAdvanceReceiptPrinter _receiptPrinter;
 
     public CashReceiptViewModel(ICustomerService customerService,
                 IOrgThisCompanyViewService orgThisCompanyViewService,
                 IMessageBoxService messageBoxService,
                 IVoucherService voucherService,
-                ILedgerService ledgerService,
                 IMtblLedgersService mtblLedgersService,
                 IMtblReferencesService mtblReferencesService,
                 IInvoiceService invoiceService,
-                IInvoiceArReceiptService invoiceArReceiptService
+                IInvoiceArReceiptService invoiceArReceiptService,
+                IAdvanceAccountService advanceAccountService,
+                ISchemeService schemeService,
+                IAdvanceReceiptPrinter receiptPrinter
                 )
     {
 
@@ -121,7 +139,9 @@ public partial class CashReceiptViewModel : ObservableObject
         _mtblReferencesService = mtblReferencesService;
         _mtblLedgersService = mtblLedgersService;
         _voucherService = voucherService;
-        _ledgerService = ledgerService;
+        _advanceAccountService = advanceAccountService;
+        _schemeService = schemeService;
+        _receiptPrinter = receiptPrinter;
         _invoiceService = invoiceService;
         _invoiceArReceiptService = invoiceArReceiptService;
 
@@ -197,6 +217,15 @@ public partial class CashReceiptViewModel : ObservableObject
     {
         if (args.NewValue is not string customerPhoneNumber) return;
 
+        // The mobile number was filled in from an RD number lookup, which has
+        // already loaded the customer and the scheme.
+        if (_mobileFilledFromRd is not null &&
+            string.Equals(_mobileFilledFromRd, customerPhoneNumber.Trim(), StringComparison.Ordinal))
+        {
+            _mobileFilledFromRd = null;
+            return;
+        }
+
         if (TransactionType == "Credit Receipt")
             creditReceipt = true;
 
@@ -229,15 +258,7 @@ public partial class CashReceiptViewModel : ObservableObject
         }
         else
         {
-            var gstCode = Payer.Address is null ? Company.GstCode : Payer.Address.GstStateCode;
-
-            if (Payer.Address is null)
-            {
-                Payer.Address = new();
-                Payer.Address.GstStateCode = Company.GstCode;
-            }
-
-            CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+            PrepareLoadedCustomer();
 
             //Messenger.Default.Send("ProductIdUIName", MessageType.FocusTextEdit);
 
@@ -245,6 +266,200 @@ public partial class CashReceiptViewModel : ObservableObject
 
         if (creditReceipt)
             await FetchOutStandingAsync(customerPhoneNumber);
+
+        await LoadCustomerSchemesAsync();
+    }
+
+    private void PrepareLoadedCustomer()
+    {
+        var gstCode = Payer.Address is null ? Company.GstCode : Payer.Address.GstStateCode;
+
+        if (Payer.Address is null)
+        {
+            Payer.Address = new();
+            Payer.Address.GstStateCode = Company.GstCode;
+        }
+
+        CustomerState = StateReferencesList.FirstOrDefault(x => x.RefCode == gstCode);
+    }
+
+    // =========================================================
+    // RD NUMBER
+    // =========================================================
+
+    /// <summary>
+    /// RD number typed by the cashier (e.g. MJ-RD26-002). On Enter or leaving the
+    /// field the scheme is looked up and its customer and amount due filled in.
+    /// </summary>
+    [ObservableProperty]
+    private string? _rdNumber;
+
+    // Scheme to select once the customer's schemes are loaded.
+    private int? _rdAccountToSelect;
+
+    // Mobile number set by the RD lookup, so FetchCustomer does not load it again.
+    private string? _mobileFilledFromRd;
+
+    [RelayCommand]
+    private async Task FindRdAsync()
+    {
+        var number = RdNumber?.Trim();
+
+        if (string.IsNullOrEmpty(number))
+            return;
+
+        if (SelectedScheme is not null &&
+            string.Equals(SelectedScheme.AccountNbr, number, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        SchemeEnrollmentDto? scheme;
+
+        try
+        {
+            scheme = await _schemeService.FindByAccountNumber(number);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "The RD could not be looked up." + Environment.NewLine + ApiErrorMessage.From(ex),
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Warning);
+            return;
+        }
+
+        if (scheme is null)
+        {
+            _messageBoxService.ShowMessage($"No RD scheme has the number {number}.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        if (scheme.Status != "ACTIVE")
+        {
+            _messageBoxService.ShowMessage($"RD {scheme.AccountNbr} is {scheme.Status}; it cannot take payments.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        if (scheme.NextInstallment is null)
+        {
+            _messageBoxService.ShowMessage($"All installments of RD {scheme.AccountNbr} are already paid.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Information);
+            return;
+        }
+
+        // A customer is already on the voucher: the RD must be theirs.
+        if (Payer is not null && Payer.GKey > 0)
+        {
+            if (Payer.GKey != scheme.CustomerGkey)
+            {
+                _messageBoxService.ShowMessage(
+                    $"RD {scheme.AccountNbr} belongs to {scheme.CustomerName} ({scheme.CustomerMobile}), " +
+                    $"not to {Payer.CustomerName}. Check the RD number, or reset the voucher to take this customer's payment.",
+                    "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+                return;
+            }
+
+            _rdAccountToSelect = scheme.AdvanceAccountGkey;
+            await LoadCustomerSchemesAsync();
+            return;
+        }
+
+        // No customer yet: take the customer from the RD.
+        Customer? customer;
+
+        try
+        {
+            customer = await _customerService.GetCustomerByGkey(scheme.CustomerGkey);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "The RD's customer could not be loaded." + Environment.NewLine + ApiErrorMessage.From(ex),
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Warning);
+            return;
+        }
+
+        if (customer is null)
+        {
+            _messageBoxService.ShowMessage($"The customer of RD {scheme.AccountNbr} was not found.",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        Payer = customer;
+        PrepareLoadedCustomer();
+        createCustomer = false;
+        CustomerReadOnly = false;
+
+        _mobileFilledFromRd = customer.MobileNbr?.Trim();
+        CustomerPhoneNumber = customer.MobileNbr;
+
+        _rdAccountToSelect = scheme.AdvanceAccountGkey;
+        await LoadCustomerSchemesAsync();
+    }
+
+    /// <summary>
+    /// For a Recurring Deposit receipt, lists the customer's enrolled schemes
+    /// that still have installments due; a single scheme is selected.
+    /// </summary>
+    private async Task LoadCustomerSchemesAsync()
+    {
+        CustomerSchemes = new();
+        SelectedScheme = null;
+
+        if (TransactionType != AdvanceReceiptType.RecurringDeposit ||
+            Payer is null || Payer.GKey <= 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var schemes = await _schemeService.GetCustomerEnrollments((int)Payer.GKey);
+
+            CustomerSchemes = new(schemes.Where(x =>
+                x.Status == "ACTIVE" && x.NextInstallment is not null));
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "The customer's RD schemes could not be loaded." + Environment.NewLine + ApiErrorMessage.From(ex),
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Warning);
+            return;
+        }
+
+        if (CustomerSchemes.Count == 0)
+        {
+            _rdAccountToSelect = null;
+            _messageBoxService.ShowMessage(
+                "This customer has no active RD scheme. Enroll the customer in a scheme first (Finance > Scheme Enrollment).",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        if (_rdAccountToSelect is int accountGkey)
+        {
+            _rdAccountToSelect = null;
+            SelectedScheme = CustomerSchemes.FirstOrDefault(x => x.AdvanceAccountGkey == accountGkey);
+        }
+
+        if (SelectedScheme is null && CustomerSchemes.Count == 1)
+            SelectedScheme = CustomerSchemes[0];
+    }
+
+    partial void OnSelectedSchemeChanged(SchemeEnrollmentDto? value)
+    {
+        // Keep the RD No field showing the chosen scheme.
+        RdNumber = value?.AccountNbr;
+
+        // Suggest what is due on the next installment; the cashier can change it.
+        if (value?.NextInstallment is { } next && Voucher is not null)
+        {
+            Voucher.TransAmount = next.AmountOutstanding;
+            OnPropertyChanged(nameof(Voucher));
+        }
     }
 
     private async Task FetchOutStandingAsync(String CustMobile)
@@ -295,7 +510,6 @@ public partial class CashReceiptViewModel : ObservableObject
     private void ResetVoucher()
     {
 
-        LedgerHdr = new();
         Voucher = new();
         Payer = new();
 
@@ -312,11 +526,20 @@ public partial class CashReceiptViewModel : ObservableObject
         CustomerPhoneNumber = string.Empty;
         createCustomer = false;
         creditReceipt = false;
+        _pendingAdvanceReceipt = null;
+        CustomerSchemes = new();
+        SelectedScheme = null;
+        RdNumber = null;
+        _rdAccountToSelect = null;
+        _mobileFilledFromRd = null;
     }
 
     partial void OnTransactionTypeChanged(string value)
     {
         InvoiceFieldVisibility = value == "Credit Receipt" ? Visibility.Visible : Visibility.Collapsed;
+        SchemeFieldVisibility = value == AdvanceReceiptType.RecurringDeposit ? Visibility.Visible : Visibility.Collapsed;
+
+        _ = LoadCustomerSchemesAsync();
     }
 
 
@@ -329,19 +552,29 @@ public partial class CashReceiptViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveVoucherAsync()
     {
-        //SetVoucherType();
-
         if (createCustomer)
         {
             Payer = await _customerService.CreateCustomer(Payer);
+            createCustomer = false;
         }
 
-        ProcessLedger();
+        if (IsAdvanceOrRdReceipt)
+        {
+            // Voucher, advance ledger and balance are written by the server
+            // in one transaction; LEDGERS_HEADER is no longer updated.
+            if (await SaveAdvanceReceiptAsync())
+                ResetVoucher();
 
-      //  if (SelectedLedger == "Credit Receipt")
-      //  {
-      //      await FetchInvoice();
-      //  }
+            return;
+        }
+
+        await SetMasterLedger();
+
+        if (MtblLedger is null)
+        {
+            _messageBoxService.ShowMessage("Receipt ledger is not configured.", "Error", MessageButton.OK, MessageIcon.Error);
+            return;
+        }
 
         await ProcessVoucher();
 
@@ -350,10 +583,104 @@ public partial class CashReceiptViewModel : ObservableObject
             await ProcessCreditReceiptAsync();
         }
 
-        ProcessLedgerTransactions();
-
         ResetVoucher();
 
+    }
+
+    private bool IsAdvanceOrRdReceipt =>
+        TransactionType == AdvanceReceiptType.AdvanceReceipt ||
+        TransactionType == AdvanceReceiptType.RecurringDeposit;
+
+    private async Task<bool> SaveAdvanceReceiptAsync()
+    {
+        var amount = Voucher.TransAmount.GetValueOrDefault();
+
+        if (Payer is null || Payer.GKey <= 0)
+        {
+            _messageBoxService.ShowMessage("Select or create the customer first.", "Receipt", MessageButton.OK, MessageIcon.Exclamation);
+            return false;
+        }
+
+        if (amount <= 0)
+        {
+            _messageBoxService.ShowMessage("Enter the amount received.", "Receipt", MessageButton.OK, MessageIcon.Exclamation);
+            return false;
+        }
+
+        var isRd = TransactionType == AdvanceReceiptType.RecurringDeposit;
+        int? accountGkey = null;
+
+        if (isRd)
+        {
+            if (SelectedScheme is null)
+            {
+                _messageBoxService.ShowMessage(
+                    CustomerSchemes.Count == 0
+                        ? "This customer has no active RD scheme. Enroll the customer in a scheme first."
+                        : "Select the RD scheme this installment is for.",
+                    "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+                return false;
+            }
+
+            accountGkey = SelectedScheme.AdvanceAccountGkey;
+        }
+
+        // Same receipt retried -> same ClientRequestId; anything changed -> new receipt.
+        if (_pendingAdvanceReceipt is null ||
+            _pendingAdvanceReceipt.CustomerGkey != Payer.GKey ||
+            _pendingAdvanceReceipt.ReceiptType != TransactionType ||
+            _pendingAdvanceReceipt.AdvanceAccountGkey != accountGkey ||
+            _pendingAdvanceReceipt.Amount != amount)
+        {
+            _pendingAdvanceReceipt = new AdvanceReceiptRequest
+            {
+                ClientRequestId = Guid.NewGuid(),
+                CustomerGkey = Payer.GKey,
+                ReceiptType = TransactionType,
+                AdvanceAccountGkey = accountGkey,
+                Amount = amount
+            };
+        }
+
+        _pendingAdvanceReceipt.Mode = string.IsNullOrWhiteSpace(Voucher.Mode) ? "Cash" : Voucher.Mode;
+        _pendingAdvanceReceipt.TransDesc = VoucherTransDesc;
+        _pendingAdvanceReceipt.TransDate = Voucher.TransDate;
+
+        try
+        {
+            var result = await _advanceAccountService.CreateReceipt(_pendingAdvanceReceipt);
+
+            _pendingAdvanceReceipt = null;
+            Voucher.GKey = result.VoucherGkey;
+            Voucher.VoucherNbr = result.VoucherNbr;
+
+            var message = $"Voucher {result.VoucherNbr} created. Balance in {result.AccountNbr}: Rs. {result.BalanceAmount:N2}";
+
+            if (result.Weight > 0M)
+                message += $"{Environment.NewLine}{result.Weight:N3} g credited at Rs. {result.MetalRate:N2}/g; total {result.BalanceWeight:N3} g.";
+
+            if (result.InstallmentsPaid is int paid && SelectedScheme is not null)
+                message += $"{Environment.NewLine}Installments paid: {paid} of {SelectedScheme.TenureMonths}.";
+
+            message += $"{Environment.NewLine}{Environment.NewLine}Print the receipt now?";
+
+            if (_messageBoxService.ShowMessage(message, "Voucher Created", MessageButton.YesNo, MessageIcon.Question)
+                == MessageResult.Yes)
+            {
+                await _receiptPrinter.PreviewAsync(result.VoucherGkey, isReprint: result.IsReplay);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Error creating receipt. Saving again will not record it twice." +
+                Environment.NewLine + ApiErrorMessage.From(ex),
+                "Error", MessageButton.OK, MessageIcon.Error);
+
+            return false;
+        }
     }
 
 /*    private async Task FetchInvoice()
@@ -522,73 +849,6 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             await _voucherService.UpdateVoucher(Voucher);
         }
-    }
-
-    private async void ProcessLedger() //(Voucher voucher)
-    {
-
-        await SetMasterLedger();
-        if (MtblLedger.GKey < 0)
-            return;
-
-        //check customer has any ledger entry
-
-        LedgerHdr = new();
-        LedgerHdr = await _ledgerService.GetHeader(MtblLedger.GKey, Payer.GKey);
-
-        if (LedgerHdr is not null)
-        {
-            /*            LedgersTransactions ledgerTrans = new();
-
-                        ledgerTrans.DrCr = "Cr";
-                        ledgerTrans.TransactionAmount = Voucher.TransAmount;
-                        ledgerTrans.DocumentNbr = Voucher.VoucherNbr;
-                        ledgerTrans.DocumentDate = Voucher.VoucherDate;
-                        ledgerTrans.LedgerHdrGkey = LedgerHdr.GKey;
-                        ledgerTrans.TransactionDate = DateTime.Now;
-                        ledgerTrans.Status = true;
-
-                        LedgerHdr.Transactions.Add(ledgerTrans);*/
-
-            //await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
-
-            LedgerHdr.BalanceAsOn = DateTime.Now;
-            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() +
-                                            Voucher.TransAmount.GetValueOrDefault();
-
-            await _ledgerService.UpdateHeader(LedgerHdr);
-        }
-        else
-        {
-
-            LedgerHdr = new();
-
-            LedgerHdr.MtblLedgersGkey = MtblLedger.GKey;
-            LedgerHdr.CustGkey = Payer.GKey;
-            LedgerHdr.BalanceAsOn = DateTime.Now;
-            LedgerHdr.CurrentBalance = Voucher.TransAmount;
-
-            LedgerHdr = await _ledgerService.CreateHeader(LedgerHdr);
-
-        }
-
-    }
-
-    private async void ProcessLedgerTransactions()
-    {
-        LedgersTransactions ledgerTrans = new();
-
-        ledgerTrans.DrCr = "Cr";
-        ledgerTrans.TransactionAmount = Voucher.TransAmount;
-        ledgerTrans.DocumentNbr = Voucher.VoucherNbr;
-        ledgerTrans.DocumentDate = Voucher.VoucherDate;
-        ledgerTrans.LedgerHdrGkey = LedgerHdr.GKey;
-        ledgerTrans.TransactionDate = DateTime.Now;
-        ledgerTrans.Status = true;
-
-        LedgerHdr.Transactions.Add(ledgerTrans);
-
-        await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
     }
 
 }

@@ -41,12 +41,23 @@ namespace DataAccess.Controllers
             
         }
 
-        // GET api/<GrnController>/5
+        // GET api/grnline/productSku/{productSku}
         [HttpGet("productSku/{productSku}")]
-        public async Task<IActionResult> GrtByProductSku(string productSku)
+        public IActionResult GetByProductSku(string productSku)
         {
-            return Ok(_grnLineRepository.Get(x => x.ProductSku == productSku));
+            var grnLine = _grnLineRepository.Get(
+                x => x.ProductSku == productSku
+            );
 
+            if (grnLine == null)
+            {
+                return NotFound(new
+                {
+                    Message = $"No GRN line found for SKU: {productSku}"
+                });
+            }
+
+            return Ok(grnLine);
         }
 
         // GET api/<GrnController>/5

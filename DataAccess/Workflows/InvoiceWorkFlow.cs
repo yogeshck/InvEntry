@@ -2,6 +2,7 @@
 using DataAccess.Models;
 using DataAccess.Repository;
 using DataAccess.Services;
+using DataAccess.Services.Advances;
 using InvEntry.Contracts.Invoices;
 using Microsoft.Extensions.Options;
 
@@ -27,6 +28,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
     private readonly IStockMovementService _stockMovementService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGstr1StagingService _gstr1StagingService;
+    private readonly IAdvanceAccountService? _advanceAccountService;
 
   
     //IRepositoryBase<ProductStock> productStockRepository,
@@ -46,7 +48,8 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
         IUnitOfWork unitOfWork,
         FinanceSyncService? financeSyncService = null,
         IOptions<FinanceSyncOptions>? financeSyncOptions = null,
-        ILogger<InvoiceWorkflow>? logger = null)
+        ILogger<InvoiceWorkflow>? logger = null,
+        IAdvanceAccountService? advanceAccountService = null)
     {
         _invoiceRepository =
             invoiceRepository;
@@ -83,6 +86,7 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             new FinanceSyncOptions { Enabled = financeSyncService != null, OrgGkey = 1, LocationGkey = 1 };
         _logger = logger ??
             Microsoft.Extensions.Logging.Abstractions.NullLogger<InvoiceWorkflow>.Instance;
+        _advanceAccountService = advanceAccountService;
     }
 
 
@@ -2318,6 +2322,31 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             }
 
             // =========================================================
+            // ADVANCE / RD ACCOUNTS
+            // =========================================================
+            //
+            // Each Advance Adj / RD Adj line names the customer advance
+            // account it uses. Checked here so a bad account or a short
+            // balance fails before numbering; the balance is debited
+            // atomically after the settlement records are created.
+            // =========================================================
+
+            if (adjustmentAmount > 0M)
+            {
+                if (_advanceAccountService is null)
+                {
+                    throw new InvalidOperationException(
+                        "Advance / RD adjustment is not available because the " +
+                        "advance account service is not configured.");
+                }
+
+                await _advanceAccountService.ValidateInvoiceAdjustmentsAsync(
+                    invoice.CustGkey,
+                    receiptLines,
+                    cancellationToken);
+            }
+
+            // =========================================================
             // OFFICIAL INVOICE DATE / TIME
             // =========================================================
             //
@@ -2492,6 +2521,17 @@ public sealed class InvoiceWorkflow : IInvoiceWorkflow
             CreateSettlementRecords(
                 invoice,
                 request);
+
+            // Debit the advance / RD accounts inside this transaction. The
+            // conditional UPDATE fails the finalisation if another invoice
+            // used the balance after validation.
+            if (adjustmentAmount > 0M)
+            {
+                await _advanceAccountService!.ApplyInvoiceAdjustmentsAsync(
+                    invoice,
+                    receiptLines,
+                    cancellationToken);
+            }
 
             // =========================================================
             // GSTR-1 STAGING

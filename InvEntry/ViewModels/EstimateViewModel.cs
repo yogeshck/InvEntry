@@ -797,8 +797,6 @@ public partial class EstimateViewModel: ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreateEstimate))]
     private async Task CreateEstimate()
     {
-        LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
-
         estBalanceChk = true;  //is this a right place to fix
         var isSuccess = ProcessEstBalance();
 
@@ -858,9 +856,6 @@ public partial class EstimateViewModel: ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             ProcessReceipts();
 
-            // to check the logic
-        //    if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))
-        //        await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);
 
             _messageBoxService.ShowMessage("Estimate Created Successfully", "Estimate Created", MessageButton.OK, MessageIcon.Exclamation);
 

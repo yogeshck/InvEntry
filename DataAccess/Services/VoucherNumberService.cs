@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
-using DataAccess.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DataAccess.Services
 {
@@ -7,25 +8,24 @@ namespace DataAccess.Services
     /// Provides centralized document/voucher number generation
     /// using the configuration maintained in VOUCHER_TYPES.
     ///
-    /// IMPORTANT:
-    /// This service only updates the tracked VoucherType entity.
-    /// It does NOT call SaveChanges and does NOT create/commit
-    /// a database transaction.
-    ///
-    /// The calling workflow is responsible for saving and committing
-    /// the complete business transaction.
+    /// The running number is taken with a single atomic
+    /// UPDATE ... SET LAST_USED_NUMBER = LAST_USED_NUMBER + 1, so two
+    /// requests can never receive the same number. Inside the caller's
+    /// transaction the updated VOUCHER_TYPES row stays locked until that
+    /// transaction commits, and a rollback returns the number. Without a
+    /// caller transaction the increment is committed on its own.
     /// </summary>
     public sealed class VoucherNumberService : IVoucherNumberService
     {
-        private readonly IRepositoryBase<VoucherType> _voucherTypeRepository;
+        private readonly MijmsContext _context;
 
         public VoucherNumberService(
-            IRepositoryBase<VoucherType> voucherTypeRepository)
+            MijmsContext context)
         {
-            _voucherTypeRepository =
-                voucherTypeRepository
+            _context =
+                context
                 ?? throw new ArgumentNullException(
-                    nameof(voucherTypeRepository));
+                    nameof(context));
         }
 
         /// <summary>
@@ -42,10 +42,9 @@ namespace DataAccess.Services
         /// Result:
         /// OM000126
         ///
-        /// LastUsedNumber will also be changed to 126 on the
-        /// tracked VoucherType entity.
+        /// LastUsedNumber is 126 in the database afterwards.
         /// </summary>
-        public Task<string> GetNextNumberAsync(
+        public async Task<string> GetNextNumberAsync(
             string documentType,
             CancellationToken cancellationToken = default)
         {
@@ -60,20 +59,26 @@ namespace DataAccess.Services
 
             documentType = documentType.Trim();
 
-            // Retrieve VoucherType using the existing repository / EF ORM.
-            //
-            // The returned entity is expected to be tracked by EF Core,
-            // therefore changing LastUsedNumber will be persisted when
-            // the calling workflow executes SaveChanges.
-            var voucherType =
-                _voucherTypeRepository.Get(
-                    x => x.DocumentType == documentType);
+            var voucherTypes =
+                await _context.VoucherTypes
+                    .AsNoTracking()
+                    .Where(x => x.DocumentType == documentType)
+                    .Take(2)
+                    .ToListAsync(cancellationToken);
 
-            if (voucherType is null)
+            if (voucherTypes.Count == 0)
             {
                 throw new InvalidOperationException(
                     $"Voucher type '{documentType}' is not configured.");
             }
+
+            if (voucherTypes.Count > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Voucher type '{documentType}' is configured more than once.");
+            }
+
+            var voucherType = voucherTypes[0];
 
             // ---------------------------------------------------------
             // Validate configuration
@@ -95,33 +100,46 @@ namespace DataAccess.Services
                     "document number length.");
             }
 
+            if (voucherType.LastUsedNumber.GetValueOrDefault() < 0)
+            {
+                throw new InvalidOperationException(
+                    $"Voucher type '{documentType}' has an invalid " +
+                    $"LastUsedNumber value '{voucherType.LastUsedNumber}'.");
+            }
+
             var prefix =
                 voucherType.DocNbrPrefix?.Trim()
                 ?? string.Empty;
 
             // ---------------------------------------------------------
-            // Calculate next running number
+            // Take the next running number atomically
             // ---------------------------------------------------------
-
-            var currentNumber =
-                voucherType.LastUsedNumber.GetValueOrDefault();
-
-            if (currentNumber < 0)
-            {
-                throw new InvalidOperationException(
-                    $"Voucher type '{documentType}' has an invalid " +
-                    $"LastUsedNumber value '{currentNumber}'.");
-            }
 
             var nextNumber =
-                checked(currentNumber + 1);
+                await IncrementAsync(
+                    voucherType.Gkey,
+                    documentType,
+                    cancellationToken);
 
             // ---------------------------------------------------------
-            // Update tracked VoucherType
+            // Keep a tracked VoucherType (if any) in step, so a later
+            // SaveChanges never writes an older number back
             // ---------------------------------------------------------
 
-            voucherType.LastUsedNumber =
-                nextNumber;
+            var tracked =
+                _context.VoucherTypes.Local
+                    .FirstOrDefault(x => x.Gkey == voucherType.Gkey);
+
+            if (tracked is not null)
+            {
+                var property =
+                    _context.Entry(tracked)
+                        .Property(x => x.LastUsedNumber);
+
+                property.CurrentValue = nextNumber;
+                property.OriginalValue = nextNumber;
+                property.IsModified = false;
+            }
 
             // ---------------------------------------------------------
             // Format document number
@@ -131,10 +149,68 @@ namespace DataAccess.Services
                 nextNumber.ToString(
                     $"D{documentNumberLength}");
 
-            var documentNumber =
-                $"{prefix}{formattedNumber}";
+            return $"{prefix}{formattedNumber}";
+        }
 
-            return Task.FromResult(documentNumber);
+        private async Task<int> IncrementAsync(
+            int voucherTypeGkey,
+            string documentType,
+            CancellationToken cancellationToken)
+        {
+            // The UPDATE and the read must see the same row version, so
+            // they run in one transaction: the caller's, or a short one.
+            IDbContextTransaction? ownTransaction =
+                _context.Database.CurrentTransaction is null
+                    ? await _context.Database.BeginTransactionAsync(cancellationToken)
+                    : null;
+
+            try
+            {
+                var updated =
+                    await _context.VoucherTypes
+                        .Where(x => x.Gkey == voucherTypeGkey)
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(
+                                x => x.LastUsedNumber,
+                                x => (x.LastUsedNumber ?? 0) + 1),
+                            cancellationToken);
+
+                if (updated != 1)
+                {
+                    throw new InvalidOperationException(
+                        $"Voucher type '{documentType}' could not be numbered.");
+                }
+
+                var nextNumber =
+                    await _context.VoucherTypes
+                        .AsNoTracking()
+                        .Where(x => x.Gkey == voucherTypeGkey)
+                        .Select(x => x.LastUsedNumber)
+                        .SingleAsync(cancellationToken);
+
+                if (ownTransaction is not null)
+                {
+                    await ownTransaction.CommitAsync(cancellationToken);
+                }
+
+                return nextNumber.GetValueOrDefault();
+            }
+            catch
+            {
+                if (ownTransaction is not null)
+                {
+                    await ownTransaction.RollbackAsync(cancellationToken);
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (ownTransaction is not null)
+                {
+                    await ownTransaction.DisposeAsync();
+                }
+            }
         }
     }
 }
