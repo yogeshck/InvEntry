@@ -33,6 +33,11 @@ public interface ISchemeEnrollmentService
     Task<SchemeEnrollmentDto?> FindByAccountNumberAsync(
         string accountNbr,
         CancellationToken cancellationToken = default);
+
+    /// <summary>RD passbook / statement: schedule, every payment and the bonus position.</summary>
+    Task<RdStatementDto?> GetStatementAsync(
+        int enrollmentGkey,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class SchemeEnrollmentService : ISchemeEnrollmentService
@@ -216,6 +221,129 @@ public sealed class SchemeEnrollmentService : ISchemeEnrollmentService
             cancellationToken);
 
         return list.FirstOrDefault();
+    }
+
+    public async Task<RdStatementDto?> GetStatementAsync(
+        int enrollmentGkey,
+        CancellationToken cancellationToken = default)
+    {
+        var scheme = await GetEnrollmentAsync(enrollmentGkey, cancellationToken);
+        if (scheme is null)
+            return null;
+
+        var termsSnapshot = await _context.SchemeEnrollments
+            .AsNoTracking()
+            .Where(x => x.Gkey == enrollmentGkey)
+            .Select(x => x.TermsSnapshot)
+            .SingleAsync(cancellationToken);
+
+        var terms = SchemeTerms.ReadSnapshot(termsSnapshot);
+
+        var entries = await (
+                from l in _context.AdvanceLedgers.AsNoTracking()
+                join v in _context.Vouchers.AsNoTracking() on l.VoucherGkey equals (int?)v.Gkey into vj
+                from v in vj.DefaultIfEmpty()
+                where l.AdvanceAccountGkey == scheme.AdvanceAccountGkey
+                orderby l.EntryDate, l.Gkey
+                select new
+                {
+                    l.Gkey,
+                    l.EntryDate,
+                    l.EntryType,
+                    l.Amount,
+                    l.Weight,
+                    l.MetalRate,
+                    l.SourceRef,
+                    l.Narration,
+                    l.VoucherGkey,
+                    VoucherNbr = v.VoucherNbr,
+                    VoucherMode = v.Mode
+                })
+            .ToListAsync(cancellationToken);
+
+        var installmentBySeq = scheme.Installments.ToDictionary(x => x.Gkey, x => x);
+
+        var allocations = await _context.SchemeInstallmentAllocations
+            .AsNoTracking()
+            .Where(x => x.SchemeInstallment.SchemeEnrollmentGkey == enrollmentGkey)
+            .Select(x => new { x.AdvanceLedgerGkey, x.SchemeInstallmentGkey, x.Amount })
+            .ToListAsync(cancellationToken);
+
+        var legacyPrefix = $"LEGACY-RD-{scheme.AccountNbr}-";
+        var paidSoFar = new Dictionary<int, decimal>();
+        var balance = 0M;
+        var payments = new List<RdStatementPayment>();
+
+        foreach (var entry in entries)
+        {
+            balance += entry.Amount;
+
+            // Installments this entry paid, judged with the payments up to it.
+            var covered = new List<string>();
+            foreach (var allocation in allocations.Where(x => x.AdvanceLedgerGkey == entry.Gkey))
+            {
+                paidSoFar[allocation.SchemeInstallmentGkey] =
+                    paidSoFar.GetValueOrDefault(allocation.SchemeInstallmentGkey) + allocation.Amount;
+
+                if (installmentBySeq.TryGetValue(allocation.SchemeInstallmentGkey, out var installment))
+                {
+                    covered.Add(paidSoFar[allocation.SchemeInstallmentGkey] >= installment.AmountDue
+                        ? installment.SeqNbr.ToString()
+                        : $"{installment.SeqNbr} (part)");
+                }
+            }
+
+            var isImported = entry.VoucherGkey is null &&
+                             entry.SourceRef.StartsWith(legacyPrefix, StringComparison.OrdinalIgnoreCase);
+
+            payments.Add(new RdStatementPayment
+            {
+                Date = entry.EntryDate,
+                ReceiptNumber = entry.VoucherNbr
+                                ?? (isImported ? entry.SourceRef[legacyPrefix.Length..] : entry.EntryType),
+                Mode = entry.VoucherMode ?? ModeFromNarration(entry.Narration),
+                EntryType = entry.EntryType,
+                Amount = entry.Amount,
+                Weight = entry.Weight,
+                MetalRate = entry.MetalRate,
+                InstallmentsCovered = covered.Count == 0 ? null : string.Join(", ", covered),
+                RunningBalance = balance,
+                IsImported = isImported
+            });
+        }
+
+        var bonusRules = terms.BenefitRules
+            .Where(x => x.IsActive && x.BenefitType == SchemeTerms.BenefitFlatBonus)
+            .ToList();
+
+        var bonusAmount = bonusRules.Sum(x => x.BenefitValue);
+        var bonusMin = bonusRules.Count == 0
+            ? terms.TenureMonths
+            : bonusRules.Max(x => x.MinInstallmentsPaid == 0 ? terms.TenureMonths : x.MinInstallmentsPaid);
+        var bonusEarned = bonusAmount > 0M && scheme.InstallmentsPaid >= bonusMin;
+
+        return new RdStatementDto
+        {
+            Scheme = scheme,
+            Payments = payments,
+            BonusAmount = bonusAmount,
+            BonusMinInstallments = bonusMin,
+            BonusEarned = bonusEarned,
+            MaturityValue = scheme.TotalPaid + (bonusEarned ? bonusAmount : 0M),
+            GeneratedOn = DateTime.Now
+        };
+    }
+
+    /// <summary>"Imported receipt RDR-0001 (Gpay) ref ..." gives "Gpay".</summary>
+    private static string? ModeFromNarration(string? narration)
+    {
+        if (string.IsNullOrEmpty(narration))
+            return null;
+
+        var open = narration.IndexOf('(');
+        var close = open < 0 ? -1 : narration.IndexOf(')', open + 1);
+
+        return close > open + 1 ? narration[(open + 1)..close] : null;
     }
 
     /// <summary>

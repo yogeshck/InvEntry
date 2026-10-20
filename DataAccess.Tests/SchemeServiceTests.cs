@@ -406,6 +406,52 @@ public sealed class SchemeServiceTests
     }
 
     // =========================================================
+    // RD STATEMENT
+    // =========================================================
+
+    [Test]
+    public async Task Statement_lists_payments_with_running_balance_and_earns_the_bonus_when_fully_paid()
+    {
+        var planDto = AmountPlan("FLAT11");
+        planDto.BenefitRules = new()
+        {
+            new() { BenefitType = SchemeTerms.BenefitFlatBonus, BenefitValue = 1000M, AppliesOn = "MATURITY", MinInstallmentsPaid = 11 }
+        };
+        var plan = await _plans.SavePlanAsync(planDto);
+        var enrollment = await _enrollments.EnrollAsync(Enroll(plan.Gkey, 1000M));
+
+        await _receipts.CreateReceiptAsync(RdReceipt(enrollment.AdvanceAccountGkey, 2500M));
+        await _receipts.CreateReceiptAsync(RdReceipt(enrollment.AdvanceAccountGkey, 500M));
+
+        var partway = (await _enrollments.GetStatementAsync(enrollment.EnrollmentGkey))!;
+
+        await _receipts.CreateReceiptAsync(RdReceipt(enrollment.AdvanceAccountGkey, 8000M));
+        var complete = (await _enrollments.GetStatementAsync(enrollment.EnrollmentGkey))!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(partway.Payments.Select(x => (x.ReceiptNumber, x.Amount, x.InstallmentsCovered, x.RunningBalance)),
+                Is.EqualTo(new[]
+                {
+                    ("RD-0001", 2500M, "1, 2, 3 (part)", 2500M),
+                    ("RD-0002", 500M, "3", 3000M)
+                }));
+            Assert.That(partway.Payments.All(x => x.Mode == "Cash" && !x.IsImported));
+            Assert.That(partway.BonusAmount, Is.EqualTo(1000M));
+            Assert.That(partway.BonusMinInstallments, Is.EqualTo(11));
+            Assert.That(partway.BonusEarned, Is.False);
+            Assert.That(partway.MaturityValue, Is.EqualTo(3000M));
+            Assert.That(partway.Scheme.InstallmentsPaid, Is.EqualTo(3));
+
+            Assert.That(complete.Scheme.InstallmentsPaid, Is.EqualTo(11));
+            Assert.That(complete.BonusEarned, Is.True);
+            Assert.That(complete.MaturityValue, Is.EqualTo(12000M));
+        });
+
+        Assert.That(await _enrollments.GetStatementAsync(999999), Is.Null);
+    }
+
+    // =========================================================
     // RECEIPT PRINT
     // =========================================================
 

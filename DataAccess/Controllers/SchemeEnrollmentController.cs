@@ -51,6 +51,16 @@ public class SchemeEnrollmentController : ControllerBase
         return enrollment is null ? NotFound() : Ok(enrollment);
     }
 
+    // GET: api/schemeenrollment/5/statement  (RD passbook)
+    [HttpGet("{enrollmentGkey:int}/statement")]
+    public async Task<ActionResult<RdStatementDto>> GetStatement(
+        int enrollmentGkey,
+        CancellationToken cancellationToken)
+    {
+        var statement = await _schemeEnrollmentService.GetStatementAsync(enrollmentGkey, cancellationToken);
+        return statement is null ? NotFound() : Ok(statement);
+    }
+
     // GET: api/schemeenrollment/by-account?accountNbr=MJ-RD26-002
     // Returns a list with the enrollment, or an empty list when the RD number is unknown.
     [HttpGet("by-account")]

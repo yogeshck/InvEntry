@@ -170,11 +170,17 @@
                     <dxg:GridColumn FieldName="Status" Header="Status" Width="70" />
                 </dxg:GridControl>
 
-                <TextBlock Grid.Row="2"
-                           Text="Installment schedule"
-                           FontSize="14"
-                           FontWeight="SemiBold"
-                           Margin="0,10,0,4" />
+                <DockPanel Grid.Row="2" Margin="0,10,0,4">
+                    <Button DockPanel.Dock="Right"
+                            Content="Print passbook"
+                            Command="{Binding PrintPassbookCommand}"
+                            Padding="12,3"
+                            FontWeight="SemiBold" />
+                    <TextBlock Text="Installment schedule"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </DockPanel>
 
                 <dxg:GridControl Grid.Row="3"
                                  ItemsSource="{Binding SelectedScheme.Installments}"

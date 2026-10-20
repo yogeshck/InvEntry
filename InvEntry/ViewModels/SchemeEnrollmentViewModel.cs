@@ -25,6 +25,7 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
     private readonly IAdvanceAccountService _advanceAccountService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IAdvanceReceiptPrinter _receiptPrinter;
+    private readonly IRdStatementPrinter _statementPrinter;
 
     // Kept until the server confirms, so a retry after a failure reuses the
     // same ClientRequestId and cannot enroll or record a payment twice.
@@ -36,13 +37,15 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
         ISchemeService schemeService,
         IAdvanceAccountService advanceAccountService,
         IMessageBoxService messageBoxService,
-        IAdvanceReceiptPrinter receiptPrinter)
+        IAdvanceReceiptPrinter receiptPrinter,
+        IRdStatementPrinter statementPrinter)
     {
         _customerService = customerService;
         _schemeService = schemeService;
         _advanceAccountService = advanceAccountService;
         _messageBoxService = messageBoxService;
         _receiptPrinter = receiptPrinter;
+        _statementPrinter = statementPrinter;
 
         _ = LoadPlansAsync();
     }
@@ -345,6 +348,18 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
 
         await LoadCustomerSchemesAsync();
         ClearEnrollmentForm();
+    }
+
+    [RelayCommand]
+    private async Task PrintPassbookAsync()
+    {
+        if (SelectedScheme is null)
+        {
+            _messageBoxService.ShowMessage("Select the RD scheme to print.", "RD passbook", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        await _statementPrinter.PreviewAsync(SelectedScheme.EnrollmentGkey);
     }
 
     [RelayCommand]

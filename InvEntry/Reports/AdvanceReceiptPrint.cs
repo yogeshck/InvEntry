@@ -1,14 +1,12 @@
 using DevExpress.Drawing;
 using DevExpress.Drawing.Printing;
 using DevExpress.XtraPrinting;
-using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.UI;
 using InvEntry.Contracts.Advances;
 using InvEntry.Models;
 using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 
 namespace InvEntry.Reports;
@@ -36,14 +34,10 @@ public sealed class AdvanceReceiptPrint : XtraReport
     private const float CopyWidth = 523F;
     private const float LabelWidth = 165F;
     private const float RowHeight = 21F;
-    private const float LogoWidth = 100F;
-    private const float LogoHeight = 70F;
 
     // On A4 landscape the two A5 halves are separated by a cut line.
     private const float A4UsableWidth = 1169F - 2 * Margin;
     private const float SecondCopyX = A4UsableWidth - CopyWidth;
-
-    private static readonly Lazy<ImageSource?> InvoiceLogo = new(LoadInvoiceLogo);
 
     private readonly DetailBand _detail = new() { HeightF = 0F };
     private float _x;
@@ -117,64 +111,7 @@ public sealed class AdvanceReceiptPrint : XtraReport
     /// <summary>Same content, fonts and colours as the invoice header (InvPrint25).</summary>
     private void AddCompanyHeader(OrgThisCompanyView? company)
     {
-        if (company is null)
-            return;
-
-        var top = _y;
-        const float blockWidth = CopyWidth - LogoWidth - 10F;
-
-        AddBlockLine(company.CompanyName, "Segoe UI", 12F, DXFontStyle.Bold, Color.RoyalBlue, blockWidth, 22F);
-        AddBlockLine(company.Tagline, "Times New Roman", 8F, DXFontStyle.Bold, Color.Blue, blockWidth, 15F);
-
-        var address = Join(", ",
-            company.AddressLine1, company.AddressLine2, company.AddressLine3,
-            company.Area, company.District,
-            Join("-", company.GstCode, company.State));
-        AddBlockLine(address, "Times New Roman", 8F, DXFontStyle.Regular, Color.Black, blockWidth, 15F, multiline: true);
-
-        var phones = Join(", ", company.ContactNbr1, company.ContactNbr2);
-        AddBlockLine(phones.Length > 0 ? $"Ph: {phones}" : null, "Times New Roman", 8F, DXFontStyle.Regular, Color.Black, blockWidth, 15F);
-        AddBlockLine(string.IsNullOrWhiteSpace(company.EmailId) ? null : $"Email: {company.EmailId}",
-            "Times New Roman", 8F, DXFontStyle.Regular, Color.Black, blockWidth, 15F);
-
-        var blockBottom = _y;
-
-        if (InvoiceLogo.Value is ImageSource logo)
-        {
-            _detail.Controls.Add(new XRPictureBox
-            {
-                ImageSource = logo,
-                LocationF = new PointF(_x + CopyWidth - LogoWidth, top),
-                SizeF = new SizeF(LogoWidth, LogoHeight),
-                Sizing = ImageSizeMode.ZoomImage
-            });
-        }
-
-        var gstTop = top + LogoHeight + 2F;
-        if (!string.IsNullOrWhiteSpace(company.GstNbr))
-        {
-            _detail.Controls.Add(new XRLabel
-            {
-                LocationF = new PointF(_x + CopyWidth - 220F, gstTop),
-                SizeF = new SizeF(220F, 15F),
-                Text = $"GSTIN - {company.GstNbr}",
-                Font = new DXFont("Arial", 8F, DXFontStyle.Bold),
-                TextAlignment = TextAlignment.MiddleRight,
-                Padding = new PaddingInfo(2, 2, 0, 0)
-            });
-        }
-
-        _y = Math.Max(blockBottom, gstTop + 15F);
-
-        // Gold rule under the header, as on the invoice.
-        _detail.Controls.Add(new XRLine
-        {
-            LocationF = new PointF(_x, _y + 2F),
-            SizeF = new SizeF(CopyWidth, 4F),
-            LineWidth = 2F,
-            ForeColor = Color.Gold
-        });
-        _y += 10F;
+        _y = InvoiceStyleHeader.Add(_detail, _x, _y, CopyWidth, company);
     }
 
     private void AddTitle(AdvanceReceiptPrintDto receipt, bool isReprint)
@@ -301,36 +238,6 @@ public sealed class AdvanceReceiptPrint : XtraReport
     // LAYOUT HELPERS (positions are relative to the current copy)
     // =========================================================
 
-    private void AddBlockLine(
-        string? text,
-        string fontName,
-        float size,
-        DXFontStyle style,
-        Color color,
-        float width,
-        float height,
-        bool multiline = false)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-            return;
-
-        _detail.Controls.Add(new XRLabel
-        {
-            LocationF = new PointF(_x, _y),
-            SizeF = new SizeF(width, multiline ? height * 2F : height),
-            Text = text,
-            Font = new DXFont(fontName, size, style),
-            ForeColor = color,
-            TextAlignment = multiline ? TextAlignment.TopLeft : TextAlignment.MiddleLeft,
-            Multiline = multiline,
-            WordWrap = multiline,
-            CanShrink = true,
-            Padding = new PaddingInfo(2, 2, 0, 0)
-        });
-
-        _y += multiline ? height * 2F : height;
-    }
-
     private void AddSection(string title)
     {
         _y += 4F;
@@ -402,35 +309,6 @@ public sealed class AdvanceReceiptPrint : XtraReport
             BorderWidth = 1F,
             Padding = new PaddingInfo(2, 2, 0, 0)
         });
-    }
-
-    private static string Join(string separator, params string?[] parts)
-    {
-        var list = new List<string>();
-        foreach (var part in parts)
-        {
-            if (!string.IsNullOrWhiteSpace(part))
-                list.Add(part.Trim());
-        }
-
-        return string.Join(separator, list);
-    }
-
-    /// <summary>The logo of the invoice report (InvPrint25's picture box), so both print the same logo.</summary>
-    private static ImageSource? LoadInvoiceLogo()
-    {
-        try
-        {
-            var resources = new ComponentResourceManager(typeof(InvPrint25));
-            var image = resources.GetString("xrPictureBox2.ImageSource");
-
-            return string.IsNullOrWhiteSpace(image) ? null : new ImageSource("img", image);
-        }
-        catch (Exception ex)
-        {
-            Serilog.Log.Warning(ex, "Invoice logo could not be loaded for the receipt print");
-            return null;
-        }
     }
 
     /// <summary>"RUPEES FIVE THOUSAND AND FIFTY PAISE ONLY".</summary>

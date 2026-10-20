@@ -28,6 +28,9 @@ public interface ISchemeService
 
     /// <summary>The scheme with this RD number (e.g. MJ-RD26-002), or null when unknown.</summary>
     Task<SchemeEnrollmentDto?> FindByAccountNumber(string accountNbr);
+
+    /// <summary>RD passbook / statement data.</summary>
+    Task<RdStatementDto> GetStatement(int enrollmentGkey);
 }
 
 public class SchemeService : ISchemeService
@@ -80,5 +83,10 @@ public class SchemeService : ISchemeService
             $"api/SchemeEnrollment/by-account?accountNbr={System.Uri.EscapeDataString(accountNbr.Trim())}");
 
         return found.FirstOrDefault();
+    }
+
+    public Task<RdStatementDto> GetStatement(int enrollmentGkey)
+    {
+        return _mijmsApiService.GetResponse<RdStatementDto>($"api/SchemeEnrollment/{enrollmentGkey}/statement");
     }
 }

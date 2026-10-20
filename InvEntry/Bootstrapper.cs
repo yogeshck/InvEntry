@@ -173,6 +173,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IAdvanceAccountService, AdvanceAccountService>()
                  .AddSingleton<ISchemeService, SchemeService>()
                  .AddSingleton<IAdvanceReceiptPrinter, AdvanceReceiptPrinter>()
+                 .AddSingleton<IRdStatementPrinter, RdStatementPrinter>()
                  .AddSingleton<IVoucherService, VoucherService>()
                  .AddSingleton<IVoucherTypeService, VoucherTypeService>()
                  .AddSingleton<IGstRuleProvider, GstRuleProvider>()
