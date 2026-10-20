@@ -2123,8 +2123,6 @@ public partial class InvoiceViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCreateInvoice))]
     private async Task CreateInvoice()
     {
-        LedgerHelper ledgerHelper = new(_ledgerService, _messageBoxService, _mtblLedgersService);   //is this a right way????? 
-
         //validate to fit to save invoice
         if (!InvLineChk)
         {
@@ -2218,8 +2216,6 @@ public partial class InvoiceViewModel : ObservableObject
             //Invoice header details needs to be saved alongwith receipts, hence calling from here.
             await ProcessReceipts();
 
-        //    if ((Header.AdvanceAdj > 0) || (Header.RdAmountAdj > 0))    //blocked this on 18-Mar - need to workout in detail
-        //        await ledgerHelper.ProcessInvoiceAdvanceAsync(Header);  // this code causing crashes of application
 
             _messageBoxService.ShowMessage("Invoice " + Header.InvNbr + " Created Successfully", "Invoice Created",
                                                 MessageButton.OK, MessageIcon.Exclamation);

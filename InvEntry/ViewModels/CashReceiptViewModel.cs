@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Editors;
+using InvEntry.Contracts.Advances;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
@@ -46,9 +47,6 @@ public partial class CashReceiptViewModel : ObservableObject
     private OrgThisCompanyView _company;
 
     [ObservableProperty]
-    private LedgersHeader _ledgerHdr;
-
-    [ObservableProperty]
     private MtblLedger _mtblLedger;
 
     [ObservableProperty]
@@ -90,6 +88,10 @@ public partial class CashReceiptViewModel : ObservableObject
 
     private bool createCustomer = false;
     private bool creditReceipt = false;
+
+    // Kept until the server confirms the receipt, so a retry after a failure
+    // reuses the same ClientRequestId and cannot record the money twice.
+    private AdvanceReceiptRequest? _pendingAdvanceReceipt;
         
     private readonly ICustomerService _customerService;
     private readonly IMessageBoxService _messageBoxService;
@@ -98,18 +100,18 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly IMtblReferencesService _mtblReferencesService;
     private readonly IVoucherService _voucherService;
     private readonly IInvoiceService _invoiceService;
-    private readonly ILedgerService _ledgerService;
     private readonly IMtblLedgersService _mtblLedgersService;
+    private readonly IAdvanceAccountService _advanceAccountService;
 
     public CashReceiptViewModel(ICustomerService customerService,
                 IOrgThisCompanyViewService orgThisCompanyViewService,
                 IMessageBoxService messageBoxService,
                 IVoucherService voucherService,
-                ILedgerService ledgerService,
                 IMtblLedgersService mtblLedgersService,
                 IMtblReferencesService mtblReferencesService,
                 IInvoiceService invoiceService,
-                IInvoiceArReceiptService invoiceArReceiptService
+                IInvoiceArReceiptService invoiceArReceiptService,
+                IAdvanceAccountService advanceAccountService
                 )
     {
 
@@ -121,7 +123,7 @@ public partial class CashReceiptViewModel : ObservableObject
         _mtblReferencesService = mtblReferencesService;
         _mtblLedgersService = mtblLedgersService;
         _voucherService = voucherService;
-        _ledgerService = ledgerService;
+        _advanceAccountService = advanceAccountService;
         _invoiceService = invoiceService;
         _invoiceArReceiptService = invoiceArReceiptService;
 
@@ -295,7 +297,6 @@ public partial class CashReceiptViewModel : ObservableObject
     private void ResetVoucher()
     {
 
-        LedgerHdr = new();
         Voucher = new();
         Payer = new();
 
@@ -312,6 +313,7 @@ public partial class CashReceiptViewModel : ObservableObject
         CustomerPhoneNumber = string.Empty;
         createCustomer = false;
         creditReceipt = false;
+        _pendingAdvanceReceipt = null;
     }
 
     partial void OnTransactionTypeChanged(string value)
@@ -329,19 +331,29 @@ public partial class CashReceiptViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveVoucherAsync()
     {
-        //SetVoucherType();
-
         if (createCustomer)
         {
             Payer = await _customerService.CreateCustomer(Payer);
+            createCustomer = false;
         }
 
-        ProcessLedger();
+        if (IsAdvanceOrRdReceipt)
+        {
+            // Voucher, advance ledger and balance are written by the server
+            // in one transaction; LEDGERS_HEADER is no longer updated.
+            if (await SaveAdvanceReceiptAsync())
+                ResetVoucher();
 
-      //  if (SelectedLedger == "Credit Receipt")
-      //  {
-      //      await FetchInvoice();
-      //  }
+            return;
+        }
+
+        await SetMasterLedger();
+
+        if (MtblLedger is null)
+        {
+            _messageBoxService.ShowMessage("Receipt ledger is not configured.", "Error", MessageButton.OK, MessageIcon.Error);
+            return;
+        }
 
         await ProcessVoucher();
 
@@ -350,10 +362,72 @@ public partial class CashReceiptViewModel : ObservableObject
             await ProcessCreditReceiptAsync();
         }
 
-        ProcessLedgerTransactions();
-
         ResetVoucher();
 
+    }
+
+    private bool IsAdvanceOrRdReceipt =>
+        TransactionType == AdvanceReceiptType.AdvanceReceipt ||
+        TransactionType == AdvanceReceiptType.RecurringDeposit;
+
+    private async Task<bool> SaveAdvanceReceiptAsync()
+    {
+        var amount = Voucher.TransAmount.GetValueOrDefault();
+
+        if (Payer is null || Payer.GKey <= 0)
+        {
+            _messageBoxService.ShowMessage("Select or create the customer first.", "Receipt", MessageButton.OK, MessageIcon.Exclamation);
+            return false;
+        }
+
+        if (amount <= 0)
+        {
+            _messageBoxService.ShowMessage("Enter the amount received.", "Receipt", MessageButton.OK, MessageIcon.Exclamation);
+            return false;
+        }
+
+        // Same receipt retried -> same ClientRequestId; anything changed -> new receipt.
+        if (_pendingAdvanceReceipt is null ||
+            _pendingAdvanceReceipt.CustomerGkey != Payer.GKey ||
+            _pendingAdvanceReceipt.ReceiptType != TransactionType ||
+            _pendingAdvanceReceipt.Amount != amount)
+        {
+            _pendingAdvanceReceipt = new AdvanceReceiptRequest
+            {
+                ClientRequestId = Guid.NewGuid(),
+                CustomerGkey = Payer.GKey,
+                ReceiptType = TransactionType,
+                Amount = amount
+            };
+        }
+
+        _pendingAdvanceReceipt.Mode = string.IsNullOrWhiteSpace(Voucher.Mode) ? "Cash" : Voucher.Mode;
+        _pendingAdvanceReceipt.TransDesc = VoucherTransDesc;
+        _pendingAdvanceReceipt.TransDate = Voucher.TransDate;
+
+        try
+        {
+            var result = await _advanceAccountService.CreateReceipt(_pendingAdvanceReceipt);
+
+            _pendingAdvanceReceipt = null;
+            Voucher.GKey = result.VoucherGkey;
+            Voucher.VoucherNbr = result.VoucherNbr;
+
+            _messageBoxService.ShowMessage(
+                $"Voucher {result.VoucherNbr} created. Balance in {result.AccountNbr}: Rs. {result.BalanceAmount:N2}",
+                "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "Error creating receipt. Saving again will not record it twice." +
+                Environment.NewLine + ex.Message,
+                "Error", MessageButton.OK, MessageIcon.Error);
+
+            return false;
+        }
     }
 
 /*    private async Task FetchInvoice()
@@ -522,73 +596,6 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             await _voucherService.UpdateVoucher(Voucher);
         }
-    }
-
-    private async void ProcessLedger() //(Voucher voucher)
-    {
-
-        await SetMasterLedger();
-        if (MtblLedger.GKey < 0)
-            return;
-
-        //check customer has any ledger entry
-
-        LedgerHdr = new();
-        LedgerHdr = await _ledgerService.GetHeader(MtblLedger.GKey, Payer.GKey);
-
-        if (LedgerHdr is not null)
-        {
-            /*            LedgersTransactions ledgerTrans = new();
-
-                        ledgerTrans.DrCr = "Cr";
-                        ledgerTrans.TransactionAmount = Voucher.TransAmount;
-                        ledgerTrans.DocumentNbr = Voucher.VoucherNbr;
-                        ledgerTrans.DocumentDate = Voucher.VoucherDate;
-                        ledgerTrans.LedgerHdrGkey = LedgerHdr.GKey;
-                        ledgerTrans.TransactionDate = DateTime.Now;
-                        ledgerTrans.Status = true;
-
-                        LedgerHdr.Transactions.Add(ledgerTrans);*/
-
-            //await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
-
-            LedgerHdr.BalanceAsOn = DateTime.Now;
-            LedgerHdr.CurrentBalance = LedgerHdr.CurrentBalance.GetValueOrDefault() +
-                                            Voucher.TransAmount.GetValueOrDefault();
-
-            await _ledgerService.UpdateHeader(LedgerHdr);
-        }
-        else
-        {
-
-            LedgerHdr = new();
-
-            LedgerHdr.MtblLedgersGkey = MtblLedger.GKey;
-            LedgerHdr.CustGkey = Payer.GKey;
-            LedgerHdr.BalanceAsOn = DateTime.Now;
-            LedgerHdr.CurrentBalance = Voucher.TransAmount;
-
-            LedgerHdr = await _ledgerService.CreateHeader(LedgerHdr);
-
-        }
-
-    }
-
-    private async void ProcessLedgerTransactions()
-    {
-        LedgersTransactions ledgerTrans = new();
-
-        ledgerTrans.DrCr = "Cr";
-        ledgerTrans.TransactionAmount = Voucher.TransAmount;
-        ledgerTrans.DocumentNbr = Voucher.VoucherNbr;
-        ledgerTrans.DocumentDate = Voucher.VoucherDate;
-        ledgerTrans.LedgerHdrGkey = LedgerHdr.GKey;
-        ledgerTrans.TransactionDate = DateTime.Now;
-        ledgerTrans.Status = true;
-
-        LedgerHdr.Transactions.Add(ledgerTrans);
-
-        await _ledgerService.CreateLedgersTransactions(LedgerHdr.Transactions);
     }
 
 }

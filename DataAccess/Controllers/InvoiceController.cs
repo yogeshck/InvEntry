@@ -1,6 +1,7 @@
 ﻿using DataAccess.Models;
 using DataAccess.Repository;
 using DataAccess.Services;
+using DataAccess.Services.Advances;
 using DataAccess.Workflows;
 using InvEntry.Contracts.Invoices;
 using InvEntry.Utils.Options;
@@ -626,6 +627,11 @@ public class InvoiceController : ControllerBase
         catch (InvoiceCustomerBusinessValidationException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (AdvanceAccountBusinessException ex)
+        {
+            // Insufficient advance / RD balance, closed or wrong account.
+            return Conflict(new { message = ex.Message });
         }
         catch (FinanceSyncQueueException)
         {

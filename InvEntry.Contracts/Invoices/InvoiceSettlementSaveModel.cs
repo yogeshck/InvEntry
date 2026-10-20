@@ -16,6 +16,12 @@ public class InvoiceSettlementSaveModel
     public decimal Amount { get; set; }
 
     /// <summary>
+    /// CUSTOMER_ADVANCE_ACCOUNT debited by an "Advance Adj" / "RD Adj" line.
+    /// Required for those modes; ignored for other modes.
+    /// </summary>
+    public int? AdvanceAccountGkey { get; set; }
+
+    /// <summary>
     /// UPI transaction ID, UTR, card transaction ID, etc.
     /// </summary>
     public string? TransactionId { get; set; }

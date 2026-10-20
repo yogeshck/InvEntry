@@ -170,6 +170,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IStockManager, StockManager>()
                  .AddSingleton<IStockVerifyScanService, StockVerifyScanService>()
                  .AddSingleton<IVoucherDbViewService, VoucherDbViewService>()
+                 .AddSingleton<IAdvanceAccountService, AdvanceAccountService>()
                  .AddSingleton<IVoucherService, VoucherService>()
                  .AddSingleton<IVoucherTypeService, VoucherTypeService>()
                  .AddSingleton<IGstRuleProvider, GstRuleProvider>()

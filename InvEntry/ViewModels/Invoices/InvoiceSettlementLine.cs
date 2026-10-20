@@ -18,6 +18,13 @@ public partial class InvoiceSettlementLine : ObservableObject
     private decimal amount;
 
     /// <summary>
+    /// Customer advance / RD account used by an "Advance Adj" or "RD Adj"
+    /// line (from api/AdvanceAccount/customer/{gkey}/available).
+    /// </summary>
+    [ObservableProperty]
+    private int? advanceAccountGkey;
+
+    /// <summary>
     /// Electronic transaction identifier.
     /// Example: UPI transaction ID, UTR, card transaction ID.
     /// </summary>

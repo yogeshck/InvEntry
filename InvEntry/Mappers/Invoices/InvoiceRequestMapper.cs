@@ -91,6 +91,8 @@ public static class InvoiceRequestMapper
 
             Amount = source.Amount,
 
+            AdvanceAccountGkey = source.AdvanceAccountGkey,
+
             TransactionId =
                 NullIfWhiteSpace(source.TransactionId),
 
