@@ -558,6 +558,17 @@
 
                     <dxwui:HamburgerSubMenuNavigationButton
                         NavigationTargetType=
+                            "{x:Type page:RdDuesPage}"
+
+                        Content="RD Dues / Collections"
+
+                        Tag="{dx:DXImage 'SvgImages/Business Objects/BO_List.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
                             "{x:Type page:SchemePlanPage}"
 
                         Content="Scheme Plans"

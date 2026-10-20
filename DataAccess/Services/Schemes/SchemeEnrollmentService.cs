@@ -38,6 +38,17 @@ public interface ISchemeEnrollmentService
     Task<RdStatementDto?> GetStatementAsync(
         int enrollmentGkey,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// RD dues and collections for a month: installments due in the month, installments
+    /// paid by receipts dated in the month and, with <paramref name="includeArrears"/>,
+    /// unpaid installments due earlier. Closed accounts appear only for money collected.
+    /// </summary>
+    Task<RdDueReportDto> GetMonthlyDuesAsync(
+        int year,
+        int month,
+        bool includeArrears,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed class SchemeEnrollmentService : ISchemeEnrollmentService
@@ -373,6 +384,116 @@ public sealed class SchemeEnrollmentService : ISchemeEnrollmentService
         if (plan.MaxInstallmentAmount is decimal max && installmentAmount > max)
             throw new AdvanceAccountBusinessException(
                 $"The monthly installment for {plan.PlanCode} cannot exceed ₹{max:N2}.");
+    }
+
+    public async Task<RdDueReportDto> GetMonthlyDuesAsync(
+        int year,
+        int month,
+        bool includeArrears,
+        CancellationToken cancellationToken = default)
+    {
+        if (year < 2000 || year > 2100 || month < 1 || month > 12)
+            throw new AdvanceAccountBusinessException("A valid year and month are required.");
+
+        var from = new DateOnly(year, month, 1);
+        var to = from.AddMonths(1);
+        var now = DateTime.Now;
+        var today = DateOnly.FromDateTime(now);
+
+        var installments = await _context.SchemeInstallments
+            .AsNoTracking()
+            .Where(i => i.Status != SchemeTerms.InstallmentWaived)
+            .Where(i =>
+                (i.DueDate >= from && i.DueDate < to) ||
+                (includeArrears && i.DueDate < from && i.Status != SchemeTerms.InstallmentPaid) ||
+                i.Allocations.Any(a => a.AdvanceLedger.EntryDate >= from && a.AdvanceLedger.EntryDate < to))
+            .Select(i => new
+            {
+                i.Gkey,
+                i.SchemeEnrollmentGkey,
+                i.SeqNbr,
+                i.DueDate,
+                i.AmountDue,
+                i.AmountPaid,
+                i.Status,
+                Collected = i.Allocations
+                    .Where(a => a.AdvanceLedger.EntryDate >= from && a.AdvanceLedger.EntryDate < to)
+                    .Sum(a => (decimal?)a.Amount) ?? 0M,
+                LastPaidOn = i.Allocations.Max(a => (DateOnly?)a.AdvanceLedger.EntryDate),
+                i.SchemeEnrollment.AdvanceAccount.AccountNbr,
+                AccountStatus = i.SchemeEnrollment.AdvanceAccount.Status,
+                i.SchemeEnrollment.AdvanceAccount.CustGkey,
+                i.SchemeEnrollment.TermsSnapshot
+            })
+            .ToListAsync(cancellationToken);
+
+        // A closed scheme owes nothing more; it is listed only for money collected in the month.
+        installments = installments
+            .Where(x => x.AccountStatus != "CLOSED" || x.Collected != 0M)
+            .ToList();
+
+        var customerKeys = installments.Select(x => x.CustGkey).Distinct().ToList();
+        var customers = await _context.OrgCustomers
+            .AsNoTracking()
+            .Where(x => customerKeys.Contains(x.Gkey))
+            .Select(x => new { x.Gkey, x.CustomerName, x.MobileNbr })
+            .ToDictionaryAsync(x => x.Gkey, cancellationToken);
+
+        var terms = installments
+            .Select(x => x.SchemeEnrollmentGkey)
+            .Distinct()
+            .ToDictionary(
+                key => key,
+                key => SchemeTerms.ReadSnapshot(installments.First(x => x.SchemeEnrollmentGkey == key).TermsSnapshot));
+
+        var rows = installments.Select(x =>
+        {
+            customers.TryGetValue(x.CustGkey, out var customer);
+            var plan = terms[x.SchemeEnrollmentGkey];
+            var balance = Math.Max(0M, x.AmountDue - x.AmountPaid);
+            var overdue = balance > 0M && x.DueDate < today;
+
+            return new RdDueRowDto
+            {
+                InstallmentGkey = x.Gkey,
+                EnrollmentGkey = x.SchemeEnrollmentGkey,
+                AccountNbr = x.AccountNbr,
+                AccountStatus = x.AccountStatus,
+                CustomerGkey = x.CustGkey,
+                CustomerName = customer?.CustomerName,
+                CustomerMobile = customer?.MobileNbr,
+                PlanName = plan.PlanName,
+                SeqNbr = x.SeqNbr,
+                TenureMonths = plan.TenureMonths,
+                DueDate = x.DueDate,
+                AmountDue = x.AmountDue,
+                AmountPaid = x.AmountPaid,
+                Balance = balance,
+                CollectedInMonth = x.Collected,
+                LastPaidOn = x.LastPaidOn,
+                Status = x.Status,
+                StatusText = balance <= 0M
+                    ? "Paid"
+                    : x.AmountPaid > 0M
+                        ? overdue ? "Overdue (part paid)" : "Part paid"
+                        : overdue ? "Overdue" : "Pending",
+                DaysOverdue = overdue ? today.DayNumber - x.DueDate.DayNumber : 0,
+                IsArrear = x.DueDate < from && balance > 0M
+            };
+        })
+        .OrderBy(x => x.DueDate)
+        .ThenBy(x => x.AccountNbr)
+        .ThenBy(x => x.SeqNbr)
+        .ToList();
+
+        return new RdDueReportDto
+        {
+            Year = year,
+            Month = month,
+            IncludesArrears = includeArrears,
+            GeneratedOn = now,
+            Rows = rows
+        };
     }
 
     private async Task<SchemeEnrollmentDto?> FindReplayAsync(

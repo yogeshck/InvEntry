@@ -75,6 +75,26 @@ public class SchemeEnrollmentController : ControllerBase
             : new[] { enrollment });
     }
 
+    // GET: api/schemeenrollment/dues?year=2026&month=10&includeArrears=true
+    // RD dues and collections for the month (Due / Collected filtering is done by the client).
+    [HttpGet("dues")]
+    public async Task<ActionResult<RdDueReportDto>> GetMonthlyDues(
+        [FromQuery] int year,
+        [FromQuery] int month,
+        [FromQuery] bool includeArrears,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await _schemeEnrollmentService.GetMonthlyDuesAsync(
+                year, month, includeArrears, cancellationToken));
+        }
+        catch (AdvanceAccountBusinessException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     // GET: api/schemeenrollment/customer/15000?includeClosed=false
     [HttpGet("customer/{customerGkey:int}")]
     public async Task<ActionResult<IEnumerable<SchemeEnrollmentDto>>> GetForCustomer(

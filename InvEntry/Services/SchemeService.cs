@@ -31,6 +31,9 @@ public interface ISchemeService
 
     /// <summary>RD passbook / statement data.</summary>
     Task<RdStatementDto> GetStatement(int enrollmentGkey);
+
+    /// <summary>RD installments due or collected in the month (optionally with earlier arrears).</summary>
+    Task<RdDueReportDto> GetMonthlyDues(int year, int month, bool includeArrears);
 }
 
 public class SchemeService : ISchemeService
@@ -88,5 +91,11 @@ public class SchemeService : ISchemeService
     public Task<RdStatementDto> GetStatement(int enrollmentGkey)
     {
         return _mijmsApiService.GetResponse<RdStatementDto>($"api/SchemeEnrollment/{enrollmentGkey}/statement");
+    }
+
+    public Task<RdDueReportDto> GetMonthlyDues(int year, int month, bool includeArrears)
+    {
+        return _mijmsApiService.GetResponse<RdDueReportDto>(
+            $"api/SchemeEnrollment/dues?year={year}&month={month}&includeArrears={includeArrears.ToString().ToLowerInvariant()}");
     }
 }

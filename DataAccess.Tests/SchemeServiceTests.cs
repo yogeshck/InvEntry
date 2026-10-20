@@ -255,6 +255,45 @@ public sealed class SchemeServiceTests
     // =========================================================
 
     [Test]
+    public async Task Monthly_dues_list_installments_due_paid_in_the_month_and_arrears()
+    {
+        var plan = await _plans.SavePlanAsync(AmountPlan("DUES"));
+        var enrollment = await _enrollments.EnrollAsync(Enroll(plan.Gkey, 1000M, new DateOnly(2026, 8, 5)));
+
+        // The August installment is paid late, in September.
+        var receipt = RdReceipt(enrollment.AdvanceAccountGkey, 1000M);
+        receipt.TransDate = new DateTime(2026, 9, 2);
+        await _receipts.CreateReceiptAsync(receipt);
+
+        var september = await _enrollments.GetMonthlyDuesAsync(2026, 9, includeArrears: false);
+        var october = await _enrollments.GetMonthlyDuesAsync(2026, 10, includeArrears: false);
+        var octoberWithArrears = await _enrollments.GetMonthlyDuesAsync(2026, 10, includeArrears: true);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(september.Rows.Select(x => (x.SeqNbr, x.IsDue, x.IsCollected, x.CollectedInMonth)), Is.EqualTo(new[]
+            {
+                (1, false, true, 1000M),   // due in August, collected in September
+                (2, true, false, 0M)       // due in September, unpaid
+            }));
+            Assert.That(september.Rows[0].StatusText, Is.EqualTo("Paid"));
+            Assert.That(september.Rows[0].LastPaidOn, Is.EqualTo(new DateOnly(2026, 9, 2)));
+            Assert.That(september.Rows[1].CustomerName, Is.EqualTo("Meena"));
+            Assert.That(september.Rows[1].AccountNbr, Is.EqualTo(enrollment.AccountNbr));
+            Assert.That(september.Rows[1].InstallmentText, Is.EqualTo("2 / 11"));
+
+            Assert.That(october.Rows.Select(x => x.SeqNbr), Is.EqualTo(new[] { 3 }));
+            Assert.That(octoberWithArrears.Rows.Select(x => (x.SeqNbr, x.IsArrear)), Is.EqualTo(new[]
+            {
+                (2, true), (3, false)
+            }));
+        });
+
+        Assert.That(() => _enrollments.GetMonthlyDuesAsync(2026, 13, includeArrears: false),
+            Throws.InstanceOf<AdvanceAccountBusinessException>());
+    }
+
+    [Test]
     public async Task Rd_receipt_needs_an_enrolled_scheme()
     {
         Assert.That(() => _receipts.CreateReceiptAsync(RdReceipt(null, 1000M)),
