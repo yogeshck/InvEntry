@@ -42,7 +42,8 @@ public sealed class SchemePlanService : ISchemePlanService
         SchemeTerms.BenefitInstallmentWaiver,
         SchemeTerms.BenefitPercentBonus,
         SchemeTerms.BenefitMakingChargeWaiver,
-        SchemeTerms.BenefitBonusGrams
+        SchemeTerms.BenefitBonusGrams,
+        SchemeTerms.BenefitFlatBonus
     };
 
     private readonly MijmsContext _context;

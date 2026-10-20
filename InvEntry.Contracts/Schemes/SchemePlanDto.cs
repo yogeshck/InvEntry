@@ -71,10 +71,10 @@ public class SchemeBenefitRuleDto
 
     public int SeqNbr { get; set; }
 
-    /// <summary>INSTALLMENT_WAIVER, PERCENT_BONUS, MAKING_CHARGE_WAIVER or BONUS_GRAMS.</summary>
+    /// <summary>INSTALLMENT_WAIVER, PERCENT_BONUS, MAKING_CHARGE_WAIVER, BONUS_GRAMS or FLAT_BONUS.</summary>
     public string BenefitType { get; set; } = string.Empty;
 
-    /// <summary>Installments, percent or grams, by benefit type.</summary>
+    /// <summary>Installments, percent, grams or rupees (FLAT_BONUS), by benefit type.</summary>
     public decimal BenefitValue { get; set; }
 
     /// <summary>MATURITY or PRECLOSURE.</summary>

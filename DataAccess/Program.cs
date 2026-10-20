@@ -140,6 +140,7 @@ builder.Services.AddScoped<ICustomerOrderWorkflow, CustomerOrderWorkflow>();
 builder.Services.AddScoped<IAdvanceAccountService, AdvanceAccountService>();
 builder.Services.AddScoped<ISchemePlanService, SchemePlanService>();
 builder.Services.AddScoped<ISchemeEnrollmentService, SchemeEnrollmentService>();
+builder.Services.AddScoped<ISchemeImportService, SchemeImportService>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
 builder.Services.AddScoped<IEstimateWorkflow, EstimateWorkflow>();
 builder.Services.AddScoped<IGstRuleProvider, GstRuleProvider>();

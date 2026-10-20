@@ -569,6 +569,17 @@
 
                     <dxwui:HamburgerSubMenuNavigationButton
                         NavigationTargetType=
+                            "{x:Type page:SchemeImportPage}"
+
+                        Content="Import RD Register"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
                             "{x:Type views:VoucherListView}"
 
                         Content="Voucher List"

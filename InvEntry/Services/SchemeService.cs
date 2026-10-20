@@ -21,6 +21,9 @@ public interface ISchemeService
     Task<SchemeEnrollmentDto> Enroll(SchemeEnrollmentRequest request);
 
     Task<IReadOnlyList<SchemeEnrollmentDto>> GetCustomerEnrollments(int customerGkey, bool includeClosed = false);
+
+    /// <summary>Checks (Apply = false) or imports the shop's RD register.</summary>
+    Task<SchemeImportResult> Import(SchemeImportRequest request);
 }
 
 public class SchemeService : ISchemeService
@@ -60,5 +63,10 @@ public class SchemeService : ISchemeService
     {
         return await _mijmsApiService.GetResponse<List<SchemeEnrollmentDto>>(
             $"api/SchemeEnrollment/customer/{customerGkey}?includeClosed={includeClosed.ToString().ToLowerInvariant()}");
+    }
+
+    public Task<SchemeImportResult> Import(SchemeImportRequest request)
+    {
+        return _mijmsApiService.Post<SchemeImportRequest, SchemeImportResult>("api/SchemeImport", request);
     }
 }

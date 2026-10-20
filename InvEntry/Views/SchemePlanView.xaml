@@ -223,7 +223,7 @@
                                                           IsTextEditable="False" />
                             </dxg:GridColumn.EditSettings>
                         </dxg:GridColumn>
-                        <dxg:GridColumn FieldName="BenefitValue" Header="Value (installments / % / grams)" Width="190">
+                        <dxg:GridColumn FieldName="BenefitValue" Header="Value (installments / % / grams / ₹)" Width="200">
                             <dxg:GridColumn.EditSettings>
                                 <dxe:TextEditSettings MaskType="Numeric" Mask="n3" MaskUseAsDisplayFormat="True" />
                             </dxg:GridColumn.EditSettings>

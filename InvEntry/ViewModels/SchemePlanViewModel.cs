@@ -42,7 +42,7 @@ public partial class SchemePlanViewModel : ObservableObject
 
     public ObservableCollection<string> BenefitTypes { get; } = new()
     {
-        "INSTALLMENT_WAIVER", "PERCENT_BONUS", "MAKING_CHARGE_WAIVER", "BONUS_GRAMS"
+        "INSTALLMENT_WAIVER", "PERCENT_BONUS", "MAKING_CHARGE_WAIVER", "BONUS_GRAMS", "FLAT_BONUS"
     };
 
     public ObservableCollection<string> AppliesOnValues { get; } = new() { "MATURITY", "PRECLOSURE" };

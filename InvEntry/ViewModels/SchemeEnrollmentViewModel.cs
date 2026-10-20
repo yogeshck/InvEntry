@@ -403,6 +403,7 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
             "PERCENT_BONUS" => $"{rule.BenefitValue:0.##}% bonus",
             "MAKING_CHARGE_WAIVER" => $"{rule.BenefitValue:0.##}% off making charges",
             "BONUS_GRAMS" => $"{rule.BenefitValue:0.###} g bonus",
+            "FLAT_BONUS" => $"Rs. {rule.BenefitValue:N2} bonus",
             _ => rule.BenefitType
         };
 

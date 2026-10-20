@@ -196,6 +196,7 @@ public sealed class Bootstrapper
                  .AddSingleton<CashReceiptViewModel>()
                  .AddSingleton<SchemePlanViewModel>()
                  .AddSingleton<SchemeEnrollmentViewModel>()
+                 .AddSingleton<SchemeImportViewModel>()
                  .AddSingleton<CustomerOrderDBViewListViewModel>()
                  .AddSingleton<CustomerOrderListViewModel>()
                  .AddSingleton<CustomerOrderViewModel>()

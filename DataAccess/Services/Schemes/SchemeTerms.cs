@@ -14,6 +14,7 @@ public static class SchemeTerms
     public const string BenefitPercentBonus = "PERCENT_BONUS";
     public const string BenefitMakingChargeWaiver = "MAKING_CHARGE_WAIVER";
     public const string BenefitBonusGrams = "BONUS_GRAMS";
+    public const string BenefitFlatBonus = "FLAT_BONUS";
 
     public const string InstallmentPending = "PENDING";
     public const string InstallmentPartial = "PARTIAL";
