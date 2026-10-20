@@ -7,6 +7,7 @@ using DevExpress.Xpf.Editors;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Printing;
 using DevExpress.XtraReports.UI;
+using InvEntry.Contracts.Advances;
 using InvEntry.Contracts.Invoices;
 using InvEntry.Extension;
 using InvEntry.Helper;
@@ -14,6 +15,7 @@ using InvEntry.Helpers;
 using InvEntry.Mappers.Invoices;
 using InvEntry.Models;
 using InvEntry.Models.Extensions;
+using InvEntry.Models.Settlements;
 using InvEntry.Reports;
 using InvEntry.Services;
 using InvEntry.Services.Customers;
@@ -1308,7 +1310,7 @@ public partial class InvoiceViewModel : ObservableObject
         return (decimal)metalPrice;
     }
 
-    private InvoiceSettlementViewModel ShowSettlementDialog()
+    private async Task<InvoiceSettlementViewModel?> ShowSettlementDialogAsync()
     {
         if (Header is null || Header.GKey <= 0)
         {
@@ -1389,6 +1391,10 @@ public partial class InvoiceViewModel : ObservableObject
             settlementViewModel.PaymentModes,
             "RD Adj");
 
+        // Advance Adj / RD Adj lines must name the customer account they use.
+        settlementViewModel.LoadAdvanceAccounts(
+            await LoadAdvanceAccountOptionsAsync(Header.CustGkey));
+
         var settlementView =
             new InvoiceSettlementView(
                 settlementViewModel)
@@ -1403,6 +1409,53 @@ public partial class InvoiceViewModel : ObservableObject
             ? settlementViewModel
             : null;
 
+    }
+
+    private async Task<IReadOnlyList<AdvanceAccountOption>> LoadAdvanceAccountOptionsAsync(
+        int? customerGkey)
+    {
+        if (customerGkey is not int gkey || gkey <= 0)
+            return Array.Empty<AdvanceAccountOption>();
+
+        var advanceAccountService =
+            _serviceProvider.GetService<IAdvanceAccountService>();
+
+        if (advanceAccountService is null)
+            return Array.Empty<AdvanceAccountOption>();
+
+        try
+        {
+            var accounts =
+                await advanceAccountService.GetAvailableAccounts(gkey)
+                ?? Array.Empty<AdvanceAccountSummary>();
+
+            return accounts
+                .Select(x => new AdvanceAccountOption
+                {
+                    AdvanceAccountGkey = x.AdvanceAccountGkey,
+                    AccountNbr = x.AccountNbr,
+                    AccountType = x.AccountType,
+                    SettlementMode = x.SettlementMode,
+                    BalanceAmount = x.BalanceAmount,
+                    MaturityDate = x.MaturityDate,
+                    CustomerOrderNbr = x.CustomerOrderNbr
+                })
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex,
+                "Advance / RD accounts could not be loaded for customer {CustomerGkey}", gkey);
+
+            _messageBoxService.ShowMessage(
+                "The customer's advance / RD balances could not be loaded. " +
+                "Advance Adj and RD Adj cannot be used for this settlement.",
+                "Advance / RD Accounts",
+                MessageButton.OK,
+                MessageIcon.Warning);
+
+            return Array.Empty<AdvanceAccountOption>();
+        }
     }
 
     private static void AddPaymentModeIfMissing(
@@ -1637,7 +1690,7 @@ public partial class InvoiceViewModel : ObservableObject
             return;
         }
 
-        var settlement = ShowSettlementDialog();
+        var settlement = await ShowSettlementDialogAsync();
 
         if (settlement is null)
             return;

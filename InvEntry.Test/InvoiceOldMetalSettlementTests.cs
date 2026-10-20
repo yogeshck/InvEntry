@@ -73,6 +73,20 @@ public sealed class InvoiceOldMetalSettlementTests
     public void AdvanceAndRd_AdjustRemainingReceivableWithoutDoubleDeduction()
     {
         var model = Settlement(50000, 30000);
+        // Advance Adj / RD Adj lines need a customer account with enough balance.
+        model.LoadAdvanceAccounts(new[]
+        {
+            new InvEntry.Models.Settlements.AdvanceAccountOption
+            {
+                AdvanceAccountGkey = 1, AccountNbr = "ADV-000001", AccountType = "OPEN",
+                SettlementMode = "Advance Adj", BalanceAmount = 5000
+            },
+            new InvEntry.Models.Settlements.AdvanceAccountOption
+            {
+                AdvanceAccountGkey = 2, AccountNbr = "RD-000002", AccountType = "SCHEME",
+                SettlementMode = "RD Adj", BalanceAmount = 2000
+            }
+        });
         model.Receipts.Add(new() { PaymentMode = "Advance Adj", Amount = 5000 });
         model.Receipts.Add(new() { PaymentMode = "RD Adj", Amount = 2000 });
         model.Receipts.Add(new() { PaymentMode = "Cash", Amount = 13000 });
