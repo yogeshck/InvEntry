@@ -12,11 +12,15 @@ public sealed class AdvanceReceiptPrintTests
         CompanyName = "MATHA JEWELLERS",
         Tagline = "Trusted since 1985",
         AddressLine1 = "12 Main Road",
+        AddressLine3 = "Near Bus Stand",
         Area = "Town Hall",
         District = "Thrissur",
+        GstCode = "32",
         State = "Kerala",
         Pincode = 680001,
         ContactNbr1 = "9876543210",
+        ContactNbr2 = "9446419916",
+        EmailId = "shop@example.com",
         GstNbr = "32ABCDE1234F1Z5"
     };
 
@@ -29,6 +33,46 @@ public sealed class AdvanceReceiptPrintTests
         report.ExportToPdf(OutputPath("AdvanceReceiptPrint_scheme.pdf"));
 
         Assert.That(report.Pages.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Two_copies_fit_side_by_side_on_one_a4_landscape_page()
+    {
+        var report = new AdvanceReceiptPrint(
+            SchemeReceipt(), Company, isReprint: false, AdvanceReceiptLayout.A4TwoCopies);
+
+        report.CreateDocument();
+        report.ExportToPdf(OutputPath("AdvanceReceiptPrint_a4_two_copies.pdf"));
+
+        var labels = report.AllControls<DevExpress.XtraReports.UI.XRLabel>().Select(x => x.Text).ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(report.Pages.Count, Is.EqualTo(1));
+            Assert.That(report.PaperKind, Is.EqualTo(DevExpress.Drawing.Printing.DXPaperKind.A4));
+            Assert.That(report.Landscape, Is.True);
+            Assert.That(labels, Has.One.EqualTo("CUSTOMER COPY"));
+            Assert.That(labels, Has.One.EqualTo("SHOP COPY"));
+            Assert.That(labels.Count(x => x == "RD-00012"), Is.EqualTo(2));
+        });
+    }
+
+    [Test]
+    public void Header_uses_the_invoice_logo_and_company_details()
+    {
+        var report = new AdvanceReceiptPrint(SchemeReceipt(), Company, isReprint: false);
+
+        var labels = report.AllControls<DevExpress.XtraReports.UI.XRLabel>().Select(x => x.Text).ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(report.AllControls<DevExpress.XtraReports.UI.XRPictureBox>().Single().ImageSource, Is.Not.Null);
+            Assert.That(labels, Does.Contain("MATHA JEWELLERS"));
+            Assert.That(labels, Does.Contain("GSTIN - 32ABCDE1234F1Z5"));
+            Assert.That(labels, Does.Contain("12 Main Road, Near Bus Stand, Town Hall, Thrissur, 32-Kerala"));
+            Assert.That(labels, Does.Contain("Ph: 9876543210, 9446419916"));
+            Assert.That(labels, Does.Contain("Email: shop@example.com"));
+        });
     }
 
     [Test]

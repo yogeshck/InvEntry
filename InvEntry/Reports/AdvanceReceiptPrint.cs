@@ -1,42 +1,96 @@
 using DevExpress.Drawing;
 using DevExpress.Drawing.Printing;
 using DevExpress.XtraPrinting;
+using DevExpress.XtraPrinting.Drawing;
 using DevExpress.XtraReports.UI;
 using InvEntry.Contracts.Advances;
 using InvEntry.Models;
 using InvEntry.Utils;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace InvEntry.Reports;
 
+/// <summary>Paper layout of an advance / RD installment receipt.</summary>
+public enum AdvanceReceiptLayout
+{
+    /// <summary>One copy on A5 portrait.</summary>
+    A5,
+
+    /// <summary>Customer copy and shop copy side by side on one A4 landscape sheet (two A5 halves).</summary>
+    A4TwoCopies
+}
+
 /// <summary>
-/// A5 receipt for an advance or a savings scheme (RD) installment, built from
-/// <see cref="AdvanceReceiptPrintDto"/>. Figures are as they stood right after
-/// the receipt, so a reprint matches the original.
+/// Receipt for an advance or a savings scheme (RD) installment, built from
+/// <see cref="AdvanceReceiptPrintDto"/>. The header and logo follow the invoice
+/// (<see cref="InvPrint25"/>). Figures are as they stood right after the
+/// receipt, so a reprint matches the original.
 /// </summary>
 public sealed class AdvanceReceiptPrint : XtraReport
 {
-    // A5 portrait in hundredths of an inch, with 0.3" margins.
-    private const float Width = 523F;
+    // One receipt is an A5 portrait page with 0.3" margins (hundredths of an inch).
+    private const float Margin = 30F;
+    private const float CopyWidth = 523F;
     private const float LabelWidth = 165F;
     private const float RowHeight = 21F;
+    private const float LogoWidth = 100F;
+    private const float LogoHeight = 70F;
+
+    // On A4 landscape the two A5 halves are separated by a cut line.
+    private const float A4UsableWidth = 1169F - 2 * Margin;
+    private const float SecondCopyX = A4UsableWidth - CopyWidth;
+
+    private static readonly Lazy<ImageSource?> InvoiceLogo = new(LoadInvoiceLogo);
 
     private readonly DetailBand _detail = new() { HeightF = 0F };
+    private float _x;
     private float _y;
 
     public AdvanceReceiptPrint(
         AdvanceReceiptPrintDto receipt,
         OrgThisCompanyView? company,
-        bool isReprint)
+        bool isReprint,
+        AdvanceReceiptLayout layout = AdvanceReceiptLayout.A5)
     {
-        PaperKind = DXPaperKind.A5;
-        Margins = new DXMargins(30, 30, 30, 30);
+        PaperKind = layout == AdvanceReceiptLayout.A4TwoCopies ? DXPaperKind.A4 : DXPaperKind.A5;
+        Landscape = layout == AdvanceReceiptLayout.A4TwoCopies;
+        Margins = new DXMargins((int)Margin, (int)Margin, (int)Margin, (int)Margin);
         Font = new DXFont("Segoe UI", 9F);
         Bands.Add(_detail);
-        Bands.Add(new TopMarginBand { HeightF = 30F });
-        Bands.Add(new BottomMarginBand { HeightF = 30F });
+        Bands.Add(new TopMarginBand { HeightF = Margin });
+        Bands.Add(new BottomMarginBand { HeightF = Margin });
+
+        if (layout == AdvanceReceiptLayout.A4TwoCopies)
+        {
+            var height = Math.Max(
+                AddCopy(receipt, company, isReprint, 0F, "CUSTOMER COPY"),
+                AddCopy(receipt, company, isReprint, SecondCopyX, "SHOP COPY"));
+
+            AddCutLine(height);
+            _detail.HeightF = height + 5F;
+        }
+        else
+        {
+            _detail.HeightF = AddCopy(receipt, company, isReprint, 0F, copyLabel: null) + 5F;
+        }
+    }
+
+    /// <summary>Adds one complete receipt at the given left offset; returns its height.</summary>
+    private float AddCopy(
+        AdvanceReceiptPrintDto receipt,
+        OrgThisCompanyView? company,
+        bool isReprint,
+        float x,
+        string? copyLabel)
+    {
+        _x = x;
+        _y = 0F;
+
+        if (copyLabel is not null)
+            AddText(copyLabel, 7.5F, DXFontStyle.Bold, TextAlignment.MiddleRight, 14F, Color.DimGray);
 
         AddCompanyHeader(company);
         AddTitle(receipt, isReprint);
@@ -53,31 +107,74 @@ public sealed class AdvanceReceiptPrint : XtraReport
 
         AddFooter(receipt);
 
-        _detail.HeightF = _y + 5F;
+        return _y;
     }
 
+    // =========================================================
+    // SECTIONS
+    // =========================================================
+
+    /// <summary>Same content, fonts and colours as the invoice header (InvPrint25).</summary>
     private void AddCompanyHeader(OrgThisCompanyView? company)
     {
         if (company is null)
             return;
 
-        AddText(company.CompanyName ?? string.Empty, 16F, DXFontStyle.Bold, TextAlignment.MiddleCenter, 28F);
+        var top = _y;
+        const float blockWidth = CopyWidth - LogoWidth - 10F;
 
-        if (!string.IsNullOrWhiteSpace(company.Tagline))
-            AddText(company.Tagline!, 8.5F, DXFontStyle.Italic, TextAlignment.MiddleCenter, 16F);
+        AddBlockLine(company.CompanyName, "Segoe UI", 12F, DXFontStyle.Bold, Color.RoyalBlue, blockWidth, 22F);
+        AddBlockLine(company.Tagline, "Times New Roman", 8F, DXFontStyle.Bold, Color.Blue, blockWidth, 15F);
 
-        var address = Join(", ", company.AddressLine1, company.AddressLine2, company.Area,
-            company.District, company.State, company.Pincode?.ToString());
-        if (address.Length > 0)
-            AddText(address, 8.5F, DXFontStyle.Regular, TextAlignment.MiddleCenter, 16F);
+        var address = Join(", ",
+            company.AddressLine1, company.AddressLine2, company.AddressLine3,
+            company.Area, company.District,
+            Join("-", company.GstCode, company.State));
+        AddBlockLine(address, "Times New Roman", 8F, DXFontStyle.Regular, Color.Black, blockWidth, 15F, multiline: true);
 
-        var contact = Join("   ",
-            Join(" / ", company.ContactNbr1, company.ContactNbr2) is { Length: > 0 } phones ? $"Ph: {phones}" : null,
-            string.IsNullOrWhiteSpace(company.GstNbr) ? null : $"GSTIN: {company.GstNbr}");
-        if (contact.Length > 0)
-            AddText(contact, 8.5F, DXFontStyle.Regular, TextAlignment.MiddleCenter, 16F);
+        var phones = Join(", ", company.ContactNbr1, company.ContactNbr2);
+        AddBlockLine(phones.Length > 0 ? $"Ph: {phones}" : null, "Times New Roman", 8F, DXFontStyle.Regular, Color.Black, blockWidth, 15F);
+        AddBlockLine(string.IsNullOrWhiteSpace(company.EmailId) ? null : $"Email: {company.EmailId}",
+            "Times New Roman", 8F, DXFontStyle.Regular, Color.Black, blockWidth, 15F);
 
-        AddLine();
+        var blockBottom = _y;
+
+        if (InvoiceLogo.Value is ImageSource logo)
+        {
+            _detail.Controls.Add(new XRPictureBox
+            {
+                ImageSource = logo,
+                LocationF = new PointF(_x + CopyWidth - LogoWidth, top),
+                SizeF = new SizeF(LogoWidth, LogoHeight),
+                Sizing = ImageSizeMode.ZoomImage
+            });
+        }
+
+        var gstTop = top + LogoHeight + 2F;
+        if (!string.IsNullOrWhiteSpace(company.GstNbr))
+        {
+            _detail.Controls.Add(new XRLabel
+            {
+                LocationF = new PointF(_x + CopyWidth - 220F, gstTop),
+                SizeF = new SizeF(220F, 15F),
+                Text = $"GSTIN - {company.GstNbr}",
+                Font = new DXFont("Arial", 8F, DXFontStyle.Bold),
+                TextAlignment = TextAlignment.MiddleRight,
+                Padding = new PaddingInfo(2, 2, 0, 0)
+            });
+        }
+
+        _y = Math.Max(blockBottom, gstTop + 15F);
+
+        // Gold rule under the header, as on the invoice.
+        _detail.Controls.Add(new XRLine
+        {
+            LocationF = new PointF(_x, _y + 2F),
+            SizeF = new SizeF(CopyWidth, 4F),
+            LineWidth = 2F,
+            ForeColor = Color.Gold
+        });
+        _y += 10F;
     }
 
     private void AddTitle(AdvanceReceiptPrintDto receipt, bool isReprint)
@@ -104,18 +201,17 @@ public sealed class AdvanceReceiptPrint : XtraReport
 
     private void AddAmount(decimal amount)
     {
-        var box = new XRLabel
+        _detail.Controls.Add(new XRLabel
         {
-            LocationF = new PointF(0F, _y),
-            SizeF = new SizeF(Width, 34F),
+            LocationF = new PointF(_x, _y),
+            SizeF = new SizeF(CopyWidth, 34F),
             Text = $"Amount received:  ₹ {amount:N2}",
             Font = new DXFont("Segoe UI", 14F, DXFontStyle.Bold),
             TextAlignment = TextAlignment.MiddleCenter,
             Borders = BorderSide.All,
             BorderWidth = 1F,
             Padding = new PaddingInfo(4, 4, 2, 2)
-        };
-        _detail.Controls.Add(box);
+        });
         _y += 36F;
 
         AddText(AmountInWords(amount), 8.5F, DXFontStyle.Italic, TextAlignment.MiddleCenter, 18F);
@@ -178,35 +274,80 @@ public sealed class AdvanceReceiptPrint : XtraReport
         AddText(note, 7.5F, DXFontStyle.Italic, TextAlignment.TopLeft, 30F, Color.DimGray, multiline: true);
 
         _y += 30F;
-        AddCell("Customer signature", 0F, Width / 2F, 8.5F, DXFontStyle.Regular, TextAlignment.MiddleLeft, BorderSide.Top);
-        AddCell("Authorised signatory", Width / 2F + 60F, Width / 2F - 60F, 8.5F, DXFontStyle.Regular, TextAlignment.MiddleRight, BorderSide.Top);
+        AddCell("Customer signature", 0F, CopyWidth / 2F, 8.5F, DXFontStyle.Regular, TextAlignment.MiddleLeft, BorderSide.Top);
+        AddCell("Authorised signatory", CopyWidth / 2F + 60F, CopyWidth / 2F - 60F, 8.5F, DXFontStyle.Regular, TextAlignment.MiddleRight, BorderSide.Top);
         _y += RowHeight + 6F;
 
         AddText($"Computer generated receipt · printed {DateTime.Now:dd-MM-yyyy HH:mm}",
             7F, DXFontStyle.Regular, TextAlignment.MiddleCenter, 14F, Color.Gray);
     }
 
+    private void AddCutLine(float height)
+    {
+        var x = CopyWidth + (SecondCopyX - CopyWidth) / 2F;
+
+        _detail.Controls.Add(new XRLine
+        {
+            LocationF = new PointF(x - 2F, 0F),
+            SizeF = new SizeF(4F, height),
+            LineDirection = LineDirection.Vertical,
+            LineStyle = DXDashStyle.Dot,
+            LineWidth = 1F,
+            ForeColor = Color.Gray
+        });
+    }
+
     // =========================================================
-    // LAYOUT HELPERS
+    // LAYOUT HELPERS (positions are relative to the current copy)
     // =========================================================
+
+    private void AddBlockLine(
+        string? text,
+        string fontName,
+        float size,
+        DXFontStyle style,
+        Color color,
+        float width,
+        float height,
+        bool multiline = false)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return;
+
+        _detail.Controls.Add(new XRLabel
+        {
+            LocationF = new PointF(_x, _y),
+            SizeF = new SizeF(width, multiline ? height * 2F : height),
+            Text = text,
+            Font = new DXFont(fontName, size, style),
+            ForeColor = color,
+            TextAlignment = multiline ? TextAlignment.TopLeft : TextAlignment.MiddleLeft,
+            Multiline = multiline,
+            WordWrap = multiline,
+            CanShrink = true,
+            Padding = new PaddingInfo(2, 2, 0, 0)
+        });
+
+        _y += multiline ? height * 2F : height;
+    }
 
     private void AddSection(string title)
     {
         _y += 4F;
-        AddCell(title, 0F, Width, 9.5F, DXFontStyle.Bold, TextAlignment.MiddleLeft, BorderSide.Bottom);
+        AddCell(title, 0F, CopyWidth, 9.5F, DXFontStyle.Bold, TextAlignment.MiddleLeft, BorderSide.Bottom);
         _y += RowHeight + 2F;
     }
 
     private void AddRow(string label, string value)
     {
         AddCell(label, 0F, LabelWidth, 9F, DXFontStyle.Regular, TextAlignment.MiddleLeft);
-        AddCell(value, LabelWidth, Width - LabelWidth, 9F, DXFontStyle.Bold, TextAlignment.MiddleLeft);
+        AddCell(value, LabelWidth, CopyWidth - LabelWidth, 9F, DXFontStyle.Bold, TextAlignment.MiddleLeft);
         _y += RowHeight;
     }
 
     private void AddPair(string label1, string value1, string label2, string value2)
     {
-        const float half = Width / 2F;
+        const float half = CopyWidth / 2F;
         AddCell(label1, 0F, 95F, 9F, DXFontStyle.Regular, TextAlignment.MiddleLeft);
         AddCell(value1, 95F, half - 95F, 9F, DXFontStyle.Bold, TextAlignment.MiddleLeft);
         AddCell(label2, half + 20F, 60F, 9F, DXFontStyle.Regular, TextAlignment.MiddleLeft);
@@ -225,8 +366,8 @@ public sealed class AdvanceReceiptPrint : XtraReport
     {
         var label = new XRLabel
         {
-            LocationF = new PointF(0F, _y),
-            SizeF = new SizeF(Width, height),
+            LocationF = new PointF(_x, _y),
+            SizeF = new SizeF(CopyWidth, height),
             Text = text,
             Font = new DXFont("Segoe UI", size, style),
             TextAlignment = alignment,
@@ -252,7 +393,7 @@ public sealed class AdvanceReceiptPrint : XtraReport
     {
         _detail.Controls.Add(new XRLabel
         {
-            LocationF = new PointF(x, _y),
+            LocationF = new PointF(_x + x, _y),
             SizeF = new SizeF(width, RowHeight),
             Text = text,
             Font = new DXFont("Segoe UI", size, style),
@@ -261,17 +402,6 @@ public sealed class AdvanceReceiptPrint : XtraReport
             BorderWidth = 1F,
             Padding = new PaddingInfo(2, 2, 0, 0)
         });
-    }
-
-    private void AddLine()
-    {
-        _detail.Controls.Add(new XRLine
-        {
-            LocationF = new PointF(0F, _y + 2F),
-            SizeF = new SizeF(Width, 4F),
-            LineWidth = 1F
-        });
-        _y += 8F;
     }
 
     private static string Join(string separator, params string?[] parts)
@@ -284,6 +414,23 @@ public sealed class AdvanceReceiptPrint : XtraReport
         }
 
         return string.Join(separator, list);
+    }
+
+    /// <summary>The logo of the invoice report (InvPrint25's picture box), so both print the same logo.</summary>
+    private static ImageSource? LoadInvoiceLogo()
+    {
+        try
+        {
+            var resources = new ComponentResourceManager(typeof(InvPrint25));
+            var image = resources.GetString("xrPictureBox2.ImageSource");
+
+            return string.IsNullOrWhiteSpace(image) ? null : new ImageSource("img", image);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Warning(ex, "Invoice logo could not be loaded for the receipt print");
+            return null;
+        }
     }
 
     /// <summary>"RUPEES FIVE THOUSAND AND FIFTY PAISE ONLY".</summary>
