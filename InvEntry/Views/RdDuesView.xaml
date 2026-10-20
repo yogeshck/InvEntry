@@ -21,15 +21,19 @@
     </dxmvvm:Interaction.Behaviors>
 
     <UserControl.Resources>
+        <!-- Cards set their own light background and dark text, so they stay
+             readable whatever the application theme's background is. -->
         <Style x:Key="CardValue" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#FF212121" />
         </Style>
         <Style x:Key="CardLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Foreground" Value="#FF555555" />
         </Style>
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="BorderBrush" Value="Gainsboro" />
+            <Setter Property="Background" Value="#FFF7F7F7" />
+            <Setter Property="BorderBrush" Value="#FFDDDDDD" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="4" />
             <Setter Property="Padding" Value="12,6" />
@@ -102,10 +106,10 @@
 
         <!-- SUMMARY -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="8,4,8,8">
-            <Border Style="{StaticResource Card}">
+            <Border Style="{StaticResource Card}" Background="#FFFDECEC" BorderBrush="#FFF2B8B8">
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardLabel}" Text="Still due" />
-                    <TextBlock Style="{StaticResource CardValue}" Foreground="Firebrick"
+                    <TextBlock Style="{StaticResource CardValue}" Foreground="#FFB71C1C"
                                Text="{Binding DueAmount, StringFormat='₹ {0:N2}'}" />
                     <TextBlock Style="{StaticResource CardLabel}"
                                Text="{Binding DueCount, StringFormat='{}{0} installment(s)'}" />
@@ -120,11 +124,11 @@
                                Text="{Binding ArrearCount, StringFormat='{}{0} installment(s)'}" />
                 </StackPanel>
             </Border>
-            <Border Style="{StaticResource Card}">
+            <Border Style="{StaticResource Card}" Background="#FFE8F5E9" BorderBrush="#FFA5D6A7">
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardLabel}"
                                Text="{Binding MonthTitle, StringFormat='Collected in {0}'}" />
-                    <TextBlock Style="{StaticResource CardValue}" Foreground="ForestGreen"
+                    <TextBlock Style="{StaticResource CardValue}" Foreground="#FF1B5E20"
                                Text="{Binding CollectedAmount, StringFormat='₹ {0:N2}'}" />
                     <TextBlock Style="{StaticResource CardLabel}"
                                Text="{Binding CollectedCount, StringFormat='{}{0} installment(s)'}" />
