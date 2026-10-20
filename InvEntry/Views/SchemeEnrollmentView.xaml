@@ -1,0 +1,229 @@
+<UserControl x:Class="InvEntry.Views.SchemeEnrollmentView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dxlc="http://schemas.devexpress.com/winfx/2008/xaml/layoutcontrol"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+             xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
+             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+             xmlns:ext="clr-namespace:InvEntry.Extension"
+             d:DataContext="{d:DesignInstance Type=viewmodels:SchemeEnrollmentViewModel}"
+             DataContext="{ext:DISource Type=viewmodels:SchemeEnrollmentViewModel}"
+             mc:Ignorable="d"
+             d:DesignHeight="700"
+             d:DesignWidth="1300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <dxb:BarContainerControl>
+            <dxb:MainMenuControl>
+                <dxb:BarButtonItem Content="New"
+                                   BarItemDisplayMode="ContentAndGlyph"
+                                   GlyphAlignment="Top"
+                                   GlyphSize="Large"
+                                   Glyph="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+                                   Command="{Binding ResetCommand}" />
+                <dxb:BarButtonItem Content="Reload Plans"
+                                   BarItemDisplayMode="ContentAndGlyph"
+                                   GlyphAlignment="Top"
+                                   GlyphSize="Large"
+                                   Glyph="{dx:DXImage 'Images/Actions/Download_32x32.png'}"
+                                   Command="{Binding LoadPlansCommand}" />
+            </dxb:MainMenuControl>
+        </dxb:BarContainerControl>
+
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="460" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ENROLL -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,8,0">
+                <dxlc:LayoutControl Orientation="Vertical" Padding="0">
+                    <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="Customer">
+                        <dxlc:LayoutItem Label="Mobile #">
+                            <dxe:TextEdit EditValue="{Binding CustomerPhoneNumber, Mode=TwoWay}"
+                                          Height="36"
+                                          FontSize="15">
+                                <dxmvvm:Interaction.Behaviors>
+                                    <dxmvvm:EventToCommand EventName="EditValueChanged"
+                                                           Command="{Binding FetchCustomerCommand}"
+                                                           PassEventArgsToCommand="True" />
+                                </dxmvvm:Interaction.Behaviors>
+                            </dxe:TextEdit>
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Name">
+                            <dxe:TextEdit EditValue="{Binding Customer.CustomerName}"
+                                          IsReadOnly="True"
+                                          FontWeight="SemiBold" />
+                        </dxlc:LayoutItem>
+                    </dxlc:LayoutGroup>
+
+                    <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="New scheme">
+                        <dxlc:LayoutItem Label="Plan">
+                            <dxe:ComboBoxEdit ItemsSource="{Binding Plans}"
+                                              EditValue="{Binding SelectedPlan, Mode=TwoWay}"
+                                              DisplayMember="PlanName"
+                                              IsTextEditable="False"
+                                              ImmediatePopup="True"
+                                              NullText="Select an active plan" />
+                        </dxlc:LayoutItem>
+                        <TextBlock Text="{Binding PlanSummary}"
+                                   TextWrapping="Wrap"
+                                   Foreground="#4B5563"
+                                   Margin="0,0,0,6" />
+                        <dxlc:LayoutItem Label="Monthly installment">
+                            <dxe:TextEdit EditValue="{Binding InstallmentAmount, Mode=TwoWay}"
+                                          MaskType="Numeric" Mask="n2" MaskUseAsDisplayFormat="True" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="First installment due">
+                            <dxe:DateEdit EditValue="{Binding StartDate, Mode=TwoWay}" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Nominee name">
+                            <dxe:TextEdit EditValue="{Binding NomineeName, Mode=TwoWay}" MaxLength="100" CharacterCasing="Upper" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Nominee relation">
+                            <dxe:TextEdit EditValue="{Binding NomineeRelation, Mode=TwoWay}" MaxLength="30" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Nominee mobile">
+                            <dxe:TextEdit EditValue="{Binding NomineeMobile, Mode=TwoWay}" MaxLength="15" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Collect first installment">
+                            <dxe:CheckEdit EditValue="{Binding CollectFirstInstallment, Mode=TwoWay}"
+                                           Content="Take the first month's payment now" />
+                        </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Payment mode">
+                            <dxe:ComboBoxEdit ItemsSource="{Binding PaymentModes}"
+                                              EditValue="{Binding PaymentMode, Mode=TwoWay}"
+                                              IsTextEditable="False" />
+                        </dxlc:LayoutItem>
+                        <Button Content="Enroll"
+                                Command="{Binding EnrollCommand}"
+                                IsEnabled="{Binding HasCustomer}"
+                                Height="36"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Margin="0,8,0,0" />
+                    </dxlc:LayoutGroup>
+                </dxlc:LayoutControl>
+            </ScrollViewer>
+
+            <!-- CUSTOMER SCHEMES -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="200" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Customer's schemes"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,4" />
+
+                <dxg:GridControl Grid.Row="1"
+                                 ItemsSource="{Binding CustomerSchemes}"
+                                 SelectedItem="{Binding SelectedScheme, Mode=TwoWay}"
+                                 AutoGenerateColumns="None">
+                    <dxg:GridControl.View>
+                        <dxg:TableView AllowEditing="False"
+                                       ShowGroupPanel="False"
+                                       NavigationStyle="Row" />
+                    </dxg:GridControl.View>
+                    <dxg:GridColumn FieldName="AccountNbr" Header="Account" Width="100" />
+                    <dxg:GridColumn FieldName="PlanName" Header="Plan" Width="*" />
+                    <dxg:GridColumn FieldName="InstallmentAmount" Header="Monthly" Width="90">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings DisplayFormat="N2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="InstallmentsPaid" Header="Paid" Width="50" />
+                    <dxg:GridColumn FieldName="TenureMonths" Header="Of" Width="40" />
+                    <dxg:GridColumn FieldName="TotalPaid" Header="Total paid" Width="100">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings DisplayFormat="N2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="BalanceWeight" Header="Grams" Width="70">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings DisplayFormat="N3" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="MaturityDate" Header="Matures" Width="90" />
+                    <dxg:GridColumn FieldName="Status" Header="Status" Width="70" />
+                </dxg:GridControl>
+
+                <TextBlock Grid.Row="2"
+                           Text="Installment schedule"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Margin="0,10,0,4" />
+
+                <dxg:GridControl Grid.Row="3"
+                                 ItemsSource="{Binding SelectedScheme.Installments}"
+                                 AutoGenerateColumns="None">
+                    <dxg:GridControl.View>
+                        <dxg:TableView AllowEditing="False"
+                                       ShowGroupPanel="False"
+                                       NavigationStyle="Row" />
+                    </dxg:GridControl.View>
+                    <dxg:GridColumn FieldName="SeqNbr" Header="#" Width="40" />
+                    <dxg:GridColumn FieldName="DueDate" Header="Due" Width="100" />
+                    <dxg:GridColumn FieldName="AmountDue" Header="Due amount" Width="100">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings DisplayFormat="N2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="AmountPaid" Header="Paid" Width="100">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings DisplayFormat="N2" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="WeightCredited" Header="Grams" Width="80">
+                        <dxg:GridColumn.EditSettings>
+                            <dxe:TextEditSettings DisplayFormat="N3" />
+                        </dxg:GridColumn.EditSettings>
+                    </dxg:GridColumn>
+                    <dxg:GridColumn FieldName="Status" Header="Status" Width="90" />
+                    <dxg:GridColumn FieldName="PaidOn" Header="Paid on" Width="*" />
+                </dxg:GridControl>
+
+                <!-- COLLECT PAYMENT -->
+                <StackPanel Grid.Row="4"
+                            Orientation="Horizontal"
+                            Margin="0,10,0,0">
+                    <TextBlock Text="Collect payment for the selected scheme:"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Margin="0,0,10,0" />
+                    <dxe:TextEdit EditValue="{Binding PaymentAmount, Mode=TwoWay}"
+                                  Width="140"
+                                  Height="34"
+                                  FontSize="15"
+                                  MaskType="Numeric" Mask="n2" MaskUseAsDisplayFormat="True" />
+                    <dxe:ComboBoxEdit ItemsSource="{Binding PaymentModes}"
+                                      EditValue="{Binding PaymentMode, Mode=TwoWay}"
+                                      IsTextEditable="False"
+                                      Width="130"
+                                      Height="34"
+                                      Margin="8,0" />
+                    <Button Content="Collect"
+                            Command="{Binding CollectPaymentCommand}"
+                            Width="110"
+                            Height="34"
+                            FontWeight="SemiBold" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -509,7 +509,7 @@
 
             <!-- =================================================
                  FINANCE
-                 ================================================= 
+                 ================================================= -->
 
             <dxwui:HamburgerSubMenu
                 Content="Finance"
@@ -547,6 +547,28 @@
 
                     <dxwui:HamburgerSubMenuNavigationButton
                         NavigationTargetType=
+                            "{x:Type page:SchemeEnrollmentPage}"
+
+                        Content="Scheme Enrollment"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
+                            "{x:Type page:SchemePlanPage}"
+
+                        Content="Scheme Plans"
+
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_CashVoucher.svg'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
                             "{x:Type views:VoucherListView}"
 
                         Content="Voucher List"
@@ -561,7 +583,7 @@
 
             </dxwui:HamburgerSubMenu>
 
-            -->
+            
 
             <!-- =================================================
                  INVENTORY

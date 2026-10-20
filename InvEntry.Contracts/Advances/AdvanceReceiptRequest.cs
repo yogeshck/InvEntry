@@ -54,6 +54,17 @@ public class AdvanceReceiptResponse
 
     public decimal BalanceAmount { get; set; }
 
+    /// <summary>Grams credited by a weight scheme receipt; 0 otherwise.</summary>
+    public decimal Weight { get; set; }
+
+    /// <summary>Rate per gram used for a weight scheme receipt.</summary>
+    public decimal? MetalRate { get; set; }
+
+    public decimal BalanceWeight { get; set; }
+
+    /// <summary>Installments of the scheme now fully paid (scheme receipts only).</summary>
+    public int? InstallmentsPaid { get; set; }
+
     /// <summary>True when the request was a retry of an already recorded receipt.</summary>
     public bool IsReplay { get; set; }
 }

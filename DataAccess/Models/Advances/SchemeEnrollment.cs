@@ -29,6 +29,9 @@ public partial class SchemeEnrollment
 
     public string? NomineeMobile { get; set; }
 
+    /// <summary>Client id of the enrollment request; a retry returns the original.</summary>
+    public Guid? ClientRequestId { get; set; }
+
     public string CreatedBy { get; set; } = null!;
 
     public DateTime CreatedOn { get; set; }

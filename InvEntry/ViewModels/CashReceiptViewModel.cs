@@ -3,7 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using DevExpress.Mvvm;
 using DevExpress.Xpf.Editors;
 using InvEntry.Contracts.Advances;
+using InvEntry.Contracts.Schemes;
 using InvEntry.Extension;
+using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
 using InvEntry.Utils.Options;
@@ -84,6 +86,16 @@ public partial class CashReceiptViewModel : ObservableObject
     [ObservableProperty]
     private Visibility invoiceFieldVisibility = Visibility.Collapsed;
 
+    // Recurring Deposit receipts pay one of the customer's enrolled schemes.
+    [ObservableProperty]
+    private ObservableCollection<SchemeEnrollmentDto> _customerSchemes = new();
+
+    [ObservableProperty]
+    private SchemeEnrollmentDto? _selectedScheme;
+
+    [ObservableProperty]
+    private Visibility schemeFieldVisibility = Visibility.Collapsed;
+
     //private ObservableCollection<KeyValuePair<int,string>> fromLedgerList;
 
     private bool createCustomer = false;
@@ -102,6 +114,7 @@ public partial class CashReceiptViewModel : ObservableObject
     private readonly IInvoiceService _invoiceService;
     private readonly IMtblLedgersService _mtblLedgersService;
     private readonly IAdvanceAccountService _advanceAccountService;
+    private readonly ISchemeService _schemeService;
 
     public CashReceiptViewModel(ICustomerService customerService,
                 IOrgThisCompanyViewService orgThisCompanyViewService,
@@ -111,7 +124,8 @@ public partial class CashReceiptViewModel : ObservableObject
                 IMtblReferencesService mtblReferencesService,
                 IInvoiceService invoiceService,
                 IInvoiceArReceiptService invoiceArReceiptService,
-                IAdvanceAccountService advanceAccountService
+                IAdvanceAccountService advanceAccountService,
+                ISchemeService schemeService
                 )
     {
 
@@ -124,6 +138,7 @@ public partial class CashReceiptViewModel : ObservableObject
         _mtblLedgersService = mtblLedgersService;
         _voucherService = voucherService;
         _advanceAccountService = advanceAccountService;
+        _schemeService = schemeService;
         _invoiceService = invoiceService;
         _invoiceArReceiptService = invoiceArReceiptService;
 
@@ -247,6 +262,60 @@ public partial class CashReceiptViewModel : ObservableObject
 
         if (creditReceipt)
             await FetchOutStandingAsync(customerPhoneNumber);
+
+        await LoadCustomerSchemesAsync();
+    }
+
+    /// <summary>
+    /// For a Recurring Deposit receipt, lists the customer's enrolled schemes
+    /// that still have installments due; a single scheme is selected.
+    /// </summary>
+    private async Task LoadCustomerSchemesAsync()
+    {
+        CustomerSchemes = new();
+        SelectedScheme = null;
+
+        if (TransactionType != AdvanceReceiptType.RecurringDeposit ||
+            Payer is null || Payer.GKey <= 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var schemes = await _schemeService.GetCustomerEnrollments((int)Payer.GKey);
+
+            CustomerSchemes = new(schemes.Where(x =>
+                x.Status == "ACTIVE" && x.NextInstallment is not null));
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(
+                "The customer's RD schemes could not be loaded." + Environment.NewLine + ApiErrorMessage.From(ex),
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Warning);
+            return;
+        }
+
+        if (CustomerSchemes.Count == 0)
+        {
+            _messageBoxService.ShowMessage(
+                "This customer has no active RD scheme. Enroll the customer in a scheme first (Finance > Scheme Enrollment).",
+                "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+            return;
+        }
+
+        if (CustomerSchemes.Count == 1)
+            SelectedScheme = CustomerSchemes[0];
+    }
+
+    partial void OnSelectedSchemeChanged(SchemeEnrollmentDto? value)
+    {
+        // Suggest what is due on the next installment; the cashier can change it.
+        if (value?.NextInstallment is { } next && Voucher is not null)
+        {
+            Voucher.TransAmount = next.AmountOutstanding;
+            OnPropertyChanged(nameof(Voucher));
+        }
     }
 
     private async Task FetchOutStandingAsync(String CustMobile)
@@ -314,11 +383,16 @@ public partial class CashReceiptViewModel : ObservableObject
         createCustomer = false;
         creditReceipt = false;
         _pendingAdvanceReceipt = null;
+        CustomerSchemes = new();
+        SelectedScheme = null;
     }
 
     partial void OnTransactionTypeChanged(string value)
     {
         InvoiceFieldVisibility = value == "Credit Receipt" ? Visibility.Visible : Visibility.Collapsed;
+        SchemeFieldVisibility = value == AdvanceReceiptType.RecurringDeposit ? Visibility.Visible : Visibility.Collapsed;
+
+        _ = LoadCustomerSchemesAsync();
     }
 
 
@@ -386,10 +460,29 @@ public partial class CashReceiptViewModel : ObservableObject
             return false;
         }
 
+        var isRd = TransactionType == AdvanceReceiptType.RecurringDeposit;
+        int? accountGkey = null;
+
+        if (isRd)
+        {
+            if (SelectedScheme is null)
+            {
+                _messageBoxService.ShowMessage(
+                    CustomerSchemes.Count == 0
+                        ? "This customer has no active RD scheme. Enroll the customer in a scheme first."
+                        : "Select the RD scheme this installment is for.",
+                    "Recurring Deposit", MessageButton.OK, MessageIcon.Exclamation);
+                return false;
+            }
+
+            accountGkey = SelectedScheme.AdvanceAccountGkey;
+        }
+
         // Same receipt retried -> same ClientRequestId; anything changed -> new receipt.
         if (_pendingAdvanceReceipt is null ||
             _pendingAdvanceReceipt.CustomerGkey != Payer.GKey ||
             _pendingAdvanceReceipt.ReceiptType != TransactionType ||
+            _pendingAdvanceReceipt.AdvanceAccountGkey != accountGkey ||
             _pendingAdvanceReceipt.Amount != amount)
         {
             _pendingAdvanceReceipt = new AdvanceReceiptRequest
@@ -397,6 +490,7 @@ public partial class CashReceiptViewModel : ObservableObject
                 ClientRequestId = Guid.NewGuid(),
                 CustomerGkey = Payer.GKey,
                 ReceiptType = TransactionType,
+                AdvanceAccountGkey = accountGkey,
                 Amount = amount
             };
         }
@@ -413,9 +507,15 @@ public partial class CashReceiptViewModel : ObservableObject
             Voucher.GKey = result.VoucherGkey;
             Voucher.VoucherNbr = result.VoucherNbr;
 
-            _messageBoxService.ShowMessage(
-                $"Voucher {result.VoucherNbr} created. Balance in {result.AccountNbr}: Rs. {result.BalanceAmount:N2}",
-                "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
+            var message = $"Voucher {result.VoucherNbr} created. Balance in {result.AccountNbr}: Rs. {result.BalanceAmount:N2}";
+
+            if (result.Weight > 0M)
+                message += $"{Environment.NewLine}{result.Weight:N3} g credited at Rs. {result.MetalRate:N2}/g; total {result.BalanceWeight:N3} g.";
+
+            if (result.InstallmentsPaid is int paid && SelectedScheme is not null)
+                message += $"{Environment.NewLine}Installments paid: {paid} of {SelectedScheme.TenureMonths}.";
+
+            _messageBoxService.ShowMessage(message, "Voucher Created", MessageButton.OK, MessageIcon.Exclamation);
 
             return true;
         }
@@ -423,7 +523,7 @@ public partial class CashReceiptViewModel : ObservableObject
         {
             _messageBoxService.ShowMessage(
                 "Error creating receipt. Saving again will not record it twice." +
-                Environment.NewLine + ex.Message,
+                Environment.NewLine + ApiErrorMessage.From(ex),
                 "Error", MessageButton.OK, MessageIcon.Error);
 
             return false;

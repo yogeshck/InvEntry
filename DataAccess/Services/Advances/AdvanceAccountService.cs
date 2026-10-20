@@ -1,6 +1,8 @@
 using DataAccess.Models;
+using DataAccess.Services.Schemes;
 using InvEntry.Contracts.Advances;
 using InvEntry.Contracts.Invoices;
+using InvEntry.Contracts.Schemes;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Services.Advances;
@@ -119,6 +121,37 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
             var account = await ResolveReceiptAccountAsync(
                 request, isRd, toLedger.Gkey, transDate, identity, cancellationToken);
 
+            // RD receipts pay a scheme: its terms decide the schedule and,
+            // for a weight scheme, the grams bought at today's rate.
+            SchemePlanDto? schemeTerms = null;
+            DailyRate? rate = null;
+            var weight = 0M;
+
+            if (isRd)
+            {
+                var termsSnapshot = await _context.SchemeEnrollments
+                    .AsNoTracking()
+                    .Where(x => x.AdvanceAccountGkey == account.Gkey)
+                    .Select(x => x.TermsSnapshot)
+                    .FirstOrDefaultAsync(cancellationToken)
+                    ?? throw new AdvanceAccountBusinessException(
+                        $"RD account {account.AccountNbr} has no scheme enrollment.");
+
+                schemeTerms = SchemeTerms.ReadSnapshot(termsSnapshot);
+
+                if (schemeTerms.SchemeType == SchemeType.Weight)
+                {
+                    rate = await FindDailyRateAsync(
+                        schemeTerms.Metal, schemeTerms.Purity, transDate, cancellationToken);
+
+                    weight = SchemeTerms.Grams(request.Amount, rate.Price!.Value);
+
+                    if (weight <= 0M)
+                        throw new AdvanceAccountBusinessException(
+                            $"₹{request.Amount:N2} buys less than 0.001 g at ₹{rate.Price:N2} per gram.");
+                }
+            }
+
             var voucher = new Voucher
             {
                 SeqNbr = await NextDailySequenceAsync(transDate, cancellationToken),
@@ -145,22 +178,30 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
                 EntryType = AdvanceLedgerEntryType.Receipt,
                 EntryDate = DateOnly.FromDateTime(transDate),
                 Amount = request.Amount,
-                Weight = 0M,
+                Weight = weight,
+                MetalRate = rate?.Price,
+                DailyRateGkey = rate?.Gkey,
                 VoucherGkey = voucher.Gkey,
                 SourceRef = sourceRef,
                 Narration = Truncate(
-                    $"{receiptType} {voucher.VoucherNbr} ({voucher.Mode})", 250),
+                    weight > 0M
+                        ? $"{receiptType} {voucher.VoucherNbr} ({voucher.Mode}) {weight:N3} g @ {rate!.Price:N2}"
+                        : $"{receiptType} {voucher.VoucherNbr} ({voucher.Mode})", 250),
                 CreatedBy = identity,
                 CreatedOn = now
             };
 
             _context.AdvanceLedgers.Add(ledger);
 
+            // Also locks the account row until commit, so concurrent receipts
+            // into the same scheme allocate installments one after another.
             var updated = await _context.CustomerAdvanceAccounts
                 .Where(x => x.Gkey == account.Gkey && x.Status == StatusActive)
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(x => x.BalanceAmount, x => x.BalanceAmount + request.Amount)
                     .SetProperty(x => x.TotalReceivedAmount, x => x.TotalReceivedAmount + request.Amount)
+                    .SetProperty(x => x.BalanceWeight, x => x.BalanceWeight + weight)
+                    .SetProperty(x => x.TotalReceivedWeight, x => x.TotalReceivedWeight + weight)
                     .SetProperty(x => x.ModifiedBy, identity)
                     .SetProperty(x => x.ModifiedOn, now),
                     cancellationToken);
@@ -169,12 +210,22 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
                 throw new AdvanceAccountBusinessException(
                     $"Advance account {account.AccountNbr} is no longer active.");
 
+            int? installmentsPaid = null;
+
+            if (schemeTerms is not null)
+            {
+                installmentsPaid = await AllocateToInstallmentsAsync(
+                    account.Gkey, schemeTerms, ledger, request.Amount, weight,
+                    ledger.EntryDate, identity, now, cancellationToken);
+            }
+
             await _context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            var balance = await _context.CustomerAdvanceAccounts
+            var balances = await _context.CustomerAdvanceAccounts
+                .AsNoTracking()
                 .Where(x => x.Gkey == account.Gkey)
-                .Select(x => x.BalanceAmount)
+                .Select(x => new { x.BalanceAmount, x.BalanceWeight })
                 .SingleAsync(cancellationToken);
 
             return new AdvanceReceiptResponse
@@ -186,7 +237,11 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
                 AccountNbr = account.AccountNbr,
                 AdvanceLedgerGkey = ledger.Gkey,
                 Amount = request.Amount,
-                BalanceAmount = balance,
+                BalanceAmount = balances.BalanceAmount,
+                Weight = weight,
+                MetalRate = rate?.Price,
+                BalanceWeight = balances.BalanceWeight,
+                InstallmentsPaid = installmentsPaid,
                 IsReplay = false
             };
         }
@@ -210,6 +265,72 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
         }
     }
 
+    /// <summary>
+    /// Spreads the receipt over the scheme's installments (read after the
+    /// account row is locked) and records which installments it paid.
+    /// Returns the number of installments now fully paid.
+    /// </summary>
+    private async Task<int> AllocateToInstallmentsAsync(
+        int accountGkey,
+        SchemePlanDto terms,
+        AdvanceLedger ledger,
+        decimal amount,
+        decimal weight,
+        DateOnly paidOn,
+        string identity,
+        DateTime now,
+        CancellationToken cancellationToken)
+    {
+        var enrollment = await _context.SchemeEnrollments
+            .Include(x => x.Installments)
+            .SingleAsync(x => x.AdvanceAccountGkey == accountGkey, cancellationToken);
+
+        var allocations = SchemeInstallmentAllocator.Allocate(
+            terms, enrollment.Installments.ToList(), amount, weight, paidOn);
+
+        foreach (var allocation in allocations)
+        {
+            _context.SchemeInstallmentAllocations.Add(new SchemeInstallmentAllocation
+            {
+                AdvanceLedger = ledger,
+                SchemeInstallmentGkey = allocation.Installment.Gkey,
+                Amount = allocation.Amount
+            });
+        }
+
+        enrollment.InstallmentsPaid = enrollment.Installments
+            .Count(x => x.Status == SchemeTerms.InstallmentPaid);
+        enrollment.ModifiedBy = identity;
+        enrollment.ModifiedOn = now;
+
+        return enrollment.InstallmentsPaid;
+    }
+
+    /// <summary>The rate entered for the receipt date; weight schemes never use an older rate.</summary>
+    private async Task<DailyRate> FindDailyRateAsync(
+        string? metal,
+        string? purity,
+        DateTime transDate,
+        CancellationToken cancellationToken)
+    {
+        var day = transDate.Date;
+        var nextDay = day.AddDays(1);
+
+        var rate = await _context.DailyRates
+            .AsNoTracking()
+            .Where(x => x.Metal == metal &&
+                        x.Purity == purity &&
+                        x.EffectiveDate >= day &&
+                        x.EffectiveDate < nextDay &&
+                        x.Price > 0M)
+            .OrderByDescending(x => x.EffectiveDate)
+            .ThenByDescending(x => x.Gkey)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return rate ?? throw new AdvanceAccountBusinessException(
+            $"Enter the {metal} {purity} rate for {day:dd-MM-yyyy} before taking a weight scheme receipt.");
+    }
+
     private async Task<AdvanceReceiptResponse?> FindReplayAsync(
         string sourceRef,
         CancellationToken cancellationToken)
@@ -226,9 +347,12 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
                 {
                     l.Gkey,
                     l.Amount,
+                    l.Weight,
+                    l.MetalRate,
                     a.AccountNbr,
                     AccountGkey = a.Gkey,
                     a.BalanceAmount,
+                    a.BalanceWeight,
                     VoucherGkey = (int?)v.Gkey,
                     v.VoucherNbr,
                     v.VoucherDate
@@ -237,6 +361,12 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
 
         if (row is null)
             return null;
+
+        var installmentsPaid = await _context.SchemeEnrollments
+            .AsNoTracking()
+            .Where(x => x.AdvanceAccountGkey == row.AccountGkey)
+            .Select(x => (int?)x.InstallmentsPaid)
+            .FirstOrDefaultAsync(cancellationToken);
 
         return new AdvanceReceiptResponse
         {
@@ -248,6 +378,10 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
             AdvanceLedgerGkey = row.Gkey,
             Amount = row.Amount,
             BalanceAmount = row.BalanceAmount,
+            Weight = row.Weight,
+            MetalRate = row.MetalRate,
+            BalanceWeight = row.BalanceWeight,
+            InstallmentsPaid = installmentsPaid,
             IsReplay = true
         };
     }
@@ -281,6 +415,11 @@ public sealed class AdvanceAccountService : IAdvanceAccountService
 
         if (existing is not null)
             return existing;
+
+        // RD money belongs to a scheme: its account is opened by enrollment.
+        if (isRd)
+            throw new AdvanceAccountBusinessException(
+                "The customer has no active RD scheme. Enroll the customer in a scheme before taking an RD receipt.");
 
         // First receipt of this kind for the customer: open an account. The number
         // needs the identity, so a temporary unique number is replaced after insert.

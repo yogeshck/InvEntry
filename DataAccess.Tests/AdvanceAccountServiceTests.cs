@@ -143,7 +143,7 @@ public sealed class AdvanceAccountServiceTests
     [Test]
     public async Task Retried_receipt_with_same_request_id_is_recorded_once()
     {
-        var request = Receipt(AdvanceReceiptType.RecurringDeposit, 1000M);
+        var request = Receipt(AdvanceReceiptType.AdvanceReceipt, 1000M);
 
         var first = await _service.CreateReceiptAsync(request);
 
@@ -153,7 +153,7 @@ public sealed class AdvanceAccountServiceTests
 
         var account = await _context.CustomerAdvanceAccounts.AsNoTracking().SingleAsync();
         var voucherType = await _context.VoucherTypes.AsNoTracking()
-            .SingleAsync(x => x.DocumentType == AdvanceReceiptType.RecurringDeposit);
+            .SingleAsync(x => x.DocumentType == AdvanceReceiptType.AdvanceReceipt);
 
         Assert.Multiple(() =>
         {
@@ -163,11 +163,11 @@ public sealed class AdvanceAccountServiceTests
             Assert.That(retry.AdvanceLedgerGkey, Is.EqualTo(first.AdvanceLedgerGkey));
             Assert.That(_context.Vouchers.Count(), Is.EqualTo(1));
             Assert.That(_context.AdvanceLedgers.Count(), Is.EqualTo(1));
-            Assert.That(account.AccountType, Is.EqualTo("SCHEME"));
-            Assert.That(account.MtblLedgersGkey, Is.EqualTo(_rdLedgerGkey));
+            Assert.That(account.AccountType, Is.EqualTo("OPEN"));
+            Assert.That(account.MtblLedgersGkey, Is.EqualTo(_advanceLedgerGkey));
             Assert.That(account.BalanceAmount, Is.EqualTo(1000M));
             Assert.That(account.TotalReceivedAmount, Is.EqualTo(1000M));
-            Assert.That(voucherType.LastUsedNumber, Is.EqualTo(1));
+            Assert.That(voucherType.LastUsedNumber, Is.EqualTo(8));
         });
     }
 
@@ -576,7 +576,7 @@ public sealed class AdvanceAccountServiceTests
     /// SQLite has no ROWVERSION and stores decimals as text (compared as text),
     /// so the test model generates the row version and stores money as REAL.
     /// </summary>
-    private sealed class SqliteMijmsContext(DbContextOptions<MijmsContext> options)
+    internal sealed class SqliteMijmsContext(DbContextOptions<MijmsContext> options)
         : MijmsContext(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)

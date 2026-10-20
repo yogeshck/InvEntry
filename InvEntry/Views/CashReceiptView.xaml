@@ -204,6 +204,20 @@
                         </dxe:ComboBoxEdit>
                     </dxlc:LayoutItem>
 
+                    <dxlc:LayoutItem Label="Scheme"
+                                     FontSize="14"
+                                     Margin="5"
+                                     Visibility="{Binding SchemeFieldVisibility}">
+                        <dxe:ComboBoxEdit Height="42"
+                                          FontWeight="SemiBold"
+                                          ItemsSource="{Binding CustomerSchemes}"
+                                          EditValue="{Binding SelectedScheme, Mode=TwoWay}"
+                                          DisplayMember="DisplayText"
+                                          IsTextEditable="False"
+                                          ImmediatePopup="True"
+                                          NullText="Select the RD scheme" />
+                    </dxlc:LayoutItem>
+
                     <dxlc:LayoutItem Label="Amount"
                                      FontSize="14"
                                      Margin="5">

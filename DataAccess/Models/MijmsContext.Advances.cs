@@ -137,6 +137,9 @@ public partial class MijmsContext
             entity.ToTable("SCHEME_ENROLLMENT");
 
             entity.HasIndex(e => e.AdvanceAccountGkey, "UQ_SCHEME_ENROLLMENT_ACCOUNT").IsUnique();
+            entity.HasIndex(e => e.ClientRequestId, "UX_SCHEME_ENROLLMENT_CLIENT_REQUEST")
+                .IsUnique()
+                .HasFilter("[CLIENT_REQUEST_ID] IS NOT NULL");
 
             entity.Property(e => e.Gkey).HasColumnName("GKEY");
             entity.Property(e => e.AdvanceAccountGkey).HasColumnName("ADVANCE_ACCOUNT_GKEY");
@@ -151,6 +154,7 @@ public partial class MijmsContext
             entity.Property(e => e.NomineeName).HasMaxLength(100).IsUnicode(false).HasColumnName("NOMINEE_NAME");
             entity.Property(e => e.NomineeRelation).HasMaxLength(30).IsUnicode(false).HasColumnName("NOMINEE_RELATION");
             entity.Property(e => e.NomineeMobile).HasMaxLength(15).IsUnicode(false).HasColumnName("NOMINEE_MOBILE");
+            entity.Property(e => e.ClientRequestId).HasColumnName("CLIENT_REQUEST_ID");
             entity.Property(e => e.CreatedBy).HasMaxLength(50).IsUnicode(false).HasColumnName("CREATED_BY");
             entity.Property(e => e.CreatedOn).HasColumnName("CREATED_ON");
             entity.Property(e => e.ModifiedBy).HasMaxLength(50).IsUnicode(false).HasColumnName("MODIFIED_BY");

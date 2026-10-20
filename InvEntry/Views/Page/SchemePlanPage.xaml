@@ -1,0 +1,13 @@
+<dxwui:NavigationPage x:Class="InvEntry.Views.Page.SchemePlanPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
+      xmlns:views="clr-namespace:InvEntry.Views"
+      mc:Ignorable="d"
+      d:DesignHeight="700" d:DesignWidth="1300">
+    <Grid>
+        <views:SchemePlanView />
+    </Grid>
+</dxwui:NavigationPage>
