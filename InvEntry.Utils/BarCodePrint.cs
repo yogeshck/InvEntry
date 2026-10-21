@@ -216,40 +216,40 @@ public static class BarCodePrint
             "^LL250\n" +
             "^MD10\n" +
 
-            "^FO5,5\n" +
+            "^FO5,45\n" +
             "^BY1,2.0,40\n" +
             "^BCN,40,N,N,N\n" +
             $"^FD{productCode}^FS\n" +
 
-            "^FO5,55\n" +
+            "^FO5,95\n" +
             "^A0N,20,20\n" +
             $"^FD{productCode}^FS\n" +
 
-            "^FO140,55\n" +
+            "^FO140,95\n" +
             "^A0N,18,18\n" +
             "^FD ^FS\n" +
 
-            "^FO10,85\n" +
+            "^FO10,125\n" +
             "^A0N,18,18\n" +
             $"^FD{companyName}^FS\n" +
 
-            "^FO250,5\n" +
+            "^FO250,45\n" +
             "^A0N,22,22\n" +
             $"^FD{productName}^FS\n" +
 
-            "^FO250,25\n" +
+            "^FO250,70\n" +
             "^A0N,20,20\n" +
             $"^FDGwt: {productWeight}^FS\n" +
 
-            "^FO250,45\n" +
+            "^FO250,95\n" +
             "^A0N,20,20\n" +
             $"^FD{stoneText}^FS\n" +
 
-            "^FO250,65\n" +
+            "^FO250,120\n" +
             "^A0N,20,20\n" +
             $"^FDMC: {vaPercent}^FS\n" +
 
-            "^FO250,85\n" +
+            "^FO250,145\n" +
             "^A0N,20,20\n" +
             $"^FDPurity: {productPurity}^FS\n" +
             "^XZ\n";

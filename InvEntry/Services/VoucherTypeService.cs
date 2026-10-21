@@ -14,7 +14,7 @@ namespace InvEntry.Services
 
         Task<VoucherType> CreateVoucherType(VoucherType voucherType);
 
-    //    Task<IEnumerable<VoucherType>> GetAll(VoucherTypeSearchOption options);
+        Task<IEnumerable<VoucherType>> GetAll();
 
         Task UpdateVoucherType(VoucherType voucherType);
     }
@@ -38,10 +38,10 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<VoucherType>($"api/VoucherType/{voucherTypeKey}");
         }
 
-        //public async Task<IEnumerable<VoucherType>> GetAll(VoucherSearchOption options)
-        //{
-        //    return await _mijmsApiService.PostEnumerable<VoucherType, VoucherSearchOption>($"api/voucher/filter", options);
-        //}
+        public async Task<IEnumerable<VoucherType>> GetAll()
+        {
+            return await _mijmsApiService.GetEnumerable<VoucherType>("api/VoucherType");
+        }
 
         public async Task UpdateVoucherType(VoucherType voucherType)
         {

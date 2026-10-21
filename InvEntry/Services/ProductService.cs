@@ -15,6 +15,8 @@ namespace InvEntry.Services
 
         Task<Product> GetByCategory(string category);
 
+        Task<IEnumerable<Product>> GetAll();
+
         Task CreateProduct(Product product);
 
         Task UpdateProduct(Product product);
@@ -44,14 +46,20 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<Product>($"api/product/{category}");
         }
 
+        public async Task<IEnumerable<Product>> GetAll()
+        {
+            return await _mijmsApiService.GetEnumerable<Product>("api/product");
+        }
+
         public async Task CreateProduct(Product product)
         {
             await _mijmsApiService.Post($"api/product/", product);
         }
 
+        // The API route takes the numeric GKey, not the product Id.
         public async Task UpdateProduct(Product product)
         {
-            await _mijmsApiService.Put($"api/product/{product.Id}", product);
+            await _mijmsApiService.Put($"api/product/{product.GKey}", product);
         }
     }
 }

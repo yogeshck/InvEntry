@@ -121,6 +121,12 @@
                 <!--   <dxg:GridColumn FieldName="SoldQty" Header="Sold Qty" ReadOnly="True" Width="70"/>
                 <dxg:GridColumn FieldName="VApercent" Header="VA %" ReadOnly="True" Width="70"/> -->
             </dxg:GridControl.Columns>
+            <dxg:GridControl.TotalSummary>
+                <dxg:GridSummaryItem FieldName="StockQty" SummaryType="Sum" DisplayFormat="Qty: {0:##,##,###}" />
+                <dxg:GridSummaryItem FieldName="GrossWeight" SummaryType="Sum" DisplayFormat="Gross: {0:##,##,###.000}" />
+                <dxg:GridSummaryItem FieldName="NetWeight" SummaryType="Sum" DisplayFormat="Net: {0:##,##,###.000}" />
+                <dxg:GridSummaryItem FieldName="BalanceWeight" SummaryType="Sum" DisplayFormat="Balance: {0:##,##,###.000}" />
+            </dxg:GridControl.TotalSummary>
         </dxg:GridControl>
     </Grid>
 </dxwui:NavigationPage>

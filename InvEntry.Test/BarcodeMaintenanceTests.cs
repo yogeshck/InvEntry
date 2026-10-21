@@ -490,6 +490,7 @@ public class BarcodeMaintenanceTests
         public Task<Product> GetByCategory(string category) => throw new AssertionException("Category fallback is not allowed.");
         public Task CreateProduct(Product product) => Task.CompletedTask;
         public Task UpdateProduct(Product product) => Task.CompletedTask;
+        public Task<IEnumerable<Product>> GetAll() => Task.FromResult<IEnumerable<Product>>(Array.Empty<Product>());
     }
 
     private sealed class MappingStockSummaryService(params ProductStockSummary[] summaries) : IProductStockSummaryService
@@ -518,6 +519,7 @@ public class BarcodeMaintenanceTests
         public Task<Product> GetByCategory(string category) => throw new AssertionException("Category fallback is not allowed.");
         public Task CreateProduct(Product product) => Task.CompletedTask;
         public Task UpdateProduct(Product product) => Task.CompletedTask;
+        public Task<IEnumerable<Product>> GetAll() => Task.FromResult<IEnumerable<Product>>(Array.Empty<Product>());
     }
 
     private sealed class StubStockSummaryService(ProductStockSummary? value) : IProductStockSummaryService

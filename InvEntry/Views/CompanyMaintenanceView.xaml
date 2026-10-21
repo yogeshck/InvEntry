@@ -1,0 +1,49 @@
+<dxwui:NavigationPage x:Class="InvEntry.Views.CompanyMaintenanceView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
+      xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+      xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+      xmlns:ext="clr-namespace:InvEntry.Extension"
+      xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d"
+      DataContext="{ext:DISource Type=viewmodels:CompanyMaintenanceViewModel}"
+      d:DataContext="{d:DesignInstance Type=viewmodels:CompanyMaintenanceViewModel}"
+      d:DesignHeight="450" d:DesignWidth="900">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Company Master" FontSize="20" FontWeight="Bold" Margin="0,0,0,12" />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="Refresh" Width="100" Height="32" Margin="0,0,8,0" Command="{Binding RefreshCommand}" />
+            <Button Content="Edit Company" Width="130" Height="32" Click="EditButton_Click" />
+            <TextBlock Text="{Binding Error}" Foreground="#C62828" VerticalAlignment="Center" Margin="16,0,0,0" />
+        </StackPanel>
+
+        <dxg:GridControl Grid.Row="2" ItemsSource="{Binding Companies}"
+                         SelectedItem="{Binding SelectedCompany, Mode=TwoWay}"
+                         MouseDoubleClick="Grid_MouseDoubleClick" AutoGenerateColumns="None">
+            <dxg:GridControl.View>
+                <dxg:TableView AllowEditing="False" ShowGroupPanel="False" ShowAutoFilterRow="True"
+                               NavigationStyle="Row" AutoWidth="True" FontSize="14" />
+            </dxg:GridControl.View>
+            <dxg:GridControl.Columns>
+                <dxg:GridColumn FieldName="Name" Header="Company Name" Width="240" ReadOnly="True" />
+                <dxg:GridColumn FieldName="Tagline" Header="Tagline" Width="200" ReadOnly="True" />
+                <dxg:GridColumn FieldName="PanNbr" Header="PAN" Width="110" ReadOnly="True" />
+                <dxg:GridColumn FieldName="GstNbr" Header="GSTIN" Width="160" ReadOnly="True" />
+                <dxg:GridColumn FieldName="ContactNbr1" Header="Contact" Width="120" ReadOnly="True" />
+                <dxg:GridColumn FieldName="EmailId" Header="Email" Width="180" ReadOnly="True" />
+                <dxg:GridColumn FieldName="ThisCompany" Header="This Company" Width="110" ReadOnly="True" />
+            </dxg:GridControl.Columns>
+        </dxg:GridControl>
+    </Grid>
+</dxwui:NavigationPage>
