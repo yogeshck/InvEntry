@@ -44,9 +44,7 @@ public partial class ProductStockSummaryListViewModel : ObservableObject
     private async Task RefreshStockSummaryAsync()
     {
         var pStockSummaryResult = await _pStockSummaryService.GetAll();
-        if (pStockSummaryResult is not null)
-            PStockSummary = null;
-            PStockSummary = new(pStockSummaryResult);
+        PStockSummary = new(pStockSummaryResult ?? []);
     }
 
 }

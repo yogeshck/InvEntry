@@ -1,0 +1,71 @@
+<Window x:Class="InvEntry.Views.CompanyEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Company"
+        Width="600" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        FontSize="14">
+
+    <StackPanel Margin="16">
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Company name *" VerticalAlignment="Center" />
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Tagline" VerticalAlignment="Center" />
+            <TextBox Text="{Binding Tagline, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="PAN" VerticalAlignment="Center" />
+            <TextBox Width="200" HorizontalAlignment="Left" CharacterCasing="Upper"
+                     Text="{Binding PanNbr, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="GSTIN" VerticalAlignment="Center" />
+            <TextBox Width="260" HorizontalAlignment="Left" CharacterCasing="Upper"
+                     Text="{Binding GstNbr, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="TIN" VerticalAlignment="Center" />
+            <TextBox Text="{Binding TinNbr, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="CIN" VerticalAlignment="Center" />
+            <TextBox Text="{Binding CinNbr, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Service tax no." VerticalAlignment="Center" />
+            <TextBox Text="{Binding ServiceTaxNbr, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Contact no. 1" VerticalAlignment="Center" />
+            <TextBox Text="{Binding ContactNbr1, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Contact no. 2" VerticalAlignment="Center" />
+            <TextBox Text="{Binding ContactNbr2, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Email" VerticalAlignment="Center" />
+            <TextBox Text="{Binding EmailId, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Notes" VerticalAlignment="Top" />
+            <TextBox Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                     Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" />
+        </DockPanel>
+        <DockPanel Margin="0,4">
+            <TextBlock Width="170" Text="Address reference" VerticalAlignment="Center" />
+            <TextBox Text="{Binding AddressGkey, Mode=OneWay}" IsReadOnly="True" />
+        </DockPanel>
+
+        <TextBlock Foreground="#C62828" TextWrapping="Wrap" Margin="0,12,0,0" Text="{Binding Error}" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Save" Width="110" Height="34" IsDefault="True" Margin="0,0,8,0"
+                    Command="{Binding SaveCommand}" />
+            <Button Content="Cancel" Width="110" Height="34" IsCancel="True" />
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -42,5 +42,11 @@ namespace InvEntry.Models
         public string? GstNbr { get; set; }
 
         public bool? ThisCompany { get; set; }
+
+        public string? ContactNbr1 { get; set; }
+
+        public string? ContactNbr2 { get; set; }
+
+        public string? EmailId { get; set; }
     }
 }

@@ -661,6 +661,16 @@
                                                             Tag="{dx:DXImage 'SvgImages/Data/Summary.svg'}"
                                                             HideMenuWhenSelected="True" />
 
+                    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:ProductStockSummaryListView}"
+                                                            Content="Product Stock Summary"
+                                                            Tag="{dx:DXImage 'SvgImages/Data/Summary.svg'}"
+                                                            HideMenuWhenSelected="True" />
+
+                    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:ProductMaintenanceView}"
+                                                            Content="Product Maintenance"
+                                                            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Product.svg'}"
+                                                            HideMenuWhenSelected="True" />
+
 
                 </dxwui:HamburgerSubMenu.Items>
 
@@ -737,6 +747,16 @@
 
                     <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type page:SettingsPage}"
                                                             Content="Price Setting"
+                                                            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Price.svg'}"
+                                                            HideMenuWhenSelected="True" />
+
+                    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:VoucherTypeMaintenanceView}"
+                                                            Content="Voucher Types"
+                                                            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Price.svg'}"
+                                                            HideMenuWhenSelected="True" />
+
+                    <dxwui:HamburgerSubMenuNavigationButton NavigationTargetType="{x:Type views:CompanyMaintenanceView}"
+                                                            Content="Company Master"
                                                             Tag="{dx:DXImage 'SvgImages/Business Objects/BO_Price.svg'}"
                                                             HideMenuWhenSelected="True" />
 
