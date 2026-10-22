@@ -4,6 +4,7 @@ using DevExpress.Mvvm;
 using DevExpress.Mvvm.Native;
 using DevExpress.Xpf.Grid;
 using DevExpress.Xpf.Core;
+using InvEntry.Contracts.Invoices;
 using InvEntry.Extension;
 using InvEntry.Models;
 using InvEntry.Services;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -55,12 +57,6 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     private DateSearchOption _searchOption;
 
     [ObservableProperty]
-    private string selectedPaymentType;
-
-    [ObservableProperty]
-    private decimal _adjustmentAmount;
-
-    [ObservableProperty]
     private decimal customerOutstanding;
 
     [ObservableProperty]
@@ -68,9 +64,6 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
 
     [ObservableProperty]
     private DateTime _Today = DateTime.Today;
-
-    [ObservableProperty]
-    private decimal invBalance;
 
     private readonly ICustomerService _customerService;
     private readonly IInvoiceService _invoiceService;
@@ -115,6 +108,7 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         OsInvoices = new();
         mobileNbrs = new();
         OsCustomers = new();
+        NewReceipts.CollectionChanged += OnNewReceiptsChanged;
 
         PopulateMtblRefNameList();
 
@@ -143,13 +137,12 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     {
         var mtblRefList = await _mtblReferencesService.GetReferenceList("PAYMENT_MODE");
 
+        // Credit and advance / RD adjustments are settled elsewhere, not collected here.
         PaymentModeList = new(mtblRefList
                                 .Select(x => x.RefValue)
+                                .Where(InvoiceCollectionRules.IsCollectable)
                                 .OrderBy(x => x)
                              );
-
-        var crDisc = "CR DISCOUNT";
-        PaymentModeList.Add(crDisc);
 
     }
 
@@ -159,35 +152,49 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     {
         OsInvoices.Clear();
         mobileNbrs.Clear();
-        InvBalance = 0;
 
         var waitVM = WaitIndicatorVM.ShowIndicator("Please wait.... processing your request.... .");
 
         SplashScreenManager.CreateWaitIndicator(waitVM).Show();
 
-        var OsInvlist = await _invoiceService.GetOutStanding(SearchOption);
-
-        if (OsInvlist is not null)
+        try
         {
-            foreach (var invoice in OsInvlist)
+            var OsInvlist = await _invoiceService.GetOutStanding(SearchOption);
+
+            if (OsInvlist is not null)
             {
-                OsInvoices.Add(invoice);
-                mobileNbrs.Add(invoice.CustMobile);
+                foreach (var invoice in OsInvlist)
+                {
+                    OsInvoices.Add(invoice);
+                    mobileNbrs.Add(invoice.CustMobile);
+                }
+            }
+
+            if (mobileNbrs.Count > 0)
+            {
+                OsCustomers.Clear();
+                var cust = await _customerService.GetCustomers(mobileNbrs);
+
+                foreach (var c in cust)
+                {
+                    OsCustomers.Add(c);
+                }
             }
         }
-
-        if (mobileNbrs.Count > 0)
+        catch (Exception ex)
         {
-            OsCustomers.Clear();
-            var cust = await _customerService.GetCustomers(mobileNbrs);
+            Serilog.Log.Error(ex, "Loading outstanding invoices failed");
 
-            foreach (var c in cust)
-            {
-                OsCustomers.Add(c);
-            }
+            // The constructor's first load runs on a pool thread while the UI thread waits on it,
+            // so only prompt when already on the UI thread (the Refresh button).
+            if (Application.Current?.Dispatcher.CheckAccess() == true)
+                _messageBoxService.ShowMessage("Could not load outstanding invoices. Please try Refresh again.\n\n" + ex.Message,
+                                               "Outstanding Invoices", MessageButton.OK, MessageIcon.Error);
         }
-
-        SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM).Close();
+        finally
+        {
+            SplashScreenManager.ActiveSplashScreens.FirstOrDefault(x => x.ViewModel == waitVM)?.Close();
+        }
     }
 
     [RelayCommand]
@@ -195,12 +202,9 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     {
         if (SelectedInvoice is null) return;
 
-        var arReceiptsList = await _invoiceArReceiptService.GetByInvHdrGKey(SelectedInvoice.GKey);
+        var arReceiptsList = await _invoiceArReceiptService.GetByInvHdrGKey(SelectedInvoice.GKey, SelectedInvoice.InvNbr);
 
-        if (arReceiptsList is not null)
-            SelectedInvoice.ReceiptLines = new(arReceiptsList);
-
-        arReceiptsList = [.. arReceiptsList.OrderBy(c => c.GKey)];
+        SelectedInvoice.ReceiptLines = new((arReceiptsList ?? []).OrderBy(c => c.SeqNbr));
 
         SelectedCustomer = await _customerService.GetCustomer(SelectedInvoice.CustMobile);
 
@@ -213,84 +217,120 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void CellUpdate(CellValueChangedEventArgs args)
+    // ---- Receipt entry grid: several receipts (cash, UPI, card, discount ...) entered
+    // ---- together and saved in one go, never past the invoice balance.
+
+    public ObservableCollection<CollectionEntryLine> NewReceipts { get; } = [];
+
+    [ObservableProperty]
+    private decimal _entryTotal;
+
+    [ObservableProperty]
+    private decimal _balanceAfterEntry;
+
+    [ObservableProperty]
+    private bool _isOverBalance;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveReceiptsCommand))]
+    private bool _isSaving;
+
+    partial void OnSelectedInvoiceChanged(InvoiceHeader value)
     {
-
-        if (args.Row is InvoiceArReceipt arInvRctline)
-        {
-            EvaluateArRctLine(arInvRctline);
-        }
-
+        NewReceipts.Clear();
+        RecalculateEntry();
     }
 
-    private void EvaluateArRctLine(InvoiceArReceipt arInvRctLine)
+    private void OnNewReceiptsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if (e.NewItems is not null)
+            foreach (CollectionEntryLine line in e.NewItems)
+                line.PropertyChanged += OnEntryLineChanged;
+        if (e.OldItems is not null)
+            foreach (CollectionEntryLine line in e.OldItems)
+                line.PropertyChanged -= OnEntryLineChanged;
 
-        if (string.IsNullOrEmpty(arInvRctLine.TransactionType))
+        RecalculateEntry();
+    }
+
+    private void OnEntryLineChanged(object? sender, PropertyChangedEventArgs e) => RecalculateEntry();
+
+    private void RecalculateEntry()
+    {
+        EntryTotal = NewReceipts.Sum(x => x.Amount);
+        BalanceAfterEntry = (SelectedInvoice?.InvBalance).GetValueOrDefault() - EntryTotal;
+        IsOverBalance = BalanceAfterEntry < 0;
+        SaveReceiptsCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void AddReceiptLine()
+    {
+        if (SelectedInvoice is null) return;
+
+        // Each new line offers whatever is still left to collect.
+        NewReceipts.Add(new CollectionEntryLine
         {
+            PaymentType = NewReceipts.Count == 0 ? "Cash" : null,
+            Amount = Math.Max(BalanceAfterEntry, 0M)
+        });
+    }
+
+    [RelayCommand]
+    private void RemoveReceiptLine(CollectionEntryLine? line)
+    {
+        if (line is not null)
+            NewReceipts.Remove(line);
+    }
+
+    private bool CanSaveReceipts() => !IsSaving && SelectedInvoice is not null && NewReceipts.Count > 0;
+
+    [RelayCommand(CanExecute = nameof(CanSaveReceipts))]
+    private async Task SaveReceipts()
+    {
+        var invoice = SelectedInvoice;
+        if (invoice is null) return;
+
+        var lines = NewReceipts.Select(x => x.ToModel()).ToList();
+        var error = InvoiceCollectionRules.Validate(invoice.InvBalance.GetValueOrDefault(), lines);
+        if (error is not null)
+        {
+            _messageBoxService.ShowMessage(error, "Outstanding Adjustment", MessageButton.OK, MessageIcon.Warning);
             return;
         }
 
-        if (!arInvRctLine.BalBeforeAdj.HasValue)
-            arInvRctLine.BalBeforeAdj = SelectedInvoice.InvBalance.GetValueOrDefault();
-
-        arInvRctLine.BalanceAfterAdj = arInvRctLine.BalBeforeAdj.GetValueOrDefault() -
-                                        arInvRctLine.AdjustedAmount.GetValueOrDefault();
-
-        if (arInvRctLine.TransactionType == "Cash" || arInvRctLine.TransactionType == "Refund")
+        IsSaving = true;
+        try
         {
-            arInvRctLine.ModeOfReceipt = "Cash";
+            var response = await _invoiceService.SaveCollectionAsync(new SaveInvoiceCollectionRequest
+            {
+                InvoiceGkey = invoice.GKey,
+                InvNbr = invoice.InvNbr,
+                ReceivedOn = PaidOn,
+                Lines = lines
+            });
+
+            invoice.InvBalance = response.InvBalance;
+            invoice.RecdAmount = response.RecdAmount;
+            NewReceipts.Clear();
+            await SelectionInvoiceChanged();
+
+            _messageBoxService.ShowMessage(
+                $"Saved {response.VoucherNumbers.Count} receipt(s): {string.Join(", ", response.VoucherNumbers)}.\n" +
+                $"Balance on {response.InvNbr} is now {response.InvBalance:N2}.",
+                "Outstanding Adjustment", MessageButton.OK, MessageIcon.None);
         }
-        else if (arInvRctLine.TransactionType == "Credit")
+        catch (Exception ex)
         {
-            arInvRctLine.ModeOfReceipt = "Credit";
+            Serilog.Log.Error(ex, "Outstanding receipts failed for {InvNbr}", invoice.InvNbr);
+            _messageBoxService.ShowMessage("The receipts were not saved; nothing was changed. Please check and try again.\n\n" + ex.Message,
+                                           "Outstanding Adjustment", MessageButton.OK, MessageIcon.Error);
         }
-        else
+        finally
         {
-            arInvRctLine.ModeOfReceipt = "Bank";
+            IsSaving = false;
+            RecalculateEntry();
         }
-
-        //  EvaluateHeader();
-
-    }
-
-    [RelayCommand]
-    private async Task ApplyAdjustment()
-    {
-
-        if (AdjustmentAmount > 0)
-        {
-
-            //accepting single row from user, create invoice receipts based on this single row
-            //For each Receipts row - seperate Voucher has to be created
-
-            var voucher = CreateVoucher();
-            voucher = await SaveVoucher(voucher);
-
-            var arReceipts = CreateArReceipts(voucher);
-
-            InvBalanceCheck();
-
-            EvaluateArRctLine(arReceipts);
-
-            await SaveArReceipts(arReceipts);
-
-            await UpdateInvoice(SelectedInvoice);
-
-        }
-        else
-        {
-            _messageBoxService.ShowMessage("Invalid Amount.", "Invalid AdjustmentAmount",
-                            MessageButton.OK, MessageIcon.None);
-            return;
-        }
-
-        ResetAdjPanel();
-        await SelectionInvoiceChanged();
-
-        _messageBoxService.ShowMessage("Sucessfully adjusted against outstanding Invoice amount.", "Outstanding Adjustment",
-                                    MessageButton.OK, MessageIcon.None);
     }
 
     /*    private ProductView? ProductStockSelection()
@@ -320,45 +360,6 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
     private void SelectionChanged()
     {
         PrintInvoiceCommand.NotifyCanExecuteChanged();
-    }
-
-    private void InvBalanceCheck()
-    {
-
-        if (SelectedInvoice == null) return;
-
-        if (SelectedInvoice.InvBalance <= 0)
-            //show message and return
-            return;
-
-        //partial and full payment
-        if (SelectedInvoice.InvBalance.GetValueOrDefault() >= AdjustmentAmount)
-            SelectedInvoice.InvBalance = SelectedInvoice.InvBalance.GetValueOrDefault() - AdjustmentAmount;
-
-        else if (SelectedInvoice.InvBalance.GetValueOrDefault() < AdjustmentAmount)
-        {
-            AdjustmentAmount = AdjustmentAmount - SelectedInvoice.InvBalance.GetValueOrDefault();
-            SelectedInvoice.InvBalance = 0;
-
-            var result = _messageBoxService.ShowMessage(
-                                                            "Received Amount is more than the Invoice Amount, " +
-                                                            "Excess Amount of Rs. " +
-                                                            AdjustmentAmount + " ?", "Invoice",
-                                                            MessageButton.YesNo,
-                                                            MessageIcon.Question,
-                                                            MessageResult.No
-                                                       );
-
-            if (result == MessageResult.Yes)
-            {
-            }
-
-            InvBalance = SelectedInvoice.InvBalance.GetValueOrDefault();
-
-            //in this sceneario - supposed to create two voucher - one is for adjusting the invoice balance and another is for advance
-
-        }
-
     }
 
     // private bool ProcessInvBalance()
@@ -452,130 +453,5 @@ public partial class InvoiceWithVouchersViewModel : ObservableObject
         //VoucherEntries.Clear();
     }
 
-    private Voucher CreateVoucher()
-    {
-
-        Voucher Voucher = new()
-        {
-            VoucherDate = DateTime.Now
-        };
-
-        Voucher.SeqNbr = 1;
-        Voucher.CustomerGkey = SelectedInvoice.CustGkey;
-        Voucher.VoucherDate = DateTime.Now;
-        Voucher.TransType = "Receipt";         // Trans_type    1 = Receipt,    2 = Payment,    3 = Journal
-        Voucher.VoucherType = SelectedPaymentType; // invoiceArReceipt.TransactionType; // Voucher_type  1 = Sales,      2 = Credit,     3 = Expense
-        Voucher.Mode = "Cash"; // Mode          1 = Cash,       2 = Bank,       3 = Credit
-        Voucher.TransDate = PaidOn; // DateTime.Now;  
-        Voucher.VoucherNbr = SelectedInvoice.InvNbr;
-        Voucher.RefDocNbr = SelectedInvoice.InvNbr;
-        Voucher.RefDocDate = SelectedInvoice.InvDate;
-        Voucher.RefDocGkey = SelectedInvoice.GKey;
-        Voucher.TransDesc = Voucher.VoucherType + "-" + Voucher.TransType + "-" + Voucher.Mode;
-        Voucher.TransAmount = AdjustmentAmount;
-
-        return Voucher;
-
-    }
-
-    private async Task<Voucher> SaveVoucher(Voucher voucher)
-    {
-        if (voucher.GKey == 0)
-        {
-            var voucherResult = await _voucherService.CreateVoucher(voucher);
-
-            if (voucherResult != null)
-            {
-                voucher = voucherResult;
-
-            }
-        }
-        else
-        {
-            await _voucherService.UpdateVoucher(voucher);
-        }
-
-        return voucher;
-
-    }
-
-    private InvoiceArReceipt CreateArReceipts(Voucher voucher)
-    {
-
-        InvoiceArReceipt arInvRct = new()
-        {
-            //VoucherDate = DateTime.Now
-        };
-
-        arInvRct.SeqNbr = SelectedInvoice.ReceiptLines.Count + 1;
-        arInvRct.CustGkey = SelectedInvoice.CustGkey;
-        arInvRct.InvoiceGkey = (int?)SelectedInvoice.GKey;
-        arInvRct.InvoiceNbr = SelectedInvoice.InvNbr;
-        arInvRct.InvoiceReceivableAmount = SelectedInvoice.InvBalance;
-        arInvRct.BalanceAfterAdj = SelectedInvoice.InvBalance - AdjustmentAmount;
-        arInvRct.TransactionType = SelectedPaymentType; // invoiceArReceipt.TransactionType;
-                                                        // arInvRct.ModeOfReceipt = invoiceArReceipt.ModeOfReceipt;
-        arInvRct.BalBeforeAdj = SelectedInvoice.InvBalance;
-        arInvRct.InternalVoucherNbr = voucher.VoucherNbr;
-        arInvRct.InternalVoucherDate = voucher.VoucherDate;
-        arInvRct.InvoiceReceiptNbr = SelectedInvoice.InvNbr.Replace("B", "R");  //hard coded - future review 
-        arInvRct.Status = "Adj";
-
-        //var adjustedAmount = AdjustmentAmount; // getTransAmount(invoiceArReceipt.TransactionType);
-        arInvRct.AdjustedAmount = AdjustmentAmount; ;
-        //adjustedAmount == 0 ? invoiceArReceipt.AdjustedAmount : adjustedAmount;
-
-        return arInvRct;
-
-    }
-
-    private async Task SaveArReceipts(InvoiceArReceipt invoiceArReceipt)
-    {
-        if (invoiceArReceipt.GKey == 0)
-        {
-            try
-            {
-                var voucherResult = await _invoiceArReceiptService.CreateInvArReceipt(invoiceArReceipt);
-
-                if (voucherResult != null)
-                {
-                    invoiceArReceipt = voucherResult;
-                }
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-
-        }
-        else
-        {
-            await _invoiceArReceiptService.UpdateInvArReceipt(invoiceArReceipt);
-        }
-
-    }
-
-    private async Task UpdateInvoice(InvoiceHeader Invoice)
-    {
-        await _invoiceService.UpdateHeader(Invoice);
-    }
-
-    private void ResetAdjPanel()
-    {
-
-        AdjustmentAmount = 0;
-        SelectedPaymentType = null;
-
-        /*        SetHeader();
-                SetThisCompany();
-                //SetMasterLedger();
-                Buyer = null;
-                CustomerPhoneNumber = null;
-                CustomerState = null;
-                SalesPerson = null;
-                CreateInvoiceCommand.NotifyCanExecuteChanged();
-                invBalanceChk = false;  //reset to false for next invoice*/
-    }
 
 }

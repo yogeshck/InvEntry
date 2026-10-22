@@ -18,15 +18,18 @@ namespace DataAccess.Controllers
         //private IRepositoryBase<OrgCompany> _orgCompanyRepository;
         private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
         private readonly IEstimateWorkflow _estimateWorkflow;
+        private readonly IUnitOfWork _unitOfWork;
 
         public EstimateController(IRepositoryBase<EstimateHeader> estimateHeaderRepository,
                                                 IRepositoryBase<VoucherType> voucherTypeRepo,
-                                                IEstimateWorkflow estimateWorkflow)
+                                                IEstimateWorkflow estimateWorkflow,
+                                                IUnitOfWork unitOfWork)
                                  // IRepositoryBase<OrgCompany> orgCompanyRepository)
         {
             _estimateHeaderRepository = estimateHeaderRepository;
             _voucherTypeRepo = voucherTypeRepo;
             _estimateWorkflow = estimateWorkflow;
+            _unitOfWork = unitOfWork;
            // _orgCompanyRepository = orgCompanyRepository;
         }
 
@@ -64,7 +67,7 @@ namespace DataAccess.Controllers
 
         // POST api/<InvoiceController>
         [HttpPost]
-        public EstimateHeader Post([FromBody] EstimateHeader value)
+        public async Task<EstimateHeader> Post([FromBody] EstimateHeader value)
         {
 
             var voucherType = _voucherTypeRepo.Get(x => x.DocumentType == "Estimate"); // value.VoucherType);
@@ -78,23 +81,31 @@ namespace DataAccess.Controllers
             value.EstNbr = string.Format("{0}{1}", EstimatePrefixFormat, voucherType?.LastUsedNumber?.ToString($"D{voucherType.DocNbrLength}"));
 
             _estimateHeaderRepository.Add(value);
+            await _unitOfWork.SaveChangesAsync();
 
             return value;
         }
 
         // PUT api/<InvoiceController>/5
         [HttpPut("{estNbr}")]
-        public void Put(string estNbr, [FromBody] EstimateHeader value)
+        public async Task Put(string estNbr, [FromBody] EstimateHeader value)
         {
             value.EstNbr = estNbr;
             _estimateHeaderRepository.Update(value);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         // DELETE api/<EstimateController>/5
         [HttpDelete("{estNbr}")]
-        public void Delete(string estNbr)
+        public async Task Delete(string estNbr)
         {
-            _estimateHeaderRepository.Remove(Get(estNbr));
+            var estimate = Get(estNbr);
+
+            if (estimate is not null)
+            {
+                _estimateHeaderRepository.Remove(estimate);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
     }
 }

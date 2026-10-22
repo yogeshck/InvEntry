@@ -142,6 +142,7 @@ builder.Services.AddScoped<ISchemePlanService, SchemePlanService>();
 builder.Services.AddScoped<ISchemeEnrollmentService, SchemeEnrollmentService>();
 builder.Services.AddScoped<ISchemeImportService, SchemeImportService>();
 builder.Services.AddScoped<IInvoiceWorkflow, InvoiceWorkflow>();
+builder.Services.AddScoped<IInvoiceCollectionWorkflow, InvoiceCollectionWorkflow>();
 builder.Services.AddScoped<IEstimateWorkflow, EstimateWorkflow>();
 builder.Services.AddScoped<IGstRuleProvider, GstRuleProvider>();
 builder.Services.AddScoped<IGstClassificationService, GstClassificationService>();

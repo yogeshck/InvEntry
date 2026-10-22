@@ -9,10 +9,13 @@ namespace DataAccess.Controllers
     public class EmployeeAddressController : ControllerBase
     {
         private readonly IRepositoryBase<EmployeeAddress> _empAddRepo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EmployeeAddressController(IRepositoryBase<EmployeeAddress> empAddressRepo)
+        public EmployeeAddressController(IRepositoryBase<EmployeeAddress> empAddressRepo,
+                                         IUnitOfWork unitOfWork)
         {
             _empAddRepo = empAddressRepo;
+            _unitOfWork = unitOfWork;
         }
 
         // GET api/<EmployeeAddressController>/5
@@ -24,13 +27,14 @@ namespace DataAccess.Controllers
 
         // POST api/<AddressController>
         [HttpPost("empAddress")]
-        public IActionResult Post([FromBody] EmployeeAddress value)
+        public async Task<IActionResult> Post([FromBody] EmployeeAddress value)
         {
             var empAddress = _empAddRepo.Get(x => x.Gkey == value.Gkey);
 
             if (empAddress == null)
             {
                 _empAddRepo.Add(value);
+                await _unitOfWork.SaveChangesAsync();
                 return Ok(value);
             }
             else
@@ -50,6 +54,7 @@ namespace DataAccess.Controllers
                 empAddress.CreatedOn = value.CreatedOn;
 
                 _empAddRepo.Update(empAddress);
+                await _unitOfWork.SaveChangesAsync();
                 return Ok(empAddress);
 
             }
@@ -57,10 +62,11 @@ namespace DataAccess.Controllers
 
         // PUT api/<EmployeeAddressController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] EmployeeAddress value)
+        public async Task Put(int id, [FromBody] EmployeeAddress value)
         {
             value.Gkey = id;
             _empAddRepo.Update(value);
+            await _unitOfWork.SaveChangesAsync();
         }
 
     }

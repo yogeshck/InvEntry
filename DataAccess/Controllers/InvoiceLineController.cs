@@ -11,10 +11,13 @@ namespace DataAccess.Controllers
     public class InvoiceLineController : ControllerBase
     {
         private IRepositoryBase<InvoiceLine> _invoiceLineRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public InvoiceLineController(IRepositoryBase<InvoiceLine> invoiceLineRepository)
+        public InvoiceLineController(IRepositoryBase<InvoiceLine> invoiceLineRepository,
+                                     IUnitOfWork unitOfWork)
         {
             _invoiceLineRepository = invoiceLineRepository;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<InvoiceController>
@@ -33,27 +36,35 @@ namespace DataAccess.Controllers
 
         // POST api/<InvoiceController>
         [HttpPost]
-        public InvoiceLine Post([FromBody] InvoiceLine value)
+        public async Task<InvoiceLine> Post([FromBody] InvoiceLine value)
         {
             value.CreatedOn = DateTime.Now;
             _invoiceLineRepository.Add(value);
+            await _unitOfWork.SaveChangesAsync();
             return value;
         }
 
         // PUT api/<InvoiceController>/5
         [HttpPut("{invNbr}")]
-        public void Put(int invNbr, [FromBody] InvoiceLine value)
+        public async Task Put(int invNbr, [FromBody] InvoiceLine value)
         {
             value.InvLineNbr = invNbr;
             value.ModifiedOn = DateTime.Now;
             _invoiceLineRepository.Update(value);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         // DELETE api/<InvoiceController>/5
         [HttpDelete("{invNbr}")]
-        public void Delete(long invNbr)
+        public async Task Delete(long invNbr)
         {
-            _invoiceLineRepository.Remove(Get(invNbr));
+            var line = Get(invNbr);
+
+            if (line is not null)
+            {
+                _invoiceLineRepository.Remove(line);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
     }
 }

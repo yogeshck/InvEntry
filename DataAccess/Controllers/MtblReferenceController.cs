@@ -10,10 +10,13 @@ namespace DataAccess.Controllers
         {
 
             private readonly IRepositoryBase<MtblReference> _mtblReference;
+            private readonly IUnitOfWork _unitOfWork;
 
-            public MtblReferenceController(IRepositoryBase<MtblReference> mtblReferenceRepo)
+            public MtblReferenceController(IRepositoryBase<MtblReference> mtblReferenceRepo,
+                                           IUnitOfWork unitOfWork)
             {
                 _mtblReference = mtblReferenceRepo;
+                _unitOfWork = unitOfWork;
             }
 
             // GET: api/<MtblReferenceController>
@@ -41,17 +44,19 @@ namespace DataAccess.Controllers
 
             // POST api/<MtblReferenceController>
             [HttpPost]
-            public MtblReference Post([FromBody] MtblReference value)
+            public async Task<MtblReference> Post([FromBody] MtblReference value)
             {
                 _mtblReference.Add(value);
+                await _unitOfWork.SaveChangesAsync();
                 return value;
             }
 
             // PUT api/<MtblReferenceController>/5
             [HttpPut]
-            public void Put([FromBody] MtblReference value)
+            public async Task Put([FromBody] MtblReference value)
             {
                 _mtblReference.Update(value);
+                await _unitOfWork.SaveChangesAsync();
             }
 
             // DELETE api/<MtblReferenceController>/5

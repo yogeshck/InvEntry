@@ -85,6 +85,105 @@ public sealed class FinanceInvoicePayloadBuilder
         return payload;
     }
 
+    public const string CollectionDocumentType = "COLLECTION";
+
+    /// <summary>
+    /// A receipt voucher entered against a finalised invoice after finalisation
+    /// (outstanding-invoice adjustment, cash receipt against an invoice). Posted
+    /// on its own, on the day it was received, by usp_SyncInvEntryCollection.
+    /// Returns null when the voucher is not such a collection.
+    /// </summary>
+    public async Task<FinanceDocumentPayload?> BuildCollectionAsync(
+        int voucherGkey,
+        int orgGkey,
+        int locationGkey,
+        CancellationToken cancellationToken = default)
+    {
+        var voucher = await _context.Vouchers
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Gkey == voucherGkey, cancellationToken)
+            ?? throw new InvalidOperationException(
+                $"Voucher {voucherGkey} was not found.");
+
+        if (!EqualsIgnoreCase(voucher.TransType?.Trim(), "Receipt") ||
+            voucher.RefDocGkey is null ||
+            string.IsNullOrWhiteSpace(voucher.RefDocNbr))
+        {
+            return null;
+        }
+
+        // Invoice and estimate gkeys overlap, so match the number as well.
+        var invoiceNumber = voucher.RefDocNbr.Trim();
+        var invoice = await _context.InvoiceHeaders
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                x => x.Gkey == voucher.RefDocGkey && x.InvNbr == invoiceNumber,
+                cancellationToken);
+
+        if (invoice is null || !InvoiceStatus.IsFinalised(invoice.Status?.Trim()))
+            return null;
+
+        var movement = MapCollection(voucher);
+        if (movement is null)
+            return null;
+
+        var collectedOn = voucher.TransDate ?? voucher.VoucherDate
+            ?? throw new InvalidOperationException(
+                $"Voucher {voucher.VoucherNbr} has no date.");
+
+        return new FinanceDocumentPayload
+        {
+            OrgGkey = orgGkey,
+            LocationGkey = locationGkey,
+
+            SourceSystem = "INVENTRY",
+            SourceEventId = FinanceSyncService.CollectionEventId(voucher.Gkey),
+
+            DocumentType = CollectionDocumentType,
+            DocumentNo = string.IsNullOrWhiteSpace(voucher.VoucherNbr)
+                ? $"V-{voucher.Gkey}"
+                : voucher.VoucherNbr.Trim(),
+            DocumentDate = DateOnly.FromDateTime(collectedOn),
+            DocumentAmount = movement.Amount,
+
+            SourceDocumentType = "INVOICE",
+            SourceDocumentNo = invoice.InvNbr,
+
+            Description = $"InvEntry collection on invoice {invoice.InvNbr}",
+            Movements = [movement]
+        };
+    }
+
+    private static FinanceMovementPayload? MapCollection(Voucher voucher)
+    {
+        var voucherType = voucher.VoucherType?.Trim();
+        var mode = voucher.Mode?.Trim();
+        var amount = voucher.TransAmount ?? 0M;
+
+        // Discount allowed when the balance is collected: a write-off, not money.
+        // Checked first, because some older discount vouchers carry Mode = Cash.
+        string? paymentGroup =
+            EqualsIgnoreCase(voucherType, "Discount") ||
+            EqualsIgnoreCase(voucherType, "CR DISCOUNT") ||
+            EqualsIgnoreCase(mode, "Discount")
+                ? "WRITE_OFF"
+                : EqualsIgnoreCase(mode, "Cash")
+                    ? "CASH"
+                    : IsNonCashReceiptMode(mode) ? "NON_CASH" : null;
+
+        if (paymentGroup is null || amount <= 0)
+            return null;
+
+        return new FinanceMovementPayload
+        {
+            Direction = "IN",
+            PaymentGroup = paymentGroup,
+            Amount = amount,
+            Description = voucher.TransDesc,
+            SourceReference = voucher.Gkey.ToString()
+        };
+    }
+
     private static FinanceMovementPayload? MapVoucher(Voucher voucher)
     {
         var transType = voucher.TransType?.Trim();

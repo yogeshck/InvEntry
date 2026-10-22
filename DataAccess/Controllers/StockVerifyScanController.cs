@@ -12,12 +12,15 @@ namespace DataAccess.Controllers
 
         private readonly IRepositoryBase<StockVerifyScan> _verifiedStock;
         private readonly ILogger<StockVerifyScanController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
         public StockVerifyScanController(IRepositoryBase<StockVerifyScan> _verifiedStockRepo,
-                                        ILogger<StockVerifyScanController> logger)
+                                        ILogger<StockVerifyScanController> logger,
+                                        IUnitOfWork unitOfWork)
         {
             _verifiedStock = _verifiedStockRepo;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<ProductStockController>
@@ -37,15 +40,16 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public IActionResult Post([FromBody] StockVerifyScan value)
+        public async Task<IActionResult> Post([FromBody] StockVerifyScan value)
         {
             _verifiedStock.Add(value);
+            await _unitOfWork.SaveChangesAsync();
             return Ok(value);
 
         }
 
         [HttpPost("bulk")]
-        public IActionResult PostList([FromBody] List<StockVerifyScan> scanBuffer)
+        public async Task<IActionResult> PostList([FromBody] List<StockVerifyScan> scanBuffer)
         {
             if (scanBuffer == null || scanBuffer.Count == 0)
                 return BadRequest("No items provided.");
@@ -58,6 +62,8 @@ namespace DataAccess.Controllers
 
                 _verifiedStock.Add(item);
             }
+
+            await _unitOfWork.SaveChangesAsync();
             return Ok(new { Count = scanBuffer.Count, Message = "Bulk insert successful" });
         }
 

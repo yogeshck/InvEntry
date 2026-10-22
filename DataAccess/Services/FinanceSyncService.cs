@@ -69,6 +69,53 @@ public sealed class FinanceSyncService
         return FinanceQueueResult.Queued;
     }
 
+    public static string CollectionEventId(int voucherGkey) =>
+        $"VOUCHER-{voucherGkey}-COLLECTION";
+
+    /// <summary>
+    /// Queues money (or a write-off) received against an already finalised
+    /// invoice. FinanceTracker posts it on the day it was received, and leaves
+    /// the voucher out of the invoice's own posting.
+    /// </summary>
+    public async Task<FinanceQueueResult> QueueCollectionSyncAsync(
+        int voucherGkey,
+        int orgGkey,
+        int locationGkey,
+        CancellationToken cancellationToken = default)
+    {
+        var sourceEventId = CollectionEventId(voucherGkey);
+        var alreadyQueued = await _context.FinanceSyncOutboxes.AnyAsync(
+            x => x.SourceEventId == sourceEventId, cancellationToken);
+        if (alreadyQueued) return FinanceQueueResult.AlreadyQueued;
+
+        var payload = await _payloadBuilder.BuildCollectionAsync(
+            voucherGkey, orgGkey, locationGkey, cancellationToken);
+        if (payload is null) return FinanceQueueResult.NotRequired;
+
+        var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        _context.FinanceSyncOutboxes.Add(new FinanceSyncOutbox
+        {
+            EventType = "FINANCIAL_DOCUMENT",
+            SourceType = "COLLECTION",
+            SourceGkey = voucherGkey,
+            SourceEventId = sourceEventId,
+            // The invoice number, so searching the synchronization page for an
+            // invoice also finds the money collected on it later.
+            DocumentNo = payload.SourceDocumentNo,
+            DocumentDate = payload.DocumentDate.ToDateTime(TimeOnly.MinValue),
+            Payload = json,
+            Status = Pending,
+            RetryCount = 0,
+            CreatedOn = DateTime.Now
+        });
+        await _context.SaveChangesAsync(cancellationToken);
+        return FinanceQueueResult.Queued;
+    }
+
     public async Task<FinanceRemoteEventState> GetRemoteEventStateAsync(
         int orgGkey,
         string sourceEventId,

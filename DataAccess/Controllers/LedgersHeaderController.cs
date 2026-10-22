@@ -11,10 +11,13 @@ namespace DataAccess.Controllers
     public class LedgersHeaderController : ControllerBase
     {
         private readonly IRepositoryBase<LedgersHeader> _ledgersHeaderRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public LedgersHeaderController(IRepositoryBase<LedgersHeader> ledgersHeaderRepository)
+        public LedgersHeaderController(IRepositoryBase<LedgersHeader> ledgersHeaderRepository,
+                                       IUnitOfWork unitOfWork)
         {
             _ledgersHeaderRepository = ledgersHeaderRepository;
+            _unitOfWork = unitOfWork;
 
         }
 
@@ -34,18 +37,20 @@ namespace DataAccess.Controllers
 
         // POST api/<MtblLedgerController>
         [HttpPost]
-        public IActionResult Post([FromBody] LedgersHeader value)
+        public async Task<IActionResult> Post([FromBody] LedgersHeader value)
         {
             _ledgersHeaderRepository.Add(value);
+            await _unitOfWork.SaveChangesAsync();
             return Ok(value);
         }
 
         // PUT api/<MtblLedgerController>/5
         [HttpPut("{gkey}")]
-        public IActionResult Put(int gkey, [FromBody] LedgersHeader value)
+        public async Task<IActionResult> Put(int gkey, [FromBody] LedgersHeader value)
         {
             value.Gkey = gkey;
             _ledgersHeaderRepository.Update(value);
+            await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
 

@@ -17,17 +17,20 @@ public class InvoiceController : ControllerBase
     private readonly IRepositoryBase<VoucherType> _voucherTypeRepo;
     private readonly IInvoiceWorkflow _invoiceWorkflow;
     private readonly FinanceSyncService _financeSyncService;
+    private readonly IUnitOfWork _unitOfWork;
 
     public InvoiceController(
         IRepositoryBase<InvoiceHeader> invoiceHeaderRepository,
         IRepositoryBase<VoucherType> voucherTypeRepo,
             FinanceSyncService financeSyncService,
-        IInvoiceWorkflow invoiceWorkflow)
+        IInvoiceWorkflow invoiceWorkflow,
+        IUnitOfWork unitOfWork)
     {
         _invoiceHeaderRepository = invoiceHeaderRepository;
         _voucherTypeRepo = voucherTypeRepo;
         _invoiceWorkflow = invoiceWorkflow;
         _financeSyncService = financeSyncService;
+        _unitOfWork = unitOfWork;
     }
 
     // =========================================================
@@ -265,6 +268,11 @@ public class InvoiceController : ControllerBase
             criteria.From != DateTime.MinValue &&
             criteria.To != DateTime.MinValue;
 
+        // Half-open range on the raw column instead of the date part,
+        // so SQL Server does not CONVERT every row before filtering.
+        var fromDate = criteria.From.Date;
+        var toExclusive = criteria.To.Date.AddDays(1);
+
         // -----------------------------------------------------
         // Date + Mobile
         // -----------------------------------------------------
@@ -275,9 +283,8 @@ public class InvoiceController : ControllerBase
                 .GetList(
                     x =>
                         x.Status == InvoiceStatus.Finalised &&
-                        x.InvDate.HasValue &&
-                        x.InvDate.Value.Date >= criteria.From.Date &&
-                        x.InvDate.Value.Date <= criteria.To.Date &&
+                        x.InvDate >= fromDate &&
+                        x.InvDate < toExclusive &&
                         x.CustMobile == criteria.Filter1 &&
                         x.InvBalance > 0)
                 .OrderBy(x => x.InvDate)
@@ -294,9 +301,8 @@ public class InvoiceController : ControllerBase
                 .GetList(
                     x =>
                         x.Status == InvoiceStatus.Finalised &&
-                        x.InvDate.HasValue &&
-                        x.InvDate.Value.Date >= criteria.From.Date &&
-                        x.InvDate.Value.Date <= criteria.To.Date &&
+                        x.InvDate >= fromDate &&
+                        x.InvDate < toExclusive &&
                         x.InvBalance > 0)
                 .OrderBy(x => x.InvDate)
                 .ThenBy(x => x.Gkey);
@@ -539,7 +545,7 @@ public class InvoiceController : ControllerBase
     // =========================================================
 
     [HttpPut("{invNbr}")]
-    public void Put(
+    public async Task Put(
         string invNbr,
         [FromBody] InvoiceHeader value)
     {
@@ -551,6 +557,8 @@ public class InvoiceController : ControllerBase
 
         _invoiceHeaderRepository.Update(
             value);
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     private async Task<string> GenerateInvoiceNumberAsync(
