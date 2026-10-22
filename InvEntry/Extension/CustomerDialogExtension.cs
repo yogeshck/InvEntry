@@ -63,3 +63,25 @@ public static class CustomerDialogExtension
     }
 
 }
+
+/// <summary>
+/// Opens the shared customer popup (the one Invoice and Customer Order use)
+/// for view models that only need to create or edit a customer.
+/// </summary>
+public interface ICustomerEditorDialog
+{
+    Task<Customer?> EditCustomerAsync(Customer customer, bool isNewCustomer);
+}
+
+public sealed class CustomerEditorDialog : ICustomerEditorDialog
+{
+    private readonly IDialogService _dialogService;
+
+    public CustomerEditorDialog(IDialogService dialogService)
+    {
+        _dialogService = dialogService;
+    }
+
+    public Task<Customer?> EditCustomerAsync(Customer customer, bool isNewCustomer)
+        => _dialogService.EditCustomerAsync(customer, isNewCustomer);
+}
