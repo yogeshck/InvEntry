@@ -119,8 +119,10 @@ public sealed class Bootstrapper
                      return new DialogService();
                  })
                  .AddTransient<IDailyRateDefinitionService, DailyRateDefinitionService>()
+                 .AddTransient<ICustomerEditorDialog, CustomerEditorDialog>()
                  .AddTransient<CustomerEditViewModel>()
                  .AddTransient<CustomerOrderSummaryViewModel>()
+                 .AddTransient<Gstr1LineCorrectionViewModel>()
                  .AddTransient<DraftInvoicePickerViewModel>()
                  .AddTransient<DraftInvoicePickerView>()
                  .AddTransient<DraftInvoiceListViewModel>()

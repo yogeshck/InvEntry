@@ -196,8 +196,7 @@
                         </dxg:GridColumn>
                         <dxg:GridColumn FieldName="Credit"
                                         Header="Credit"
-                                        Width="100"
-                                        UnboundType="Decimal">
+                                        Width="100">
                             <dxg:GridColumn.EditSettings>
                                 <dxe:TextEditSettings Mask="C2"
                                                       MaskType="Numeric"
@@ -210,36 +209,143 @@
             </StackPanel>
         </Grid>
 
-        <!-- ➕ Adjustment Panel -->
-        <GroupBox Header="Adjust Outstanding"
-                  Grid.Row="3"
+        <!-- ➕ Receipt entry: several receipts until the balance is cleared, saved together -->
+        <GroupBox Header="Receive Outstanding"
+                  Grid.Row="2"
                   Margin="10"
                   FontSize="14"
                   FontWeight="Bold">
-            <StackPanel Orientation="Horizontal">
-                <dxe:ComboBoxEdit ItemsSource="{Binding PaymentModeList}"
-                                  SelectedItem="{Binding SelectedPaymentType}"
-                                  Width="150"
-                                  FontSize="14" />
-                <dxe:TextEdit EditValue="{Binding AdjustmentAmount}"
-                              Mask="C2"
-                              MaskType="Numeric"
-                              MaskUseAsDisplayFormat="True"
-                              Width="120"
-                              Margin="10,0"
-                              FontSize="14"
-                              HorizontalContentAlignment="Right" />
-                <dxe:DateEdit EditValue="{Binding PaidOn}"
-                              Width="120"
-                              Margin="10,0"
-                              FontSize="14" />
-                <Button Content="Apply Receipt"
-                        Command="{Binding ApplyAdjustmentCommand}"
-                        Background="Green"
-                        Foreground="White"
-                        Width="150"
-                        Margin="10,0" />
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <dxg:GridControl x:Name="NewReceiptsGrid"
+                                 Grid.Column="0"
+                                 ItemsSource="{Binding NewReceipts}"
+                                 AutoGenerateColumns="None"
+                                 FontSize="14"
+                                 FontWeight="Normal"
+                                 Height="170">
+                    <dxg:GridControl.View>
+                        <dxg:TableView ShowGroupPanel="False"
+                                       AllowEditing="True"
+                                       EnableImmediatePosting="True"
+                                       NavigationStyle="Cell"
+                                       AutoWidth="True"
+                                       ShowTotalSummary="True" />
+                    </dxg:GridControl.View>
+                    <dxg:GridControl.TotalSummary>
+                        <dxg:GridSummaryItem FieldName="Amount"
+                                             SummaryType="Sum"
+                                             DisplayFormat="{}{0:c2}" />
+                    </dxg:GridControl.TotalSummary>
+                    <dxg:GridControl.Columns>
+                        <dxg:GridColumn FieldName="PaymentType"
+                                        Header="Payment Type"
+                                        Width="160">
+                            <dxg:GridColumn.CellTemplate>
+                                <DataTemplate>
+                                    <dxe:ComboBoxEdit x:Name="PART_Editor"
+                                                      ItemsSource="{Binding View.DataContext.PaymentModeList}"
+                                                      IsTextEditable="False" />
+                                </DataTemplate>
+                            </dxg:GridColumn.CellTemplate>
+                        </dxg:GridColumn>
+                        <dxg:GridColumn FieldName="Amount"
+                                        Header="Amount"
+                                        Width="130">
+                            <dxg:GridColumn.EditSettings>
+                                <dxe:TextEditSettings Mask="C2"
+                                                      MaskType="Numeric"
+                                                      MaskUseAsDisplayFormat="True"
+                                                      HorizontalContentAlignment="Right" />
+                            </dxg:GridColumn.EditSettings>
+                        </dxg:GridColumn>
+                        <dxg:GridColumn FieldName="Reference"
+                                        Header="Reference (UTR / card / cheque)"
+                                        Width="220" />
+                        <dxg:GridColumn Header=""
+                                        Width="40"
+                                        AllowEditing="False"
+                                        FixedWidth="True">
+                            <dxg:GridColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✕"
+                                            ToolTip="Remove this line"
+                                            Command="{Binding View.DataContext.RemoveReceiptLineCommand}"
+                                            CommandParameter="{Binding Row}"
+                                            Margin="2" />
+                                </DataTemplate>
+                            </dxg:GridColumn.CellTemplate>
+                        </dxg:GridColumn>
+                    </dxg:GridControl.Columns>
+                </dxg:GridControl>
+
+                <StackPanel Grid.Column="1"
+                            Margin="15,0,0,0"
+                            MinWidth="260">
+                    <Button Content="Add Line"
+                            Command="{Binding AddReceiptLineCommand}"
+                            Height="30"
+                            Margin="0,0,0,8" />
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Received on"
+                                   VerticalAlignment="Center" />
+                        <dxe:DateEdit Grid.Column="1"
+                                      EditValue="{Binding PaidOn}"
+                                      Margin="10,2,0,2"
+                                      FontWeight="Normal" />
+                        <TextBlock Grid.Row="1"
+                                   Text="Balance" />
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="1"
+                                   Text="{Binding SelectedInvoice.InvBalance, StringFormat={}{0:C2}}"
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="2"
+                                   Text="Entered" />
+                        <TextBlock Grid.Row="2"
+                                   Grid.Column="1"
+                                   Text="{Binding EntryTotal, StringFormat={}{0:C2}}"
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Grid.Row="3"
+                                   Text="Balance after" />
+                        <TextBlock Grid.Row="3"
+                                   Grid.Column="1"
+                                   Text="{Binding BalanceAfterEntry, StringFormat={}{0:C2}}"
+                                   HorizontalAlignment="Right">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <!-- More entered than the balance: cannot be saved -->
+                                        <DataTrigger Binding="{Binding IsOverBalance}"
+                                                     Value="True">
+                                            <Setter Property="Foreground"
+                                                    Value="Red" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                    <Button Content="Save Receipts"
+                            Command="{Binding SaveReceiptsCommand}"
+                            Background="Green"
+                            Foreground="White"
+                            Height="34" />
+                </StackPanel>
+            </Grid>
         </GroupBox>
 
         <!-- 📊 Summary Panel -->

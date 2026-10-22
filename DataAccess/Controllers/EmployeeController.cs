@@ -10,10 +10,13 @@ namespace DataAccess.Controllers
     {
 
         private readonly IRepositoryBase<Employee> _employee;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EmployeeController(IRepositoryBase<Employee> employeeRepo)
+        public EmployeeController(IRepositoryBase<Employee> employeeRepo,
+                                  IUnitOfWork unitOfWork)
         {
             _employee = employeeRepo;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<ProductStockController>
@@ -32,13 +35,14 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public Employee Post([FromBody] Employee value)
+        public async Task<Employee> Post([FromBody] Employee value)
         {
             var employee = _employee.Get(x => x.MobileNbr == value.MobileNbr);
 
             if (employee == null)
             {
                 _employee.Add(value);
+                await _unitOfWork.SaveChangesAsync();
                 employee = _employee.Get(x => x.MobileNbr == value.MobileNbr);
             }
             else
@@ -46,6 +50,7 @@ namespace DataAccess.Controllers
                 employee.FirstName = value.FirstName;
                 employee.LastName = value.LastName;
                 _employee.Update(employee);
+                await _unitOfWork.SaveChangesAsync();
             }
 
             return employee ?? value;
@@ -53,9 +58,10 @@ namespace DataAccess.Controllers
 
         // PUT api/<ProductStockController>/5
         [HttpPut("{MobileNbr}")]
-        public void Put(string MobileNbr, [FromBody] Employee value)
+        public async Task Put(string MobileNbr, [FromBody] Employee value)
         {
             _employee.Update(value);
+            await _unitOfWork.SaveChangesAsync();
         }
 
     }

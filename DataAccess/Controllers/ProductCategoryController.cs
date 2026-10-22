@@ -12,10 +12,13 @@ namespace DataAccess.Controllers
     public class ProductCategoryController : ControllerBase
     {
         private readonly IRepositoryBase<ProductCategory> _productCategory;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ProductCategoryController(IRepositoryBase<ProductCategory> productCategoryRepo) 
+        public ProductCategoryController(IRepositoryBase<ProductCategory> productCategoryRepo,
+                                         IUnitOfWork unitOfWork)
         {
             _productCategory = productCategoryRepo;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<ProductStockController>
@@ -34,18 +37,20 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public IActionResult Post([FromBody] ProductCategory value)
+        public async Task<IActionResult> Post([FromBody] ProductCategory value)
         {
              _productCategory.Add(value);
+             await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
         }
 
         // PUT api/<ProductStockController>/5
         [HttpPut("{productGkey}")]
-        public IActionResult Put(decimal productGkey, [FromBody] ProductCategory value)
+        public async Task<IActionResult> Put(decimal productGkey, [FromBody] ProductCategory value)
         {
             _productCategory.Update(value);
+            await _unitOfWork.SaveChangesAsync();
             return Ok(value);
         }
 
@@ -56,7 +61,10 @@ namespace DataAccess.Controllers
             var product = _productCategory.Get(x => x.Name == categoryName);
 
             if(product is not null)
+            {
                 _productCategory.Remove(product);
+                await _unitOfWork.SaveChangesAsync();
+            }
 
             return Ok();
         }

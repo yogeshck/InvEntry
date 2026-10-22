@@ -10,10 +10,13 @@ namespace DataAccess.Controllers
     {
 
         private readonly IRepositoryBase<Supplier> _supplier;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public SupplierController(IRepositoryBase<Supplier> supplierRepo)
+        public SupplierController(IRepositoryBase<Supplier> supplierRepo,
+                                  IUnitOfWork unitOfWork)
         {
             _supplier = supplierRepo;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -36,13 +39,14 @@ namespace DataAccess.Controllers
         }
 
         [HttpPost]
-        public Supplier Post([FromBody] Supplier value)
+        public async Task<Supplier> Post([FromBody] Supplier value)
         {
             var supplier = _supplier.Get(x => x.Phone == value.Phone);
 
             if (supplier == null)
             {
                 _supplier.Add(value);
+                await _unitOfWork.SaveChangesAsync();
                 supplier = _supplier.Get(x => x.Phone == value.Phone);
             }
             else
@@ -50,6 +54,7 @@ namespace DataAccess.Controllers
                 supplier.SupplierName = value.SupplierName;
                 // supplier.Address = value.Address;
                 _supplier.Update(supplier);
+                await _unitOfWork.SaveChangesAsync();
             }
 
             return supplier ?? value;
@@ -69,7 +74,10 @@ namespace DataAccess.Controllers
                 var product = _supplier.Get(x => x.Phone == MobileNbr);
 
                 if (product is not null)
+                {
                     _supplier.Remove(product);
+                    await _unitOfWork.SaveChangesAsync();
+                }
 
                 return Ok();
             }

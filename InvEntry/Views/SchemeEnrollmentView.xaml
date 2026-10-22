@@ -72,6 +72,10 @@
                                           IsReadOnly="True"
                                           FontWeight="SemiBold" />
                         </dxlc:LayoutItem>
+                        <dxlc:LayoutItem Label="Address">
+                            <dxe:TextEdit EditValue="{Binding CustomerAddress, Mode=OneWay}"
+                                          IsReadOnly="True" />
+                        </dxlc:LayoutItem>
                     </dxlc:LayoutGroup>
 
                     <dxlc:LayoutGroup Orientation="Vertical" View="GroupBox" Header="New scheme">

@@ -17,7 +17,7 @@ namespace InvEntry.Services
 
         Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt);
 
-        Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey);
+        Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey, string? invNbr = null);
 
     }
 
@@ -42,9 +42,13 @@ namespace InvEntry.Services
             return await _mijmsApiService.Get<InvoiceArReceipt>($"api/InvoiceArReceipt/{invoiceNbr}");
         }
 
-        public async Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey)
+        public async Task<IEnumerable<InvoiceArReceipt>> GetByInvHdrGKey(int hdrGkey, string? invNbr = null)
         {
-            return await _mijmsApiService.GetEnumerable<InvoiceArReceipt>($"api/InvoiceArReceipt/{hdrGkey}");
+            var url = string.IsNullOrWhiteSpace(invNbr)
+                ? $"api/InvoiceArReceipt/{hdrGkey}"
+                : $"api/InvoiceArReceipt/{hdrGkey}?invNbr={Uri.EscapeDataString(invNbr)}";
+
+            return await _mijmsApiService.GetEnumerable<InvoiceArReceipt>(url);
         }
 
         public async Task UpdateInvArReceipt(InvoiceArReceipt invoiceArReceipt)

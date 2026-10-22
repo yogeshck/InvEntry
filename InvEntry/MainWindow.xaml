@@ -3,6 +3,7 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
                  xmlns:dxwui="http://schemas.devexpress.com/winfx/2008/xaml/windowsui"
+                 xmlns:dxwuit="http://schemas.devexpress.com/winfx/2008/xaml/windowsui/themekeys"
                  xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
                  xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
                  xmlns:views="clr-namespace:InvEntry.Views"
@@ -107,6 +108,9 @@
              Use their standard Tag property as the verified SVG source and
              render it alongside the existing content without changing navigation. -->
         <Style TargetType="dxwui:HamburgerSubMenuNavigationButton">
+            <!-- Moving to another flyout item closes any open second-level flyout. -->
+            <EventSetter Event="MouseEnter"
+                         Handler="OnSubMenuItemMouseEnter" />
             <Setter Property="ContentTemplate">
                 <Setter.Value>
                     <DataTemplate>
@@ -119,6 +123,62 @@
                                        Text="{Binding}" />
                         </StackPanel>
                     </DataTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Items of a second-level flyout (e.g. Finance > RD).
+             Uses the hamburger theme brushes so it matches the Finance flyout. -->
+        <Style x:Key="CascadeFlyoutItemStyle"
+               TargetType="Button">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=FlyoutItemForegroundBrush}}" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left" />
+            <Setter Property="Height"
+                    Value="40" />
+            <Setter Property="Padding"
+                    Value="14,0,24,0" />
+            <Setter Property="Cursor"
+                    Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="Transparent"
+                                Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <Image Width="18"
+                                       Height="18"
+                                       Margin="0,0,10,0"
+                                       Source="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+                                <Setter TargetName="bd"
+                                        Property="Background"
+                                        Value="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=FlyoutItemHoverBackgroundBrush}}" />
+                                <Setter Property="Foreground"
+                                        Value="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=FlyoutItemHoverForegroundBrush}}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused"
+                                     Value="True">
+                                <Setter TargetName="bd"
+                                        Property="Background"
+                                        Value="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=FlyoutItemHoverBackgroundBrush}}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="bd"
+                                        Property="Background"
+                                        Value="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=FlyoutItemPressedBackgroundBrush}}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -512,6 +572,7 @@
                  ================================================= -->
 
             <dxwui:HamburgerSubMenu
+                x:Name="FinanceMenu"
                 Content="Finance"
 
                 MoreButtonVisibilityMode="Hidden"
@@ -545,37 +606,24 @@
                         HideMenuWhenSelected="True"/>
 
 
+                    <!-- RD: opens the RD flyout (RdFlyout below) beside this one
+                         instead of navigating. -->
                     <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type page:SchemeEnrollmentPage}"
+                        x:Name="RdMenuButton"
 
-                        Content="Scheme Enrollment"
+                        Content="RD"
 
-                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+                        RightContent="›"
 
-                        HideMenuWhenSelected="True"/>
+                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_DollarCircled.svg'}"
 
+                        SelectOnClick="False"
+                        CollapseFlyoutOnClick="False"
+                        HideMenuWhenSelected="False"
 
-                    <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type page:RdDuesPage}"
-
-                        Content="RD Dues / Collections"
-
-                        Tag="{dx:DXImage 'SvgImages/Business Objects/BO_List.svg'}"
-
-                        HideMenuWhenSelected="True"/>
-
-
-                    <dxwui:HamburgerSubMenuNavigationButton
-                        NavigationTargetType=
-                            "{x:Type page:SchemePlanPage}"
-
-                        Content="Scheme Plans"
-
-                        Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_CashVoucher.svg'}"
-
-                        HideMenuWhenSelected="True"/>
+                        PreviewMouseLeftButtonDown="OnRdMenuPreviewMouseLeftButtonDown"
+                        PreviewKeyDown="OnRdMenuPreviewKeyDown"
+                        IsVisibleChanged="OnRdMenuIsVisibleChanged"/>
 
 
                     <dxwui:HamburgerSubMenuNavigationButton
@@ -768,6 +816,52 @@
 
 
         </dxwui:HamburgerMenu>
+
+
+        <!-- =====================================================
+             FINANCE > RD FLYOUT
+             HamburgerSubMenu only nests one level, so RD's items
+             open in this popup to the right of the RD item.
+             ===================================================== -->
+
+        <Popup x:Name="RdFlyout"
+               Placement="Right"
+               StaysOpen="True"
+               AllowsTransparency="True"
+               PopupAnimation="None"
+               MouseLeave="OnRdFlyoutMouseLeave">
+
+            <Border MinWidth="220"
+                    Padding="0,6"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=ItemSeparatorBrush}}"
+                    Background="{DynamicResource {dxwuit:HamburgerMenuBrushesThemeKey ResourceKey=SubMenuPaneBackgroundBrush}}">
+
+                <StackPanel KeyboardNavigation.DirectionalNavigation="Cycle">
+
+                    <Button Style="{StaticResource CascadeFlyoutItemStyle}"
+                            Content="Scheme Enrollment"
+                            Tag="{dx:DXImage 'SvgImages/Icon Builder/Business_Money.svg'}"
+                            CommandParameter="SchemeEnrollmentPage"
+                            Click="OnRdItemClick" />
+
+                    <Button Style="{StaticResource CascadeFlyoutItemStyle}"
+                            Content="RD Dues / Collections"
+                            Tag="{dx:DXImage 'SvgImages/Business Objects/BO_List.svg'}"
+                            CommandParameter="RdDuesPage"
+                            Click="OnRdItemClick" />
+
+                    <Button Style="{StaticResource CascadeFlyoutItemStyle}"
+                            Content="Scheme Plans"
+                            Tag="{dx:DXImage 'SvgImages/Icon Builder/Shopping_CashVoucher.svg'}"
+                            CommandParameter="SchemePlanPage"
+                            Click="OnRdItemClick" />
+
+                </StackPanel>
+
+            </Border>
+
+        </Popup>
 
 
 

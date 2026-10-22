@@ -88,7 +88,8 @@ public sealed class EstimateWorkflowTests
         var controller = new EstimateController(
             new FakeRepository<EstimateHeader>(expected),
             new FakeRepository<VoucherType>(),
-            new FakeWorkflow());
+            new FakeWorkflow(),
+            new FakeUnitOfWork(() => { }));
 
         Assert.That(controller.Get("EST00042"), Is.SameAs(expected));
     }

@@ -53,6 +53,9 @@ namespace InvEntry.Services
 
         Task CreateInvoiceLine(
             IEnumerable<InvoiceLine> line);
+
+        Task<SaveInvoiceCollectionResponse> SaveCollectionAsync(
+            SaveInvoiceCollectionRequest request);
     }
 
 
@@ -78,6 +81,12 @@ namespace InvEntry.Services
         public async Task UpdateHeader(InvoiceHeader invHdr)
         {
             await _mijmsApiService.Put($"api/invoice/{invHdr.InvNbr}", invHdr);
+        }
+
+        public async Task<SaveInvoiceCollectionResponse> SaveCollectionAsync(SaveInvoiceCollectionRequest request)
+        {
+            return await _mijmsApiService.Post<SaveInvoiceCollectionRequest, SaveInvoiceCollectionResponse>(
+                "api/InvoiceCollection", request);
         }
 
         public async Task CreateInvoiceLine(InvoiceLine line)

@@ -38,7 +38,7 @@ public class Gstr1WpfExportTests
     [Test]
     public void ScopeChangesInvalidateReadyStatus()
     {
-        var vm = new Gstr1ReturnViewModel(new Reports(), new Company(), null!);
+        var vm = new Gstr1ReturnViewModel(new Reports(), new Company(), null!, null!);
         Assert.That(vm.ExportJsonCommand.CanExecute(null), Is.True);
         vm.ReturnMonth = vm.ReturnMonth.AddMonths(-1);
         Assert.That(vm.Validation, Is.Null);
@@ -53,7 +53,7 @@ public class Gstr1WpfExportTests
     [Test]
     public void BusyStateAndMissingValidationDisableExport()
     {
-        var vm = new Gstr1ReturnViewModel(new Reports(), new Company(), null!);
+        var vm = new Gstr1ReturnViewModel(new Reports(), new Company(), null!, null!);
         vm.IsBusy = true;
         Assert.That(vm.ExportJsonCommand.CanExecute(null), Is.False);
         vm.IsBusy = false;
@@ -68,7 +68,7 @@ public class Gstr1WpfExportTests
     public async Task ExportRefreshesValidationAndBlocksDuplicateAndNewlyInvalidExports()
     {
         var reports = new Reports();
-        var vm = new Gstr1ReturnViewModel(reports, new Company(), null!);
+        var vm = new Gstr1ReturnViewModel(reports, new Company(), null!, null!);
         var completion = new TaskCompletionSource<Gstr1ValidationResponse>();
         reports.PendingValidation = completion.Task;
         var export = vm.ExportJsonCommand.ExecuteAsync(null);
@@ -92,7 +92,7 @@ public class Gstr1WpfExportTests
     public async Task OldScopeLoadCannotRestoreExportReadiness()
     {
         var reports = new Reports();
-        var vm = new Gstr1ReturnViewModel(reports, new Company(), null!);
+        var vm = new Gstr1ReturnViewModel(reports, new Company(), null!, null!);
         var oldPeriod = vm.ReturnPeriod;
         var pending = new TaskCompletionSource<Gstr1ValidationResponse>();
         reports.PendingValidation = pending.Task;
@@ -127,6 +127,10 @@ public class Gstr1WpfExportTests
             Task.FromResult<IReadOnlyList<Gstr1DocumentResponse>>([]);
         public Task<IReadOnlyList<Gstr1DocumentLineResponse>> GetDocumentLinesAsync(long key, string gstin, string period) =>
             Task.FromResult<IReadOnlyList<Gstr1DocumentLineResponse>>([]);
+        public Task<Gstr1LineCorrectionResponse> GetLineCorrectionAsync(long key, int line, string gstin, string period) =>
+            throw new NotSupportedException();
+        public Task<Gstr1LineCorrectionResponse> SaveLineCorrectionAsync(long key, int line, Gstr1LineCorrectionRequest request) =>
+            throw new NotSupportedException();
     }
 
     private sealed class Handler(HttpResponseMessage response) : HttpMessageHandler

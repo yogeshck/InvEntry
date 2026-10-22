@@ -1,0 +1,367 @@
+<UserControl x:Class="InvEntry.Views.Gstr1LineCorrectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+             xmlns:viewmodels="clr-namespace:InvEntry.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodels:Gstr1LineCorrectionViewModel}"
+             Width="720">
+
+    <!-- =====================================================
+         GSTR-1 LINE CORRECTION
+
+         - Shows the validation issue and the staged line
+         - Shows source invoice/product data used for the suggestion
+         - Editable HSN / UOM / UQC / GST quantity
+         - Save validates on the server and refreshes validation
+         ===================================================== -->
+
+    <UserControl.Resources>
+
+        <Style TargetType="{x:Type dxe:TextEdit}"
+               BasedOn="{StaticResource {x:Type dxe:TextEdit}}">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="4,5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="{x:Type dxe:ComboBoxEdit}"
+               BasedOn="{StaticResource {x:Type dxe:ComboBoxEdit}}">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="4,5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="4,5,8,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="InfoLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4,3,8,3"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Opacity" Value="0.65"/>
+        </Style>
+
+        <Style x:Key="InfoValue" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4,3"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="HiddenWhenEmpty" TargetType="Border">
+            <Setter Property="Visibility" Value="Visible"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid Margin="15">
+
+        <Grid.RowDefinitions>
+            <!-- Issue -->
+            <RowDefinition Height="Auto"/>
+            <!-- Line / source -->
+            <RowDefinition Height="Auto"/>
+            <!-- Correction -->
+            <RowDefinition Height="Auto"/>
+            <!-- Error -->
+            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+
+        <!-- =================================================
+             VALIDATION ISSUE
+             ================================================= -->
+
+        <Border Grid.Row="0"
+                Background="#FFF8E6"
+                BorderBrush="#E5C07B"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="10,8"
+                Margin="0,0,0,12">
+
+            <StackPanel>
+                <TextBlock FontWeight="SemiBold" Foreground="#5C4400">
+                    <Run Text="{Binding Issue.Severity, Mode=OneWay}"/>
+                    <Run Text=" / "/>
+                    <Run Text="{Binding Issue.Code, Mode=OneWay}"/>
+                </TextBlock>
+                <TextBlock Text="{Binding Issue.Message}"
+                           Foreground="#5C4400"
+                           TextWrapping="Wrap"
+                           Margin="0,2,0,0"/>
+            </StackPanel>
+
+        </Border>
+
+
+        <!-- =================================================
+             STAGED LINE + SOURCE DATA (READ ONLY)
+             ================================================= -->
+
+        <Border Grid.Row="1"
+                BorderBrush="#D0D0D0"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12"
+                Margin="0,0,0,12">
+
+            <StackPanel>
+
+                <TextBlock Text="Invoice Line"
+                           Style="{StaticResource SectionHeader}"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Invoice" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoValue}">
+                        <Run Text="{Binding Line.DocumentNbr, Mode=OneWay}"/>
+                        <Run Text="  line "/>
+                        <Run Text="{Binding Line.LineNbr, Mode=OneWay}"/>
+                    </TextBlock>
+
+                    <TextBlock Grid.Row="0" Grid.Column="3" Text="Date" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="4" Style="{StaticResource InfoValue}"
+                               Text="{Binding Line.DocumentDate, StringFormat={}{0:dd-MMM-yyyy}}"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Product" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource InfoValue}"
+                               Text="{Binding Line.ProductName}"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Description" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource InfoValue}"
+                               Text="{Binding Line.Description}"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Qty / Net Wt" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource InfoValue}">
+                        <Run Text="{Binding Line.Quantity, Mode=OneWay, StringFormat={}{0:N3}}"/>
+                        <Run Text=" / "/>
+                        <Run Text="{Binding Line.NetWeight, Mode=OneWay, StringFormat={}{0:N3}, TargetNullValue='-'}"/>
+                    </TextBlock>
+
+                    <TextBlock Grid.Row="3" Grid.Column="3" Text="Taxable" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="4" Style="{StaticResource InfoValue}"
+                               Text="{Binding Line.TaxableValue, StringFormat={}{0:N2}}"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Product UOM" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Style="{StaticResource InfoValue}"
+                               Text="{Binding Line.ProductUom, TargetNullValue='(missing)'}"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="3" Text="Staged" Style="{StaticResource InfoLabel}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="4" Style="{StaticResource InfoValue}">
+                        <Run Text="{Binding Line.Uom, Mode=OneWay, TargetNullValue='-'}"/>
+                        <Run Text=" / "/>
+                        <Run Text="{Binding Line.Uqc, Mode=OneWay, TargetNullValue='-'}"/>
+                        <Run Text=" / "/>
+                        <Run Text="{Binding Line.GstQuantity, Mode=OneWay, StringFormat={}{0:N3}, TargetNullValue='-'}"/>
+                    </TextBlock>
+                </Grid>
+
+            </StackPanel>
+
+        </Border>
+
+
+        <!-- =================================================
+             CORRECTION
+             ================================================= -->
+
+        <Border Grid.Row="2"
+                BorderBrush="#D0D0D0"
+                BorderThickness="1"
+                CornerRadius="4"
+                Padding="12">
+
+            <StackPanel>
+
+                <DockPanel Margin="0,0,0,8">
+                    <Button DockPanel.Dock="Right"
+                            Content="Reset to suggested"
+                            Command="{Binding ApplySuggestionCommand}"
+                            Height="28"
+                            Padding="10,0"/>
+                    <TextBlock Text="Correction"
+                               Style="{StaticResource SectionHeader}"
+                               Margin="0"
+                               VerticalAlignment="Center"/>
+                </DockPanel>
+
+                <Border Background="#EEF5FF"
+                        BorderBrush="#A8C7EE"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="8,6"
+                        Margin="0,0,0,8"
+                        Tag="{Binding Line.SuggestionNote}"
+                        Style="{StaticResource HiddenWhenEmpty}">
+                    <TextBlock Text="{Binding Line.SuggestionNote}"
+                               TextWrapping="Wrap"
+                               Foreground="#1F4E8C"/>
+                </Border>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="HSN Code *" Style="{StaticResource FieldLabel}"/>
+                    <dxe:TextEdit Grid.Row="0" Grid.Column="1"
+                                  EditValue="{Binding HsnCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  MaskType="RegEx"
+                                  Mask="\d{0,8}"
+                                  MaxLength="8"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="3" Text="GST Qty *" Style="{StaticResource FieldLabel}"/>
+                    <dxe:TextEdit Grid.Row="0" Grid.Column="4"
+                                  EditValue="{Binding GstQuantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  MaskType="Numeric"
+                                  Mask="n3"
+                                  MaskUseAsDisplayFormat="True"
+                                  HorizontalContentAlignment="Right"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="UOM *" Style="{StaticResource FieldLabel}"/>
+                    <dxe:ComboBoxEdit Grid.Row="1" Grid.Column="1"
+                                      ItemsSource="{Binding UomOptions}"
+                                      EditValue="{Binding Uom, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      IsTextEditable="True"
+                                      AutoComplete="True"
+                                      MaxLength="20"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="3" Text="GST UQC *" Style="{StaticResource FieldLabel}"/>
+                    <dxe:ComboBoxEdit Grid.Row="1" Grid.Column="4"
+                                      ItemsSource="{Binding UqcOptions}"
+                                      DisplayMember="Display"
+                                      ValueMember="Code"
+                                      EditValue="{Binding Uqc, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      IsTextEditable="False"
+                                      ImmediatePopup="True"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="4"
+                               Text="{Binding UomHint}"
+                               FontSize="11"
+                               Opacity="0.7"
+                               Margin="4,0,4,4"
+                               TextWrapping="Wrap"/>
+                </Grid>
+
+            </StackPanel>
+
+        </Border>
+
+
+        <!-- =================================================
+             ERROR MESSAGE
+             ================================================= -->
+
+        <Border Grid.Row="3"
+                Background="#FFF4F4"
+                BorderBrush="#E0A0A0"
+                BorderThickness="1"
+                CornerRadius="3"
+                Padding="8"
+                Margin="0,8,0,4"
+                Tag="{Binding ErrorMessage}"
+                Style="{StaticResource HiddenWhenEmpty}">
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="DarkRed"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"/>
+
+        </Border>
+
+
+        <!-- =================================================
+             COMMAND BAR
+             ================================================= -->
+
+        <Border Grid.Row="4"
+                BorderBrush="#D0D0D0"
+                BorderThickness="0,1,0,0"
+                Padding="0,12,0,0"
+                Margin="0,8,0,0">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Only HSN, UOM, UQC and GST quantity are changed. Values and taxes are not modified."
+                           FontSize="11"
+                           Opacity="0.65"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+
+                    <Button Content="Validate &amp; Save"
+                            Command="{Binding SaveCommand}"
+                            IsDefault="True"
+                            Width="130"
+                            Height="36"
+                            Margin="5,0"/>
+
+                    <Button Content="Cancel"
+                            Command="{Binding CancelCommand}"
+                            Width="105"
+                            Height="36"
+                            Margin="5,0"/>
+
+                </StackPanel>
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>

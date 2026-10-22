@@ -10,10 +10,13 @@ namespace DataAccess.Controllers
     {
 
         private readonly IRepositoryBase<DailyAttendence> _dailyAttendence;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DailyAttendenceController(IRepositoryBase<DailyAttendence> dailyAttendenceRepo)
+        public DailyAttendenceController(IRepositoryBase<DailyAttendence> dailyAttendenceRepo,
+                                         IUnitOfWork unitOfWork)
         {
             _dailyAttendence = dailyAttendenceRepo;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -37,13 +40,14 @@ namespace DataAccess.Controllers
 
         // POST api/<ProductStockController>
         [HttpPost]
-        public DailyAttendence Post([FromBody] DailyAttendence value)
+        public async Task<DailyAttendence> Post([FromBody] DailyAttendence value)
         {
             var attendence = _dailyAttendence.Get(x => x.Gkey == value.Gkey);
 
             if (attendence == null)
             {
                 _dailyAttendence.Add(value);
+                await _unitOfWork.SaveChangesAsync();
                 attendence = _dailyAttendence.Get(x => x.Gkey == value.Gkey);
             }
             else
@@ -58,15 +62,17 @@ namespace DataAccess.Controllers
                 attendence.Notes = value.Notes;
 
                 _dailyAttendence.Update(attendence);
+                await _unitOfWork.SaveChangesAsync();
             }
 
             return attendence ?? value;
         }
 
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] DailyAttendence value)
+        public async Task Put(int id, [FromBody] DailyAttendence value)
         {
              _dailyAttendence.Update(value);
+             await _unitOfWork.SaveChangesAsync();
         }
 
     }

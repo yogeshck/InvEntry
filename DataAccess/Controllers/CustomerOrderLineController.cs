@@ -11,10 +11,13 @@ namespace DataAccess.Controllers
     {
 
         private IRepositoryBase<CustomerOrderLine> _customerOrderLineRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CustomerOrderLineController(IRepositoryBase<CustomerOrderLine> customerOrderLineRepository)
+        public CustomerOrderLineController(IRepositoryBase<CustomerOrderLine> customerOrderLineRepository,
+                                           IUnitOfWork unitOfWork)
         {
             _customerOrderLineRepository = customerOrderLineRepository;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<CustomerOrderLineController>
@@ -34,18 +37,20 @@ namespace DataAccess.Controllers
 
         // POST api/<CustomerOrderLineController>
         [HttpPost]
-        public CustomerOrderLine Post([FromBody] CustomerOrderLine value)
+        public async Task<CustomerOrderLine> Post([FromBody] CustomerOrderLine value)
         {
             _customerOrderLineRepository.Add(value);
+            await _unitOfWork.SaveChangesAsync();
             return value;
         }
 
         // PUT api/<CustomerOrderLineController>/5
         [HttpPut("{orderLineNbr}")]
-        public void Put(int orderLineNbr, [FromBody] CustomerOrderLine value)
+        public async Task Put(int orderLineNbr, [FromBody] CustomerOrderLine value)
         {
             value.OrderLineNbr = orderLineNbr;
             _customerOrderLineRepository.Update(value);
+            await _unitOfWork.SaveChangesAsync();
         }
 
 

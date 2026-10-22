@@ -10,10 +10,13 @@ namespace DataAccess.Controllers
     public class MtblLedgersController : ControllerBase
     {
         private IRepositoryBase<MtblLedger> _mtblLedgerRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MtblLedgersController(IRepositoryBase<MtblLedger> mtblLedgerRepository  )
+        public MtblLedgersController(IRepositoryBase<MtblLedger> mtblLedgerRepository,
+                                     IUnitOfWork unitOfWork)
         {
             _mtblLedgerRepository = mtblLedgerRepository;
+            _unitOfWork = unitOfWork;
 
         }
 
@@ -41,17 +44,19 @@ namespace DataAccess.Controllers
 
         // POST api/<MtblLedgerController>
         [HttpPost]
-        public IActionResult Post([FromBody] MtblLedger value)
+        public async Task<IActionResult> Post([FromBody] MtblLedger value)
         {
             _mtblLedgerRepository.Add(value);
+            await _unitOfWork.SaveChangesAsync();
             return Ok(value);
         }
 
         // PUT api/<MtblLedgerController>/5
         [HttpPut]
-        public IActionResult Put([FromBody] MtblLedger value)
+        public async Task<IActionResult> Put([FromBody] MtblLedger value)
         {
             _mtblLedgerRepository.Update(value);
+            await _unitOfWork.SaveChangesAsync();
             return Ok(value);
         }
 

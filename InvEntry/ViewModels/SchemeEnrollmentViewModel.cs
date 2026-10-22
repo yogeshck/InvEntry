@@ -4,9 +4,11 @@ using DevExpress.Mvvm;
 using DevExpress.Xpf.Editors;
 using InvEntry.Contracts.Advances;
 using InvEntry.Contracts.Schemes;
+using InvEntry.Extension;
 using InvEntry.Helpers;
 using InvEntry.Models;
 using InvEntry.Services;
+using InvEntry.Services.Customers;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -20,12 +22,14 @@ namespace InvEntry.ViewModels;
 /// </summary>
 public partial class SchemeEnrollmentViewModel : ObservableObject
 {
-    private readonly ICustomerService _customerService;
+    private readonly ICustomerLookupService _customerLookupService;
     private readonly ISchemeService _schemeService;
     private readonly IAdvanceAccountService _advanceAccountService;
     private readonly IMessageBoxService _messageBoxService;
     private readonly IAdvanceReceiptPrinter _receiptPrinter;
     private readonly IRdStatementPrinter _statementPrinter;
+    private readonly ICustomerEditorDialog _customerEditorDialog;
+    private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
 
     // Kept until the server confirms, so a retry after a failure reuses the
     // same ClientRequestId and cannot enroll or record a payment twice.
@@ -33,19 +37,23 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
     private AdvanceReceiptRequest? _pendingPayment;
 
     public SchemeEnrollmentViewModel(
-        ICustomerService customerService,
+        ICustomerLookupService customerLookupService,
         ISchemeService schemeService,
         IAdvanceAccountService advanceAccountService,
         IMessageBoxService messageBoxService,
         IAdvanceReceiptPrinter receiptPrinter,
-        IRdStatementPrinter statementPrinter)
+        IRdStatementPrinter statementPrinter,
+        ICustomerEditorDialog customerEditorDialog,
+        IOrgThisCompanyViewService orgThisCompanyViewService)
     {
-        _customerService = customerService;
+        _customerLookupService = customerLookupService;
         _schemeService = schemeService;
         _advanceAccountService = advanceAccountService;
         _messageBoxService = messageBoxService;
         _receiptPrinter = receiptPrinter;
         _statementPrinter = statementPrinter;
+        _customerEditorDialog = customerEditorDialog;
+        _orgThisCompanyViewService = orgThisCompanyViewService;
 
         _ = LoadPlansAsync();
     }
@@ -62,9 +70,25 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
 
     public bool HasCustomer => Customer is not null && Customer.GKey > 0;
 
+    public string? CustomerAddress
+    {
+        get
+        {
+            var address = Customer?.Address;
+            if (address is null)
+                return null;
+
+            var parts = new[] { address.AddressLine1, address.AddressLine2, address.Area, address.City }
+                .Where(x => !string.IsNullOrWhiteSpace(x));
+
+            return string.Join(", ", parts);
+        }
+    }
+
     partial void OnCustomerChanged(Customer? value)
     {
         OnPropertyChanged(nameof(HasCustomer));
+        OnPropertyChanged(nameof(CustomerAddress));
     }
 
     [RelayCommand]
@@ -73,18 +97,37 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
         if (args.NewValue is not string mobile)
             return;
 
+        await LoadCustomerByMobileAsync(mobile);
+    }
+
+    public async Task LoadCustomerByMobileAsync(string mobile)
+    {
         mobile = mobile.Trim();
 
         if (mobile.Length < 10)
             return;
 
+        // Setting the mobile box after a new customer is saved raises the
+        // lookup again; that customer is already loaded.
+        if (HasCustomer && string.Equals(Customer!.MobileNbr, mobile, StringComparison.Ordinal))
+            return;
+
+        var previousCustomer = Customer;
+        var previousSchemes = CustomerSchemes;
+        var previousScheme = SelectedScheme;
+
         Customer = null;
         CustomerSchemes = new();
         SelectedScheme = null;
 
+        Customer? found;
+
         try
         {
-            Customer = await _customerService.GetCustomer(mobile);
+            // Same lookup as Invoice and Customer Order: an unknown mobile
+            // (HTTP 404) comes back as not existing instead of an error.
+            var lookup = await _customerLookupService.ResolveByMobileAsync(mobile);
+            found = lookup.IsExisting ? lookup.Customer : null;
         }
         catch (Exception ex)
         {
@@ -92,15 +135,73 @@ public partial class SchemeEnrollmentViewModel : ObservableObject
             return;
         }
 
-        if (Customer is null)
+        if (found is null)
         {
-            _messageBoxService.ShowMessage(
-                "No customer found for this mobile number. Create the customer first (Cash Receipt or billing).",
-                "Customer not found", MessageButton.OK, MessageIcon.Exclamation);
-            return;
+            found = await CreateCustomerAsync(mobile);
+
+            if (found is null)
+            {
+                // Cancelled: put back whoever was on the form before.
+                Customer = previousCustomer;
+                CustomerSchemes = previousSchemes;
+                SelectedScheme = previousScheme;
+
+                if (previousCustomer is not null)
+                    CustomerPhoneNumber = previousCustomer.MobileNbr;
+
+                return;
+            }
         }
 
+        Customer = found;
+        CustomerPhoneNumber = found.MobileNbr;
+
         await LoadCustomerSchemesAsync();
+    }
+
+    /// <summary>
+    /// Opens the same new-customer popup Invoice and Customer Order use.
+    /// Returns the saved customer, or null if the user cancelled.
+    /// </summary>
+    private async Task<Customer?> CreateCustomerAsync(string mobile)
+    {
+        var customer = new Customer { MobileNbr = mobile };
+        customer.Address ??= new OrgAddress();
+
+        try
+        {
+            var company = await _orgThisCompanyViewService.GetOrgThisCompany();
+
+            if (company is not null)
+            {
+                customer.Address.GstStateCode = company.GstCode;
+                customer.Address.State = company.State;
+                customer.Address.District = company.District;
+                customer.GstStateCode = company.GstCode;
+            }
+        }
+        catch
+        {
+            // Company defaults only prefill the state; the user can still pick it.
+        }
+
+        Customer? saved;
+
+        try
+        {
+            saved = await _customerEditorDialog.EditCustomerAsync(customer, isNewCustomer: true);
+        }
+        catch (Exception ex)
+        {
+            ShowError("The customer could not be created.", ex);
+            return null;
+        }
+
+        if (saved is null || saved.GKey <= 0)
+            return null;
+
+        saved.Address ??= new OrgAddress();
+        return saved;
     }
 
     // =========================================================

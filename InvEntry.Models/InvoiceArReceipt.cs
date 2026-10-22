@@ -23,12 +23,14 @@ namespace InvEntry.Models
         public decimal? _invoiceReceivableAmount;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Credit))]
         public decimal? _balanceAfterAdj;
 
         [ObservableProperty]
         public int _seqNbr;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Debit), nameof(Credit))]
         public string? _transactionType;
 
         [ObservableProperty]
@@ -38,6 +40,7 @@ namespace InvEntry.Models
         public decimal? _balBeforeAdj;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Debit), nameof(Credit))]
         public decimal? _adjustedAmount;
 
         [ObservableProperty]
@@ -80,7 +83,11 @@ namespace InvEntry.Models
         public string? _invoiceReceiptNbr;
 
         public decimal? Debit => TransactionType != "Credit" ? AdjustedAmount : null;
-        public decimal? Credit => TransactionType == "Credit" ? AdjustedAmount : null;
+        // The invoice workflow saves the credit row with AdjustedAmount = 0 and the amount
+        // left on credit in BalanceAfterAdj; older credit rows carry it in AdjustedAmount.
+        public decimal? Credit => TransactionType == "Credit"
+            ? (AdjustedAmount.GetValueOrDefault() > 0 ? AdjustedAmount : BalanceAfterAdj)
+            : null;
 
     }
 

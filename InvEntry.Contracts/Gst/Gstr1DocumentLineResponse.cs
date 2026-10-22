@@ -17,4 +17,7 @@ public sealed class Gstr1DocumentLineResponse
     public decimal SgstAmount { get; set; }
     public decimal IgstAmount { get; set; }
     public decimal CessAmount { get; set; }
+    public string? Uom { get; set; }
+    public string? Uqc { get; set; }
+    public decimal? GstQuantity { get; set; }
 }

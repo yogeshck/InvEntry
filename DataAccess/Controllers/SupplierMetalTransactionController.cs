@@ -11,12 +11,15 @@ namespace DataAccess.Controllers
 
         private readonly IRepositoryBase<SupplierMetalTransaction> _supplierMetalTransaction;
         private readonly ILogger<SupplierMetalTransactionController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
         public SupplierMetalTransactionController(IRepositoryBase<SupplierMetalTransaction> supplierMetalTransRepo,
-                                            ILogger<SupplierMetalTransactionController> logger)
+                                            ILogger<SupplierMetalTransactionController> logger,
+                                            IUnitOfWork unitOfWork)
         {
             _supplierMetalTransaction = supplierMetalTransRepo;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/<SupplierMetalTransactionController>
@@ -79,9 +82,10 @@ namespace DataAccess.Controllers
 
         // PUT api/<SupplierMetalTransactionController>/5
         [HttpPut("{transGkey}")]
-        public IActionResult Put(int transactionGkey, [FromBody] SupplierMetalTransaction value)
+        public async Task<IActionResult> Put(int transactionGkey, [FromBody] SupplierMetalTransaction value)
         {
             _supplierMetalTransaction.Update(value);
+            await _unitOfWork.SaveChangesAsync();
 
             return Ok(value);
 

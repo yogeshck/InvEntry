@@ -36,6 +36,8 @@ public interface IFinanceDocumentPoster
 /// already references the invoice, is recorded with <c>IS_SUSPENSE = 1</c>
 /// instead of failing. It therefore never blocks invoice finalisation, and
 /// this poster passes only the invoice identity.
+/// A COLLECTION document (money received against a finalised invoice later)
+/// goes to <c>usp_SyncInvEntryCollection</c> with its voucher gkey instead.
 /// </remarks>
 internal sealed class FinanceDocumentPoster(MijmsContext context)
     : IFinanceDocumentPoster
@@ -47,10 +49,23 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
             throw new InvalidOperationException(
                 "FinanceTracker posting requires SQL Server.");
 
+        var isCollection = string.Equals(payload.DocumentType,
+            FinanceInvoicePayloadBuilder.CollectionDocumentType, StringComparison.OrdinalIgnoreCase);
+
         var invoiceNumber = payload.SourceDocumentNo ?? payload.DocumentNo;
         if (string.IsNullOrWhiteSpace(invoiceNumber))
             return new(FinancePostingOutcome.BusinessRejected,
                 "The financial document has no invoice number to synchronize.");
+
+        int voucherGkey = 0;
+        if (isCollection &&
+            !int.TryParse(payload.Movements.FirstOrDefault()?.SourceReference, out voucherGkey))
+            return new(FinancePostingOutcome.BusinessRejected,
+                "The collection has no InvEntry voucher to synchronize.");
+
+        var procedure = isCollection
+            ? "FinanceTracker.dbo.usp_SyncInvEntryCollection"
+            : "FinanceTracker.dbo.usp_SyncInvEntryInvoice";
 
         var connection = context.Database.GetDbConnection();
         var closeConnection = connection.State != ConnectionState.Open;
@@ -61,10 +76,13 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
         {
             await using var command = connection.CreateCommand();
             command.CommandType = CommandType.StoredProcedure;
-            command.CommandText = "FinanceTracker.dbo.usp_SyncInvEntryInvoice";
+            command.CommandText = procedure;
             SetCurrentTransaction(command);
 
-            Add(command, "@InvoiceNumber", invoiceNumber);
+            if (isCollection)
+                Add(command, "@VoucherGkey", voucherGkey);
+            else
+                Add(command, "@InvoiceNumber", invoiceNumber);
             Add(command, "@PreviewOnly", false);
             Add(command, "@OrgGkey", payload.OrgGkey);
             Add(command, "@LocationGkey", payload.LocationGkey);
@@ -86,7 +104,12 @@ internal sealed class FinanceDocumentPoster(MijmsContext context)
             return result is "SYNCED" or "ALREADY_SYNCED"
                 ? new(FinancePostingOutcome.Posted, null)
                 : new(FinancePostingOutcome.Unavailable,
-                    $"Unexpected result from usp_SyncInvEntryInvoice: {result ?? "<none>"}.");
+                    $"Unexpected result from {procedure}: {result ?? "<none>"}.");
+        }
+        catch (DbException) when (isCollection)
+        {
+            // The invoice posting log is per invoice; a collection's error stays on its event.
+            throw;
         }
         catch (DbException ex)
         {

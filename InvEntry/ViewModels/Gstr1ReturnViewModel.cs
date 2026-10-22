@@ -27,6 +27,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private readonly IGstr1ReportService _gstr1ReportService;
     private readonly IOrgThisCompanyViewService _orgThisCompanyViewService;
     private readonly IMessageBoxService _messageBoxService;
+    private readonly IDialogService _dialogService;
     private OrgThisCompanyView? _company;
 
 
@@ -112,6 +113,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
     [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
     [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CorrectIssueCommand))]
     [NotifyPropertyChangedFor(nameof(CanChangeScope))]
     private bool _isBusy;
 
@@ -135,6 +137,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
     [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
     [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CorrectIssueCommand))]
     [NotifyPropertyChangedFor(nameof(CanChangeScope))]
     private bool _isExporting;
 
@@ -143,6 +146,7 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(PrintGstr1Command))]
     [NotifyCanExecuteChangedFor(nameof(ExportGstr1PdfCommand))]
     [NotifyCanExecuteChangedFor(nameof(ExportGstr1ExcelCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CorrectIssueCommand))]
     [NotifyPropertyChangedFor(nameof(CanChangeScope))]
     private bool _isReporting;
 
@@ -165,6 +169,26 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     private int _documentLinesVersion;
 
     public bool CanChangeScope => !IsBusy && !IsExporting && !IsReporting;
+
+    public ObservableCollection<Gstr1ValidationIssueRow> ValidationIssues { get; } = new();
+
+    public bool HasCorrectableIssues => ValidationIssues.Any(x => x.IsCorrectable);
+
+    partial void OnValidationChanged(Gstr1ValidationResponse? value)
+    {
+        ValidationIssues.Clear();
+
+        // Correctable issues first so the operator sees what can be fixed here.
+        foreach (var issue in (value?.Issues ?? [])
+                     .Select(x => new Gstr1ValidationIssueRow(x))
+                     .OrderByDescending(x => x.IsCorrectable)
+                     .ThenByDescending(x => x.IsError))
+        {
+            ValidationIssues.Add(issue);
+        }
+
+        OnPropertyChanged(nameof(HasCorrectableIssues));
+    }
 
     public string ValidationStatus => Validation is null
         ? "Validation unavailable — load the return."
@@ -263,14 +287,89 @@ public partial class Gstr1ReturnViewModel : ObservableObject
     }
 
 
+    // =========================================================
+    // VALIDATION ISSUE CORRECTION
+    // =========================================================
+
+    private bool CanCorrectIssue(Gstr1ValidationIssueRow? row) =>
+        CanChangeScope && row?.IsCorrectable == true;
+
+    [RelayCommand(CanExecute = nameof(CanCorrectIssue))]
+    private async Task CorrectIssue(Gstr1ValidationIssueRow? row)
+    {
+        if (!CanCorrectIssue(row))
+            return;
+
+        var issue = row!.Issue;
+        var supplierGstin = SupplierGstin;
+        var returnPeriod = ReturnPeriod;
+
+        bool saved;
+        try
+        {
+            saved = await _dialogService.CorrectGstr1LineAsync(issue, supplierGstin, returnPeriod);
+        }
+        catch (Exception ex)
+        {
+            _messageBoxService.ShowMessage(ex.Message, "GSTR-1 Line Correction",
+                MessageButton.OK, MessageIcon.Error);
+            return;
+        }
+
+        if (!saved || !ScopeMatches(supplierGstin, returnPeriod))
+            return;
+
+        await RefreshValidationAsync(supplierGstin, returnPeriod,
+            $"{issue.DocumentNbr} line {issue.LineNbr} corrected.");
+
+        if (SelectedDocument is { } document && document.Gkey == issue.DocumentGkey)
+        {
+            _documentLinesVersion++;
+            DocumentLines.Clear();
+            await LoadDocumentLinesAsync(document);
+        }
+    }
+
+    private async Task RefreshValidationAsync(
+        string supplierGstin,
+        string returnPeriod,
+        string reason)
+    {
+        try
+        {
+            IsBusy = true;
+            InvalidateValidation();
+            StatusMessage = $"{reason} Re-validating...";
+
+            var validation = await _gstr1ReportService.GetValidationAsync(supplierGstin, returnPeriod);
+            if (!ScopeMatches(supplierGstin, returnPeriod))
+                return;
+
+            Validation = validation;
+            StatusMessage = $"{reason} {ValidationStatus}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{reason} Validation could not be refreshed; load the return again.";
+            _messageBoxService.ShowMessage(ex.Message, "GSTR-1", MessageButton.OK, MessageIcon.Error);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+
     public Gstr1ReturnViewModel(
         IGstr1ReportService gstr1ReportService,
         IOrgThisCompanyViewService orgThisCompanyViewService,
-        IMessageBoxService messageBoxService)
+        IMessageBoxService messageBoxService,
+        IDialogService dialogService)
     {
         _gstr1ReportService = gstr1ReportService;
         _orgThisCompanyViewService = orgThisCompanyViewService;
         _messageBoxService = messageBoxService;
+        _dialogService = dialogService;
 
         Initialize();
     }
