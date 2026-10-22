@@ -19,6 +19,7 @@ public sealed class Gstr1Controller : ControllerBase
     private readonly IGstr1B2bSummaryService _b2bSummaryService;
     private readonly IGstr1ExportPreparationService _exportPreparationService;
     private readonly IGstr1JsonExportService _jsonExportService;
+    private readonly IGstr1LineCorrectionService _lineCorrectionService;
 
     public Gstr1Controller(
         IGstr1ReportQueryService service,
@@ -30,7 +31,8 @@ public sealed class Gstr1Controller : ControllerBase
         IGstr1B2csSummaryService b2csSummaryService,
         IGstr1B2bSummaryService b2bSummaryService,
         IGstr1ExportPreparationService exportPreparationService,
-        IGstr1JsonExportService jsonExportService)
+        IGstr1JsonExportService jsonExportService,
+        IGstr1LineCorrectionService lineCorrectionService)
     {
         _service = service;
         _validationService = validationService;
@@ -42,7 +44,7 @@ public sealed class Gstr1Controller : ControllerBase
         _b2bSummaryService = b2bSummaryService;
         _exportPreparationService = exportPreparationService;
         _jsonExportService = jsonExportService;
-
+        _lineCorrectionService = lineCorrectionService;
     }
 
     [HttpGet("summary")]
@@ -88,6 +90,46 @@ public sealed class Gstr1Controller : ControllerBase
         catch (ArgumentException exception)
         {
             return BadRequest(new { error = exception.Message });
+        }
+    }
+
+    [HttpGet("documents/{gkey:long}/lines/{lineNbr:int}/correction")]
+    public async Task<ActionResult<Gstr1LineCorrectionResponse>> GetLineCorrection(
+        long gkey, int lineNbr, [FromQuery] Gstr1ReturnQuery query, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var line = await _lineCorrectionService.GetAsync(
+                gkey, lineNbr, query.SupplierGstin, query.ReturnPeriod, cancellationToken);
+            return line is null ? NotFound() : Ok(line);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return UnprocessableEntity(new { error = exception.Message });
+        }
+    }
+
+    [HttpPut("documents/{gkey:long}/lines/{lineNbr:int}/correction")]
+    public async Task<ActionResult<Gstr1LineCorrectionResponse>> SaveLineCorrection(
+        long gkey, int lineNbr, [FromBody] Gstr1LineCorrectionRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var line = await _lineCorrectionService.SaveAsync(
+                gkey, lineNbr, request, cancellationToken);
+            return line is null ? NotFound() : Ok(line);
+        }
+        catch (ArgumentException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+        catch (InvalidOperationException exception)
+        {
+            return UnprocessableEntity(new { error = exception.Message });
         }
     }
 

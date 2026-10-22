@@ -593,6 +593,34 @@ public sealed class Gstr1ValidationService : IGstr1ValidationService
                     fieldName:
                         nameof(line.Uom));
             }
+
+            // -------------------------------------------------
+            // UOM ↔ UQC CONSISTENCY
+            //
+            // Only flagged for UOMs with a known UQC mapping.
+            // Warning, so existing returns are not blocked.
+            // -------------------------------------------------
+
+            if (GstUqc.IsMismatch(
+                    line.Uom,
+                    line.Uqc))
+            {
+                AddIssue(
+                    response,
+                    document,
+                    severity: "Warning",
+                    code: "GST-LINE-008",
+                    message:
+                        $"UOM '{line.Uom}' does not match GST UQC " +
+                        $"'{line.Uqc}' for line {line.LineNbr}; " +
+                        $"expected '{GstUqc.MapFromUom(line.Uom)}'.",
+                    lineNbr:
+                        line.LineNbr,
+                    hsnCode:
+                        line.HsnCode,
+                    fieldName:
+                        nameof(line.Uqc));
+            }
         }
     }
 

@@ -121,6 +121,7 @@ public sealed class Bootstrapper
                  .AddTransient<IDailyRateDefinitionService, DailyRateDefinitionService>()
                  .AddTransient<CustomerEditViewModel>()
                  .AddTransient<CustomerOrderSummaryViewModel>()
+                 .AddTransient<Gstr1LineCorrectionViewModel>()
                  .AddTransient<DraftInvoicePickerViewModel>()
                  .AddTransient<DraftInvoicePickerView>()
                  .AddTransient<DraftInvoiceListViewModel>()

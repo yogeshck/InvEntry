@@ -151,7 +151,10 @@ public sealed class Gstr1ReportQueryService : IGstr1ReportQueryService
                 CgstAmount = l.CgstAmount,
                 SgstAmount = l.SgstAmount,
                 IgstAmount = l.IgstAmount,
-                CessAmount = l.CessAmount
+                CessAmount = l.CessAmount,
+                Uom = l.Uom,
+                Uqc = l.Uqc,
+                GstQuantity = l.GstQuantity
             }).ToListAsync(cancellationToken);
     }
 }

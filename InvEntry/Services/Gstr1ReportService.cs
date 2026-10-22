@@ -23,6 +23,17 @@ public interface IGstr1ReportService
         long documentGkey,
         string supplierGstin,
         string returnPeriod);
+
+    Task<Gstr1LineCorrectionResponse> GetLineCorrectionAsync(
+        long documentGkey,
+        int lineNbr,
+        string supplierGstin,
+        string returnPeriod);
+
+    Task<Gstr1LineCorrectionResponse> SaveLineCorrectionAsync(
+        long documentGkey,
+        int lineNbr,
+        Gstr1LineCorrectionRequest request);
 }
 
 public sealed class Gstr1ReportService : IGstr1ReportService
@@ -99,6 +110,39 @@ public sealed class Gstr1ReportService : IGstr1ReportService
         return _mijmsApiService.GetBytesAsync(
             $"api/gstr1/export-json?supplierGstin={Uri.EscapeDataString(supplierGstin)}" +
             $"&returnPeriod={Uri.EscapeDataString(returnPeriod)}");
+    }
+
+    public Task<Gstr1LineCorrectionResponse> GetLineCorrectionAsync(
+        long documentGkey,
+        int lineNbr,
+        string supplierGstin,
+        string returnPeriod)
+    {
+        if (documentGkey <= 0)
+            throw new ArgumentOutOfRangeException(nameof(documentGkey));
+
+        Validate(supplierGstin, returnPeriod);
+
+        return _mijmsApiService.GetResponse<Gstr1LineCorrectionResponse>(
+            $"api/gstr1/documents/{documentGkey}/lines/{lineNbr}/correction" +
+            $"?supplierGstin={Uri.EscapeDataString(supplierGstin)}" +
+            $"&returnPeriod={Uri.EscapeDataString(returnPeriod)}");
+    }
+
+    public Task<Gstr1LineCorrectionResponse> SaveLineCorrectionAsync(
+        long documentGkey,
+        int lineNbr,
+        Gstr1LineCorrectionRequest request)
+    {
+        if (documentGkey <= 0)
+            throw new ArgumentOutOfRangeException(nameof(documentGkey));
+
+        ArgumentNullException.ThrowIfNull(request);
+        Validate(request.SupplierGstin, request.ReturnPeriod);
+
+        return _mijmsApiService.Put<Gstr1LineCorrectionRequest, Gstr1LineCorrectionResponse>(
+            $"api/gstr1/documents/{documentGkey}/lines/{lineNbr}/correction",
+            request);
     }
 
 

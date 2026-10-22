@@ -81,7 +81,7 @@ public class Gstr1MasterDetailSelectionTests
         Assert.That(vm.DocumentLines[0].HsnCode, Is.EqualTo("CURRENT"));
     }
     private static Gstr1ReturnViewModel CreateViewModel(Reports reports) =>
-        new(reports, new Company(), null!);
+        new(reports, new Company(), null!, null!);
 
     private sealed class Company : IOrgThisCompanyViewService
     {
@@ -118,5 +118,9 @@ public class Gstr1MasterDetailSelectionTests
                 : Task.FromResult<IReadOnlyList<Gstr1DocumentLineResponse>>([]);
         public Task<Gstr1ValidationResponse> GetValidationAsync(string gstin, string period) => Task.FromResult(new Gstr1ValidationResponse { SupplierGstin = gstin, ReturnPeriod = period });
         public Task<byte[]> GetExportJsonAsync(string gstin, string period) => Task.FromResult(Array.Empty<byte>());
+        public Task<Gstr1LineCorrectionResponse> GetLineCorrectionAsync(long key, int line, string gstin, string period) =>
+            throw new NotSupportedException();
+        public Task<Gstr1LineCorrectionResponse> SaveLineCorrectionAsync(long key, int line, Gstr1LineCorrectionRequest request) =>
+            throw new NotSupportedException();
     }
 }
