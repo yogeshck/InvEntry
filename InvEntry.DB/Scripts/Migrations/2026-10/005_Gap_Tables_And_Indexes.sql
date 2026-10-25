@@ -12,13 +12,13 @@
         Section 4  GST_GSTR1_DOCUMENT and GST_GSTR1_DOCUMENT_LINE (GSTR-1 staging).
         Section 5  FINANCE_SYNC_OUTBOX (finance sync queue, with its indexes).
 
-    Not included (run separately, see the runbook order in the header below):
+    Not included (run separately, see the runbook order in the header below; all in this folder):
         001_Add_Invoice_Report_Indexes.sql
         002_Add_Customer_Advance_And_Schemes.sql   (advance and scheme tables, CUSTOMER_ADVANCE_BALANCE_CHECK_VIEW)
-        DataAccess/Sql/Migrations/20261011_FinanceSyncOutboxLease.sql
-        DataAccess/Sql/Migrations/20261012_FinanceClosingFence.sql
+        20261011_FinanceSyncOutboxLease.sql
+        20261012_FinanceClosingFence.sql
         004_Add_Lookup_Indexes_And_Primary_Keys.sql
-        DataAccess/Sql/Migrations/20261014_NormalizeInvoiceStatusToFinalised.sql (changes data; manual)
+        20261014_NormalizeInvoiceStatusToFinalised.sql (changes data; manual)
 
     Run order on a branch database:
         1. 005_Gap_Tables_And_Indexes.sql          (this file)

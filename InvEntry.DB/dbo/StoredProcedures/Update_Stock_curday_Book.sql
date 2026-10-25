@@ -95,7 +95,7 @@ GROUP by product_category, convert(varchar(10), gh.grn_date, 105)),0)
 PRINT ' CATEGORY  : ' + @productCategory ;
 
 
-UPDATE [mijms].[dbo].PRODUCT_STOCK_SUMMARY
+UPDATE [dbo].PRODUCT_STOCK_SUMMARY
 SET    GROSS_WEIGHT = ( ( ISNULL(@GrossWeight,0) + ISNULL(@Sales,0) + ISNULL(@StkTrfrOut,0) ) - ( ISNULL(@SuppIn,0) + ISNULL(@StkTrfrIn,0) ) ),
   NET_WEIGHT = ( ( ISNULL(@NetWeight,0) + ISNULL(@Sales,0) + ISNULL(@StkTrfrOut,0) ) - ( ISNULL(@SuppIn,0) + ISNULL(@StkTrfrIn,0) ) ),
   BALANCE_WEIGHT = ( ( ISNULL(@BalanceWeight,0) + ISNULL(@Sales,0) + ISNULL(@StkTrfrOut,0) ) - ( ISNULL(@SuppIn,0) + ISNULL(@StkTrfrIn,0) ) ),

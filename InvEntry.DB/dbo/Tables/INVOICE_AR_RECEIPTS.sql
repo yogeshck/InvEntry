@@ -25,4 +25,4 @@
     [invoice_receipt_nbr]       VARCHAR (50)    NULL,
     CONSTRAINT [PK_ar_invoice_receipts] PRIMARY KEY CLUSTERED ([gkey] ASC)
 );
-
+GO

@@ -4,7 +4,7 @@ namespace DataAccess.Models;
 
 /// <summary>
 /// Customer advance and scheme (RD) tables, created by
-/// InvEntry/DatabaseScripts/Migrations/2026-10/002_Add_Customer_Advance_And_Schemes.sql.
+/// InvEntry.DB/Scripts/Migrations/2026-10/002_Add_Customer_Advance_And_Schemes.sql.
 /// Kept apart from the scaffolded MijmsContext.cs so a re-scaffold does not drop them.
 /// </summary>
 public partial class MijmsContext

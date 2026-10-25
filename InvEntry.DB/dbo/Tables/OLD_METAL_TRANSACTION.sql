@@ -26,4 +26,4 @@
     [doc_ref_type]         VARCHAR (50)    NULL,
     CONSTRAINT [PK_old_metal_transaction] PRIMARY KEY CLUSTERED ([gkey] ASC)
 );
-
+GO

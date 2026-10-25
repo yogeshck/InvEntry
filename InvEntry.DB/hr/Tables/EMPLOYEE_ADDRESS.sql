@@ -16,4 +16,4 @@
     [UPDATED_ON]    DATETIME2 (7)  DEFAULT (sysutcdatetime()) NOT NULL,
     PRIMARY KEY CLUSTERED ([GKEY] ASC)
 );
-
+GO

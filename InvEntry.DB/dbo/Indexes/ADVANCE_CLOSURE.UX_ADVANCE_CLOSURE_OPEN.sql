@@ -1,0 +1,5 @@
+﻿-- At most one closure in progress or completed per account.
+CREATE UNIQUE NONCLUSTERED INDEX UX_ADVANCE_CLOSURE_OPEN
+    ON [dbo].[ADVANCE_CLOSURE] (ADVANCE_ACCOUNT_GKEY)
+    WHERE STATUS <> 'CANCELLED';
+GO

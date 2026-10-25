@@ -6,4 +6,4 @@
     [DEPARTMENT_GKEY] INT            NULL,
     [IS_ACTIVE]       BIT            NOT NULL
 );
-
+GO

@@ -15,6 +15,7 @@ using InvEntry.Services.Printing;
 using InvEntry.Store;
 using InvEntry.Utils;
 using InvEntry.Utils.Options;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -76,6 +77,17 @@ namespace InvEntry.ViewModels
 
         [ObservableProperty]
         private bool _canContinueToWeighing;
+
+        // Items of the selected line that have neither a pending stock record nor
+        // a completed tag, because GRN follow-up processing did not finish.
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasMissingQuantity))]
+        private int _missingQuantity;
+
+        public bool HasMissingQuantity => MissingQuantity > 0;
+
+        [ObservableProperty]
+        private bool _isRepairingPendingItems;
 
         [ObservableProperty]
         private bool _isWeighingTabEnabled;
@@ -147,6 +159,7 @@ namespace InvEntry.ViewModels
         private Dictionary<string, Action<GrnLineSummary, decimal?>> copyGRNLineSumryExpression;
         private readonly ILabelPrinter _labelPrinter;
         private readonly ILabelPreviewRenderer _labelPreviewRenderer;
+        private readonly IGrnPendingStockRepairService _grnPendingStockRepairService;
 
         public ProductStockEntryViewModel(IGrnService grnService,
                                             IProductViewService productViewService,
@@ -158,7 +171,8 @@ namespace InvEntry.ViewModels
                                             IMessageBoxService messageBoxService,
                                             IMtblReferencesService mtblReferencesService,
                                             ILabelPrinter labelPrinter,
-                                            ILabelPreviewRenderer labelPreviewRenderer)
+                                            ILabelPreviewRenderer labelPreviewRenderer,
+                                            IGrnPendingStockRepairService grnPendingStockRepairService)
         {
             _grnService = grnService;
             _productViewService = productViewService;
@@ -171,6 +185,7 @@ namespace InvEntry.ViewModels
             _orgThisCompanyViewService = orgThisCompanyViewService;
             _labelPrinter = labelPrinter;
             _labelPreviewRenderer = labelPreviewRenderer;
+            _grnPendingStockRepairService = grnPendingStockRepairService;
 
             _lineGrnLookup = new();
             SearchOption = new DateSearchOption
@@ -601,10 +616,70 @@ namespace InvEntry.ViewModels
             TotalQuantity = SelectedGrnLineSumry.SuppliedQty.GetValueOrDefault();
             PendingQuantity = pendingStocks.Count;
             CompletedQuantity = completedLines.Count;
+            MissingQuantity = Math.Max(0, TotalQuantity - PendingQuantity - CompletedQuantity);
             CompletedItems = new(completedLines);
             CanContinueToWeighing = SelectedGrn is not null && PendingQuantity > 0;
-            IsWorkflowComplete = TotalQuantity > 0 && PendingQuantity == 0;
+            IsWorkflowComplete = TotalQuantity > 0 && PendingQuantity == 0 && MissingQuantity == 0;
             OnPropertyChanged(nameof(ProgressText));
+
+            if (MissingQuantity > 0)
+            {
+                ShowError(
+                    "Items not ready for weighing",
+                    $"{MissingQuantity} of {TotalQuantity} item(s) for {SelectedGrnLineSumry.ProductCategory} " +
+                    $"were not prepared when GRN {SelectedGrn?.GrnNbr} was saved, because its follow-up " +
+                    "processing did not complete. Click 'Repair Pending Items' to prepare them.");
+            }
+        }
+
+        [RelayCommand]
+        private async Task RepairPendingItemsAsync()
+        {
+            if (IsRepairingPendingItems || SelectedGrn is null || SelectedGrnLineSumry is null)
+                return;
+
+            var confirm = _messageBoxService.ShowMessage(
+                $"Prepare {MissingQuantity} missing item(s) for {SelectedGrnLineSumry.ProductCategory} " +
+                $"in GRN {SelectedGrn.GrnNbr}?\n\n" +
+                "The stock receipt for this line is recorded if it is missing, and the items " +
+                "become available for weighing and tagging.",
+                "Repair Pending Items",
+                MessageButton.YesNo,
+                MessageIcon.Question);
+
+            if (confirm != MessageResult.Yes)
+                return;
+
+            IsRepairingPendingItems = true;
+            try
+            {
+                // Recount just before repairing so a second click or another
+                // workstation cannot create the same items twice.
+                await SelectionGrnSumryListChanged();
+                if (MissingQuantity <= 0)
+                    return;
+
+                await _grnPendingStockRepairService.RepairAsync(
+                    SelectedGrn,
+                    SelectedGrnLineSumry,
+                    PendingQuantity + CompletedQuantity);
+
+                await SelectionGrnSumryListChanged();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Repair of pending items failed for GRN {GrnNumber}, line {LineGkey}.",
+                    SelectedGrn?.GrnNbr, SelectedGrnLineSumry?.GKey);
+                ShowErrors("Repair failed", new[]
+                {
+                    "The missing items could not be prepared.",
+                    ex.Message
+                });
+            }
+            finally
+            {
+                IsRepairingPendingItems = false;
+            }
         }
 
         [RelayCommand]

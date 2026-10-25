@@ -19,6 +19,13 @@
     [CLOSING_GROSS_WEIGHT]   DECIMAL (10, 3) NULL,
     [CLOSING_STONE_WEIGHT]   DECIMAL (10, 3) NULL,
     [CLOSING_NET_WEIGHT]     DECIMAL (10, 3) NULL,
+    [PRODUCT_GKEY]           INT             NULL,
+    [REF_GKEY]               INT             NULL,
+    [REF_LINE_GKEY]          INT             NULL,
+    [DOCUMENT_NBR]           VARCHAR (50)    NULL,
+    [DOCUMENT_TYPE]          VARCHAR (30)    NULL,
+    [TRANSACTION_TYPE]       VARCHAR (30)    NULL,
+    [NOTES]                  VARCHAR (250)   NULL,
     CONSTRAINT [PK_PRODUCT_TRANSACTION_SUMMARY] PRIMARY KEY CLUSTERED ([GKEY] ASC)
 );
-
+GO

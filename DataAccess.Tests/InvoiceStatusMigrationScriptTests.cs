@@ -10,7 +10,7 @@ public sealed class InvoiceStatusMigrationScriptTests
         var path = Path.GetFullPath(Path.Combine(
             TestContext.CurrentContext.TestDirectory,
             "..", "..", "..", "..",
-            "DataAccess", "Sql", "Migrations",
+            "InvEntry.DB", "Scripts", "Migrations", "2026-10",
             "20261014_NormalizeInvoiceStatusToFinalised.sql"));
 
         return File.ReadAllText(path);

@@ -36,4 +36,4 @@
     [order_ref_nbr]         VARCHAR (50)    NULL,
     CONSTRAINT [PK_CUSTOMER_ORDER] PRIMARY KEY CLUSTERED ([GKEY] ASC)
 );
-
+GO

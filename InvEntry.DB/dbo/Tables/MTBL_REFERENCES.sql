@@ -10,4 +10,4 @@
     CONSTRAINT [PK_mtbl_references] PRIMARY KEY CLUSTERED ([gkey] ASC),
     CONSTRAINT [FK_mtbl_references_mtbl_references] FOREIGN KEY ([gkey]) REFERENCES [dbo].[MTBL_REFERENCES] ([gkey])
 );
-
+GO

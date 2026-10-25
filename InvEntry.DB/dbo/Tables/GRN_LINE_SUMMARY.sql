@@ -12,4 +12,4 @@
     [uom]              VARCHAR (50)    NULL,
     CONSTRAINT [PK_grn_line_summary] PRIMARY KEY CLUSTERED ([gkey] ASC)
 );
-
+GO

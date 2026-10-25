@@ -18,6 +18,7 @@
     [OPENING_STOCK_QTY]          INT             NULL,
     [STOCK_IN_QTY]               INT             NULL,
     [STOCK_OUT_QTY]              INT             NULL,
-    [CLOSING_STOCK_QTY]          INT             NULL
+    [CLOSING_STOCK_QTY]          INT             NULL,
+    CONSTRAINT [PK_DAILY_STOCK_SUMMARY] PRIMARY KEY CLUSTERED ([GKey] ASC)
 );
-
+GO

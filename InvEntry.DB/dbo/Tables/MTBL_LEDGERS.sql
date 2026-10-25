@@ -10,7 +10,7 @@
     [MEMBER_TYPE]         NVARCHAR (MAX) NULL,
     [TENANT_GKEY]         INT            NULL,
     [LEDGER_ACCOUNT_CODE] INT            NULL,
-    [TRANSACTION_TYPE]    VARCHAR (50)   NULL,
+    [transaction_type]    VARCHAR (50)   NULL,
     CONSTRAINT [PK_MTBL_LEDGERS] PRIMARY KEY CLUSTERED ([GKEY] ASC)
 );
-
+GO
