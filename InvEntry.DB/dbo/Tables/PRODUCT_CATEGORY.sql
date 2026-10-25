@@ -2,4 +2,4 @@
     [SN]   INT           NOT NULL,
     [NAME] NVARCHAR (50) NOT NULL
 );
-
+GO

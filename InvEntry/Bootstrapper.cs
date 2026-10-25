@@ -164,6 +164,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IProductStockService, ProductStockService>()
                  .AddSingleton<IProductStockSummaryService, ProductStockSummaryService>()
                  .AddSingleton<IProductStockMovementService, ProductStockMovementService>()
+                 .AddSingleton<IGrnPendingStockRepairService, GrnPendingStockRepairService>()
                  .AddSingleton<IProductTransactionService, ProductTransactionService>()
                  .AddSingleton<IProductTransactionSummaryService, ProductTransactionSummaryService>()
                  .AddSingleton<IRepSalesInvrctDbViewService, RepSalesInvrctDbViewService>()

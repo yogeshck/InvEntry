@@ -1,4 +1,5 @@
-﻿CREATE VIEW [VOUCHER_DB_VIEW] AS
+﻿
+CREATE   VIEW [dbo].[VOUCHER_DB_VIEW] AS
  SELECT [GKEY]    ,
 [seq_nbr]
 ,[customer_gkey]
@@ -13,8 +14,8 @@
 ,[ref_doc_date]
 ,[trans_desc]
 ,[trans_date]
-,CASE WHEN trans_type = 'Receipt' THEN trans_amount ELSE 0 END AS "Recd Amount"
-,CASE WHEN trans_type = 'Payment' THEN trans_amount ELSE 0 END AS "Paid Amount"
+,CASE WHEN trans_type = 'Receipt' THEN trans_amount ELSE 0 END AS "Recd_Amount"
+,CASE WHEN trans_type = 'Payment' THEN trans_amount ELSE 0 END AS "Paid_Amount"
 ,[from_ledger_gkey]
 ,FROM_LEDGER_NAME = (SELECT LEDGER_NAME FROM MTBL_LEDGERS MLF WHERE MLF.GKEY = VR.FROM_LEDGER_GKEY)
 ,[to_ledger_gkey]
@@ -24,4 +25,6 @@
 ,[fund_transfer_mode]
 ,[fund_transfer_ref_gkey]
 ,[fund_transfer_date]
-  FROM [VOUCHER] VR
+  FROM [dbo].[VOUCHER] VR
+
+GO

@@ -28,6 +28,7 @@
     [MODIFIED_ON]           DATETIME2 (6)   NULL,
     [CATEGORY]              VARCHAR (50)    NULL,
     [IS_BARCODE_PRINTED]    BIT             NULL,
+    [GRN_LINE_SUMMARY_GKEY] INT             NULL,
     CONSTRAINT [PK_PRODUCT_STOCK] PRIMARY KEY CLUSTERED ([GKEY] ASC)
 );
-
+GO

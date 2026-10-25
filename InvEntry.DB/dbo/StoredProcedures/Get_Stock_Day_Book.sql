@@ -30,7 +30,7 @@ SELECT
       ,[GKEY]
       ,[OPENING_STOCK]
       ,[OPENING_STOCK_QTY]
-  FROM [mijms].[dbo].[REP_DAILY_STOCK_SUMMARY]
+  FROM [dbo].[REP_DAILY_STOCK_SUMMARY]
   WHERE convert(varchar(10), TRANSACTION_DATE, 105) = @currentDate --'21-12-2024'
 
 OPEN dailyStkSumry_cursor  
@@ -133,7 +133,7 @@ BEGIN
 						
 		PRINT 'CATEGORY : '+@productCategory
 	
- 		UPDATE [mijms].[dbo].[REP_DAILY_STOCK_SUMMARY] 
+ 		UPDATE [dbo].[REP_DAILY_STOCK_SUMMARY] 
 		SET
 				OPENING_STOCK			= @OpeningStockWt,
 				STOCK_IN				= @SuppInWt,
@@ -169,4 +169,3 @@ BEGIN
 END 
   
 END
-

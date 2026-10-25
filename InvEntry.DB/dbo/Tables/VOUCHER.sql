@@ -22,4 +22,4 @@
     [fund_transfer_date]     DATETIME2 (7)   NULL,
     CONSTRAINT [PK_fin_day_book] PRIMARY KEY CLUSTERED ([gkey] ASC)
 );
-
+GO

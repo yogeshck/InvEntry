@@ -2,4 +2,4 @@
     [gkey]         INT          IDENTITY (1, 1) NOT NULL,
     [voucher_type] VARCHAR (50) NULL
 );
-
+GO

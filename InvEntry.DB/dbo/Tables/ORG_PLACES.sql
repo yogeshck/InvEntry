@@ -8,4 +8,4 @@
     [state_name]            NVARCHAR (100) NULL,
     CONSTRAINT [PK_ORG_PLACES] PRIMARY KEY CLUSTERED ([gkey] ASC)
 );
-
+GO
