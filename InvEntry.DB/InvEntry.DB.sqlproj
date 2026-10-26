@@ -70,6 +70,14 @@
     <Folder Include="Scripts\" />
     <Folder Include="Audit\" />
     <Folder Include="SchemaGap\" />
+    <Folder Include="Scripts\PreDeployment\" />
+    <Folder Include="Scripts\PostDeployment\" />
+    <Folder Include="Scripts\Deploy\" />
+    <Folder Include="Scripts\Migrations\" />
+    <Folder Include="Scripts\Migrations\2026-10\" />
+    <Folder Include="Scripts\Patches\" />
+    <Folder Include="Scripts\ReferenceData\" />
+    <Folder Include="Scripts\Upgrades\" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Indexes\ADVANCE_CLOSURE.UX_ADVANCE_CLOSURE_OPEN.sql" />
