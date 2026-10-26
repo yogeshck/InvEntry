@@ -27,6 +27,20 @@ var logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .CreateLogger();
 
+// Fail at startup with a clear reason instead of a 500 on every request.
+// HMAC-SHA256 signing needs a key of at least 32 bytes.
+var jwtKeyError = string.IsNullOrWhiteSpace(jwtKey)
+    ? "JWT signing key is missing. Set the Jwt__Key machine environment variable (deployment\\Install-FinanceSecrets.ps1) and run iisreset."
+    : System.Text.Encoding.UTF8.GetByteCount(jwtKey) < 32
+        ? "JWT signing key is too short; Jwt__Key must be at least 32 bytes."
+        : null;
+if (jwtKeyError is not null)
+{
+    logger.Fatal(jwtKeyError);
+    logger.Dispose();
+    throw new InvalidOperationException(jwtKeyError);
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

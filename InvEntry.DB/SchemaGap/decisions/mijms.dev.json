@@ -1,0 +1,58 @@
+[
+  {
+    "Key": "Schema|[hr]",
+    "Go": true,
+    "Reason": "HR module not decided yet; keep it out of dev until it is.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5811267+05:30"
+  },
+  {
+    "Key": "Table|[hr].[DAILY_ATTENDENCE]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5812158+05:30"
+  },
+  {
+    "Key": "Table|[hr].[DEPARTMENT]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5812868+05:30"
+  },
+  {
+    "Key": "Table|[hr].[DESIGNATIONS]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5813471+05:30"
+  },
+  {
+    "Key": "Table|[hr].[EMPLOYEE]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5814846+05:30"
+  },
+  {
+    "Key": "Table|[hr].[EMPLOYEE_ADDRESS]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5814147+05:30"
+  },
+  {
+    "Key": "Table|[hr].[HOLIDAY_CALENDAR]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.5815576+05:30"
+  },
+  {
+    "Key": "Table|[hr].[LEAVE_TYPES]",
+    "Go": true,
+    "Reason": "HR module not decided yet.",
+    "DecidedBy": "kvelg",
+    "DecidedOn": "2026-10-26T09:46:46.581614+05:30"
+  }
+]

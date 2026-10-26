@@ -1,0 +1,20 @@
+{
+  "reportsDir": "schemagap-reports",
+  "databases": [
+    "..\\InvEntry.DB\\schemagap.json",
+    "..\\..\\ASPREST\\FinanceTracker.Database\\schemagap.json"
+  ],
+  "environments": {
+    "dev": {
+      "server": ".\\SQLEXPRESS",
+      "auth": "windows",
+      "backupDir": "D:\\Program Files\\Microsoft SQL Server\\MSSQL17.SQLEXPRESS\\MSSQL\\Backup"
+    },
+    "prod": {
+      "server": "CHANGE-ME\\SQLEXPRESS",
+      "auth": "windows",
+      "requireConfirm": true,
+      "backupDir": "D:\\Backup"
+    }
+  }
+}

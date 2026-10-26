@@ -1,0 +1,10 @@
+{
+  "name": "mijms",
+  "description": "InvEntry application database. Source of truth: this project (dbo, hr, Security).",
+  "build": "msbuild",
+  "project": "InvEntry.DB.sqlproj",
+  "dacpac": "bin\\Release\\InvEntry.DB.dacpac",
+  "decisionsDir": "SchemaGap\\decisions",
+  "options": {},
+  "targets": {}
+}
