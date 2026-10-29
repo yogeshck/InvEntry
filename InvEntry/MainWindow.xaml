@@ -648,6 +648,17 @@
                         HideMenuWhenSelected="True"/>
 
 
+                    <dxwui:HamburgerSubMenuNavigationButton
+                        NavigationTargetType=
+                            "{x:Type page:FinanceSyncStatusPage}"
+
+                        Content="Finance Sync Status"
+
+                        Tag="{dx:DXImage 'Images/Actions/Refresh_32x32.png'}"
+
+                        HideMenuWhenSelected="True"/>
+
+
                 </dxwui:HamburgerSubMenu.Items>
 
 
@@ -877,6 +888,11 @@
 
 
                 <dxb:BarStaticItem Content="Ready" />
+
+                <!-- Finance sync: refreshed every few minutes; opens the status page. -->
+                <dxb:BarButtonItem Content="{Binding FinanceSync.StatusBarText}"
+                                   Alignment="Far"
+                                   Command="{Binding OpenFinanceSyncStatusCommand}" />
 
 
             </dxb:StatusBarControl>

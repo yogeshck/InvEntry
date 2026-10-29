@@ -12,12 +12,38 @@ public sealed class FinanceSyncManagementController : ControllerBase
 {
     private readonly FinanceSyncManagementService _service;
     private readonly FinanceSyncDispatchJobQueue _jobs;
+    private readonly FinanceSyncStatusService _status;
     private readonly ILogger<FinanceSyncManagementController> _logger;
     public FinanceSyncManagementController(FinanceSyncManagementService service,
-        FinanceSyncDispatchJobQueue jobs,
+        FinanceSyncDispatchJobQueue jobs, FinanceSyncStatusService status,
         ILogger<FinanceSyncManagementController> logger) =>
-        (_service, _jobs, _logger) =
-            (service, jobs, logger);
+        (_service, _jobs, _status, _logger) =
+            (service, jobs, status, logger);
+
+    /// <summary>Plain-language status for users: what is not in FinanceTracker, why, what to do.</summary>
+    [HttpGet("status")]
+    public async Task<IActionResult> Status([FromQuery] int orgGkey,
+        [FromQuery] int locationGkey, CancellationToken token)
+    {
+        if (!ScopeMatches(orgGkey, locationGkey)) return Forbid();
+        return Ok(await _status.GetAsync(token));
+    }
+
+    /// <summary>Sends the given events again, or every sendable one when none are given.</summary>
+    [HttpPost("send")]
+    [RequestSizeLimit(16 * 1024)]
+    public async Task<IActionResult> Send([FromBody] FinanceSyncDispatchRequest request,
+        CancellationToken token)
+    {
+        if (!ScopeMatches(request.OrgGkey, request.LocationGkey)) return Forbid();
+        var actor = CleanActor(Request.Headers["X-FinanceTracker-Actor"].ToString());
+        if (string.IsNullOrWhiteSpace(actor) || actor != CleanActor(request.Actor))
+            return BadRequest(new { message = "A verified operator identity is required." });
+        var result = await _status.SendAsync(request.EventIds ?? [], actor, token);
+        _logger.LogInformation("Finance sync send from {Actor}: {Requested} events, job {JobId}",
+            actor, result.Requested, result.JobId);
+        return Ok(result);
+    }
 
     [HttpGet("events")]
     public async Task<IActionResult> Events([FromQuery] DateOnly? fromDate,

@@ -14,6 +14,12 @@ public sealed class FinanceSyncService
     public const string BusinessError = "BUSINESS_ERROR";
 
     private static readonly TimeSpan ClaimLease = TimeSpan.FromMinutes(2);
+
+    /// <summary>
+    /// The background job retries a failed event at most this often; a manual
+    /// send from the status screens is not held back.
+    /// </summary>
+    internal static readonly TimeSpan AutomaticRetryInterval = TimeSpan.FromMinutes(5);
     private readonly MijmsContext _context;
     private readonly FinanceInvoicePayloadBuilder _payloadBuilder;
     private readonly IFinanceDocumentPoster _poster;
@@ -153,16 +159,18 @@ public sealed class FinanceSyncService
 
         foreach (var item in claimedItems)
         {
+            var sent = false;
             try
             {
-                if (await DispatchClaimedAsync(item, cancellationToken))
+                sent = await DispatchClaimedAsync(item, cancellationToken);
+                if (sent)
                     sentCount++;
             }
             finally
             {
                 item.ClaimToken = null;
                 item.ClaimExpiresOn = null;
-                await _context.SaveChangesAsync(cancellationToken);
+                await SaveOutcomeAsync(item, sent, cancellationToken);
                 completed++;
                 if (progress != null)
                     await progress(new FinanceDispatchProgress(completed,
@@ -172,6 +180,40 @@ public sealed class FinanceSyncService
         }
 
         return sentCount;
+    }
+
+    /// <summary>
+    /// Saves one event's outcome. When it cannot be saved (for example a status the
+    /// database does not accept), the claim is still released and the event is left
+    /// PENDING with the attempt recorded, so it can neither hold up the events after
+    /// it nor stay claimed. A posted event is safe to send again: FinanceTracker
+    /// answers ALREADY_SYNCED.
+    /// </summary>
+    private async Task SaveOutcomeAsync(FinanceSyncOutbox item, bool sent,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex)
+        {
+            _context.Entry(item).State = EntityState.Detached;
+            var error = Truncate(
+                $"The synchronization result could not be saved: {ex.InnerException?.Message ?? ex.Message}",
+                800);
+            await _context.FinanceSyncOutboxes
+                .Where(x => x.Gkey == item.Gkey)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.Status, sent ? Sent : Pending)
+                    .SetProperty(x => x.SentOn, sent ? DateTime.Now : null)
+                    .SetProperty(x => x.RetryCount, item.RetryCount)
+                    .SetProperty(x => x.LastAttemptOn, item.LastAttemptOn)
+                    .SetProperty(x => x.LastError, sent ? null : error)
+                    .SetProperty(x => x.ClaimToken, (string?)null)
+                    .SetProperty(x => x.ClaimExpiresOn, (DateTime?)null),
+                    cancellationToken);
+        }
     }
 
     private async Task<List<FinanceSyncOutbox>> ClaimIdsAsync(
@@ -201,14 +243,19 @@ public sealed class FinanceSyncService
         CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
+        // LAST_ATTEMPT_ON is local time, like CREATED_ON.
+        var retryNotBefore = DateTime.Now - AutomaticRetryInterval;
         var claimToken = Guid.NewGuid().ToString("N");
         var candidateIds = await _context.FinanceSyncOutboxes
             .AsNoTracking()
             .Where(x =>
-                (x.Status == Pending || x.Status == RetryableError ||
-                 x.Status == Uncertain) &&
+                (x.Status == Pending || x.Status == Uncertain ||
+                 (x.Status == RetryableError &&
+                  (x.LastAttemptOn == null || x.LastAttemptOn < retryNotBefore))) &&
                 (x.ClaimExpiresOn == null || x.ClaimExpiresOn < now))
-            .OrderBy(x => x.CreatedOn)
+            // Least recently tried first: events that keep failing take their turn
+            // instead of filling every batch ahead of newer ones.
+            .OrderBy(x => x.LastAttemptOn ?? x.CreatedOn)
             .Select(x => x.Gkey)
             // Ten rows per cycle keeps each claim lease comfortably inside
             // its two-minute window even in the worst case.

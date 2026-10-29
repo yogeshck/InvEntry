@@ -46,6 +46,13 @@ namespace InvEntry.ViewModels
 
 
         // =========================================================
+        // FINANCE SYNC (status bar)
+        // =========================================================
+
+        public FinanceSyncStatusViewModel FinanceSync { get; }
+
+
+        // =========================================================
         // CURRENT RATES
         // =========================================================
 
@@ -61,9 +68,12 @@ namespace InvEntry.ViewModels
             INavigationService navigationService,
             SettingsPageViewModel settingsPageViewModel,
             Dispatcher dispatcher,
-            IApplicationIdentityService applicationIdentity)
+            IApplicationIdentityService applicationIdentity,
+            FinanceSyncStatusViewModel financeSync)
         {
             NavigationService = navigationService;
+
+            FinanceSync = financeSync;
 
             _settingsPageViewModel =
                 settingsPageViewModel;
@@ -110,6 +120,10 @@ namespace InvEntry.ViewModels
         [RelayCommand]
         private async Task OnLoaded()
         {
+            // Independent of the price check: the status bar shows whether
+            // invoices are reaching FinanceTracker.
+            FinanceSync.StartBackgroundRefresh();
+
             while (true)
             {
                 try
@@ -193,6 +207,17 @@ namespace InvEntry.ViewModels
 
                // GoBackCommand.NotifyCanExecuteChanged();
             });
+        }
+
+        // =========================================================
+        // FINANCE SYNC STATUS PAGE
+        // =========================================================
+
+        [RelayCommand]
+        private void OpenFinanceSyncStatus()
+        {
+            NavigationService.Navigate(
+                "FinanceSyncStatusPage");
         }
 
         // =========================================================

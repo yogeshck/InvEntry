@@ -4,13 +4,16 @@ public sealed class FinanceSyncBackgroundService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<FinanceSyncBackgroundService> _logger;
+    private readonly FinanceSyncHeartbeat _heartbeat;
 
     public FinanceSyncBackgroundService(
         IServiceScopeFactory scopeFactory,
-        ILogger<FinanceSyncBackgroundService> logger)
+        ILogger<FinanceSyncBackgroundService> logger,
+        FinanceSyncHeartbeat heartbeat)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _heartbeat = heartbeat;
     }
 
     protected override async Task ExecuteAsync(
@@ -52,6 +55,8 @@ public sealed class FinanceSyncBackgroundService : BackgroundService
                         "Finance sync completed. SentCount={SentCount}",
                         sentCount);
                 }
+
+                _heartbeat.Completed();
             }
             catch (OperationCanceledException)
                 when (stoppingToken.IsCancellationRequested)
@@ -60,6 +65,8 @@ public sealed class FinanceSyncBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
+                _heartbeat.Failed(ex);
+
                 // Never allow FinanceTracker problems to stop DataAccess.
                 _logger.LogError(
                     ex,

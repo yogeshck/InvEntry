@@ -1,4 +1,4 @@
-﻿using DevExpress.Mvvm;
+﻿﻿using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
 using DevExpress.Xpf.Core;
 using DevExpress.Xpf.WindowsUI.Navigation;
@@ -175,6 +175,7 @@ public sealed class Bootstrapper
                  .AddSingleton<IVoucherDbViewService, VoucherDbViewService>()
                  .AddSingleton<IAdvanceAccountService, AdvanceAccountService>()
                  .AddSingleton<ISchemeService, SchemeService>()
+                 .AddSingleton<IFinanceSyncStatusClient, FinanceSyncStatusClient>()
                  .AddSingleton<IAdvanceReceiptPrinter, AdvanceReceiptPrinter>()
                  .AddSingleton<IRdStatementPrinter, RdStatementPrinter>()
                  .AddSingleton<IRdDuesPrinter, RdDuesPrinter>()
@@ -203,6 +204,7 @@ public sealed class Bootstrapper
                  .AddSingleton<SchemePlanViewModel>()
                  .AddSingleton<SchemeEnrollmentViewModel>()
                  .AddSingleton<RdDuesViewModel>()
+                 .AddSingleton<FinanceSyncStatusViewModel>()
                  .AddSingleton<SchemeImportViewModel>()
                  .AddSingleton<CustomerOrderDBViewListViewModel>()
                  .AddSingleton<CustomerOrderListViewModel>()

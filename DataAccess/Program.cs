@@ -190,6 +190,8 @@ builder.Services.AddScoped<FinanceSyncService>();
 builder.Services.AddScoped<FinanceSyncReconciliationService>();
 builder.Services.AddScoped<FinanceSyncManagementService>();
 builder.Services.AddSingleton<FinanceSyncDispatchJobQueue>();
+builder.Services.AddSingleton<FinanceSyncHeartbeat>();
+builder.Services.AddScoped<FinanceSyncStatusService>();
 builder.Services.AddScoped<IFinanceSyncSchemaReadinessChecker,
     FinanceSyncSchemaReadinessChecker>();
 
